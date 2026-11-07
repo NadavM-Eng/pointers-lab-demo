@@ -532,11 +532,34 @@ code,pre,.ed,.ed-hl,.ed-ta,.term-out,.mem-body,.fl-cmd{font-variant-ligatures:no
 .v.ptr{color:var(--ptr);background:color-mix(in srgb,var(--ptr) 14%,var(--bg));border-color:color-mix(in srgb,var(--ptr) 40%,var(--line))}
 .v.garb{background:transparent;border:1px dashed var(--gutter);color:var(--muted);font-style:italic}
 .v.chg,.acell.chg{background:var(--orange);border-color:var(--orange);color:var(--on-orange)}
-.v[tabindex]:focus-visible,.acell[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* Outlines in the call stack are drawn INSIDE the element (negative offset): the stack sits in
+   boxes that clip (the scrolling panel, each rounded frame, the scrolling array strip), and an
+   outline drawn outside was cut at their edges (a pointer to arr[0] showed only part of the
+   ring around the cell). Inside its own element nothing can cut it.
+   .tgt = what the hovered or focused pointer points to (c.js markTarget); .tgt-var = the row
+   of the variable that holds it, so it is found even when the cell is scrolled out of view. */
+.v[tabindex]:focus-visible,
+.acell[tabindex]:focus-visible,
+.tgt,
+.vrow.tgt-var {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+/* Keyboard focus never leaves an element flush with the edge of a scrolling box (where the
+   box would cut its focus ring): focusing scrolls it in with room for the ring. */
+.nav,
+.side-foot,
+.lesson,
+.ftabs,
+.mem-body,
+.acells,
+.term-out,
+table.tbl {
+  scroll-padding: 6px;
+}
 .arrow{color:var(--accent-text);font-size:12.5px;cursor:help;font-family:var(--f-mono)}
 .arrow small{color:var(--muted)}
 .arrow.unk{color:var(--err)}
-.tgt{outline:2px solid var(--accent);outline-offset:1px}
 .acells{display:flex;flex-direction:column;gap:3px;overflow-x:auto;max-width:100%;min-width:0;scrollbar-width:thin;padding-bottom:2px}
 .arow{display:flex;gap:3px;flex:0 0 auto}
 .acell{flex:0 0 auto;min-width:52px;font-size:14px;text-align:center;border:1px solid var(--line);border-radius:4px;padding:2px 4px;background:var(--bg);display:flex;flex-direction:column;line-height:1.25}
@@ -4825,7 +4848,13 @@ function makeTracker(meta, o){
   const lines = (o.source || '').split('\n');
   const record = !!o.record;
   let prevPoint = -1;
-  const frame = fid => ({fid, addrs:new Map(), init:new Map(), first:new Map(), point:-1});
+  /* every call gets its own number, so the view can tell a new call from the old one that
+     used the same stack slot (two calls in one line: the second call's i is new, not changed) */
+  let callCount = 0;
+  const frame = fid => {
+    callCount++;
+    return {fid, call:callCount, addrs:new Map(), init:new Map(), first:new Map(), point:-1};
+  };
   return {
     steps,
     enter(fid){ stack.push(frame(fid)); },
@@ -4879,7 +4908,8 @@ function makeTracker(meta, o){
       };
       const frames = stack.map(f => {
         const pv = f.point >= 0 ? meta.points[f.point].vars : [];
-        return {fid:f.fid, point:f.point, vars:pv.filter(id => f.addrs.has(id)).map(id => snapVar(f, id, f.addrs.get(id)))};
+        const vars = pv.filter(id => f.addrs.has(id)).map(id => snapVar(f, id, f.addrs.get(id)));
+        return {fid:f.fid, call:f.call, point:f.point, vars};
       });
       const gl = [...globals.entries()].map(([id, a]) => snapVar(null, id, a));
       steps.push({p, line:pt.line, out:outLen, frames, globals:gl});
@@ -5712,17 +5742,32 @@ function renderMemory(step, prev, meta){
     const inside = all.find(c => addr > c.addr && addr < c.addr + c.size);
     return inside ? {name:inside.name + '+' + (addr - inside.addr), scope:inside.scope, inside:true} : null;
   };
+  /**
+   * Gives the key that matches a frame variable with the same variable in the previous step.
+   * It includes the call number, so a new call that reuses the same stack slot does not
+   * compare with the call that ended there (its values are new, not "changed").
+   *
+   * @param {number} fi    the frame's index in the step (0 = main)
+   * @param {Object} frame the step's frame ({fid, call, point, vars})
+   * @param {Object} v     the variable's snapshot ({id, addr, ...})
+   * @returns {string} the key
+   * Side effects: none.
+   */
+  const frameVarKey = (fi, frame, v) => 'f' + fi + ':' + frame.call + ':' + v.id + '@' + v.addr;
   const prevMap = new Map();
   if(prev){
     prev.globals.forEach(v => prevMap.set('g:' + v.id + '@' + v.addr, v));
-    prev.frames.forEach((f, fi) => f.vars.forEach(v => prevMap.set('f' + fi + ':' + v.id + '@' + v.addr, v)));
+    prev.frames.forEach((f, fi) => f.vars.forEach(v => prevMap.set(frameVarKey(fi, f, v), v)));
   }
   const scopeName = sc => sc === 'g' ? 'global' : (frames[+sc.slice(1)] || {}).name;
   const curScope = 'f' + (frames.length - 1);
   function varRow(v, scope){
     const d = meta.vars[v.id];
     const cs = varCells.get(scope + ':' + v.id);
-    const pv = prevMap.get(scope + ':' + v.id + '@' + v.addr);
+    const fi = scope === 'g' ? -1 : +scope.slice(1);
+    const pv = fi < 0
+      ? prevMap.get('g:' + v.id + '@' + v.addr)
+      : prevMap.get(frameVarKey(fi, frames[fi].f, v));
     const pcs = pv ? cellsOf(d, pv, psz) : null;
     const fresh = !pv;
     const changed = i => pcs && pcs[i] && showScalar(pcs[i].s) !== showScalar(cs[i].s);
@@ -5734,7 +5779,11 @@ function renderMemory(step, prev, meta){
       return t ? '<span class="arrow" data-to="' + c.s.v + '">→ ' + esc(t.name) + (t.scope !== scope ? ' <small>(' + esc(scopeName(t.scope)) + ')</small>' : '') + '</span>' : '<span class="arrow unk" data-to="' + c.s.v + '">→ ?</span>';
     };
     const valHtml = (c, i) => {
-      if(!v.init) return '<span class="v garb" title="not initialized: whatever was left in memory">?</span>';
+      /* data-addr: a pointer to this not-yet-set variable still outlines its value */
+      if(!v.init) {
+        return '<span class="v garb" data-addr="' + c.addr + '"'
+          + ' title="not initialized: whatever was left in memory">?</span>';
+      }
       const txt = showScalar(c.s);
       const extra = arrowOf(c);
       const focus = c.s.t === 'ptr' && c.s.v !== 0 ? ' tabindex="0" data-to="' + c.s.v + '" aria-label="' + esc(txt + ' ' + arrowName(c)) + '"' : '';
@@ -6149,14 +6198,69 @@ function attach(ui){
     state.idx = i; drawStep();
     if(i === n - 1 && state.lastRun.needInput){ termIn.hidden = false; termIn.querySelector('input').focus(); }
   }
-  /* the target of a pointer is highlighted on hover and on keyboard focus (pointer values have tabindex=0) */
+  /**
+   * Outlines what the hovered or focused pointer points to (pointer values have tabindex=0):
+   * the value at that address (a scalar's value or one array cell), not the row of the
+   * variable that starts there, so a pointer to arr[0] marks the cell [0] and not all of arr.
+   * The row is outlined only when no value sits at that address.
+   *
+   * The variable that holds that value is outlined too ("tgt-var" on its row), so the eye
+   * finds it even when the value is a cell scrolled out of a long array's strip; that strip is
+   * then scrolled sideways to show the cell.
+   *
+   * @param {Event} e the mouseover or focusin event
+   * @returns {void}
+   * Side effects: moves the "tgt" / "tgt-var" classes inside the call stack view; may scroll
+   *   an array strip sideways.
+   */
   const markTarget = e => {
-    const a = e.target.closest ? e.target.closest('[data-to]') : null; memBody.querySelectorAll('.tgt').forEach(x => x.classList.remove('tgt'));
-    if(a) memBody.querySelectorAll('[data-addr="' + a.dataset.to + '"]').forEach(x => { if(x !== a) x.classList.add('tgt'); });
+    const a = e.target.closest ? e.target.closest('[data-to]') : null;
+    clearTarget();
+    if(!a) return;
+    const atAddress = [...memBody.querySelectorAll('[data-addr="' + a.dataset.to + '"]')];
+    const hits = atAddress.filter(x => x !== a);
+    const values = hits.filter(x => !x.classList.contains('vrow'));
+    const marked = values.length ? values : hits;
+    marked.forEach(x => {
+      x.classList.add('tgt');
+      const row = x.closest('.vrow');
+      if(row && row !== x) row.classList.add('tgt-var');
+      revealCell(x);
+    });
   };
+
+  /**
+   * Removes the pointer-target outlines from the call stack view.
+   *
+   * @returns {void}
+   * Side effects: removes the "tgt" and "tgt-var" classes.
+   */
+  function clearTarget(){
+    memBody.querySelectorAll('.tgt, .tgt-var').forEach(x => x.classList.remove('tgt', 'tgt-var'));
+  }
+
+  /**
+   * Scrolls an array strip sideways so a target cell that is out of its view is shown,
+   * centred. Only the strip moves, never the stack panel, so the pointer under the mouse
+   * stays where it is.
+   *
+   * @param {Element} cell the outlined element (only array cells are moved into view)
+   * @returns {void}
+   * Side effects: may change the strip's scrollLeft (smoothly unless reduced motion is asked).
+   */
+  function revealCell(cell){
+    const strip = cell.classList.contains('acell') ? cell.closest('.acells') : null;
+    if(!strip) return;
+    const box = strip.getBoundingClientRect();
+    const r = cell.getBoundingClientRect();
+    if(r.left >= box.left && r.right <= box.right) return;
+    const shift = (r.left + r.width / 2) - (box.left + box.width / 2);
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    strip.scrollBy({left:shift, behavior:calm ? 'auto' : 'smooth'});
+  }
   memBody.addEventListener('mouseover', markTarget);
   memBody.addEventListener('focusin', markTarget);
-  memBody.addEventListener('focusout', () => memBody.querySelectorAll('.tgt').forEach(x => x.classList.remove('tgt')));
+  memBody.addEventListener('focusout', clearTarget);
   /* a line typed in the terminal (the core reads the input field and calls this) */
   function onInput(text){
     if(liveRun && liveRun.running && state.mode !== 'debug'){
@@ -6487,13 +6591,104 @@ int main(void)
 }`, tests:[io('3 numbers: 1 2 3', '3 1 2 3\n', '6'), io('no numbers', '0\n', '0')]}
 ]});
 
-/* ───────── 3: a quiz (a: index of the right option, w: the explanation shown after answering) ───────── */
+/* ───────── 3: arrays and 2D arrays: pointers into them (hover a pointer in the call stack) ───────── */
+U.push({id:'arrays', title:'מערכים ומטריצות', body:[
+R`<p>מערך הוא תאים צמודים בזיכרון, אחד אחרי השני. מצביע יכול להצביע על כל אחד מהם,
+ו-<code>p + 1</code> הוא התא הבא.</p>
+<div class="callout key"><b>נסו</b><p>הריצו <b>⏯ שורה אחר שורה</b> ועמדו עם העכבר על הערך של
+<code>p</code> במחסנית. התא שהוא מצביע עליו מסומן בכחול, וגם המשתנה שמחזיק אותו. אם התא מחוץ
+לתצוגה, רצועת המערך זזה אליו.</p></div>`,
+{id:'long-array', title:'מצביע לתוך מערך ארוך', code:R`#include <stdio.h>
+
+int main(void)
+{
+    int squares[12];
+    for (int i = 0; i < 12; i++)
+        squares[i] = i * i;
+
+    int* p = squares + 9;     /* the same as &squares[9] */
+    printf("*p = %d\n", *p);
+    p -= 7;
+    printf("*p = %d\n", *p);
+    return 0;
+}`, tests:[io('prints 81, then 4', '', '*p = 81\n*p = 4')]},
+R`<p>מטריצה <code>int m[3][4]</code> היא 3 שורות של 4 תאים. בזיכרון השורות צמודות: מיד אחרי
+<code>m[0][3]</code> בא <code>m[1][0]</code>. לכן <code>&amp;m[0][0] + 6</code> הוא בדיוק
+<code>&amp;m[1][2]</code>.</p>`,
+{id:'matrix', title:'מטריצה בזיכרון', code:R`#include <stdio.h>
+
+int main(void)
+{
+    int m[3][4] = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12}
+    };
+    int* cell = &m[1][2];
+    int* flat = &m[0][0] + 6;   /* row 1 starts 4 cells after row 0 */
+
+    printf("%d %d\n", *cell, *flat);
+    printf("same cell: %d\n", cell == flat);
+    return 0;
+}`, tests:[io('prints 7 7, then same cell: 1', '', '7 7\nsame cell: 1')]},
+R`<p>אותו רעיון בפונקציה: מקבלים מצביע לתא הראשון ועוברים על כל <code>rows * cols</code> התאים.</p>`,
+{id:'sum-all', title:'sumAll', task:'כתבו <code>int sumAll(const int* m, int rows, int cols)</code> '
+  + 'שמקבלת מצביע לתא הראשון של מטריצה ומחזירה את סכום כל התאים, '
+  + '<b>עם מצביע שעובר על התאים</b> (בלי <code>[ ]</code>).',
+code:R`#include <stdio.h>
+
+int sumAll(const int* m, int rows, int cols)
+{
+    /* TODO: walk over all rows * cols cells with a pointer */
+    return 0;
+}
+
+int main(void)
+{
+    int m[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    printf("%d\n", sumAll(&m[0][0], 2, 3));
+    return 0;
+}`, solution:R`#include <stdio.h>
+
+int sumAll(const int* m, int rows, int cols)
+{
+    int total = 0;
+    const int* end = m + rows * cols;
+    while (m < end) {
+        total += *m;
+        m++;
+    }
+    return total;
+}
+
+int main(void)
+{
+    int m[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    printf("%d\n", sumAll(&m[0][0], 2, 3));
+    return 0;
+}`, tests:[unit('sumAll', R`
+int sumAll(const int* m, int rows, int cols);
+int main(void)
+{
+    int a[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    int b[1][1] = {{7}};
+    int c[3][2] = {{-1, 1}, {-2, 2}, {0, 5}};
+    T_INT("sumAll of {{1,2,3},{4,5,6}} is 21", sumAll(&a[0][0], 2, 3), 21);
+    T_INT("sumAll of {{7}} is 7", sumAll(&b[0][0], 1, 1), 7);
+    T_INT("sumAll of a 3x2 matrix is 5", sumAll(&c[0][0], 3, 2), 5);
+    return 0;
+}`), {type:'src', name:'walks with a pointer', fn:'sumAll', forbid:'\\[',
+    msg:'sumAll uses [ ]: walk over the cells with a pointer instead'},
+  io('main prints 21', '', '21')]}
+]});
+
+/* ───────── 4: a quiz (a: index of the right option, w: the explanation shown after answering) ───────── */
 U.push({id:'quiz', title:'חידון', quiz:[
   {s:'כמה פעמים רץ הגוף של <code>for (int i = 0; i &lt; 5; i++)</code>?', o:['4', '5', '6'], a:1, w:'i מקבל 0, 1, 2, 3, 4: חמש פעמים.'},
   {s:'מתי נבדק התנאי של לולאת <code>for</code>?', o:['אחרי כל סיבוב', 'לפני כל סיבוב', 'רק בהתחלה'], a:1, w:'לפני כל סיבוב, גם לפני הראשון.'}
 ]});
 
-/* ───────── 4: a lab unit (lab:true adds the "תרגול" tag) ───────── */
+/* ───────── 5: a lab unit (lab:true adds the "תרגול" tag) ───────── */
 U.push({id:'lab1', title:'Lab 01: לולאות', lab:true, body:[
 R`<p>תרגיל מסכם מהתרגול.</p>`,
 {id:'lab1-max', title:'1. maxOf', task:'כתבו <code>int maxOf(const int* arr, int size)</code> שמחזירה את האיבר הגדול במערך (size ≥ 1).',

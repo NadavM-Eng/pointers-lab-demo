@@ -6,7 +6,7 @@ A demo of an interactive C lab in Hebrew: the lesson on one side, and on the oth
 
 ## What runs where
 
-This demo runs a small example course (loops, a sum, input, a quiz and one lab exercise) entirely in your browser:
+This demo runs a small example course (loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise) entirely in your browser:
 
 - The C code is compiled with [xcc](https://github.com/tyfkda/xcc) to 32-bit WebAssembly, so a pointer is 4 bytes here.
 - In the sidebar you can switch ▶ Run and ✓ Tests to real gcc on [Compiler Explorer](https://godbolt.org) (64-bit). Line-by-line stepping stays in the browser.
