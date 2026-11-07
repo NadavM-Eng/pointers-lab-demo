@@ -409,6 +409,16 @@ body.wide .when-narrow{display:none}
 .wb-dbgbar .b{display:inline-flex;align-items:center;gap:6px}
 .wb-dbgbar .b:disabled{opacity:.4;cursor:default;pointer-events:none}
 .wb-dbgbar .gl{flex:none;width:16px;height:16px}
+/* under the step bar after an edit while stepping: the steps show the code as it was recorded */
+.wb-stale {
+  padding: 6px 14px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line-2);
+  color: var(--warn);
+  font-size: 13px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
 .dbg-range{flex:1;min-width:120px;accent-color:var(--accent);-webkit-appearance:none;appearance:none;background:transparent;height:20px;margin:0;--p:0%}
 .dbg-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to left,var(--accent) var(--p),var(--line) var(--p))}
 .dbg-range::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
@@ -467,6 +477,11 @@ body:not(.admin) .admin-tab{display:none}
 .ft-cancel:hover{color:var(--err);border-color:var(--err)}
 .ft-err{color:var(--err);font-size:12px;margin-inline-start:4px;direction:rtl;text-align:right;min-width:0}
 .ed-host:not([hidden]){flex:1;min-height:0;display:flex;position:relative;container:edh/inline-size}
+/* the extra files' editors are flex items of .wb-code like main.c's, so a long file scrolls
+   inside its editor instead of squeezing the tab row (seen while stepping in a short pane) */
+.ed-hosts-user {
+  display: contents;
+}
 .ed-host:has(.ed-ta:focus-visible)::after{content:"";position:absolute;inset:0;border:2px solid var(--accent);pointer-events:none;z-index:5}
 
 /* editor */
@@ -633,7 +648,9 @@ body.debugging .term{flex:1 1 0;min-height:30%}
 /* ── printing: lesson and code on white, without sidebar, buttons and step bar (last in the file, so it needs no !important) ── */
 @media print{
   body{overflow:visible;height:auto;font-size:12pt;line-height:1.5;background:var(--bg)}
-  .side,.menu-b,.split,.skip,.boot,.admin-bar,body.admin .admin-bar,.selftest,.pager,.wb-bar,.wb-dbgbar,.term-in,.stdin-box,.ftabs,.wb-hint,.try,.task .how,.ed-gut .g.bp::before{display:none}
+  .side,.menu-b,.split,.skip,.boot,.admin-bar,body.admin .admin-bar,.selftest,.pager,
+  .wb-bar,.wb-dbgbar,.wb-stale,.term-in,.stdin-box,.ftabs,.wb-hint,.try,.task .how,
+  .ed-gut .g.bp::before{display:none}
   .app,.stage{display:block;height:auto}
   .lesson{overflow:visible;background:transparent}
   body.wide .lesson{visibility:visible}
@@ -948,7 +965,7 @@ body.au-editing .tbl td[contenteditable=true], body.au-editing .tbl th[contented
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף preact-authoring, commit 58f4625 מ-2026-11-07 22:43"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">preact-authoring</span> · 58f4625</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף preact-version, commit 98abe32 מ-2026-11-08 00:00"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">preact-version</span> · 98abe32</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
@@ -4454,7 +4471,11 @@ const E = {
 window.CEngine = E;
 })();
 /* ═══ Instrumenter: inserts trace calls into C source without moving any line ═══
-   Output: {code, meta:{points:[{line,fid,vars:[ids]}], vars:[{id,name,base,ptr,arr,param,global,init}], funcs:[name]}} */
+   instrument(src, opts) does one file: {code, meta:{points:[{line,fid,file,vars:[ids]}],
+     vars:[{id,name,base,ptr,arr,param,global,init,file}], funcs:[name], funcFiles:[file]}}.
+   instrumentProgram(main, userFiles) does main.c and every other .c file in one shared id space
+   (main.c first, then the others by name) and merges their metas; tracer.js (xcc) and native.js
+   (gcc) compile what it returns. */
 (function(){
 "use strict";
 const TYPE_KW = new Set(['int','char','float','double','short','long','unsigned','signed','void','const','static','volatile','register','_Bool','bool','size_t','struct','enum','union','extern','auto','inline']);
@@ -4497,19 +4518,62 @@ function tokenize(src){
   return toks;
 }
 
-function instrument(src){
+const MAIN_FILE = 'main.c';
+
+/**
+ * Instruments one C file: inserts the trace hooks (__T, __TC, __E, __X, __V) without moving any
+ * line, and describes every point, variable and function it found.
+ *
+ * @param {string} src the file's text
+ * @param {Object} [fileOpts] where this file sits in a program of several files:
+ *   file        {string} the file's name, recorded on every point, variable and function
+ *               (default 'main.c');
+ *   base        {{point:number, var:number, func:number}} the first ids this file may use; ids
+ *               continue from them, so several files share one id space (default all 0);
+ *   globalCalls {string[]} (main.c) functions main() calls on entry, after it registered its own
+ *               globals: the other files' globals functions;
+ *   globalsFn   {string} (not main.c) the name of a function added at the end of the file that
+ *               registers this file's globals (static ones too)
+ * @returns {{code:string, meta:Object}} the instrumented text and its meta (points, vars, funcs,
+ *   funcFiles); the ids in meta are global ids, the arrays hold only this file's entries
+ * @throws {Error} when the braces or brackets do not balance
+ * Side effects: none.
+ */
+function instrument(src, fileOpts){
+  fileOpts = fileOpts || {};
+  const file = fileOpts.file || MAIN_FILE;
+  /* (not "base": parseDecl has its own "base", the declared type) */
+  const idBase = Object.assign({point:0, var:0, func:0}, fileOpts.base || {});
   const toks = tokenize(src).filter(t => t.t !== 'pp');
   const ins = [];                       /* [pos, text, order] */
   let order = 0;
   const at = (pos, text) => ins.push([pos, text, order++]);
-  const points = [], vars = [], funcs = [];
+  const points = [], vars = [], funcs = [], funcFiles = [];
   const scopes = [];                    /* each: array of var ids */
   const globals = [];
   let fid = -1;
   let k = 0;
   const T = i => toks[i] || {t:'eof', v:'', s:src.length, e:src.length, line:0};
   const visible = () => globals.concat(...scopes);
-  const newPoint = (line) => { points.push({line, fid, vars:visible().slice()}); return points.length - 1; };
+  /**
+   * Adds a point (a place the program stops at) on a line, with the variables visible there.
+   *
+   * @param {number} line 1-based line in this file
+   * @returns {number} the point's global id
+   * Side effects: appends to points.
+   */
+  const newPoint = (line) => {
+    points.push({line, fid, file, vars:visible().slice()});
+    return idBase.point + points.length - 1;
+  };
+  /**
+   * Gives this file's entry of a point by its global id.
+   *
+   * @param {number} id a global point id made by newPoint
+   * @returns {Object} the point
+   * Side effects: none.
+   */
+  const pointAt = id => points[id - idBase.point];
   function matchClose(i){            /* toks[i] is ( [ or {, return index of matching close */
     const open = toks[i].v, close = {'(' : ')', '[' : ']', '{' : '}'}[open];
     let d = 0;
@@ -4533,7 +4597,17 @@ function instrument(src){
     if(t.v === 'struct' || t.v === 'enum' || t.v === 'union') return T(i+2).v !== '{' || true;
     return true;
   };
-  /* parse declaration tokens [a, b) into declarators */
+  /**
+   * Parses the declaration tokens [a, b) into its declarators and records each as a variable.
+   *
+   * @param {number} a index of the first token (the type)
+   * @param {number} b index after the last token (the ';' or ')' or ',')
+   * @param {{param:boolean, global:boolean}} [opts] param: a function parameter (an array
+   *   parameter is a pointer); global: a variable outside every function
+   * @returns {Object[]} the new variables ({id, file, name, base, ptr, arr, type, ...}); ids
+   *   are global ids (this file's base + its index)
+   * Side effects: appends to vars.
+   */
   function parseDecl(a, b, opts){
     opts = opts || {};
     let j = a; const baseToks = [];
@@ -4567,8 +4641,22 @@ function instrument(src){
     flush();
     return decls.filter(d => !d.fnptr).map(d => {
       const ptr = d.ptr + (opts.param && d.arr ? 1 : 0), arr = opts.param ? Math.max(0, d.arr - 1) : d.arr;
-      const v = {id:vars.length, name:d.name, base, ptr, arr, const:isConst, ptrConst:d.ptrConst, type:typeText + ' ' + '*'.repeat(d.ptr) + (d.arr && !opts.param ? '[]'.repeat(d.arr) : ''), param:!!opts.param, global:!!opts.global, init:opts.param || opts.global || d.init, fid};
-      v.type = typeText + '*'.repeat(ptr) + (arr ? '[]'.repeat(arr) : '');   /* int*, int**, const int*, int*[] : as written in code and lessons */
+      const v = {
+        id:idBase.var + vars.length,
+        file,
+        name:d.name,
+        base,
+        ptr,
+        arr,
+        const:isConst,
+        ptrConst:d.ptrConst,
+        /* int*, int**, const int*, int*[] : as written in code and lessons */
+        type:typeText + '*'.repeat(ptr) + (arr ? '[]'.repeat(arr) : ''),
+        param:!!opts.param,
+        global:!!opts.global,
+        init:opts.param || opts.global || d.init,
+        fid
+      };
       v.initStart = d.initStart; v.initEnd = d.initEnd;
       vars.push(v);
       return v;
@@ -4677,7 +4765,7 @@ function instrument(src){
         ds.forEach(v => { scopes[scopes.length - 1].push(v.id); reg += '__V(' + v.id + ',(void*)&' + v.name + ',sizeof(' + v.name + '),sizeof(' + v.name + '));'; });
       }
       const p = newPoint(t.line);
-      points[p].loop = true;
+      pointAt(p).loop = true;
       const cond = s2 > s1 + 1;
       const regExpr = reg ? reg.split(';').filter(Boolean).join(',') + ',' : '';
       if(cond){ at(T(s1).e, '(' + regExpr + '__TC(' + p + '))&&('); at(T(s2).s, ')'); }
@@ -4749,7 +4837,9 @@ function instrument(src){
     if(body >= 0){
       /* function definition: name is the id before the first '(' */
       const name = T(parenOpen - 1).v;
-      fid = funcs.length; funcs.push(name);
+      fid = idBase.func + funcs.length;
+      funcs.push(name);
+      funcFiles.push(file);
       /* one static temporary per function holds the value between "computed" and "left";
          static, so the frame layout (the addresses the student sees) does not change */
       retType = returnTypeOf(k, parenOpen - 1);
@@ -4767,7 +4857,10 @@ function instrument(src){
       }
       params.forEach(v => scopes[0].push(v.id));
       let entry = '__E(' + fid + ');' + params.map(regCall).join('');
-      if(name === 'main') entry += globals.map(id => regCall(vars[id])).join('');
+      if(name === 'main' && file === MAIN_FILE){
+        entry += globals.map(id => regCall(vars[id - idBase.var])).join('');
+        entry += (fileOpts.globalCalls || []).map(fn => fn + '();').join('');
+      }
       at(T(body).e, entry);
       const e = matchClose(body);
       let q = body + 1;
@@ -4795,9 +4888,124 @@ function instrument(src){
   let out = '', last = 0;
   ins.forEach(([pos, text]) => { out += src.slice(last, pos) + text; last = pos; });
   out += src.slice(last);
-  return {code:out, meta:{points, vars, funcs}};
+  /* after the last line, so no line moves: every global of the file is in scope here */
+  if(fileOpts.globalsFn){
+    const registrations = globals.map(id => regCall(vars[id - idBase.var])).join('');
+    out += '\nvoid ' + fileOpts.globalsFn + '(void){' + registrations + '}\n';
+  }
+  return {code:out, meta:{points, vars, funcs, funcFiles}};
 }
-window.CInstr = {instrument, tokenize};
+
+/**
+ * Instruments a whole program: main.c and the student's other .c files, in one shared id space
+ * (main.c first, then the other .c files sorted by name). A .c file that cannot be instrumented,
+ * or that the caller lists in opts.plain, is compiled as it is: its functions are stepped over.
+ * Headers are never instrumented (functions defined in them run like library calls).
+ *
+ * @param {string} mainCode the text of main.c
+ * @param {Object<string,string>} [userFiles] the student's other files, name -> text (.c and .h)
+ * @param {{plain:string[]}} [opts] plain: other .c files to compile without hooks (their
+ *   instrumented copy did not compile)
+ * @returns {{main:string, others:Object<string,string>, protos:string, meta:Object}}
+ *   main: the instrumented main.c; others: name -> instrumented text of each traced other file;
+ *   protos: C prototypes of the traced files' globals functions, for the text in front of
+ *   main.c's "#line" (one line each, '' for a single file); meta: the merged meta, plus
+ *   files (every .c file, in id order), plain (the .c files compiled without hooks) and
+ *   sources (file name -> the text the ids refer to)
+ * @throws {Error} when main.c itself cannot be instrumented
+ * Side effects: none.
+ */
+function instrumentProgram(mainCode, userFiles, opts){
+  userFiles = userFiles || {};
+  const plain = new Set((opts && opts.plain) || []);
+  const otherNames = Object.keys(userFiles)
+    .filter(name => name.endsWith('.c') && name !== MAIN_FILE)
+    .sort();
+  /* numbered by the file's place among all the other .c files, so a name never changes meaning */
+  const globalsFnOf = name => '__lab_globals_' + (otherNames.indexOf(name) + 1);
+  /**
+   * Instruments main.c, calling the globals functions of the given files on entry to main().
+   *
+   * @param {string[]} traced the other .c files that are instrumented
+   * @returns {{code:string, meta:Object}} as instrument()
+   * Side effects: none; throws like instrument().
+   */
+  const instrumentMain = traced => instrument(mainCode, {
+    file:MAIN_FILE,
+    globalCalls:traced.map(globalsFnOf)
+  });
+
+  const planned = otherNames.filter(name => !plain.has(name));
+  let mainResult = instrumentMain(planned);
+  const results = [mainResult];
+  const base = nextBase({point:0, var:0, func:0}, mainResult.meta);
+  const others = {};
+  planned.forEach(name => {
+    try {
+      const result = instrument(userFiles[name], {
+        file:name,
+        base:Object.assign({}, base),
+        globalsFn:globalsFnOf(name)
+      });
+      others[name] = result.code;
+      results.push(result);
+      Object.assign(base, nextBase(base, result.meta));
+    } catch(e){
+      plain.add(name);
+    }
+  });
+
+  /* main.c must not call the globals function of a file that fell back; its ids do not change */
+  const traced = planned.filter(name => !plain.has(name));
+  if(traced.length !== planned.length){
+    mainResult = instrumentMain(traced);
+    results[0] = mainResult;
+  }
+  const meta = mergeMetas(results.map(result => result.meta));
+  meta.files = [MAIN_FILE].concat(otherNames);
+  meta.plain = otherNames.filter(name => plain.has(name));
+  meta.sources = {[MAIN_FILE]:mainCode};
+  traced.forEach(name => { meta.sources[name] = userFiles[name]; });
+  const protos = traced.map(name => 'void ' + globalsFnOf(name) + '(void);\n').join('');
+  return {main:mainResult.code, others, protos, meta};
+}
+
+/**
+ * Gives the first ids the next file may use, after a file's meta.
+ *
+ * @param {{point:number, var:number, func:number}} base the first ids that file used
+ * @param {Object} meta that file's meta (points, vars, funcs)
+ * @returns {{point:number, var:number, func:number}} the next free ids
+ * Side effects: none.
+ */
+function nextBase(base, meta){
+  return {
+    point:base.point + meta.points.length,
+    var:base.var + meta.vars.length,
+    func:base.func + meta.funcs.length
+  };
+}
+
+/**
+ * Joins the metas of several files, made with consecutive bases, into one meta whose arrays are
+ * indexed by the global ids.
+ *
+ * @param {Object[]} metas the files' metas, in id order
+ * @returns {{points:Object[], vars:Object[], funcs:string[], funcFiles:string[]}} the joined meta
+ * Side effects: none.
+ */
+function mergeMetas(metas){
+  const merged = {points:[], vars:[], funcs:[], funcFiles:[]};
+  metas.forEach(meta => {
+    merged.points.push(...meta.points);
+    merged.vars.push(...meta.vars);
+    merged.funcs.push(...meta.funcs);
+    merged.funcFiles.push(...meta.funcFiles);
+  });
+  return merged;
+}
+
+window.CInstr = {instrument, instrumentProgram, tokenize, MAIN_FILE};
 })();
 /* ═══ Runner: compile (+instrument) and run; collect step snapshots ═══ */
 (function(){
@@ -4823,37 +5031,205 @@ function friendly(err){
   /* the page replaces some stdio functions with its own versions; show the names the student wrote */
   return unmask(err);
 }
+/**
+ * Gives the text xcc compiles as main.c: the runtime header, the prototypes of the other files'
+ * globals functions (instrumented builds of several files), then the student's code.
+ *
+ * @param {string} protos C prototypes, one per line ('' for a single file or a plain build)
+ * @returns {string} the text in front of main.c's code
+ * Side effects: none.
+ */
+const mainPrefix = protos => '#include "__rt.h"\n' + protos + '#line 2 "main.c"\n';
+
+/**
+ * Gives the text in front of another .c file: the runtime header (the same stdio replacements as
+ * main.c) and a #line that keeps the compiler's messages on the file's own name.
+ *
+ * @param {string} name the file's name, e.g. 'max.c'
+ * @returns {string} the prefix
+ * Side effects: none.
+ */
+const otherPrefix = name => '#include "__rt.h"\n#line 1 "' + name + '"\n';
+
+/* how many times a build may switch more files to plain compilation before it gives up */
+const MAX_PLAIN_ROUNDS = 4;
+
+/* an error line of gcc ("max.c:12:5: error") or xcc ("max.c(12): error"); group 1 = the file */
+const ERROR_LINE_RE = new RegExp('(?:^|\\s)([A-Za-z0-9_\\-]+\\.[ch])'
+  + '(?::\\d+:\\d+: (?:fatal )?error|\\(\\d+\\): (?!warning))', 'gm');
+
+/**
+ * Names every file a compiler's messages report an error in.
+ *
+ * @param {string} text the compiler's output (ANSI colours allowed)
+ * @returns {Set<string>} the file names, e.g. {'main.c', 'max.c'}
+ * Side effects: none.
+ */
+function errorFiles(text){
+  const plainText = String(text || '').replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
+  return new Set([...plainText.matchAll(ERROR_LINE_RE)].map(match => match[1]));
+}
+
+/**
+ * Names the files a compiler's messages report errors in, among the given ones.
+ *
+ * @param {string} text the compiler's output (ANSI colours allowed)
+ * @param {string[]} names the files to look for
+ * @returns {string[]} those of names with at least one error, in the order of names
+ * Side effects: none.
+ */
+function failedFiles(text, names){
+  const named = errorFiles(text);
+  return names.filter(name => named.has(name));
+}
+
+/**
+ * Lists the files xcc compiles for a program: main.c, the runtime, the student's other files
+ * (each .c file instrumented when prog has it, else as written) and any extra files.
+ *
+ * @param {string} code the student's main.c
+ * @param {Object<string,string>} user the other files, name -> text
+ * @param {?Object} prog what CInstr.instrumentProgram returned, or null for a plain build
+ * @param {Object} [extra] more files to add as they are (tests.c, __test.h)
+ * @returns {Object<string,string>} file name -> text
+ * Side effects: none.
+ */
+function sourceFiles(code, user, prog, extra){
+  const files = {
+    'main.c':prog ? mainPrefix(prog.protos) + prog.main : PREFIX + code,
+    '__rt.c':window.RT_C,
+    '__rt.h':window.RT_H
+  };
+  Object.keys(user).forEach(name => {
+    if(!name.endsWith('.c')){
+      files[name] = user[name];
+      return;
+    }
+    const traced = prog && Object.prototype.hasOwnProperty.call(prog.others, name);
+    files[name] = otherPrefix(name) + (traced ? prog.others[name] : user[name]);
+  });
+  if(extra) Object.assign(files, extra);
+  return files;
+}
+
+/**
+ * Instruments a program, or gives null when main.c cannot be instrumented.
+ *
+ * @param {string} code main.c
+ * @param {Object<string,string>} user the other files
+ * @param {string[]} plain other .c files to compile without hooks
+ * @returns {?Object} CInstr.instrumentProgram's result, or null
+ * Side effects: none.
+ */
+function instrumentOrNull(code, user, plain){
+  try {
+    return CInstr.instrumentProgram(code, user, {plain});
+  } catch(e){
+    return null;
+  }
+}
+
+/**
+ * Compiles a program with the trace hooks in main.c and in every other .c file. A file whose
+ * instrumented copy does not compile is compiled plain (its functions are stepped over); when
+ * main.c's copy does not compile either, everything is compiled plain and there is no meta
+ * (the program can run, not be stepped).
+ *
+ * @param {string} code main.c
+ * @param {Object<string,string>} user the other files
+ * @param {Object} opts build options: args (compiler arguments), extra (more files)
+ * @returns {Promise<{res:Object, meta:?Object}>} the compile result and the merged meta
+ * Side effects: compiles with xcc (several times when files fall back).
+ */
+async function compileTraced(code, user, opts){
+  const plain = [];
+  let prog = instrumentOrNull(code, user, plain);
+  if(!prog){
+    const plainRes = await CEngine.compile(sourceFiles(code, user, null, opts.extra), opts.args);
+    return {res:plainRes, meta:null};
+  }
+  let res = await CEngine.compile(sourceFiles(code, user, prog, opts.extra), opts.args);
+  for(let round = 0; !res.ok && round < MAX_PLAIN_ROUNDS; round++){
+    const traced = Object.keys(prog.others);
+    let bad = failedFiles(res.errors, traced);
+    /* an error that names no file may still come from another file's copy: try them all plain */
+    if(!bad.length && !failedFiles(res.errors, ['main.c']).length) bad = traced;
+    if(!bad.length) break;
+    plain.push(...bad);
+    prog = instrumentOrNull(code, user, plain);
+    res = await CEngine.compile(sourceFiles(code, user, prog, opts.extra), opts.args);
+  }
+  let meta = prog.meta;
+  if(!res.ok){                         /* fall back: maybe the instrumenter broke main.c */
+    const plainRes = await CEngine.compile(sourceFiles(code, user, null, opts.extra), opts.args);
+    if(plainRes.ok) meta = null;
+    res = plainRes;
+  }
+  return {res, meta};
+}
+
+/**
+ * Compiles the student's program with xcc, for Run, Tests and line by line.
+ *
+ * @param {string} code main.c
+ * @param {Object} [opts] instrument (false: no trace hooks at all), user (the other files,
+ *   name -> text), extra (more files, as they are), args (compiler arguments)
+ * @returns {Promise<Object>} the compile result ({ok, errors, warnings, module, ...}) with
+ *   meta (the merged meta of the traced files, null when there are no hooks); the messages
+ *   name the functions as the student wrote them
+ * Side effects: compiles with xcc.
+ */
 async function build(code, opts){
   opts = opts || {};
-  let src = code, meta = null;
-  if(opts.instrument !== false){
-    try { const r = CInstr.instrument(code); src = r.code; meta = r.meta; }
-    catch(e){ src = code; meta = null; }
-  }
-  const files = {"main.c":PREFIX + src, "__rt.c":window.RT_C, "__rt.h":window.RT_H};
-  /* .c / .h files the student added: .c files get the same stdio replacements as main.c (not traced) */
-  Object.keys(opts.user || {}).forEach(n => { files[n] = n.endsWith('.c') ? '#include "__rt.h"\n#line 1 "' + n + '"\n' + opts.user[n] : opts.user[n]; });
-  if(opts.extra) Object.assign(files, opts.extra);
-  let res = await CEngine.compile(files, opts.args);
-  if(!res.ok && meta){                 /* fall back: maybe the instrumenter broke the code */
-    const plain = await CEngine.compile(Object.assign({}, files, {'main.c':PREFIX + code}), opts.args);
-    if(plain.ok){ res = plain; meta = null; }
-    else res = plain;
+  const user = opts.user || {};
+  let res, meta = null;
+  if(opts.instrument === false){
+    res = await CEngine.compile(sourceFiles(code, user, null, opts.extra), opts.args);
+  } else {
+    const traced = await compileTraced(code, user, opts);
+    res = traced.res;
+    meta = traced.meta;
   }
   res = postCompile(res);
   if(!res.ok) res.errors = friendly(res.errors);
   if(res.warnings) res.warnings = unmask(res.warnings);
-  if(meta) meta.psz = 4;             /* pointer size of the engine that will produce the trace (xcc: 32-bit) */
+  /* pointer size of the engine that will produce the trace (xcc: 32-bit) */
+  if(meta) meta.psz = 4;
   res.meta = meta;
   return res;
 }
 const ASSIGN = name => new RegExp('(^|[^\\w.>])' + name + '\\s*(\\[[^\\]]*\\]\\s*)*([+\\-*/%&|^]?=(?!=)|\\+\\+|--)|(\\+\\+|--)\\s*' + name + '\\b');
-/* The frame logic shared by both engines (xcc in the page, gcc through labrt.c): the engine reports events (a function was
-   entered, a variable was registered, a point was reached) and the tracker builds the steps.
-   bytesOf(id, a) gives the current bytes of a registered variable (at most 4096). */
+/**
+ * Makes the frame logic shared by both engines (xcc in the page, gcc through labrt.c): the
+ * engine reports events (a function was entered, a variable was registered, a point was
+ * reached) and the tracker builds the steps. bytesOf(id, a), given to point(), gives the
+ * current bytes of a registered variable (at most 4096).
+ *
+ * @param {Object} meta the program's merged meta (CInstr.instrumentProgram)
+ * @param {{record:boolean, source:string}} o record: take a snapshot at every point;
+ *   source: main.c's text as the student wrote it (the other files' texts come from
+ *   meta.sources), read to see which variables a line assigns
+ * @returns {Object} {steps, enter(fid), leave(fid), reg(id, a, bytes), point(p, outLen,
+ *   bytesOf)}; every step is {p, line, file, out, frames, globals}, file = the point's file
+ * Side effects: none until its methods are called (they fill steps).
+ */
 function makeTracker(meta, o){
   const steps = [], stack = [], globals = new Map();
-  const lines = (o.source || '').split('\n');
+  const mainName = (meta.files && meta.files[0]) || 'main.c';
+  const sources = Object.assign({}, meta.sources || {}, {[mainName]:o.source || ''});
+  const linesByFile = new Map();
+  /**
+   * Gives the text of a point's line, in the file the point is in.
+   *
+   * @param {Object} point a meta point ({line, file})
+   * @returns {string} the line's text, '' when unknown
+   * Side effects: splits a file's text into lines once and keeps them.
+   */
+  const lineOf = point => {
+    const file = point.file || mainName;
+    if(!linesByFile.has(file)) linesByFile.set(file, (sources[file] || '').split('\n'));
+    return linesByFile.get(file)[point.line - 1] || '';
+  };
   const record = !!o.record;
   let prevPoint = -1;
   /* every call gets its own number, so the view can tell a new call from the old one that
@@ -4891,6 +5267,16 @@ function makeTracker(meta, o){
       if(!top.init.has(id) || !top.init.get(id)) top.init.set(id, !!vd.init);
       top.first.set(id, bytes);
     },
+    /**
+     * A point was reached: drops the frames of functions that left without a report, and,
+     * when recording, adds a step with a snapshot of every frame and global.
+     *
+     * @param {number} p the point's id (meta.points index)
+     * @param {number} outLen how much output the program had written so far
+     * @param {Function} bytesOf (id, a) => the variable's current bytes
+     * @returns {void}
+     * Side effects: the frame stack; appends to steps (with the point's file).
+     */
     point(p, outLen, bytesOf){
       const pt = meta.points[p];
       if(!pt) return;
@@ -4900,8 +5286,8 @@ function makeTracker(meta, o){
       /* assignments on the line we just left mark variables as initialised */
       if(record){
         const txts = [];
-        if(prevPoint >= 0) txts.push(lines[meta.points[prevPoint].line - 1] || '');
-        if(pt.loop && prevPoint !== p) txts.push((lines[pt.line - 1] || '').replace(/;.*$/, ''));
+        if(prevPoint >= 0) txts.push(lineOf(meta.points[prevPoint]));
+        if(pt.loop && prevPoint !== p) txts.push(lineOf(pt).replace(/;.*$/, ''));
         stack.forEach(f => f.addrs.forEach((a, id) => { if(!f.init.get(id) && txts.some(txt => ASSIGN(meta.vars[id].name).test(txt))) f.init.set(id, true); }));
       }
       top.point = p; prevPoint = p;
@@ -4920,7 +5306,7 @@ function makeTracker(meta, o){
         return {fid:f.fid, call:f.call, point:f.point, vars};
       });
       const gl = [...globals.entries()].map(([id, a]) => snapVar(null, id, a));
-      steps.push({p, line:pt.line, out:outLen, frames, globals:gl});
+      steps.push({p, line:pt.line, file:pt.file || mainName, out:outLen, frames, globals:gl});
     }
   };
 }
@@ -4959,7 +5345,7 @@ function run(res, opts){
   r.count = count;
   return r;
 }
-window.CRun = {build, run, PREFIX, makeTracker};
+window.CRun = {build, run, PREFIX, makeTracker, failedFiles, errorFiles};
 })();
 /* ═══ Recover: step through code that does not compile ═══
    The idea is Eclipse's Java compiler: compile what can be compiled, and turn every piece that cannot
@@ -5230,12 +5616,37 @@ function compilerErrors(text, file){
   return out;
 }
 
-/* build main.c for line-by-line even when it does not compile.
-   gccText: gcc's output for the original code (null when gcc is not the compiler). Returns the build;
-   b.traps = Map(stop line -> message) and b.compileErrors when it had to change the code. */
+/**
+ * Tells whether a failed build's errors are all in the student's other files (max.c, util.h),
+ * none in main.c. Only main.c is repaired, so such a build is shown as it is (the repair would
+ * only try every statement of main.c in vain).
+ *
+ * @param {string} text the compiler's messages
+ * @returns {boolean} true when at least one error names another file and none names main.c
+ * Side effects: none.
+ */
+function errorsOnlyInOtherFiles(text){
+  const files = CRun.errorFiles(text);
+  return files.size > 0 && !files.has('main.c');
+}
+
+/**
+ * Builds main.c for line by line even when it does not compile (only main.c is repaired; the
+ * other files are built by CRun.build as they are, instrumented).
+ *
+ * @param {string} code main.c
+ * @param {Object} opts CRun.build's options (user files, check(src) = does it compile)
+ * @param {?string} gccText gcc's output for the original code (null when gcc is not the
+ *   compiler)
+ * @returns {Promise<Object>} the build; b.traps = Map(stop line -> message) and
+ *   b.compileErrors when it had to change the code; a failed build when the errors are only
+ *   in the other files
+ * Side effects: compiles several times.
+ */
 async function buildForStepping(code, opts, gccText){
   const first = gccText ? null : await CRun.build(code, opts);
   if(first && first.ok) return first;
+  if(first && errorsOnlyInOtherFiles(first.errors)) return first;
   let P;
   try { P = await parser(); } catch(e){ return first || CRun.build(code, opts); }
   const tree = P.parse(code);
@@ -5556,13 +5967,14 @@ async function live(source, cb, files){
 window.PLocal = {compileRun, live, gcc:R.gcc, api};
 })();
 /* ═══ Native stepping: line by line on the machine's own gcc (64-bit), through the local runner ═══
-   The student's code is instrumented by CInstr (the same hooks as for xcc), compiled by gcc together with labrt.c / labrt.h
-   (the runtime that prints a text trace, see labrt.c for the records) and run once by /api/batch with the stdin typed so far.
-   replay() turns the records into the same steps[] the xcc tracer produces ({p, line, out, frames, globals}), through the
-   shared frame logic CRun.makeTracker, so the stack view (c.js) does not care which engine ran. Pointers are 8 bytes here. */
+   The student's code (main.c and the other .c files) is instrumented by CInstr (the same hooks
+   as for xcc), compiled by gcc together with labrt.c / labrt.h (the runtime that prints a text
+   trace, see labrt.c for the records) and run once by /api/batch with the stdin typed so far.
+   replay() turns the records into the same steps[] the xcc tracer produces
+   ({p, line, file, out, frames, globals}), through the shared frame logic CRun.makeTracker, so
+   the stack view (c.js) does not care which engine ran. Pointers are 8 bytes here. */
 (function(){
 "use strict";
-const PREFIX = '#include "labrt.h"\n#line 1 "main.c"\n';
 const PSZ = 8;
 const NT = {0xC0000005:'access violation', 0xC00000FD:'stack overflow', 0xC0000094:'integer division by zero', 0xC0000409:'stack buffer overrun'};
 /* a Windows crash status (0xC00000xx), not a program's own exit code */
@@ -5572,14 +5984,73 @@ function crashCode(code){
   return u >= 0xC0000000 && u < 0xC0100000 ? u : null;
 }
 function available(){ return !!(window.PGcc && window.PGcc.mode === 'local' && window.PLocal && window.RTN_C && window.CInstr && window.CRun); }
-/* what to compile: instrumented main.c (+ the student's other files) and the runtime */
-function prepare(code, user){
-  let r;
-  try { r = CInstr.instrument(code); } catch(e){ return null; }
+/* how many times start() may switch more files to plain compilation before it gives up */
+const MAX_PLAIN_ROUNDS = 4;
+
+/**
+ * Prepares what gcc compiles for line by line: main.c and every other .c file instrumented in
+ * one id space (CInstr.instrumentProgram), the headers as they are, and the runtime.
+ *
+ * @param {string} code main.c
+ * @param {Object<string,string>} [user] the student's other files, name -> text
+ * @param {string[]} [plain] other .c files to compile without hooks (stepped over)
+ * @returns {?Object} {src (main.c to compile), files (the other files), meta, code (main.c as
+ *   written), traced (the other .c files that have hooks)}; null when main.c cannot be
+ *   instrumented
+ * Side effects: none.
+ */
+function prepare(code, user, plain){
+  user = user || {};
+  let prog;
+  try {
+    prog = CInstr.instrumentProgram(code, user, {plain:plain || []});
+  } catch(e){
+    return null;
+  }
   const files = {'labrt.c':window.RTN_C, 'labrt.h':window.RTN_H};
-  Object.keys(user || {}).forEach(n => { files[n] = n.endsWith('.c') ? '#include "labrt.h"\n#line 1 "' + n + '"\n' + user[n] : user[n]; });
-  r.meta.psz = PSZ;
-  return {src:PREFIX + r.code, files, meta:r.meta, code};
+  Object.keys(user).forEach(name => {
+    if(!name.endsWith('.c')){
+      files[name] = user[name];
+      return;
+    }
+    const traced = Object.prototype.hasOwnProperty.call(prog.others, name);
+    files[name] = '#include "labrt.h"\n#line 1 "' + name + '"\n'
+      + (traced ? prog.others[name] : user[name]);
+  });
+  prog.meta.psz = PSZ;
+  const src = '#include "labrt.h"\n' + prog.protos + '#line 1 "main.c"\n' + prog.main;
+  return {src, files, meta:prog.meta, code, traced:Object.keys(prog.others)};
+}
+
+/**
+ * Records a program for the first time: prepares it and runs it once. When gcc rejects the
+ * instrumented copy of another .c file, that file is compiled plain (its functions are stepped
+ * over) and the program is prepared and run again.
+ *
+ * @param {string} code main.c
+ * @param {Object<string,string>} user the student's other files
+ * @param {string} stdin the input typed so far
+ * @param {Function} [beforeRun] called once, before the first run (to show a status)
+ * @returns {Promise<{prep:?Object, r:?Object}>} the preparation that ran and run()'s result;
+ *   prep null (and r null) when main.c cannot be instrumented
+ * Side effects: one round trip to the runner per try.
+ */
+async function start(code, user, stdin, beforeRun){
+  const plain = [];
+  let prep = prepare(code, user, plain);
+  if(!prep) return {prep:null, r:null};
+  if(beforeRun) beforeRun();
+  let r = await run(prep, stdin);
+  for(let round = 0; r.compileFailed && round < MAX_PLAIN_ROUNDS; round++){
+    let bad = CRun.failedFiles(r.failed, prep.traced);
+    /* an error that names no file may still come from another file's copy: try them all plain */
+    if(!bad.length && !CRun.failedFiles(r.failed, ['main.c']).length) bad = prep.traced;
+    if(!bad.length) break;
+    plain.push(...bad);
+    prep = prepare(code, user, plain);
+    r = await run(prep, stdin);
+  }
+  return {prep, r};
 }
 const unhex = h => { const u = new Uint8Array(h.length >> 1); for(let i = 0; i < u.length; i++) u[i] = parseInt(h.substr(i * 2, 2), 16); return u; };
 const strip = s => s.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
@@ -5643,7 +6114,7 @@ async function run(prep, stdin){
   if(!res.buildOk) return {failed:strip(res.buildText || 'gcc could not compile the instrumented code'), compileFailed:true, steps:[], out:'', err:''};
   return replay(prep, res.stdout || '', res);
 }
-window.CNative = {available, prepare, run, replay, PSZ};
+window.CNative = {available, prepare, start, run, replay, PSZ};
 })();
 /* ═══ C engine: everything the lab needs to know about C ═══
    Syntax colours, file names, the call-stack view, the tests (tests.c + testh.h), and how Run,
@@ -5654,6 +6125,20 @@ window.CNative = {available, prepare, run, replay, PSZ};
 (function(){
 "use strict";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MAIN_FILE = 'main.c';
+
+/**
+ * Gives the note shown in the call stack's header for the .c files that could not be
+ * instrumented (or whose instrumented copy did not compile): their functions run in one step.
+ *
+ * @param {?Object} meta the recording's meta (meta.plain lists those files)
+ * @returns {string} e.g. '  ·  max.c: stepped over (not instrumented)', or ''
+ * Side effects: none.
+ */
+function plainFilesNote(meta){
+  const plain = (meta && meta.plain) || [];
+  return plain.map(name => '  ·  ' + name + ': stepped over (not instrumented)').join('');
+}
 /* ---------- syntax highlight ---------- */
 const KW = new Set('char int short long void while for if else return const unsigned signed float double break continue sizeof NULL switch case default do struct static'.split(' '));
 function hl(line){
@@ -6051,6 +6536,14 @@ function attach(ui){
   }
   /* debugger */
   const memBody = $('.mem-body'), range = $('.dbg-range'), dbgBtn = $('[data-a=debug]');
+  /**
+   * ⏯: records the program (main.c and the other .c files) and opens line by line at step 1.
+   * Pressed while stepping it records again from the current code (that clears the stale
+   * notice); when the new code cannot be built, stepping ends and the error is shown.
+   *
+   * @returns {Promise<void>} resolves when the first step is drawn (or the error shown)
+   * Side effects: compiles and runs (xcc, or gcc through the runner), state, the box's UI.
+   */
   async function startDebug(){
     /* in real-gcc mode, compile errors come from gcc itself; stepping still runs in the browser */
     let gccText = null, gccHtml = '', gccOk = false;
@@ -6063,21 +6556,42 @@ function attach(ui){
         gccHtml = '<span class="dim">$ gcc ' + esc(PGcc.FLAGS) + ' ' + srcList(uf) + '</span>\n' + g.buildHtml;
         gccText = g.buildText;
         if(Object.keys(errMap(g.buildText)).some(f => f !== 'main.c')){
-          showErrs(errMap(g.buildText)); termOut.innerHTML = gccHtml; setStatus('compile error (gcc)', 'bad'); return;
+          /* pressed again while stepping (the code was edited): the old recording ends here */
+          stopDebug();
+          showErrs(errMap(g.buildText));
+          termOut.innerHTML = gccHtml;
+          setStatus('compile error (gcc)', 'bad');
+          return;
         }
       }
     }
     /* line by line on the machine's own gcc (64-bit): code that gcc accepts is instrumented and run natively */
     const ufn = userFiles();
     let native = null, first = null, nativeWhy = '', nb = null;
-    const tryNative = async (code, how) => {
+    /**
+     * Records the program on the machine's gcc (main.c and every other .c file instrumented).
+     *
+     * @param {string} code main.c to record (the student's, or the recovered copy)
+     * @returns {Promise<boolean>} true when it ran; false with nativeWhy set when it could not
+     * Side effects: sets native, first and nativeWhy; shows a status; runs on the runner.
+     */
+    const tryNative = async code => {
       if(!(window.CNative && CNative.available())) return false;
-      const prep = CNative.prepare(code, ufn);
-      if(!prep) { nativeWhy = 'could not instrument this code for gcc'; return false; }
-      setStatus('running on ' + PGcc.LABEL + '…', 'busy');
-      const r = await CNative.run(prep, '');
-      if(r.failed){ nativeWhy = r.compileFailed ? 'gcc could not compile the stepping copy of this code' : r.failed; return false; }
-      native = prep; first = r; return true;
+      const showRunning = () => setStatus('running on ' + PGcc.LABEL + '…', 'busy');
+      const {prep, r} = await CNative.start(code, ufn, '', showRunning);
+      if(!prep){
+        nativeWhy = 'could not instrument this code for gcc';
+        return false;
+      }
+      if(r.failed){
+        nativeWhy = r.compileFailed
+          ? 'gcc could not compile the stepping copy of this code'
+          : r.failed;
+        return false;
+      }
+      native = prep;
+      first = r;
+      return true;
     };
     if(gccOk && await tryNative(ed.value)){ nb = {ok:true, meta:native.meta}; }
     /* code with compile errors can still be stepped: every broken piece becomes a stop sign (see recover.js) */
@@ -6088,6 +6602,8 @@ function attach(ui){
     let b = nb || await CRecover.buildForStepping(ed.value, {instrument:true, user:ufs, check}, gccText);
     if(!nb && b.ok && b.traps && b.recovered && await tryNative(b.recovered)){ b.meta = native.meta; }
     if(!b.ok){
+      /* pressed again while stepping (the code was edited): the old recording ends here */
+      stopDebug();
       if(gccHtml){ showErrs(errMap(gccText)); termOut.innerHTML = gccHtml; setStatus('compile error (gcc)', 'bad'); return; }
       showErrs(errMap(b.errors)); state.out = ''; state.inputs = [];
       termOut.innerHTML = '<span class="err">' + esc(b.errors || 'compilation failed') + '</span>';
@@ -6101,7 +6617,12 @@ function attach(ui){
     if(state.banner) state.banner = '<div class="term-banner">' + state.banner + '</div>';
     /* kept for the whole stepping session: drawStep adds it to the header on every step */
     state.gccNote = window.PGcc && PGcc.on && !native ? '  ·  stepping runs in the browser (32-bit: pointers are 4 bytes here)' + (nativeWhy ? ' · ' + nativeWhy : '') : '';
-    if(!b.meta){ setStatus('could not prepare this code for stepping; Run still works', 'bad'); return; }
+    if(!b.meta){
+      stopDebug();
+      setStatus('could not prepare this code for stepping; Run still works', 'bad');
+      return;
+    }
+    state.gccNote += plainFilesNote(b.meta);
     const wasDebug = state.mode === 'debug';   /* "⏯ שורה אחר שורה" pressed while stepping = start again from step 1 */
     state.build = b; state.meta = b.meta; state.lastCode = ed.value; state.stdin = ''; state.inputs = []; state.mode = 'debug';
     state.native = native;
@@ -6117,34 +6638,115 @@ function attach(ui){
       setTimeout(() => { if(state.restartTok === tok && state.mode === 'debug') stepStatus(); }, 1800);
     }
   }
+  /**
+   * ■ (and Run, Tests, leaving the page): leaves line by line.
+   *
+   * @returns {void}
+   * Side effects: state.mode = 'idle'; every editor loses the current-line mark; the layout,
+   *   the ⏯ button's pressed state, the input row and the status are reset.
+   */
   function stopDebug(){
     if(state.mode !== 'debug') return;
-    state.mode = 'idle'; state.restartTok = (state.restartTok || 0) + 1; ed.setCur(-1); ui.dbg.leave();
+    state.mode = 'idle';
+    state.restartTok = (state.restartTok || 0) + 1;
+    ui.fileEditors().forEach(([, editor]) => editor.setCur(-1));
+    ui.dbg.leave();
     dbgBtn.setAttribute('aria-pressed', 'false');
     termIn.hidden = true; setStatus('');
   }
-  /* which lines have a step: the instrumented statements (and the lines that stop at a compile error) */
-  function stepLines(){
-    const set = new Set(((state.meta && state.meta.points) || []).map(p => p.line));
-    if(state.build && state.build.traps) state.build.traps.forEach((_, l) => set.add(l));
-    state.steps.forEach(s => set.add(s.line));
+
+  /**
+   * Gives the file a step or a meta point is in (records made before files were named: main.c).
+   *
+   * @param {Object} where a step ({file, line}) or a meta point
+   * @returns {string} the file name, e.g. 'main.c' or 'max.c'
+   * Side effects: none.
+   */
+  const fileOf = where => (where && where.file) || MAIN_FILE;
+
+  /**
+   * Lists the lines of one file that have a step: the instrumented statements, the lines that
+   * stop at a compile error (main.c only) and the lines the recording reached.
+   *
+   * @param {string} file the file name
+   * @returns {number[]} the 1-based lines, ascending
+   * Side effects: none.
+   */
+  function stepLines(file){
+    const points = (state.meta && state.meta.points) || [];
+    const set = new Set(points.filter(p => fileOf(p) === file).map(p => p.line));
+    if(file === MAIN_FILE && state.build && state.build.traps){
+      state.build.traps.forEach((_, l) => set.add(l));
+    }
+    state.steps.forEach(s => { if(fileOf(s) === file) set.add(s.line); });
     return [...set].sort((a, b) => a - b);
   }
-  /* a breakpoint on an empty line, a lone { or a comment moves to the next line that has a step (none after it: removed) */
-  function normBps(){
+
+  /**
+   * Tells whether the recording has steps in a file: main.c and the other .c files that were
+   * instrumented (not headers, not files compiled plain, not files added after the recording).
+   *
+   * @param {string} file the file name
+   * @returns {boolean} true when the file's breakpoints can be reached
+   * Side effects: none.
+   */
+  function isTraced(file){
+    const meta = state.meta;
+    if(!meta) return false;
+    if(!meta.files) return file === MAIN_FILE;
+    return meta.files.includes(file) && !(meta.plain || []).includes(file);
+  }
+
+  /**
+   * Moves breakpoints that sit on a line without a step (an empty line, a lone {, a comment) to
+   * the next line of the same file that has one; with none after it, the breakpoint goes.
+   *
+   * @param {string} [onlyFile] normalise only this file; all traced files when left out
+   * @returns {boolean|undefined} true when a breakpoint moved or went; undefined before the
+   *   first recording
+   * Side effects: changes the editors' breakpoint sets (not repainted: setCur repaints).
+   */
+  function normBps(onlyFile){
     if(!state.meta) return;
-    const lines = stepLines(), set = ed.bps; let changed = false;
-    [...set].forEach(l => {
-      if(lines.includes(l)) return;
-      set.delete(l); changed = true;
-      const nx = lines.find(x => x > l); if(nx) set.add(nx);
+    let changed = false;
+    ui.fileEditors().forEach(([file, editor]) => {
+      if((onlyFile && file !== onlyFile) || !isTraced(file)) return;
+      const lines = stepLines(file), set = editor.bps;
+      [...set].forEach(l => {
+        if(lines.includes(l)) return;
+        set.delete(l); changed = true;
+        const nx = lines.find(x => x > l); if(nx) set.add(nx);
+      });
     });
     return changed;
   }
-  /* (capture phase: the gutter repaints itself in its own click handler, so the target is gone by the time the event bubbles) */
+
+  /**
+   * Tells whether a step stops at a breakpoint: its line is marked in its own file's editor.
+   *
+   * @param {Object} step a recorded step ({file, line})
+   * @returns {boolean} true at a breakpoint
+   * Side effects: none.
+   */
+  function atBreakpoint(step){
+    const editor = ui.editorFor(fileOf(step));
+    return !!editor && editor.bps.has(step.line);
+  }
+
+  /* a click on a line number of a student file while stepping: that file's breakpoints are
+     normalised (capture phase: the gutter repaints itself in its own click handler, so the
+     target is gone by the time the event bubbles) */
   host.addEventListener('click', e => {
-    if(state.mode !== 'debug' || !e.target.closest('[data-fh=main] .ed-gut .g')) return;
-    setTimeout(() => { if(state.mode === 'debug' && normBps()){ const s = state.steps[state.idx]; ed.setCur(s ? s.line : -1); } }, 0);
+    if(state.mode !== 'debug') return;
+    const number = e.target.closest('.ed-gut .g');
+    const editorHost = number && number.closest('[data-fh]');
+    const file = editorHost && ui.fileOfHost(editorHost.dataset.fh);
+    if(!file) return;
+    setTimeout(() => {
+      if(state.mode !== 'debug' || !normBps(file)) return;
+      const s = state.steps[state.idx];
+      ui.editorFor(file).setCur(s && fileOf(s) === file ? s.line : -1);
+    }, 0);
   }, true);
   /* the step bar: a button that cannot act is disabled (first/last step, waiting for input, stopped at a compile error, "exit" in main) */
   function canMove(kind){
@@ -6175,6 +6777,32 @@ function attach(ui){
     const atEnd = state.idx >= state.steps.length - 1;
     if(atEnd) finishStatus(state.lastRun, false); else setStatus('step ' + (state.idx + 1) + ' of ' + state.steps.length, '');
   }
+  /**
+   * Shows the file a step is in, as a debugger does, and marks the step's line there; every
+   * other editor loses the mark. When that file was deleted after the recording, main.c is
+   * shown without a mark.
+   *
+   * @param {Object} step the step to show ({file, line})
+   * @returns {void}
+   * Side effects: switches the file tab (the tab first, so the editor can scroll to the line),
+   *   repaints the editors.
+   */
+  function showStepFile(step){
+    const file = fileOf(step);
+    const isShown = ui.showFileNamed(file);
+    ui.fileEditors().forEach(([name, editor]) => {
+      editor.setCur(isShown && name === file ? step.line : -1);
+    });
+  }
+
+  /**
+   * Draws the current step (state.idx): the slider and position, the step's file and line, the
+   * header (file when not main.c, line, function, notes), the call stack, the terminal output
+   * up to that step, the step bar's buttons and the status.
+   *
+   * @returns {void}
+   * Side effects: the step bar, the editors, the call-stack panel, the terminal, the status.
+   */
   function drawStep(){
     const s = state.steps[state.idx], n = state.steps.length;
     range.max = Math.max(0, n - 1); range.value = state.idx;
@@ -6182,9 +6810,11 @@ function attach(ui){
     range.setAttribute('aria-valuetext', n ? 'צעד ' + (state.idx + 1) + ' מתוך ' + n : 'אין צעדים');
     $('.dbg-pos').textContent = n ? (state.idx + 1) + ' / ' + n : '0';
     if(!s){ memBody.innerHTML = '<div class="mem-empty">The program did not reach any line.</div>'; updateBar(); return; }
-    ed.setCur(s.line);
+    showStepFile(s);
     const top = s.frames[s.frames.length - 1];
-    $('.mem-where').textContent = 'line ' + s.line + (top ? ' · ' + (state.meta.funcs[top.fid] || '') + '()' : '') + (state.gccNote || '');
+    const fileLabel = fileOf(s) === MAIN_FILE ? '' : fileOf(s) + ' · ';
+    const funcLabel = top ? ' · ' + (state.meta.funcs[top.fid] || '') + '()' : '';
+    $('.mem-where').textContent = fileLabel + 'line ' + s.line + funcLabel + (state.gccNote || '');
     memBody.innerHTML = renderMemory(s, state.steps[state.idx - 1], state.meta);
     const atEnd = state.idx >= n - 1;
     if(atEnd){ const h = memBody.querySelector('.frame.cur .here'); if(h) h.innerHTML = endState(state.lastRun); }
@@ -6194,6 +6824,15 @@ function attach(ui){
     stepStatus();
   }
   const depth = i => state.steps[i] ? state.steps[i].frames.length : 0;
+  /**
+   * Moves through the recording, across files: first, back, next, over (skip a call), out
+   * (until the function returns), cont (until a breakpoint in the step's own file, or the end).
+   *
+   * @param {string} kind 'first' | 'back' | 'next' | 'over' | 'out' | 'cont'
+   * @returns {void}
+   * Side effects: state.idx; draws the step (which shows the step's file); may open the
+   *   input row at the last step.
+   */
   function move(kind){
     const n = state.steps.length; if(!canMove(kind)) return;
     let i = state.idx;
@@ -6202,7 +6841,12 @@ function attach(ui){
     else if(kind === 'next') i = Math.min(n - 1, i + 1);
     else if(kind === 'over'){ const d = depth(i); i++; while(i < n - 1 && depth(i) > d) i++; i = Math.min(i, n - 1); }
     else if(kind === 'out'){ const d = depth(i); i++; while(i < n - 1 && depth(i) >= d) i++; i = Math.min(i, n - 1); }
-    else if(kind === 'cont'){ normBps(); i++; while(i < n - 1 && !ed.bps.has(state.steps[i].line)) i++; i = Math.min(i, n - 1); }
+    else if(kind === 'cont'){
+      normBps();
+      i++;
+      while(i < n - 1 && !atBreakpoint(state.steps[i])) i++;
+      i = Math.min(i, n - 1);
+    }
     state.idx = i; drawStep();
     if(i === n - 1 && state.lastRun.needInput){ termIn.hidden = false; termIn.querySelector('input').focus(); }
   }
@@ -7697,6 +8341,18 @@ function ltrCode(html){
 
 /* ---------- workbench: one code box ---------- */
 const BOXES = new Map();
+/**
+ * Builds one code box: title, action bar, step bar, file tabs with their editors, call-stack
+ * panel and terminal, and attaches the language engine to it. While stepping every student
+ * file stays editable and any tab can be shown; an edit marks the recording stale.
+ *
+ * @param {Element} host the element to fill (gets class "wb")
+ * @param {Object} box the box from the course ({id, title, task, code, solution, tests})
+ * @param {{noTask:boolean}} [opts] noTask: do not repeat the task text inside the box
+ * @returns {Object} the box's API ({box, ed, doTests, doRun, startDebug, value})
+ * Side effects: fills host; reads and writes this box's keys in localStorage; listens on
+ *   document for the stepping keys; registers the box in BOXES.
+ */
 function makeBox(host, box, opts){
   opts = opts || {};
   const eng = E(), F = eng.files, S = eng.strings || {}, caps = eng.caps || {};
@@ -7729,6 +8385,9 @@ function makeBox(host, box, opts){
       '<span class="dbg-pos" dir="ltr" lang="en"></span>' +
       '<button class="b stop" data-d="stop">■ עצור ועריכה</button>' +
     '</div>' +
+    /* shown while stepping after the code changed (markStale; the text is announced through
+       the box's live region [data-announce], so it is not a live region itself) */
+    '<div class="wb-stale" data-stale hidden></div>' +
     '<div class="wb-grid">' +
       '<div class="wb-code"><div class="ftabs" dir="ltr" lang="en" role="tablist" aria-label="קבצי הקוד"><button class="ft on" type="button" role="tab" aria-selected="true" data-f="main" data-name="' + esc(F.main) + '"><span class="ft-name">' + esc(F.main) + '</span></button><span class="ft-user"></span>' +
         tabs.map(t => '<button class="ft admin-tab" type="button" role="tab" aria-selected="false" data-f="' + t.key + '">' + esc(t.label) + '</button>').join('') +
@@ -7753,7 +8412,56 @@ function makeBox(host, box, opts){
     hintTimer = setTimeout(() => { hintEl.dir = 'ltr'; hintEl.lang = 'en'; hintEl.classList.remove('lock'); hintEl.innerHTML = hintHtml; }, 2500);
   });
   let ctl = null;
-  const ed = Editor($('[data-fh=main]'), saved ? saved : box.code, v => { store.set('code:' + box.id, v === box.code ? null : v); hideUndo(); refreshBadge(); if(ctl){ if(state.mode === 'debug') ctl.stopDebug(); if(ctl.engineUi) ctl.engineUi(); } }, F.main);
+  /* the line-by-line recording no longer matches the code once it is edited while stepping:
+     stepping goes on with the old recording, and a notice says that ⏯ runs the new code */
+  const staleEl = $('[data-stale]');
+  const STALE_TEXT = 'הקוד השתנה. הצעדים עדיין מציגים את הגרסה הקודמת. '
+    + 'לחצו שוב על ⏯ שורה אחר שורה כדי להריץ את הקוד החדש.';
+  /**
+   * Marks the recording as stale after a change to the code (typing, paste, a file added or
+   * deleted, reset or its undo) while stepping, and shows the notice the first time.
+   *
+   * @returns {void}
+   * Side effects: sets state.stale; shows the notice under the step bar and says it once to
+   *   screen readers (the box's polite live region, announce). Does nothing when not stepping
+   *   or when the recording is already stale.
+   */
+  function markStale(){
+    if(state.mode !== 'debug' || state.stale) return;
+    state.stale = true;
+    staleEl.textContent = STALE_TEXT;
+    staleEl.hidden = false;
+    announce(STALE_TEXT);
+  }
+
+  /**
+   * Removes the stale mark and its notice (a new recording, or stepping ended).
+   *
+   * @returns {void}
+   * Side effects: clears state.stale; hides and empties the notice.
+   */
+  function clearStale(){
+    state.stale = false;
+    staleEl.hidden = true;
+    staleEl.textContent = '';
+  }
+
+  /**
+   * Reacts to an edit of main.c: saves it, hides the reset's undo offer, updates the badge,
+   * marks a recording stale and lets the engine update its own UI.
+   *
+   * @param {string} code the new text of main.c
+   * @returns {void}
+   * Side effects: localStorage (code:<box id>), the badge, the stale notice.
+   */
+  function onMainEdit(code){
+    store.set('code:' + box.id, code === box.code ? null : code);
+    hideUndo();
+    refreshBadge();
+    markStale();
+    if(ctl && ctl.engineUi) ctl.engineUi();
+  }
+  const ed = Editor($('[data-fh=main]'), saved ? saved : box.code, onMainEdit, F.main);
   /* extra files next to the main file, saved in this browser */
   const uFiles = caps.extraFiles ? (store.get('files:' + box.id, []) || []).filter(f => f && F.extraRe.test(f.name) && f.name !== F.main) : [];
   const uEds = new Map();
@@ -7765,7 +8473,22 @@ function makeBox(host, box, opts){
     $('.ft-user').appendChild(tab);
     const h = document.createElement('div'); h.className = 'ed-host'; h.dataset.fh = 'u:' + f.name; h.hidden = true;
     $('.ed-hosts-user').appendChild(h);
-    uEds.set(f.name, Editor(h, f.text, v => { f.text = v; saveFiles(); hideUndo(); refreshBadge(); if(ctl && state.mode === 'debug') ctl.stopDebug(); }, f.name));
+    /**
+     * Reacts to an edit of this extra file: saves it, hides the undo offer, updates the badge
+     * and marks a recording stale.
+     *
+     * @param {string} text the file's new text
+     * @returns {void}
+     * Side effects: localStorage (files:<box id>), the badge, the stale notice.
+     */
+    const onFileEdit = text => {
+      f.text = text;
+      saveFiles();
+      hideUndo();
+      refreshBadge();
+      markStale();
+    };
+    uEds.set(f.name, Editor(h, f.text, onFileEdit, f.name));
   }
   /* the test badge: "passed" only while the code is the code that passed; after a change it turns muted */
   const sig = () => ed.value + '\u0000' + JSON.stringify(userFiles());
@@ -7820,17 +8543,89 @@ function makeBox(host, box, opts){
   /* line-by-line frame: the step bar, the memory panel, the code full width (the "back to explanation" button brings the lesson back) */
   const dbgBar = $('.wb-dbgbar'), memPanel = $('.mem-panel');
   const dbg = {
+    /**
+     * Switches the box into line-by-line layout: step bar, call-stack panel, code full width.
+     * The files stay editable; an edit marks the recording stale (markStale). Called for every
+     * new recording, so it also removes the stale notice.
+     *
+     * @returns {void}
+     * Side effects: the box's and the body's classes, the wide layout (ptr-wide event).
+     */
     enter(){
-      dbgBar.hidden = false; memPanel.hidden = false; ed.readOnly(true, true); host.classList.add('debugging'); document.body.classList.add('debugging');
-      if(state.wideBefore === undefined) state.wideBefore = document.body.classList.contains('wide'); document.body.classList.add('wide'); document.dispatchEvent(new CustomEvent('ptr-wide'));
+      clearStale();
+      dbgBar.hidden = false;
+      memPanel.hidden = false;
+      host.classList.add('debugging');
+      document.body.classList.add('debugging');
+      const wasWide = document.body.classList.contains('wide');
+      if(state.wideBefore === undefined) state.wideBefore = wasWide;
+      document.body.classList.add('wide');
+      document.dispatchEvent(new CustomEvent('ptr-wide'));
     },
+    /**
+     * Leaves line-by-line layout and restores the width the code pane had before.
+     *
+     * @returns {void}
+     * Side effects: the box's and the body's classes, the wide layout, the stale notice.
+     */
     leave(){
-      dbgBar.hidden = true; memPanel.hidden = true; ed.readOnly(false); host.classList.remove('debugging'); document.body.classList.remove('debugging');
-      if(state.wideBefore !== undefined){ document.body.classList.toggle('wide', state.wideBefore); state.wideBefore = undefined; document.dispatchEvent(new CustomEvent('ptr-wide')); }
+      clearStale();
+      dbgBar.hidden = true;
+      memPanel.hidden = true;
+      host.classList.remove('debugging');
+      document.body.classList.remove('debugging');
+      if(state.wideBefore !== undefined){
+        document.body.classList.toggle('wide', state.wideBefore);
+        state.wideBefore = undefined;
+        document.dispatchEvent(new CustomEvent('ptr-wide'));
+      }
     }
   };
+
+  /**
+   * Lists the student's editors: main.c first, then the extra files in tab order.
+   *
+   * @returns {Array<[string, Object]>} [file name, editor] pairs
+   * Side effects: none.
+   */
+  const fileEditors = () => [[F.main, ed]].concat(
+    uFiles.filter(f => uEds.has(f.name)).map(f => [f.name, uEds.get(f.name)]));
+
+  /**
+   * Gives the editor of a student file by its name.
+   *
+   * @param {string} name e.g. 'main.c' or 'max.c'
+   * @returns {?Object} the editor, or null when there is no such file (any more)
+   * Side effects: none.
+   */
+  const editorFor = name => name === F.main ? ed : (uEds.get(name) || null);
+
+  /**
+   * Gives the student file an editor host belongs to, from its data-fh key.
+   *
+   * @param {string} key 'main', 'u:<name>' or an admin tab's key
+   * @returns {?string} the file name, or null for the admin tabs (tests, solution)
+   * Side effects: none.
+   */
+  const fileOfHost = key => key === 'main' ? F.main
+    : key.startsWith('u:') && uEds.has(key.slice(2)) ? key.slice(2) : null;
+
+  /**
+   * Shows a student file's tab by the file's name; main.c when that file does not exist.
+   *
+   * @param {string} name e.g. 'max.c'
+   * @returns {boolean} true when the named file is shown, false when main.c was shown instead
+   * Side effects: switches the visible tab and editor (stepping goes on).
+   */
+  function showFileNamed(name){
+    const exists = !!editorFor(name);
+    showFile(!exists || name === F.main ? 'main' : 'u:' + name);
+    return exists;
+  }
+
   const ui = {host, $, box, ed, state, store, esc, userFiles, showErrs, setStatus, showTerm, termOut, termIn, termStatus, dbg,
     stdinBox:$('.stdin-box'), memBody:$('.mem-body'), range:$('.dbg-range'), pos:$('.dbg-pos'),
+    fileEditors, editorFor, fileOfHost, showFileNamed,
     setBadge(ok, pass, all){ if(ok) store.set('passsig:' + box.id, sig()); paintBadge(ok, pass, all); },
     announce,
     progress(){ document.dispatchEvent(new CustomEvent('ptr-progress')); }};
@@ -7844,8 +8639,17 @@ function makeBox(host, box, opts){
   const checkOvf = () => ftabs.classList.toggle('ovf', ftabs.scrollWidth > ftabs.clientWidth + 1);
   if(window.ResizeObserver) new ResizeObserver(checkOvf).observe(ftabs);
   const tabBtn = t => t.matches('[role=tab]') ? t : t.querySelector('[role=tab]');
+  /**
+   * Shows one file tab and its editor. Line by line goes on: the next step shows the step's
+   * own file again (the engine's drawStep).
+   *
+   * @param {string} k the tab key: 'main', 'u:<name>' (an extra file; main when it is gone) or
+   *   an admin tab's key (tests, testh, sol)
+   * @returns {void}
+   * Side effects: the tabs' "on" state and aria-selected, the visible editor, the load-solution
+   *   button, the tab row's scroll position.
+   */
   function showFile(k){
-    if(k !== 'main') stopDebug();
     if(k.startsWith('u:') && !uEds.has(k.slice(2))) k = 'main';
     host.querySelectorAll('.ft[data-f]').forEach(b => { const on = b.dataset.f === k; b.classList.toggle('on', on); const tb = tabBtn(b); if(tb) tb.setAttribute('aria-selected', on ? 'true' : 'false'); });
     host.querySelectorAll('[data-fh]').forEach(h => h.hidden = h.dataset.fh !== k);
@@ -7862,11 +8666,29 @@ function makeBox(host, box, opts){
   function newBad(msg){
     newIn.classList.add('bad'); newIn.setAttribute('aria-invalid', 'true'); newErr.innerHTML = msg; newErr.hidden = false;
   }
+  /**
+   * Deletes an extra file: its tab, its editor and its saved text. While stepping the
+   * recording goes on (stale); when the current step was in this file, main.c is shown.
+   *
+   * @param {string} name the file's name
+   * @returns {void}
+   * Side effects: localStorage (files:<box id>), the tabs, the badge, the stale notice;
+   *   announces the deletion and focuses the main.c tab.
+   */
   function deleteFile(name){
-    const i = uFiles.findIndex(f => f.name === name); if(i >= 0) uFiles.splice(i, 1);
-    uEds.delete(name); host.querySelectorAll('[data-f="u:' + name + '"],[data-fh="u:' + name + '"]').forEach(el => el.remove());
-    saveFiles(); stopDebug(); showFile('main'); hideUndo(); refreshBadge(); announce('הקובץ ' + name + ' נמחק');
-    const m = ftabs.querySelector('[data-f=main] [role=tab], [data-f=main]'); if(m) m.focus();
+    const i = uFiles.findIndex(f => f.name === name);
+    if(i >= 0) uFiles.splice(i, 1);
+    uEds.delete(name);
+    const parts = host.querySelectorAll('[data-f="u:' + name + '"],[data-fh="u:' + name + '"]');
+    parts.forEach(el => el.remove());
+    saveFiles();
+    markStale();
+    showFile('main');
+    hideUndo();
+    refreshBadge();
+    announce('הקובץ ' + name + ' נמחק');
+    const m = ftabs.querySelector('[data-f=main] [role=tab], [data-f=main]');
+    if(m) m.focus();
   }
   ftabs.addEventListener('click', e => {
     const x = e.target.closest('.ft-x');
@@ -7897,7 +8719,13 @@ function makeBox(host, box, opts){
       const bad = !F.extraRe.test(name) ? 'שם לא תקין. ' + ltrCode(esc(F.hint || F.badName || '')) : (name === F.main || uFiles.some(f => f.name === name)) ? 'הקובץ <bdi dir="ltr">' + esc(name) + '</bdi> כבר קיים' : uFiles.length >= 10 ? 'אפשר להוסיף עד 10 קבצים' : '';
       if(bad){ newBad(bad); newIn.focus(); return; }
       const f = {name, text:F.template ? F.template(name) : ''};
-      uFiles.push(f); saveFiles(); addFileUi(f); closeNew(false); setStatus('');
+      uFiles.push(f);
+      saveFiles();
+      addFileUi(f);
+      closeNew(false);
+      /* while stepping the status describes the step; a new file only makes the steps stale */
+      if(state.mode === 'debug') markStale();
+      else setStatus('');
       const tip = F.tip ? F.tip(name, ed.value) : '';
       if(tip) setStatus(tip, 'wait');
       showFile('u:' + name); refreshBadge();
@@ -7926,10 +8754,38 @@ function makeBox(host, box, opts){
     try { await fn(); } finally { btns.forEach(b => { b.disabled = false; }); if(btn){ btn.removeAttribute('aria-busy'); if(had) btn.focus(); } busy = false; }
   }
   const runBtn = () => host.querySelector('.wb-bar [data-a=run]');
+  /**
+   * Puts the box's original code back into main.c and offers an undo for 10 s. While stepping
+   * the recording goes on (the edit makes it stale) and the terminal keeps the step's output;
+   * otherwise the terminal is cleared too.
+   *
+   * @returns {void}
+   * Side effects: main.c's text and its saved copy, pass: / passsig:, the badge, the terminal,
+   *   the undo offer.
+   */
   function doReset(){
-    const snap = {code:ed.value, files:uFiles.map(f => ({name:f.name, text:uEds.has(f.name) ? uEds.get(f.name).value : f.text})), pass:store.get('pass:' + box.id, false), sig:store.get('passsig:' + box.id, null)};
-    stopDebug(); showFile('main'); store.set('pass:' + box.id, false); store.set('passsig:' + box.id, null);
-    ed.value = box.code; state.out = ''; state.inputs = []; showTerm(); setStatus(''); ui.setBadge(false, 0, 0); ui.progress();
+    const snap = {
+      code:ed.value,
+      files:uFiles.map(f => ({
+        name:f.name,
+        text:uEds.has(f.name) ? uEds.get(f.name).value : f.text
+      })),
+      pass:store.get('pass:' + box.id, false),
+      sig:store.get('passsig:' + box.id, null)
+    };
+    const isStepping = state.mode === 'debug';
+    showFile('main');
+    store.set('pass:' + box.id, false);
+    store.set('passsig:' + box.id, null);
+    ed.value = box.code;
+    if(!isStepping){
+      state.out = '';
+      state.inputs = [];
+      showTerm();
+      setStatus('');
+    }
+    ui.setBadge(false, 0, 0);
+    ui.progress();
     showUndo('הקוד אופס', snap);
   }
   function undoReset(){
