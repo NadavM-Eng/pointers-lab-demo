@@ -198,6 +198,14 @@ body.admin .admin-only{display:flex}
 .reset-all{width:100%;color:var(--err);border-color:var(--err);background:transparent}
 .side-repo{display:inline-flex;align-items:center;gap:4px;padding:5px 0;font-size:12.5px;color:var(--ink-2);text-decoration:none}
 .side-repo:hover{color:var(--link);text-decoration:underline}
+/* the build stamp (build.sh): left of the project link, or alone on the left; a long branch name
+   is cut with … (the tooltip has it in full), the commit always shows */
+.side-repo-row{display:flex;align-items:center;gap:8px}
+.side-repo-row .side-repo{flex:none}
+.side-build{margin-inline-start:auto;min-width:0;padding:5px 0;font-size:11.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums;cursor:default}
+.side-build bdi{display:flex;white-space:pre}
+.side-build .sb-br{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .store-warn{font-size:12.5px;color:var(--warn);margin-top:6px;line-height:1.5}
 
 /* courses panel (layer.js, admin mode): the course list, new / export / import, and the save state */
@@ -940,7 +948,7 @@ body.au-editing .tbl td[contenteditable=true], body.au-editing .tbl th[contented
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a>
+      <div class="side-repo-row"><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף preact-authoring, commit 58f4625 מ-2026-11-07 22:43"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">preact-authoring</span> · 58f4625</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
