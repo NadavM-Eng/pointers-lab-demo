@@ -1,26 +1,49 @@
 # Pointers Lab: demo
 
-A demo of an interactive C lab in Hebrew: the lesson on one side, and on the other an editor, a terminal, line-by-line stepping with a live view of the call stack, and hidden tests for every exercise.
+A demo of an interactive programming lab in Hebrew: the lesson on one side, and on the other an
+editor, a terminal, line-by-line stepping with a live view of the call stack, and hidden tests for
+every exercise.
 
 **Open it:** https://nadavm-eng.github.io/pointers-lab-demo/
 
+## What is here
+
+The start page lists the courses of this demo. Each course is its own offline page:
+
+| File | What it is |
+|---|---|
+| `index.html` | The course list, with your progress in each course |
+| `example-c.html` | A small C course: loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise |
+| `example.html` | A tiny course in an example language, which shows how the lab supports more than one language |
+
 ## What runs where
 
-This demo runs a small example course (loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise) entirely in your browser:
+Everything runs in your browser:
 
-- The C code is compiled with [xcc](https://github.com/tyfkda/xcc) to 32-bit WebAssembly, so a pointer is 4 bytes here.
-- In the sidebar you can switch ▶ Run and ✓ Tests to real gcc on [Compiler Explorer](https://godbolt.org) (64-bit). Line-by-line stepping stays in the browser.
-- Your code is saved only in your own browser (localStorage).
-- Turn on **מצב מנהל** (admin mode) to write lessons in the page: add, rename, duplicate, convert
-  and delete lessons, drag them into a new order, and undo / redo (Ctrl+Z / Ctrl+Y). Changes
-  update the page at once and are kept only in your own browser.
+- The C code is compiled with [xcc](https://github.com/tyfkda/xcc) to 32-bit WebAssembly, so a
+  pointer is 4 bytes here.
+- In the sidebar you can switch ▶ Run and ✓ Tests to real gcc on
+  [Compiler Explorer](https://godbolt.org) (64-bit). Line-by-line stepping stays in the browser.
+- Line by line also steps into functions in your other `.c` files, and you can edit the code while
+  stepping. Press ⏯ again to run the new code.
+- Your code and progress are saved only in your own browser (localStorage).
+- **סיור מודרך** (guided tour) at the bottom of the sidebar shows how everything works. It starts
+  by itself on your first visit.
+- Turn on **מצב מנהל** (admin mode) to write lessons in the page:
+  - rich text and the block tools;
+  - add, rename, duplicate, convert and delete lessons;
+  - drag lessons into a new order;
+  - undo / redo (Ctrl+Z / Ctrl+Y).
 
-The full lab runs Run, Tests and line-by-line stepping on the student's own gcc (64-bit, the same compiler CLion uses) through a small local runner, with live keyboard input.
+  Changes are kept only in your own browser.
 
-The whole site is one file, `index.html`, built from the lab's source.
+The full lab runs Run, Tests and line-by-line stepping on the student's own gcc (64-bit, the same
+compiler CLion uses) through a small local runner, with live keyboard input.
+
+The pages are built from the lab's Vite + React version (`npm run site -- public`). The version
+each page was built from is shown at the bottom of its sidebar.
 
 ## Licenses
 
-The lab itself is public domain (see `LICENSE`). The page bundles xcc, tree-sitter and Preact
-(MIT) and htm (Apache 2.0); their notices are in `THIRD_PARTY_NOTICES.md` and the full license
-texts of Preact and htm in `licenses/`.
+The lab itself is public domain (see `LICENSE`). The pages bundle xcc and tree-sitter, React and
+ProseMirror (all MIT). Their notices and full license texts are in `THIRD_PARTY_NOTICES.md`.
