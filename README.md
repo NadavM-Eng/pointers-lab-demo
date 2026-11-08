@@ -46,5 +46,6 @@ each page was built from is shown at the bottom of its sidebar.
 
 ## Licenses
 
-The lab itself is public domain (see `LICENSE`). The pages bundle xcc and tree-sitter, React and
+The lab itself is under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`): free for
+noncommercial use; commercial use is not allowed. The pages bundle xcc and tree-sitter, React and
 ProseMirror (all MIT). Their notices and full license texts are in `THIRD_PARTY_NOTICES.md`.

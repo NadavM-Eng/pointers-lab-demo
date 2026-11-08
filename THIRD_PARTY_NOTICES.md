@@ -1,6 +1,6 @@
 # Third-party software
 
-The project's own code is in the public domain (see `LICENSE`). It ships with, or downloads, the
+The project's own code is under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`). It ships with, or downloads, the
 following software, which keeps its own license.
 
 ## xcc (in-browser C compiler) — MIT License
