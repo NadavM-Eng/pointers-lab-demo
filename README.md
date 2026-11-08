@@ -13,6 +13,7 @@ The start page lists the courses of this demo. Each course is its own offline pa
 | File | What it is |
 |---|---|
 | `index.html` | The course list, with your progress in each course |
+| `math-sequences.html` | A proof of concept for math: proofs about bounded sequences (a Calculus 1 question), stepped line by line like code. A panel shows the bounds known so far (M₁, m₁, K₁, …) the way the C courses show the call stack |
 | `example-c.html` | A small C course: loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise |
 | `example.html` | A tiny course in an example language, which shows how the lab supports more than one language |
 
