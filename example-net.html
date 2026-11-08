@@ -1764,7 +1764,7 @@ code.math-bad {
   stroke-dasharray: 4 3;
 }
 
-.nt-future .nt-queue,
+.nt-future .nt-qbox,
 .nt-future .nt-proc {
   opacity: 0.35;
 }
@@ -1785,7 +1785,7 @@ code.math-bad {
 }
 
 .nt-qlabel {
-  fill: var(--err);
+  fill: var(--ink);
   font: 600 11.5px var(--f-body);
 }
 
@@ -1833,10 +1833,33 @@ code.math-bad {
   stroke: var(--ptr);
 }
 
-.nt-queue {
-  stroke: var(--err);
-  stroke-width: 4;
-  stroke-dasharray: 4 3;
+/* every node's queue (buffer): a faint lane beside its line, a box per waiting packet */
+.nt-qlane {
+  fill: var(--panel);
+  fill-opacity: 0.8;
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.nt-qbox {
+  stroke-width: 1;
+}
+
+.nt-qbox.nt-p0 {
+  fill: color-mix(in srgb, var(--accent) 60%, var(--panel));
+}
+
+.nt-qbox.nt-p1 {
+  fill: color-mix(in srgb, var(--ok) 60%, var(--panel));
+}
+
+.nt-qbox.nt-p2 {
+  fill: color-mix(in srgb, var(--orange) 60%, var(--panel));
+}
+
+.nt-qbox.nt-p3 {
+  fill: color-mix(in srgb, var(--ptr) 60%, var(--panel));
 }
 
 .nt-proc {
@@ -1919,10 +1942,10 @@ code.math-bad {
 }
 
 .nt-chip-queue {
-  width: 4px;
+  width: 8px;
   height: 14px;
-  border: 0;
-  background: repeating-linear-gradient(var(--err) 0 4px, transparent 4px 7px);
+  border: 1px dashed var(--line);
+  background: linear-gradient(var(--panel) 0 30%, color-mix(in srgb, var(--accent) 60%, transparent) 30% 100%);
 }
 
 .nt-chip-proc {
@@ -2097,6 +2120,20 @@ table.net-stack td + td {
 .net-pkt .hl {
   background: color-mix(in srgb, var(--orange) 22%, var(--panel));
 }
+
+/* the panel's internal-error message (view/ViewGuard.tsx) */
+.net-internal {
+  margin: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--err);
+  border-radius: 6px;
+  color: var(--ink);
+  font: 13px/1.5 var(--f-mono);
+}
+
+.net-internal p {
+  margin: 0 0 4px;
+}
 </style>
   <script type="module" crossorigin>// \0rolldown/runtime.js
 var __defProp = Object.defineProperty;
@@ -2110,6 +2147,41 @@ var __exportAll = (all, no_symbols) => {
 	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
 	return target;
 };
+// src/engines/net/model/limits.ts
+var MAX_TEXT_CHARS = 1e4;
+var InputError = class extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "InputError";
+	}
+};
+function inputMessage(error, line) {
+	if (error instanceof InputError) return error.message;
+	throw error instanceof InternalError ? error : new InternalError(line, error);
+}
+var InternalError = class extends Error {
+	line;
+	original;
+	constructor(line, original) {
+		super(original instanceof Error ? original.message : String(original));
+		this.name = "InternalError";
+		this.line = line;
+		this.original = original;
+	}
+};
+function internalErrorLines(action, error) {
+	const line = error instanceof InternalError && error.line ? ", at line " + error.line : "";
+	return [
+		"internal error in the networking engine (during " + action + line + ")",
+		"This is a bug in the lab, not a mistake in your text.",
+		"Please report it: send the course staff your scenario.txt and this message.",
+		"The technical details are in the browser console (F12)."
+	];
+}
+function logInternalError(action, error, text) {
+	const original = error instanceof InternalError ? error.original : error;
+	console.error("[net engine] internal error during " + action, original, "\ntext:\n" + text);
+}
 // src/engines/net/model/units.ts
 var KIND_DIMS = {
 	number: [
@@ -2259,6 +2331,7 @@ function multiply(a, b, isDivision) {
 	};
 }
 function nearlyEqual(a, b, relative = EQUAL_RELATIVE) {
+	if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
 	return Math.abs(a - b) <= relative * Math.max(Math.abs(a), Math.abs(b)) + 1e-18;
 }
 var show = (text, tex, factor) => ({
@@ -2345,6 +2418,136 @@ function baseUnitTex(dims) {
 		return power === 1 ? name : name + "^{" + power + "}";
 	}).filter(Boolean).join("\\,");
 }
+// src/engines/net/model/unit-hints.ts
+var SPELLING_HINTS = {
+	MBps: "write MB/s for megabytes per second",
+	KBps: "write KB/s for kilobytes per second",
+	kBps: "write kB/s for kilobytes per second",
+	GBps: "write GB/s for gigabytes per second",
+	KiB: "write KB: here 1 KB = 1000 bytes",
+	MiB: "write MB: here 1 MB = 1,000,000 bytes",
+	second: "did you mean s?",
+	seconds: "did you mean s?",
+	secs: "did you mean s?",
+	millisecond: "did you mean ms?",
+	milliseconds: "did you mean ms?",
+	meter: "did you mean m?",
+	meters: "did you mean m?",
+	Ms: "did you mean ms? units are case-sensitive",
+	mS: "did you mean ms? units are case-sensitive"
+};
+function caseVariants(word) {
+	const lower = word.toLowerCase();
+	return Object.keys(UNITS).filter((name) => name.toLowerCase() === lower && name !== word);
+}
+function afterValueMessage(word, before) {
+	const hint = SPELLING_HINTS[word];
+	if (hint) return "unknown unit '" + word + "' (" + hint + ")";
+	const variants = caseVariants(word);
+	if (variants.length) {
+		const choices = variants.join(" or ");
+		return "unknown unit '" + word + "' (did you mean " + choices + "? units are case-sensitive)";
+	}
+	const times = before === ")" ? "(...) * " + word : before + " * " + word;
+	return "unknown unit '" + word + "': to multiply, write " + times;
+}
+function afterNameMessage(word, name) {
+	if (UNITS[word]) return "'" + word + "' is a unit: it can follow a number, not a name like '" + name + "'";
+	return "'" + word + "' cannot follow '" + name + "': to multiply, write " + name + " * " + word;
+}
+// src/engines/net/model/expr-eval.ts
+var plain = (value) => ({
+	value,
+	dims: [
+		0,
+		0,
+		0
+	]
+});
+function finite(result) {
+	if (!Number.isFinite(result.value)) throw new InputError("the value is too large to compute (more than about 1.8e308)");
+	return result;
+}
+function addQuantities(op, left, right) {
+	if (!sameDims(left.dims, right.dims)) {
+		const what = describeDims(left.dims) + " and " + describeDims(right.dims);
+		throw new InputError("cannot " + (op === "+" ? "add " : "subtract ") + what);
+	}
+	return {
+		value: op === "+" ? left.value + right.value : left.value - right.value,
+		dims: left.dims
+	};
+}
+function power(base, exponent) {
+	if (!sameDims(exponent.dims, [
+		0,
+		0,
+		0
+	])) throw new InputError("an exponent must be a plain number");
+	const n = exponent.value;
+	if (!sameDims(base.dims, [
+		0,
+		0,
+		0
+	]) && !Number.isInteger(n)) throw new InputError("a value with a unit can only be raised to a whole power");
+	if (base.value < 0 && !Number.isInteger(n)) throw new InputError("a negative number cannot be raised to a fractional power");
+	if (base.value === 0 && n < 0) throw new InputError("division by zero (0 to a negative power)");
+	return {
+		value: Math.pow(base.value, n),
+		dims: [
+			base.dims[0] * n,
+			base.dims[1] * n,
+			base.dims[2] * n
+		]
+	};
+}
+function callFunction(name, args) {
+	if (name === "abs") {
+		if (args.length !== 1) throw new InputError("abs() takes one value");
+		return {
+			value: Math.abs(args[0].value),
+			dims: args[0].dims
+		};
+	}
+	const first = args[0];
+	if (args.some((arg) => !sameDims(arg.dims, first.dims))) throw new InputError(name + "() needs values of one kind");
+	const values = args.map((arg) => arg.value);
+	return {
+		value: name === "min" ? Math.min(...values) : Math.max(...values),
+		dims: first.dims
+	};
+}
+function evaluate(node, env) {
+	switch (node.kind) {
+		case "num": return finite(plain(node.value));
+		case "name": {
+			const known = env.get(node.name);
+			if (!known) throw new InputError("'" + node.name + "' is not defined on a line above");
+			return known;
+		}
+		case "unit": return finite(multiply(evaluate(node.of, env), {
+			value: node.unit.factor,
+			dims: node.unit.dims
+		}, false));
+		case "neg": {
+			const inner = evaluate(node.of, env);
+			return {
+				value: -inner.value,
+				dims: inner.dims
+			};
+		}
+		case "call": return callFunction(node.name, node.args.map((arg) => evaluate(arg, env)));
+		default: return finite(evaluateBinary(node, env));
+	}
+}
+function evaluateBinary(node, env) {
+	const left = evaluate(node.left, env);
+	const right = evaluate(node.right, env);
+	if (node.op === "+" || node.op === "-") return addQuantities(node.op, left, right);
+	if (node.op === "^") return power(left, right);
+	if (node.op === "/" && right.value === 0) throw new InputError("division by zero");
+	return multiply(left, right, node.op === "/");
+}
 // src/engines/net/model/expr.ts
 var FUNCTIONS = [
 	"min",
@@ -2415,12 +2618,13 @@ function tokenize(text) {
 			i++;
 			continue;
 		}
-		throw new Error("cannot read '" + char + "'");
+		throw new InputError("cannot read '" + char + "'");
 	}
 	return tokens;
 }
 var Parser = class {
 	position = 0;
+	depth = 0;
 	tokens;
 	constructor(tokens) {
 		this.tokens = tokens;
@@ -2439,7 +2643,7 @@ var Parser = class {
 	parseAll() {
 		const node = this.parseSum();
 		const rest = this.peek();
-		if (rest) throw new Error("unexpected '" + rest.text + "'");
+		if (rest) throw new InputError("unexpected '" + rest.text + "'");
 		return node;
 	}
 	parseSum() {
@@ -2480,46 +2684,62 @@ var Parser = class {
 				text: token.text
 			};
 		}
+		if (token && token.type === "name") throw new InputError(this.misplacedWordMessage(token.text));
 		return node;
 	}
+	misplacedWordMessage(word) {
+		const before = this.tokens[this.position - 1];
+		if (before.type === "name") return afterNameMessage(word, before.text);
+		return afterValueMessage(word, before.text);
+	}
 	parseSigned() {
-		if (this.accept("-")) return {
-			kind: "neg",
-			of: this.parseSigned()
-		};
-		const base = this.parsePrimary();
-		if (this.accept("^")) return {
-			kind: "bin",
-			op: "^",
-			left: base,
-			right: this.parseSigned()
-		};
-		return base;
+		if (this.depth >= 30) throw new InputError("brackets, minus signs and powers nest too deeply here (at most 30)");
+		this.depth++;
+		try {
+			if (this.accept("-")) return {
+				kind: "neg",
+				of: this.parseSigned()
+			};
+			const base = this.parsePrimary();
+			if (this.accept("^")) return {
+				kind: "bin",
+				op: "^",
+				left: base,
+				right: this.parseSigned()
+			};
+			return base;
+		} finally {
+			this.depth--;
+		}
 	}
 	parsePrimary() {
 		const token = this.peek();
-		if (!token) throw new Error("the expression ends too early");
+		if (!token) throw new InputError("the expression ends too early");
 		this.position++;
-		if (token.type === "num") return {
-			kind: "num",
-			value: Number(token.text)
-		};
+		if (token.type === "num") {
+			const value = Number(token.text);
+			if (!Number.isFinite(value)) throw new InputError("the number " + token.text + " is too large");
+			return {
+				kind: "num",
+				value
+			};
+		}
 		if (token.type === "name") return this.accept("(") ? this.parseCall(token.text) : {
 			kind: "name",
 			name: token.text
 		};
 		if (token.type === "op" && token.text === "(") {
 			const inner = this.parseSum();
-			if (!this.accept(")")) throw new Error("a '(' has no ')'");
+			if (!this.accept(")")) throw new InputError("a '(' has no ')'");
 			return inner;
 		}
-		throw new Error("unexpected '" + token.text + "'");
+		throw new InputError("unexpected '" + token.text + "'");
 	}
 	parseCall(name) {
-		if (!FUNCTIONS.includes(name)) throw new Error("unknown function '" + name + "' (use min, max or abs)");
+		if (!FUNCTIONS.includes(name)) throw new InputError("unknown function '" + name + "' (use min, max or abs)");
 		const args = [this.parseSum()];
 		while (this.accept(",")) args.push(this.parseSum());
-		if (!this.accept(")")) throw new Error("'" + name + "(' has no ')'");
+		if (!this.accept(")")) throw new InputError("'" + name + "(' has no ')'");
 		return {
 			kind: "call",
 			name,
@@ -2550,85 +2770,8 @@ function unitOf(text) {
 	return result;
 }
 function parseExpr(text) {
-	if (!text.trim()) throw new Error("a value is missing after =");
+	if (!text.trim()) throw new InputError("a value is missing after =");
 	return new Parser(tokenize(text)).parseAll();
-}
-var plain = (value) => ({
-	value,
-	dims: [
-		0,
-		0,
-		0
-	]
-});
-function addQuantities(op, left, right) {
-	if (!sameDims(left.dims, right.dims)) {
-		const what = describeDims(left.dims) + " and " + describeDims(right.dims);
-		throw new Error("cannot " + (op === "+" ? "add " : "subtract ") + what);
-	}
-	return {
-		value: op === "+" ? left.value + right.value : left.value - right.value,
-		dims: left.dims
-	};
-}
-function power(base, exponent) {
-	if (!sameDims(exponent.dims, [
-		0,
-		0,
-		0
-	])) throw new Error("an exponent must be a plain number");
-	const n = exponent.value;
-	return {
-		value: Math.pow(base.value, n),
-		dims: [
-			base.dims[0] * n,
-			base.dims[1] * n,
-			base.dims[2] * n
-		]
-	};
-}
-function callFunction(name, args) {
-	if (name === "abs") return {
-		value: Math.abs(args[0].value),
-		dims: args[0].dims
-	};
-	const first = args[0];
-	if (args.some((arg) => !sameDims(arg.dims, first.dims))) throw new Error(name + "() needs values of one kind");
-	const values = args.map((arg) => arg.value);
-	return {
-		value: name === "min" ? Math.min(...values) : Math.max(...values),
-		dims: first.dims
-	};
-}
-function evaluate(node, env) {
-	switch (node.kind) {
-		case "num": return plain(node.value);
-		case "name": {
-			const known = env.get(node.name);
-			if (!known) throw new Error("'" + node.name + "' is not defined on a line above");
-			return known;
-		}
-		case "unit": return multiply(evaluate(node.of, env), {
-			value: node.unit.factor,
-			dims: node.unit.dims
-		}, false);
-		case "neg": {
-			const inner = evaluate(node.of, env);
-			return {
-				value: -inner.value,
-				dims: inner.dims
-			};
-		}
-		case "call": return callFunction(node.name, node.args.map((arg) => evaluate(arg, env)));
-		default: return evaluateBinary(node, env);
-	}
-}
-function evaluateBinary(node, env) {
-	const left = evaluate(node.left, env);
-	const right = evaluate(node.right, env);
-	if (node.op === "+" || node.op === "-") return addQuantities(node.op, left, right);
-	if (node.op === "^") return power(left, right);
-	return multiply(left, right, node.op === "/");
 }
 function namesIn(node) {
 	const found = [];
@@ -2906,13 +3049,14 @@ function readLinkFields(text, line) {
 	for (const piece of splitTopLevel(text)) {
 		const match = /^\s*([A-Za-z]+)\s*=(.*)$/.exec(piece);
 		if (!match || !LINK_FIELDS.includes(match[1])) throw problemAt(line, "a link sets R = rate, d = length and s = speed, like: R = 2 Mbps");
+		if (fields[match[1]]) throw problemAt(line, match[1] + " is set twice on this link");
 		try {
 			fields[match[1]] = {
 				source: match[2].trim(),
 				expr: parseExpr(match[2])
 			};
 		} catch (error) {
-			throw problemAt(line, error.message);
+			throw problemAt(line, inputMessage(error, line));
 		}
 	}
 	if (!fields.R) throw problemAt(line, "a link needs its rate: R = 2 Mbps");
@@ -2936,34 +3080,54 @@ function readAssignment(text, line, env) {
 			value
 		};
 	} catch (error) {
-		throw problemAt(line, error.message);
+		throw problemAt(line, inputMessage(error, line));
 	}
 }
 function readScript(text) {
-	const env = /* @__PURE__ */ new Map();
 	const script = {
 		assignments: [],
 		links: [],
-		env
+		env: /* @__PURE__ */ new Map()
 	};
+	checkSize(text);
 	text.split("\n").forEach((raw, i) => {
 		const line = i + 1;
-		const content = raw.replace(/#.*$/, "").trim();
-		if (!content) return;
-		const link = LINK_LINE.exec(content);
-		if (link) script.links.push({
+		try {
+			readLine(script, raw, line);
+		} catch (error) {
+			throw isProblem(error) ? error : new InternalError(line, error);
+		}
+	});
+	return script;
+}
+function readLine(script, raw, line) {
+	if (raw.length > 200) throw problemAt(line, "this line is too long: at most 200 characters");
+	const content = raw.replace(/#.*$/, "").trim();
+	if (!content) return;
+	const link = LINK_LINE.exec(content);
+	if (link) {
+		if (script.links.length >= 20) throw problemAt(line, "a path has at most 20 links");
+		script.links.push({
 			line,
 			from: link[1],
 			to: link[2],
 			fields: readLinkFields(link[3], line)
 		});
-		else if (/^link\b/.test(content)) throw problemAt(line, "write a link like: link A -> B: R = 2 Mbps, d = 300 km");
-		else script.assignments.push(readAssignment(content, line, env));
-	});
-	return script;
+	} else if (/^link\b/.test(content)) throw problemAt(line, "write a link like: link A -> B: R = 2 Mbps, d = 300 km");
+	else script.assignments.push(readAssignment(content, line, script.env));
+}
+function checkSize(text) {
+	if (text.length > 1e4) {
+		const line = text.slice(0, MAX_TEXT_CHARS).split("\n").length;
+		throw problemAt(line, "the file is too long: at most " + MAX_TEXT_CHARS.toLocaleString("en-US") + " characters");
+	}
+	let lines = 1;
+	for (let i = text.indexOf("\n"); i >= 0; i = text.indexOf("\n", i + 1)) lines++;
+	if (lines > 300) throw problemAt(301, "the file is too long: at most 300 lines");
 }
 function isProblem(value) {
-	return typeof value === "object" && value !== null && "line" in value && "message" in value;
+	if (typeof value !== "object" || value === null || value instanceof Error) return false;
+	return "line" in value && "message" in value;
 }
 function tryReadScript(text) {
 	try {
@@ -2976,18 +3140,64 @@ function tryReadScript(text) {
 			script: null,
 			problem: error
 		};
-		return {
-			script: null,
-			problem: problemAt(1, error.message)
-		};
+		throw error instanceof InternalError ? error : new InternalError(0, error);
 	}
 }
-// src/engines/net/model/scenario.ts
-var MAX_PACKETS = 12;
+// src/engines/net/model/scenario-settings.ts
+var PANEL_NAMES = [
+	[/^t$/, "the time now"],
+	[/^R_(\d+)$/, "the rate of link $1"],
+	[/^d_(\d+)$/, "the length of link $1"],
+	[/^s_(\d+)$/, "the speed of link $1"],
+	[/^d_trans_(\d+)$/, "the transmission time of link $1"],
+	[/^d_prop_(\d+)$/, "the propagation time of link $1"]
+];
+function lineOf(script, name) {
+	const found = script.assignments.filter((assignment) => assignment.name === name);
+	return found.length ? found[found.length - 1].line : 1;
+}
 function valueOfKind(script, name, kind) {
 	const value = script.env.get(name);
-	if (value && !sameDims(value.dims, KIND_DIMS[kind])) throw problemAt(script.assignments.find((assignment) => assignment.name === name)?.line || 1, name + " must be " + describeDims(KIND_DIMS[kind]));
+	if (value && !sameDims(value.dims, KIND_DIMS[kind])) throw problemAt(lineOf(script, name), name + " must be " + describeDims(KIND_DIMS[kind]));
 	return value;
+}
+function checkPanelNames(script) {
+	for (const assignment of script.assignments) for (const [pattern, meaning] of PANEL_NAMES) if (pattern.test(assignment.name)) {
+		const what = assignment.name.replace(pattern, meaning);
+		throw problemAt(assignment.line, "'" + assignment.name + "' is a name the panel uses (" + what + "): choose another name");
+	}
+}
+function readSize(script) {
+	const size = valueOfKind(script, "L", "size");
+	if (!size) throw problemAt(script.links[0].line, "set the packet size: L = 12000 bit");
+	if (size.value <= 0) throw problemAt(lineOf(script, "L"), "L must be more than 0");
+	return size;
+}
+function readSettings(script) {
+	checkPanelNames(script);
+	const size = readSize(script);
+	const count = valueOfKind(script, "N", "number");
+	const packets = count ? count.value : 1;
+	if (!Number.isInteger(packets) || packets < 1 || packets > 12) throw problemAt(lineOf(script, "N"), "N is the number of packets: a whole number from 1 to 12");
+	const proc = valueOfKind(script, "proc", "time");
+	if (proc && proc.value < 0) throw problemAt(lineOf(script, "proc"), "proc cannot be negative (0 means no processing)");
+	const speed = valueOfKind(script, "s", "speed");
+	if (speed && speed.value <= 0) throw problemAt(lineOf(script, "s"), "s must be more than 0");
+	return {
+		size,
+		packets,
+		proc: proc ? proc.value : 0,
+		speed
+	};
+}
+// src/engines/net/model/scenario.ts
+var SAME_TIME = 1e-12;
+var SAME_TIME_RELATIVE = 1e-9;
+function timeSlack(time) {
+	return SAME_TIME + SAME_TIME_RELATIVE * Math.abs(time);
+}
+function sameMoment(a, b) {
+	return Math.abs(a - b) <= timeSlack(Math.max(Math.abs(a), Math.abs(b)));
 }
 function linkField(script, link, field, kind) {
 	const written = link.fields[field];
@@ -2996,7 +3206,7 @@ function linkField(script, link, field, kind) {
 	try {
 		value = evaluate(written.expr, script.env);
 	} catch (error) {
-		throw problemAt(link.line, error.message);
+		throw problemAt(link.line, inputMessage(error, link.line));
 	}
 	if (!sameDims(value.dims, KIND_DIMS[kind])) throw problemAt(link.line, field + " must be " + describeDims(KIND_DIMS[kind]));
 	if (value.value < 0 || field !== "d" && value.value === 0) throw problemAt(link.line, field + (field === "d" ? " cannot be negative" : " must be more than 0"));
@@ -3005,47 +3215,35 @@ function linkField(script, link, field, kind) {
 function checkChain(script, i) {
 	const line = script.links[i];
 	const previous = script.links[i - 1];
+	if (line.from === line.to) throw problemAt(line.line, "a link must go to another node, not from " + line.from + " to itself");
 	if (previous && previous.to !== line.from) throw problemAt(line.line, "this link must start at " + previous.to + ", where the last one ended");
 	if (script.links.slice(0, i).flatMap((other) => [other.from, other.to]).includes(line.to)) throw problemAt(line.line, line.to + " is already on the path: a path visits a node once");
 }
-function readLinks(script, size) {
-	const speed = valueOfKind(script, "s", "speed");
-	return script.links.map((line, i) => {
-		checkChain(script, i);
-		const rate = linkField(script, line, "R", "rate");
-		const length = linkField(script, line, "d", "distance") || {
-			value: 0,
-			dims: KIND_DIMS.distance
-		};
-		const ownSpeed = linkField(script, line, "s", "speed");
-		const linkSpeed = ownSpeed || speed;
-		if (!linkSpeed) throw problemAt(line.line, "set the propagation speed: s = 200000 km/s (above), or s = ... here");
-		const trans = size.value / rate.value;
-		const prop = length.value / linkSpeed.value;
-		return {
-			line: line.line,
-			from: line.from,
-			to: line.to,
-			rate,
-			length,
-			speed: linkSpeed,
-			hasOwnSpeed: !!ownSpeed,
-			trans,
-			prop
-		};
-	});
-}
-function readSettings(script) {
-	const size = valueOfKind(script, "L", "size");
-	if (!size || size.value <= 0) throw problemAt(script.links[0].line, "set the packet size above the links: L = 12000 bit");
-	const count = valueOfKind(script, "N", "number");
-	const packets = count ? count.value : 1;
-	if (!Number.isInteger(packets) || packets < 1 || packets > MAX_PACKETS) throw problemAt(script.assignments.find((assignment) => assignment.name === "N")?.line || 1, "N is the number of packets: a whole number from 1 to 12");
-	const proc = valueOfKind(script, "proc", "time");
+function readLink(script, i, size, speed) {
+	const line = script.links[i];
+	checkChain(script, i);
+	const rate = linkField(script, line, "R", "rate");
+	const length = linkField(script, line, "d", "distance") || {
+		value: 0,
+		dims: KIND_DIMS.distance
+	};
+	const ownSpeed = linkField(script, line, "s", "speed");
+	const linkSpeed = ownSpeed || speed || null;
+	if (!linkSpeed && length.value > 0) throw problemAt(line.line, "set the propagation speed: s = 200000 km/s (above), or s = ... here");
+	const trans = size.value / rate.value;
+	const prop = linkSpeed ? length.value / linkSpeed.value : 0;
+	if (!Number.isFinite(trans) || trans <= 0) throw problemAt(line.line, "the transmission time L / R is too large or too small");
+	if (!Number.isFinite(prop)) throw problemAt(line.line, "the propagation time d / s is too large");
 	return {
-		size,
-		packets,
-		proc: proc ? proc.value : 0
+		line: line.line,
+		from: line.from,
+		to: line.to,
+		rate,
+		length,
+		speed: linkSpeed,
+		hasOwnSpeed: !!ownSpeed,
+		trans,
+		prop
 	};
 }
 function sendPackets(links, packets, proc) {
@@ -3065,7 +3263,7 @@ function sendPackets(links, packets, proc) {
 		let ready = proc;
 		links.forEach((link, k) => {
 			const start = Math.max(ready, linkFree[k]);
-			if (k > 0 && start - ready > 1e-12) result.waits.push({
+			if (k > 0 && start - ready > timeSlack(start)) result.waits.push({
 				packet,
 				node: k,
 				from: ready,
@@ -3095,9 +3293,10 @@ function sendPackets(links, packets, proc) {
 }
 function buildScenario(script) {
 	const settings = readSettings(script);
-	const links = readLinks(script, settings.size);
+	const links = script.links.map((_, i) => readLink(script, i, settings.size, settings.speed));
 	const nodes = [links[0].from, ...links.map((link) => link.to)];
 	const sent = sendPackets(links, settings.packets, settings.proc);
+	if (!Number.isFinite(sent.total)) throw problemAt(links[links.length - 1].line, "the total delay is too large to compute");
 	const timeUnit = showUnitFor({
 		value: sent.total,
 		dims: KIND_DIMS.time
@@ -3120,11 +3319,11 @@ function tryBuildScenario(script) {
 			problem: null
 		};
 	} catch (error) {
-		const problem = error;
-		return {
+		if (isProblem(error)) return {
 			scenario: null,
-			problem: problem.line ? problem : problemAt(1, String(error))
+			problem: error
 		};
+		throw error instanceof InternalError ? error : new InternalError(0, error);
 	}
 }
 // src/engines/net/model/scenario-rows.ts
@@ -3151,7 +3350,8 @@ function fieldTex(scenario, k, field) {
 }
 function givenRows(scenario) {
 	const env = /* @__PURE__ */ new Map();
-	const rows = scenario.script.assignments.map((assignment) => {
+	const rows = [];
+	scenario.script.assignments.forEach((assignment) => {
 		const row = {
 			key: assignment.name,
 			nameTex: nameTex(assignment.name),
@@ -3160,7 +3360,9 @@ function givenRows(scenario) {
 			from: assignment.uses
 		};
 		env.set(assignment.name, assignment.value);
-		return row;
+		const at = rows.findIndex((existing) => existing.key === row.key);
+		if (at >= 0) rows[at] = row;
+		else rows.push(row);
 	});
 	scenario.links.forEach((link, i) => {
 		const k = i + 1;
@@ -3205,6 +3407,13 @@ function transRow(scenario, i) {
 function propRow(scenario, i) {
 	const k = i + 1;
 	const link = scenario.links[i];
+	if (!link.speed) return {
+		key: "d_prop_" + k,
+		nameTex: nameTex("d_prop_" + k),
+		mean: "זמן התפשטות בקו " + linkHtml(scenario, i) + " (באורך 0)",
+		valueTex: "d_{" + k + "} = 0 \\Rightarrow " + timeTex(scenario, 0),
+		from: ["d_" + k]
+	};
 	const speedKey = link.hasOwnSpeed ? "s_" + k : "s";
 	const numbers = "\\frac{" + quantityTex(link.length) + "}{" + quantityTex(link.speed) + "}";
 	return {
@@ -3388,7 +3597,7 @@ var StepBuilder = class {
 	build(endWhy, endTex) {
 		this.addProcessing();
 		this.scenario.segments.forEach((segment) => this.addSegment(segment));
-		const sorted = this.events.slice().sort((a, b) => Math.abs(a.time - b.time) > 1e-12 ? a.time - b.time : a.order - b.order);
+		const sorted = this.events.slice().sort((a, b) => sameMoment(a.time, b.time) ? a.order - b.order : a.time - b.time);
 		const rows = givenRows(this.scenario);
 		const steps = [this.startStep(rows)];
 		sorted.forEach((event) => {
@@ -3448,6 +3657,13 @@ function scenarioSteps(scenario) {
 }
 // src/engines/net/model/record.ts
 function record(text, source) {
+	try {
+		return recordText(text, source);
+	} catch (error) {
+		throw error instanceof InternalError ? error : new InternalError(0, error);
+	}
+}
+function recordText(text, source) {
 	const read = tryReadScript(text);
 	if (!read.script) return {
 		script: null,
@@ -3494,20 +3710,40 @@ function record(text, source) {
 var DEFAULT_TOLERANCE = .01;
 var SUMMARY_RULE_WIDTH = 36;
 var DETAIL_INDENT = "       ";
-function expected(text) {
-	return evaluate(parseExpr(text || "0"), /* @__PURE__ */ new Map());
+var ACTION = "✓ Tests";
+function expected(test) {
+	if (typeof test.expect !== "string" || !test.expect.trim()) throw new InputError("the test has no expect value (add one, like expect: '26 ms')");
+	try {
+		return evaluate(parseExpr(test.expect), /* @__PURE__ */ new Map());
+	} catch (error) {
+		const why = inputMessage(error, 0);
+		throw new InputError("the test's expect '" + test.expect + "' cannot be read: " + why);
+	}
+}
+function tolerance(test) {
+	const tol = test.tol ?? DEFAULT_TOLERANCE;
+	if (typeof tol !== "number" || !(tol >= 0 && tol < 1)) throw new InputError("the test's tol must be a number from 0 to below 1, like 0.01 for 1%");
+	return tol;
+}
+function problemDetail(recorded) {
+	const problem = recorded.problem;
+	return "line " + problem.line + ": " + problem.message;
 }
 function stepsTest(recorded) {
 	if (recorded.problem) return {
 		ok: false,
-		detail: "line " + recorded.problem.line + ": " + recorded.problem.message
+		detail: problemDetail(recorded)
 	};
 	if (!recorded.steps.length) return {
 		ok: false,
 		detail: "nothing to step through"
 	};
 	const times = recorded.steps.map((step) => step.event ? step.event.time : 0);
-	if (times.some((time, i) => i > 0 && time < times[i - 1] - 1e-12)) return {
+	if (times.some((time) => !Number.isFinite(time))) return {
+		ok: false,
+		detail: "a time of the scenario is not a finite number"
+	};
+	if (times.some((time, i) => i > 0 && time < times[i - 1] - timeSlack(times[i - 1]))) return {
 		ok: false,
 		detail: "the events are not in time order"
 	};
@@ -3519,12 +3755,17 @@ function stepsTest(recorded) {
 	return { ok: true };
 }
 function compare(what, value, test) {
-	const want = expected(test.expect);
+	const want = expected(test);
+	const tol = tolerance(test);
+	if (!Number.isFinite(value.value)) return {
+		ok: false,
+		detail: what + " is not a finite number"
+	};
 	if (!sameDims(value.dims, want.dims)) return {
 		ok: false,
 		detail: what + " is " + describeDims(value.dims) + ", not " + describeDims(want.dims)
 	};
-	if (!nearlyEqual(value.value, want.value, test.tol ?? DEFAULT_TOLERANCE)) return {
+	if (!nearlyEqual(value.value, want.value, tol)) return {
 		ok: false,
 		detail: what + " is " + quantityText(value) + ", expected " + quantityText(want)
 	};
@@ -3534,17 +3775,28 @@ function answerOf(recorded, box) {
 	const name = box.net && box.net.answer || "answer";
 	if (recorded.problem) return {
 		ok: false,
-		detail: "line " + recorded.problem.line + ": " + recorded.problem.message
+		detail: problemDetail(recorded)
 	};
-	return recorded.script && recorded.script.env.get(name) || {
+	const value = recorded.script && recorded.script.env.get(name);
+	if (!value) return {
 		ok: false,
 		detail: "write the result on a line '" + name + " = ...'"
 	};
+	if (!Number.isFinite(value.value)) return {
+		ok: false,
+		detail: "the answer is not a finite number"
+	};
+	return value;
 }
 function unitTest(recorded, box, test) {
+	const kind = test.kind ?? "time";
+	const want = KIND_DIMS[kind];
+	if (!want || !Object.hasOwn(KIND_DIMS, kind)) {
+		const kinds = Object.keys(KIND_DIMS).join(", ");
+		throw new InputError("unknown kind '" + kind + "' in the test (use " + kinds + ")");
+	}
 	const value = answerOf(recorded, box);
 	if ("ok" in value) return value;
-	const want = KIND_DIMS[test.kind || "time"];
 	if (sameDims(value.dims, want)) return { ok: true };
 	const hint = sameDims(value.dims, KIND_DIMS.number) ? ": add a unit, like 12 ms or 0.012 s" : "";
 	return {
@@ -3553,11 +3805,16 @@ function unitTest(recorded, box, test) {
 	};
 }
 function runOneTest(box, recorded, test) {
+	if (!test || typeof test !== "object") throw new InputError("a test must be an object like {type: 'steps', name: '...'}");
 	if (test.type === "steps") return stepsTest(recorded);
 	if (test.type === "total") {
+		if (recorded.problem) return {
+			ok: false,
+			detail: problemDetail(recorded)
+		};
 		if (!recorded.scenario) return {
 			ok: false,
-			detail: recorded.problem ? recorded.problem.message : "no scenario"
+			detail: "this box has no link lines, so it has no total delay"
 		};
 		return compare("the total delay", {
 			value: recorded.scenario.total,
@@ -3573,34 +3830,56 @@ function runOneTest(box, recorded, test) {
 		const value = answerOf(recorded, box);
 		return "ok" in value ? value : compare("the answer", value, test);
 	}
-	return {
-		ok: false,
-		detail: "unknown test type " + test.type
-	};
+	throw new InputError("unknown test type " + test.type + " (use steps, total, unit or answer)");
+}
+function guardedTest(box, recorded, test, code) {
+	try {
+		return runOneTest(box, recorded, test);
+	} catch (error) {
+		if (error instanceof InputError) return {
+			ok: false,
+			detail: "test setup: " + error.message
+		};
+		logInternalError(ACTION, error, code);
+		return {
+			ok: false,
+			detail: internalErrorLines(ACTION, error).join("\n       ")
+		};
+	}
 }
 function summaryLine(passCount, testCount) {
 	if (passCount !== testCount || !testCount) return passCount + " / " + testCount + " tests passed";
 	return testCount === 1 ? "1 TEST PASSED" : "ALL " + testCount + " TESTS PASSED";
 }
+function testName(test) {
+	return test && typeof test === "object" && String(test.name || test.type) || "(a test)";
+}
 function runTests(box, code) {
-	const recorded = record(code, box.net || {});
-	const res = [];
+	const tests = Array.isArray(box.tests) ? box.tests : [];
 	let log = "$ check scenario.txt  (tests)\n";
-	(box.tests || []).forEach((test) => {
-		let outcome;
-		try {
-			outcome = runOneTest(box, recorded, test);
-		} catch (error) {
-			outcome = {
-				ok: false,
-				detail: error.message
-			};
-		}
+	let recorded;
+	try {
+		recorded = record(code, box.net || {});
+	} catch (error) {
+		logInternalError(ACTION, error, code);
+		const res = tests.map((test) => ({
+			name: testName(test),
+			ok: false
+		}));
+		log += internalErrorLines(ACTION, error).join("\n") + "\n";
+		return {
+			res,
+			log: log + "\n" + summaryLine(0, res.length) + "\n"
+		};
+	}
+	const res = [];
+	tests.forEach((test) => {
+		const outcome = guardedTest(box, recorded, test, code);
 		res.push({
-			name: test.name,
+			name: testName(test),
 			ok: outcome.ok
 		});
-		log += (outcome.ok ? "[PASS] " : "[FAIL] ") + test.name + "\n";
+		log += (outcome.ok ? "[PASS] " : "[FAIL] ") + testName(test) + "\n";
 		if (!outcome.ok && outcome.detail) log += DETAIL_INDENT + outcome.detail + "\n";
 	});
 	const passCount = res.filter((result) => result.ok).length;
@@ -3656,6 +3935,39 @@ function runBox(text, source) {
 		problem: null
 	};
 }
+// src/engines/net/box/guard.ts
+function guarded(context, action, work) {
+	try {
+		work();
+	} catch (error) {
+		showInternalError(context, action, error);
+	}
+}
+function showInternalError(context, action, error) {
+	const { ui, state } = context;
+	let text;
+	try {
+		text = ui.ed.value;
+	} catch {
+		text = "(the text could not be read)";
+	}
+	logInternalError(action, error, text);
+	try {
+		if (state.mode === "debug") {
+			state.mode = "idle";
+			state.restartToken += 1;
+			ui.clearStepLine();
+			ui.dbg.leave();
+		}
+		ui.showErrs({});
+		const [first, ...rest] = internalErrorLines(action, error);
+		const html = "<span class=\"err\">" + escapeText$3(first) + "</span>\n" + rest.map((line) => "<span class=\"dim\">" + escapeText$3(line) + "</span>").join("\n") + "\n";
+		ui.setTerm(html, "top");
+		ui.setStatus("internal error", "bad");
+	} catch (secondError) {
+		console.error("[net engine] the internal-error message could not be shown", secondError);
+	}
+}
 // node_modules/react/cjs/react.production.js
 /**
 * @license React
@@ -3671,8 +3983,47 @@ var require_react_production=__commonJSMin((exports=>{var e=Symbol.for(`react.tr
 // node_modules/react/index.js
 var require_react=__commonJSMin(((exports,module)=>{module.exports=require_react_production()}));
 
-// src/engines/net/view/now-status.ts
+// src/engines/net/view/queues.ts
 var import_react = require_react();
+function sourceWaits(scenario) {
+	return scenario.segments.filter((segment) => segment.link === 0 && segment.start - scenario.proc > timeSlack(segment.start)).map((segment) => ({
+		packet: segment.packet,
+		node: 0,
+		from: scenario.proc,
+		to: segment.start,
+		slot: 0,
+		slots: 1
+	}));
+}
+function assignSlots(waits) {
+	const slotEnds = [];
+	waits.sort((a, b) => a.from - b.from || a.packet - b.packet);
+	for (const wait of waits) {
+		let slot = slotEnds.findIndex((end) => end <= wait.from + timeSlack(wait.from));
+		if (slot < 0) slot = slotEnds.length;
+		slotEnds[slot] = wait.to;
+		wait.slot = slot;
+	}
+	waits.forEach((wait) => wait.slots = Math.max(1, slotEnds.length));
+}
+function queueWaits(scenario) {
+	const all = [...sourceWaits(scenario), ...scenario.waits.map((wait) => ({
+		...wait,
+		slot: 0,
+		slots: 1
+	}))];
+	const result = [];
+	scenario.nodes.forEach((_, node) => {
+		const here = all.filter((wait) => wait.node === node);
+		assignSlots(here);
+		result.push(...here);
+	});
+	return result;
+}
+function laneLeft(nodeX, node) {
+	return node === 0 ? nodeX + 3 : nodeX - 3 - 22;
+}
+// src/engines/net/view/now-status.ts
 var SAME_FRACTION$1 = 1e-9;
 function packetList(packets) {
 	const numbers = packets.map((packet) => String(packet + 1));
@@ -3725,8 +4076,6 @@ function itemsOf(scenario, node, now) {
 	const receiving = incoming.filter((segment) => now.within(segment.start + segment.prop, segment.end + segment.prop));
 	if (receiving.length) items.push("מקבל את " + packetList(receiving.map((segment) => segment.packet)));
 	items.push(...sendingItems(scenario, out, now));
-	const waiting = scenario.waits.filter((interval) => interval.node === node && now.within(interval.from, interval.to));
-	if (waiting.length) items.push("בתור: " + packetList(waiting.map((interval) => interval.packet)));
 	const onWire = out.filter((segment) => segment.prop > 0 && now.within(segment.end, segment.end + segment.prop));
 	if (onWire.length) items.push(packetList(onWire.map((segment) => segment.packet)) + " בדרך אל " + scenario.nodes[node + 1]);
 	if (node === last) {
@@ -3736,12 +4085,17 @@ function itemsOf(scenario, node, now) {
 	const shown = items.filter(Boolean);
 	return shown.length ? shown : [node === last ? "עוד לא קיבל חבילה" : "פנוי"];
 }
+function queueItem(waits, node, now) {
+	const waiting = waits.filter((wait) => wait.node === node && now.within(wait.from, wait.to)).map((wait) => "P" + (wait.packet + 1));
+	return waiting.length ? "תור: " + waiting.join(", ") : "תור ריק";
+}
 function nodeStatuses(scenario, t) {
 	const now = new Moment(scenario, t);
+	const waits = queueWaits(scenario);
 	return scenario.nodes.map((name, node) => ({
 		node,
 		name,
-		items: itemsOf(scenario, node, now)
+		items: [...itemsOf(scenario, node, now), queueItem(waits, node, now)]
 	}));
 }
 var EVENT_WORDS = [
@@ -4376,7 +4730,7 @@ function BandLabel(props) {
 }
 function Jag(props) {
 	const { segment, scales, now } = props;
-	const x = scales.x(segment.link) + 5;
+	const x = scales.x(segment.link) + 5 + (segment.link === 0 ? 25 : 0);
 	const y = (scales.y(segment.start) + scales.y(segment.end)) / 2;
 	const points = [
 		-6,
@@ -4407,18 +4761,8 @@ function BandMarks(props) {
 		now
 	}, segment.packet + ":" + segment.link))] });
 }
-function QueueMarks(props) {
-	const { scenario, scales, now, avoid } = props;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", { children: scenario.waits.filter((interval) => scales.y(interval.to) - scales.y(interval.from) >= LABEL_MIN_PX).map((interval) => ({
-		interval,
-		y: scales.y((interval.from + interval.to) / 2)
-	})).filter(({ y }) => y > scales.top && y < scales.top + scales.plot).filter(({ interval, y }) => !isUnder(scales.x(interval.node) - 40, y, avoid)).map(({ interval, y }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-		className: "nt-qlabel" + later(interval.from, now),
-		x: scales.x(interval.node) - 6,
-		y: y + 4,
-		textAnchor: "end",
-		children: "P" + (interval.packet + 1) + " בתור"
-	}, interval.packet + ":" + interval.node)) });
+function coveredBy(avoid) {
+	return (x, y) => isUnder(x, y, avoid);
 }
 function labelBoxOf(scenario, scales, event, tag) {
 	const text = eventLabel(tag);
@@ -4473,6 +4817,71 @@ function NowMark(props) {
 		]
 	});
 }
+// src/engines/net/view/TimelineQueues.tsx
+var PACKET_COLOURS$1 = 4;
+var LABEL_GAP_PX = 12;
+var MIN_BOX_PX = 2;
+function QueueLanes(props) {
+	const { scenario, scales } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+		className: "nt-qlanes",
+		children: scenario.nodes.map((name, node) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			className: "nt-qlane",
+			x: laneLeft(scales.x(node), node),
+			y: scales.top,
+			width: 22,
+			height: scales.plot,
+			rx: 3
+		}, name))
+	});
+}
+function QueueBox(props) {
+	const { wait, scales } = props;
+	const slotWidth = 22 / wait.slots;
+	const top = scales.y(wait.from);
+	const height = Math.max(MIN_BOX_PX, scales.y(wait.to) - top);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: "nt-qbox nt-p" + wait.packet % PACKET_COLOURS$1,
+		x: laneLeft(scales.x(wait.node), wait.node) + wait.slot * slotWidth + .5,
+		y: top,
+		width: Math.max(1, slotWidth - 1),
+		height
+	});
+}
+function QueueBoxes(props) {
+	const { scenario, scales } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", { children: queueWaits(scenario).map((wait) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueBox, {
+		wait,
+		scales
+	}, wait.packet + ":" + wait.node)) });
+}
+function namedWaits(scenario, scales, isCovered) {
+	const lastY = /* @__PURE__ */ new Map();
+	return queueWaits(scenario).map((wait) => ({
+		wait,
+		y: scales.y(wait.from) + 10
+	})).filter(({ y }) => y > scales.top + 4 && y < scales.top + scales.plot).filter(({ wait, y }) => {
+		const above = lastY.get(wait.node);
+		const x = laneLeft(scales.x(wait.node), wait.node);
+		if (above !== void 0 && y - above < LABEL_GAP_PX || isCovered(x - 10, y)) return false;
+		lastY.set(wait.node, y);
+		return true;
+	});
+}
+function QueueLabels(props) {
+	const { scenario, scales, now, isCovered } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", { children: namedWaits(scenario, scales, isCovered).map(({ wait, y }) => {
+		const left = laneLeft(scales.x(wait.node), wait.node);
+		const isSource = wait.node === 0;
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nt-qlabel" + (wait.from > now ? " nt-later" : ""),
+			x: isSource ? left + 22 + 3 : left - 3,
+			y,
+			textAnchor: isSource ? "start" : "end",
+			children: "P" + (wait.packet + 1)
+		}, wait.packet + ":" + wait.node);
+	}) });
+}
 // src/engines/net/view/Timeline.tsx
 var BOTTOM = 16;
 var PACKET_COLOURS = 4;
@@ -4516,10 +4925,10 @@ function bandPoints(segment, scales) {
 	].map((point) => point.join(",")).join(" ");
 }
 function Stretch(props) {
-	const { interval, kind, scales } = props;
+	const { interval, scales } = props;
 	const x = scales.x(interval.node);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-		className: "nt-" + kind,
+		className: "nt-proc",
 		x1: x,
 		x2: x,
 		y1: scales.y(interval.from),
@@ -4527,22 +4936,13 @@ function Stretch(props) {
 	});
 }
 function Happenings({ scenario, scales }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
-		scenario.segments.map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
-			className: "nt-band nt-p" + segment.packet % PACKET_COLOURS,
-			points: bandPoints(segment, scales)
-		}, segment.packet + ":" + segment.link)),
-		scenario.waits.map((interval) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stretch, {
-			interval,
-			kind: "queue",
-			scales
-		}, "w" + interval.packet + ":" + interval.node)),
-		scenario.procs.map((interval) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stretch, {
-			interval,
-			kind: "proc",
-			scales
-		}, "p" + interval.packet + ":" + interval.node))
-	] });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [scenario.segments.map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
+		className: "nt-band nt-p" + segment.packet % PACKET_COLOURS,
+		points: bandPoints(segment, scales)
+	}, segment.packet + ":" + segment.link)), scenario.procs.map((interval) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stretch, {
+		interval,
+		scales
+	}, "p" + interval.packet + ":" + interval.node))] });
 }
 function ScaleNote({ scenario, scales }) {
 	if (scales.map.spacing === "events") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -4601,6 +5001,17 @@ function usePrefs(scenario) {
 	};
 	return [prefs, change];
 }
+function SplitAtNow(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+		className: "nt-future",
+		clipPath: "url(#nt-future" + props.id + ")",
+		children: props.children
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+		className: "nt-past",
+		clipPath: "url(#nt-past" + props.id + ")",
+		children: props.children
+	})] });
+}
 function Diagram(props) {
 	const { scenario, event, tag, scales } = props;
 	const id = (0, import_react.useId)().replace(/[^A-Za-z0-9]/g, "");
@@ -4626,18 +5037,20 @@ function Diagram(props) {
 				scenario,
 				scales
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-				className: "nt-future",
-				clipPath: "url(#nt-future" + id + ")",
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SplitAtNow, {
+				id,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Happenings, {
 					scenario,
 					scales
 				})
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-				className: "nt-past",
-				clipPath: "url(#nt-past" + id + ")",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Happenings, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLanes, {
+				scenario,
+				scales
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SplitAtNow, {
+				id,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueBoxes, {
 					scenario,
 					scales
 				})
@@ -4648,11 +5061,11 @@ function Diagram(props) {
 				now,
 				avoid: box
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueMarks, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLabels, {
 				scenario,
 				scales,
 				now,
-				avoid: box
+				isCovered: coveredBy(box)
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowMark, {
 				scales,
@@ -4818,10 +5231,10 @@ function TimelineLegend(props) {
 				english: "now",
 				hebrew: "עכשיו"
 			})] }),
-			scenario.waits.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
 				english: "queue",
 				hebrew: "תור"
-			})] }) : null,
+			})] }),
 			scenario.procs.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-proc" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
 				english: "processing",
 				hebrew: "עיבוד"
@@ -4983,6 +5396,27 @@ function NetView({ step, index, count, scenario }) {
 		]
 	});
 }
+// src/engines/net/view/ViewGuard.tsx
+var ViewGuard = class extends import_react.Component {
+	state = { failed: false };
+	static getDerivedStateFromError() {
+		return { failed: true };
+	}
+	componentDidCatch(error, info) {
+		logInternalError("⏯ line by line (the panel)", error, info.componentStack || "");
+	}
+	render() {
+		if (!this.state.failed) return this.props.children;
+		const [first, ...rest] = internalErrorLines("⏯ line by line", null);
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "net-internal",
+			dir: "ltr",
+			lang: "en",
+			role: "alert",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: first }) }), rest.map((line) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: line }, line))]
+		});
+	}
+};
 // src/engines/net/box/stepping.ts
 var RESTART_NOTE_MS = 1800;
 function sourceOf(context) {
@@ -5007,7 +5441,7 @@ function transcript(context) {
 	let html = "<span class=\"dim\">$ step " + MAIN_FILE + "</span>\n";
 	state.steps.slice(0, state.idx + 1).forEach((step, i) => {
 		const time = unit && step.event ? formatNumber(step.event.time / unit.factor) + " " + unit.text : "";
-		const text = String(i + 1).padStart(2) + "  " + (time ? time.padEnd(10) : "") + step.tag;
+		const text = String(i + 1).padStart(2) + "  " + (time ? time.padEnd(10) + " " : "") + step.tag;
 		html += (i === state.idx ? "<b>" + escapeText$3(text) + "</b>" : escapeText$3(text)) + "\n";
 	});
 	return html;
@@ -5016,12 +5450,15 @@ function drawStep(context) {
 	const { ui, state } = context;
 	const step = state.steps[state.idx];
 	context.viewKey += 1;
-	const view = (0, import_react.createElement)(NetView, {
-		key: context.viewKey,
+	const panel = (0, import_react.createElement)(NetView, {
 		step,
 		index: state.idx,
 		count: state.steps.length,
 		scenario: state.scenario
+	});
+	const view = (0, import_react.createElement)(ViewGuard, {
+		key: context.viewKey,
+		children: panel
 	});
 	if (!step) {
 		ui.showMemory(null, view);
@@ -5074,7 +5511,7 @@ function startDebug(context) {
 		const token = ++state.restartToken;
 		ui.setStatus("restarted · step 1 of " + state.steps.length, "busy");
 		setTimeout(() => {
-			if (token === state.restartToken && state.mode === "debug" && state.idx === 0) drawStep(context);
+			if (token === state.restartToken && state.mode === "debug" && state.idx === 0) guarded(context, "⏯ line by line", () => drawStep(context));
 		}, RESTART_NOTE_MS);
 	}
 }
@@ -5102,6 +5539,9 @@ function seek(context, index) {
 	drawStep(context);
 }
 // src/engines/net/box/attach.ts
+var RUN = "▶ Run";
+var TESTS = "✓ Tests";
+var DEBUG = "⏯ line by line";
 function colourLog(ui, log) {
 	return ui.esc(log).replace(/^\[PASS\]/gm, "<span class=\"tpass\">[PASS]</span>").replace(/^\[FAIL\]/gm, "<span class=\"tfail\">[FAIL]</span>");
 }
@@ -5153,23 +5593,23 @@ function attach(ui) {
 function controllerOf(context) {
 	return {
 		run() {
-			runProgram(context);
+			guarded(context, RUN, () => runProgram(context));
 		},
 		test() {
-			runBoxTests(context);
+			guarded(context, TESTS, () => runBoxTests(context));
 		},
 		input() {},
 		debug() {
-			startDebug(context);
+			guarded(context, DEBUG, () => startDebug(context));
 		},
 		move(kind) {
-			move(context, kind);
+			guarded(context, DEBUG, () => move(context, kind));
 		},
 		seek(index) {
-			seek(context, index);
+			guarded(context, DEBUG, () => seek(context, index));
 		},
 		stopDebug() {
-			stopDebug(context);
+			guarded(context, DEBUG, () => stopDebug(context));
 		}
 	};
 }
@@ -5395,7 +5835,7 @@ window.LabEngine = {
 		liveInput: false
 	},
 	strings: {
-		hint: "L = 12000 bit · link A -> B: R = 2 Mbps, d = 300 km · # starts a comment · click a line number to set a breakpoint (●)",
+		hint: "L = 12000 bit · link A -> B: R = 2 Mbps, d = 300 km · # starts a comment · click a line number to set a breakpoint (●) · reference: docs/engines/net.md",
 		memTitle: "variables",
 		booting: "טוען…"
 	},
@@ -17387,7 +17827,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף networks-ch2, commit ca70a44 מ-2026-11-08 13:13"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">networks-ch2</span> · ca70a44</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e3428a8 מ-2026-11-08 13:57"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e3428a8</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
@@ -17403,6 +17843,6 @@ window.__lab = {
 
 <!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then the ES modules (they run after the page is parsed): engine (window.LabEngine), course (window.LabCourse), the local layer (window.PLayer), the code box (window.PApp), the page (lab.js), the authoring UI (author.js) -->
 <script></script>
-<!--lab-package-here-->
+<!--lab-package-here-->
 </body>
 </html>
