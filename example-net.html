@@ -198,6 +198,15 @@ body.no-code .code-pane,body.no-code .split{display:none}
 .nav-steps .dot{flex:0 0 8px;height:8px;margin-top:6px;border-radius:50%;border:1.5px solid var(--gutter)}
 .nav-steps a.passed .dot{background:var(--ok);border-color:var(--ok)}
 .nav-steps a.text .dot{border-style:dashed}
+/* a course with subjects (docs/COURSE-FORMAT.md 1.1): its units in a folder per subject, collapsible */
+.nav-subj+.nav-subj{margin-top:6px;padding-top:6px;border-top:1px solid var(--line-2)}
+.nav-subj-h{display:flex;gap:10px;align-items:baseline;width:100%;padding:6px 10px;border:0;border-radius:6px;background:none;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;line-height:1.4;text-align:start;cursor:pointer}
+.nav-subj-h:hover{background:var(--panel-2)}
+.nav-subj-h .arr{flex:0 0 20px;color:var(--muted);font-size:13px;text-align:center}
+.nav-subj-h .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-subj-h .sn{flex:none;color:var(--muted);font-family:var(--f-mono);font-size:12px;font-weight:400}
+.nav-subj.passed .nav-subj-h .sn{color:var(--ok)}
+.nav-subj.shut .nav-subj-in{display:none}
 .side-foot{border-top:1px solid var(--line);padding:8px 16px 14px;font-size:13.5px;max-height:40%;flex:none;overflow-y:auto}
 .side-h{margin:4px 0 6px;font-size:12px;color:var(--muted);font-weight:600}
 .side-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;color:var(--ink-2)}
@@ -275,6 +284,8 @@ body.side-closed .nav{padding:4px 5px;scrollbar-width:none}
 body.side-closed .nav-u{justify-content:center;padding:7px 0}
 body.side-closed .nav-u .ck{display:none}
 body.side-closed .nav-u .n{flex:0 0 auto;font-size:13px}
+body.side-closed .nav-subj-h{display:none}
+body.side-closed .nav-subj.shut .nav-subj-in{display:block}
 
 /* compiler choice: only "gcc on this computer" unless admin mode is on */
 .eng{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
@@ -789,6 +800,8 @@ body.debugging .term{flex:1 1 0;min-height:30%}
   body.side-open .side{transform:none}
   body.side-closed{--side-w:272px}
   body.side-closed .logo,body.side-closed .prog-row,body.side-closed .side-foot,body.side-closed .nav-steps,body.side-closed .nav-u .t,body.side-closed .nav-u .lab{display:revert}
+  body.side-closed .nav-subj-h{display:flex}
+  body.side-closed .nav-subj.shut .nav-subj-in{display:none}
   .menu-b{display:grid}
   /* the ☰ button sits on an opaque bar across the top of the window, so it never covers a line
      of text or a button: the page scrolls under the bar, and a focused element or an anchor
@@ -4154,6 +4167,13 @@ function fitTimeText(seconds) {
 		dims: KIND_DIMS.time
 	});
 }
+var LABEL_CHAR_PX = 7.4;
+var MIN_GUTTER_PX = 70;
+var GUTTER_PAD_PX = 14;
+function axisGutter(times) {
+	const longest = times.reduce((most, time) => Math.max(most, fitTimeText(time).length), 0);
+	return Math.max(MIN_GUTTER_PX, Math.ceil(longest * LABEL_CHAR_PX) + GUTTER_PAD_PX);
+}
 function timeText(scenario, seconds) {
 	return formatNumber(seconds / scenario.timeUnit.factor) + " " + scenario.timeUnit.text;
 }
@@ -4613,15 +4633,17 @@ function followPlot(width) {
 }
 function scalesOf(scenario, boxWidth, map) {
 	const columns = Math.max(1, scenario.nodes.length - 1);
-	const column = Math.max(MIN_COL_PX, (boxWidth - 70 - 24) / columns);
+	const left = axisGutter(map.keys);
+	const column = Math.max(MIN_COL_PX, (boxWidth - left - 24) / columns);
 	const top = (scenario.links.some((link) => link.prop > 0) ? 56 : 40) + 16;
 	return {
-		width: Math.round(94 + column * columns),
+		width: Math.round(left + 24 + column * columns),
+		left,
 		column,
 		top,
 		plot: map.height,
 		map,
-		x: (node) => 70 + column * node,
+		x: (node) => left + column * node,
 		y: (seconds) => top + map.y(seconds)
 	};
 }
@@ -4650,7 +4672,7 @@ function stretchedRuns(stretched) {
 }
 function AxisBreaks({ scales }) {
 	const { map } = scales;
-	const x = 62;
+	const x = scales.left - 8;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
 		className: "nt-break",
 		children: stretchedRuns(map.stretched).map(([first, last]) => {
@@ -4673,7 +4695,7 @@ function GridLines({ scales }) {
 			const y = scales.y(time);
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
 				className: "nt-grid",
-				x1: 62,
+				x1: scales.left - 8,
 				x2: scales.width - 12,
 				y1: y,
 				y2: y
@@ -4686,9 +4708,10 @@ function AxisPin(props) {
 	const nowY = scales.y(now);
 	const isNowShown = nowY >= scales.top - 1 && nowY <= scales.top + scales.plot + 1;
 	const hasProp = scenario.links.some((link) => link.prop > 0);
+	const left = scales.left;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 		className: "nt-pin",
-		width: 66,
+		width: left - 4,
 		height,
 		"aria-hidden": "true",
 		children: [
@@ -4696,20 +4719,20 @@ function AxisPin(props) {
 				className: "nt-pin-bg",
 				x: 0,
 				y: 24,
-				width: 66,
+				width: left - 4,
 				height
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
 				className: "nt-axis",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-						x1: 62,
-						x2: 62,
+						x1: left - 8,
+						x2: left - 8,
 						y1: scales.top,
 						y2: scales.top + scales.plot
 					}),
 					tickTimes(scales).filter((time) => !isNowShown || Math.abs(scales.y(time) - nowY) >= TICK_GAP_PX).map((time) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-						x: 58,
+						x: left - 12,
 						y: scales.y(time) + 4,
 						textAnchor: "end",
 						children: fitTimeText(time)
@@ -4719,17 +4742,19 @@ function AxisPin(props) {
 			}),
 			isNowShown ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 				className: "nt-nowt",
-				x: 58,
+				x: left - 12,
 				y: nowY + 4,
 				textAnchor: "end",
 				children: fitTimeText(now)
 			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowName, {
 				kind: "trans",
+				x: left - 12,
 				y: 40
 			}),
 			hasProp ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowName, {
 				kind: "prop",
+				x: left - 12,
 				y: 56
 			}) : null
 		]
@@ -4748,7 +4773,7 @@ function NodeLabel(props) {
 function RowName(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
 		className: "nt-delay nt-rowname",
-		x: 58,
+		x: props.x,
 		y: props.y,
 		textAnchor: "end",
 		children: ["d", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
@@ -4909,7 +4934,7 @@ function NowMark(props) {
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
 				className: "nt-now",
-				x1: 62,
+				x1: scales.left - 8,
 				x2: scales.width - 12,
 				y1: y,
 				y2: y
@@ -5004,7 +5029,7 @@ function QueueLabels(props) {
 // src/engines/net/view/Timeline.tsx
 var BOTTOM = 16;
 var PACKET_COLOURS = 4;
-var SCROLL_MARGIN = 60;
+var SCROLL_MARGIN = 10;
 var SCROLL_MARGIN_RIGHT = 200;
 var lastWidth = 560;
 function useWidth() {
@@ -5027,9 +5052,9 @@ function useWidth() {
 	}, []);
 	return [ref, width];
 }
-function keepInView(box, x) {
+function keepInView(box, x, gutter) {
 	if (!box || x < 0 || box.scrollWidth <= box.clientWidth) return;
-	const isLeft = x < box.scrollLeft + SCROLL_MARGIN;
+	const isLeft = x < box.scrollLeft + gutter + SCROLL_MARGIN;
 	const isRight = x > box.scrollLeft + box.clientWidth - SCROLL_MARGIN_RIGHT;
 	if (isLeft || isRight) box.scrollLeft = Math.max(0, x - box.clientWidth * .4);
 }
@@ -5217,9 +5242,11 @@ function Timeline({ scenario, event, tag }) {
 	const map = drawable ? timeMap(scenario, prefs.spacing, prefs.choice, now, followPlot(width)) : null;
 	const scales = map ? scalesOf(scenario, width, map) : null;
 	const eventX = scales && event ? scales.x(event.node) : -1;
-	(0, import_react.useLayoutEffect)(() => keepInView(boxRef.current, eventX), [
+	const gutter = scales ? scales.left : 0;
+	(0, import_react.useLayoutEffect)(() => keepInView(boxRef.current, eventX, gutter), [
 		boxRef,
 		eventX,
+		gutter,
 		width
 	]);
 	if (!scales || !map) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NotDrawable, { ref: boxRef });
@@ -8380,7 +8407,7 @@ function buildCoursesPanel() {
 // src/core/layer/model.js
 var ID_RADIX = 36;
 var FRACTION_START = 2;
-function isChanged(unitId) {
+function isChanged$1(unitId) {
 	const repoUnit = layerState.repoUnitsById.get(unitId);
 	const unit = layerState.doc.units.find((candidate) => candidate.id === unitId);
 	return !repoUnit || !unit || unitToJson(repoUnit) !== unitToJson(unit);
@@ -8536,7 +8563,7 @@ function createCourseLayer() {
 		save,
 		saveNow,
 		reload: reloadAfterSave,
-		isChanged,
+		isChanged: isChanged$1,
 		isNew,
 		revertUnit: revertUnit$1,
 		newId,
@@ -8730,14 +8757,26 @@ var store = {
 	}
 };
 // src/core/code-box/user-files.js
+function courseFiles(box) {
+	const given = box && box.files && typeof box.files === "object" ? box.files : {};
+	return Object.keys(given).filter((name) => typeof given[name] === "string").map((name) => ({
+		name,
+		text: given[name]
+	}));
+}
+function isCourseList(box, list) {
+	const given = courseFiles(box);
+	return list.length === given.length && list.every((file, index) => file.name === given[index].name && file.text === given[index].text);
+}
 function loadUserFiles(context) {
 	const { box, files, caps } = context;
 	if (!caps.extraFiles) return [];
-	return (store.get("files:" + box.id, []) || []).filter((file) => file && files.extraRe.test(file.name) && file.name !== files.main);
+	const saved = store.get("files:" + box.id, null);
+	return (Array.isArray(saved) ? saved : courseFiles(box)).filter((file) => file && files.extraRe.test(file.name) && file.name !== files.main);
 }
 function saveUserFiles(context) {
-	const userFiles = context.userFiles;
-	store.set("files:" + context.box.id, userFiles.length ? userFiles : null);
+	const { box, userFiles } = context;
+	store.set("files:" + box.id, isCourseList(box, userFiles) ? null : userFiles);
 }
 function userFileText(context, file) {
 	const fileEditor = context.userEditors.get(file.name);
@@ -9087,6 +9126,8 @@ function resetCode(context) {
 	store.set("pass:" + boxId, false);
 	store.set("passsig:" + boxId, null);
 	context.editor.value = context.box.code;
+	courseFiles(context.box).forEach((givenFile) => restoreUserFile(context, givenFile));
+	saveUserFiles(context);
 	if (context.state.mode !== "debug") clearTerminal(context);
 	setBadge(context, false, 0, 0);
 	context.ui.progress();
@@ -9120,8 +9161,15 @@ function undoReset(context) {
 	const resetButton = context.host.querySelector("[data-a=reset]");
 	if (resetButton) resetButton.focus();
 }
+function isChanged(context) {
+	if (context.editor.value !== context.box.code) return true;
+	return courseFiles(context.box).some((givenFile) => {
+		const file = context.userFiles.find((candidate) => candidate.name === givenFile.name);
+		return !file || userFileText(context, file) !== givenFile.text;
+	});
+}
 function pressReset(context, resetButton) {
-	if (context.editor.value !== context.box.code) {
+	if (isChanged(context)) {
 		askInBar(context, "לאפס את הקוד?", "איפוס", () => resetCode(context), resetButton);
 		return;
 	}
@@ -17092,6 +17140,36 @@ function Lessons(props) {
 		}, page.key);
 	}) });
 }
+// src/shared/subjects.ts
+function subjectList(subjects) {
+	if (!Array.isArray(subjects)) return [];
+	const seen = /* @__PURE__ */ new Set();
+	const list = [];
+	for (const entry of subjects) if (entry && typeof entry.id === "string" && typeof entry.title === "string" && !seen.has(entry.id)) {
+		seen.add(entry.id);
+		list.push({
+			id: entry.id,
+			title: entry.title
+		});
+	}
+	return list;
+}
+function groupUnits(subjects, units) {
+	const list = subjectList(subjects);
+	if (list.length < 2) return null;
+	const groups = list.map((subject) => ({
+		...subject,
+		units: []
+	}));
+	const byId = new Map(groups.map((group) => [group.id, group]));
+	let current = groups[0];
+	for (const unit of units) {
+		current = unit.subject && byId.get(unit.subject) || current;
+		current.units.push(unit);
+	}
+	const used = groups.filter((group) => group.units.length > 0);
+	return used.length >= 2 ? used : null;
+}
 // src/core/sidebar/sidebar-forms.ts
 var UNIT_TYPES = [
 	["text", "הסבר"],
@@ -17656,6 +17734,96 @@ function paintNavFade() {
 	nav.style.setProperty("--fade-t", hasMoreAbove ? FADE_HEIGHT : "0px");
 	nav.style.setProperty("--fade-b", hasMoreBelow ? FADE_HEIGHT : "0px");
 }
+// src/core/sidebar/SubjectGroups.tsx
+function useOpenSubjects(groups, currentSubjectId) {
+	const [openIds, setOpenIds] = (0, import_react.useState)(() => /* @__PURE__ */ new Set([currentSubjectId || groups[0].id]));
+	const [seenSubjectId, setSeenSubjectId] = (0, import_react.useState)(currentSubjectId);
+	const [isTouched, setTouched] = (0, import_react.useState)(false);
+	if (currentSubjectId !== seenSubjectId) {
+		setSeenSubjectId(currentSubjectId);
+		if (currentSubjectId && !isTouched) setOpenIds(/* @__PURE__ */ new Set([currentSubjectId]));
+		else if (currentSubjectId && !openIds.has(currentSubjectId)) setOpenIds(new Set(openIds).add(currentSubjectId));
+	}
+	const toggle = (subjectId) => {
+		const next = new Set(openIds);
+		if (!next.delete(subjectId)) next.add(subjectId);
+		setOpenIds(next);
+		setTouched(true);
+	};
+	return {
+		openIds,
+		toggle
+	};
+}
+function subjectOfUnit(groups, unit) {
+	const group = unit && groups.find((candidate) => candidate.units.includes(unit));
+	return group ? group.id : "";
+}
+function subjectProgress(units) {
+	const exercises = units.flatMap((unit) => (unit.pages || []).filter(isExercisePage));
+	return {
+		passed: exercises.filter((page) => hasPassed(page.box)).length,
+		total: exercises.length
+	};
+}
+function SubjectBlock(props) {
+	const { group, isOpen } = props;
+	const { passed, total } = subjectProgress(group.units);
+	const isPassed = total > 0 && passed === total;
+	const classes = [
+		"nav-subj",
+		isOpen ? "" : "shut",
+		isPassed ? "passed" : ""
+	];
+	const title = stripTags(group.title);
+	const listId = "nav-subj-" + group.id;
+	const count = total ? passed + "/" + total : "";
+	const countLabel = total ? ", " + passed + " מתוך " + total + " תרגילים עברו" : "";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: classes.filter(Boolean).join(" "),
+		"data-s": group.id,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+			type: "button",
+			className: "nav-subj-h",
+			"aria-expanded": isOpen,
+			"aria-controls": listId,
+			"aria-label": title + countLabel,
+			title,
+			onClick: props.onToggle,
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "arr",
+					"aria-hidden": "true",
+					children: isOpen ? "▾" : "◂"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "t",
+					dangerouslySetInnerHTML: { __html: codeBox.ltrCode(title) }
+				}),
+				count ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "sn",
+					dir: "ltr",
+					"aria-hidden": "true",
+					children: count + (isPassed ? " ✓" : "")
+				}) : null
+			]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "nav-subj-in",
+			id: listId,
+			children: props.children
+		})]
+	});
+}
+function SubjectFolders(props) {
+	const { groups } = props;
+	const { openIds, toggle } = useOpenSubjects(groups, subjectOfUnit(groups, props.currentUnit));
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: groups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SubjectBlock, {
+		group,
+		isOpen: openIds.has(group.id),
+		onToggle: () => toggle(group.id),
+		children: group.units.map(props.unitBlock)
+	}, group.id)) });
+}
 // src/core/sidebar/Sidebar.tsx
 function StepList(props) {
 	const { unit, currentPage, isAuthoring } = props;
@@ -17703,16 +17871,24 @@ function Sidebar(props) {
 	const currentPageId = useView((view) => view.currentPageId);
 	const isAuthoring = useView((view) => view.authoring);
 	const currentPage = pageModel.byId.get(currentPageId);
+	const units = props.course.units;
+	const groups = isAuthoring ? null : groupUnits(props.course.subjects, units);
 	(0, import_react.useLayoutEffect)(() => {
 		paintProgressBar(allBoxes());
 		paintNavFade();
 	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [props.course.units.map((unit, unitIndex) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UnitBlock, {
+	const unitBlock = (unit) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UnitBlock, {
 		unit,
-		unitIndex,
+		unitIndex: units.indexOf(unit),
 		currentPage,
 		isAuthoring
-	}, unit.id)), isAuthoring ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ListTail, {}) : null] });
+	}, unit.id);
+	if (groups) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SubjectFolders, {
+		groups,
+		currentUnit: currentPage?.u,
+		unitBlock
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [units.map(unitBlock), isAuthoring ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ListTail, {}) : null] });
 }
 // src/core/ui/Menu.tsx
 var EDGE_GAP_PX = 8;
@@ -18729,7 +18905,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 8799b95 מ-2026-11-08 17:10"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 8799b95</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 893b499 מ-2026-11-09 00:39"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 893b499</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

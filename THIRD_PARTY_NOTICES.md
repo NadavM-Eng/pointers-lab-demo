@@ -146,3 +146,76 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
+
+## Temml (LaTeX to MathML, the networking and math courses) — MIT License
+
+The pages that show LaTeX formulas embed [Temml](https://temml.org) 0.14.0 by Ron Kok
+(minified), which turns LaTeX into native MathML, through `src/shared/tex.ts`: the networking
+course (`src/engines/net`) and the courses on the proof engine (`src/engines/proof`, the math
+courses). The browser lays the MathML out with its own math font: none of Temml's fonts are
+used. `src/engines/proof/engine.css` holds a few layout rules from Temml's `Temml-Local.css`.
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2020 Ron Kok
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## TeaVM in-browser Java compiler (teavm-javac) — Apache License 2.0; contains OpenJDK javac — GPL v2 with the Classpath Exception
+
+The pages of the courses on the Java engine (`src/engines/java`) embed the in-browser Java
+compiler of [teavm-javac](https://github.com/konsoletyper/teavm-javac): javac and TeaVM compiled
+to WebAssembly, TeaVM's class libraries, its runtime JavaScript and its stack deobfuscator. They
+were downloaded unchanged from <https://teavm.org/playground/3/> on 2026-11-08 and are kept in
+`src/engines/java/vendor/teavm/` (three of them gzip-compressed; the page inlines them and
+unpacks them with the browser's `DecompressionStream`). The page is about 4.2 MB larger for it.
+
+| file (downloaded) | bytes | SHA-256 |
+|---|---|---|
+| `compiler.wasm` | 4,294,850 | `7f3828e4b7bddf5504dadebfc4016e40f4441e15ee0519071781813ba2ed3a4c` |
+| `compiler.wasm-runtime.js` | 13,573 | `9ff6a6771f698be00ab9d5c7b46d904350a8d4115dc0b409553f31ed66688a55` |
+| `compiler.wasm-deobfuscator.wasm` | 36,544 | `af49c0a76f47a30be2b23a74ffed502717b72019d871566841e66e754e5865e0` |
+| `compile-classlib-teavm.bin` | 200,623 | `e80ae10423a39290c5f20b6bb6da34d21c3ad0a75cd8dbdda4998d2813045e15` |
+| `runtime-classlib-teavm.bin` | 2,387,011 | `ea670e71967eda93828cb894c1741a8ed2e94b3422eb99cb9eccec0de67daaa8` |
+
+- **TeaVM and teavm-javac:** Copyright 2013-2026 Alexey Andreev, Apache License 2.0 (the full
+  text is `src/engines/java/vendor/teavm/LICENSE-Apache-2.0.txt`).
+- **javac inside `compiler.wasm`:** from the OpenJDK project, GNU General Public License version 2
+  with the Classpath Exception (the GPL text is `src/engines/java/vendor/teavm/LICENSE-GPL-2.0.txt`,
+  the exception `LICENSE-CLASSPATH-EXCEPTION.txt` beside it; also
+  <https://openjdk.org/legal/gplv2+ce.html>). teavm-javac states that it does not modify OpenJDK.
+  Source: teavm-javac builds javac from the OpenJDK 25 updates repository at commit
+  `6c48f4ed707bf0b15f9b6098de30db8aae6fa40f`
+  (<https://github.com/openjdk/jdk25u/tree/6c48f4ed707bf0b15f9b6098de30db8aae6fa40f>; the bundled
+  javac knows Java releases up to 25); the build itself is <https://github.com/konsoletyper/teavm-javac>
+  (the playground build names no commit; every commit from `9dd58592`, 2025-10-04, uses that
+  OpenJDK commit).
+- **On a site:** a site (`npm run site`) with a Java course carries the GPL v2, the Classpath
+  Exception, the Apache 2.0 licence and `NOTICE.txt` next to its pages, and `java-compiler.html`
+  (the files above with their SHA-256 and the links to their source), linked from the hub's footer
+  (`src/engines/java/site.json`, docs/engines/java.md section 8).
+- When the compiler loads, the lab renames some methods and classes of the compile class library
+  in memory (TeaVM's own rename annotations, as later teavm-javac sources do); the files stay
+  unchanged.
+
+Not downloaded: tree-sitter-java (approved in the plan). The Java instrumenter needs only
+statement-level parsing, which the engine does itself (`src/engines/java/stepping/lexer.ts`,
+`structure.ts`), so no grammar is shipped.

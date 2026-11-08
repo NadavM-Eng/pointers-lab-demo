@@ -337,12 +337,180 @@ body {
   color: var(--muted);
   font-size: 13.5px;
 }
+
+.hub-foot p {
+  max-width: 90ch;
+  margin: 0 0 6px;
+  text-wrap: pretty;
+}
+
+.hub-foot a,
+.hub-notice a {
+  color: var(--link);
+}
+
+/* ── a notice page (an engine's licences and source, hub-page.ts noticePageHtml) ── */
+.hub-head .hub-back {
+  margin-bottom: 0;
+}
+
+.hub-notice {
+  max-width: 90ch;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.hub-notice h2 {
+  margin: 28px 0 8px;
+  font-size: 20px;
+}
+
+.hub-notice code {
+  font-family: var(--f-mono);
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.hub-notice table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.hub-notice th,
+.hub-notice td {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: start;
+  vertical-align: top;
+}
+
+.hub-notice th {
+  background: var(--panel);
+}
+
+.hub-notice li {
+  margin-bottom: 8px;
+}
+
+/* ── a course with subjects: its card names them, and opens its subject list (hub.js) ── */
+.hub-subjs {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.hub-list[hidden],
+.hub-folder[hidden] {
+  display: none;
+}
+
+.hub-back {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--accent-text);
+  font-size: 14.5px;
+  text-decoration: none;
+}
+
+.hub-back:hover {
+  text-decoration: underline;
+}
+
+.hub-ftitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 6px;
+  font-family: var(--f-disp);
+  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/* a few subjects share the row (auto-fit: no empty columns beside them) */
+.hub-folder .hub-list {
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  margin-top: 18px;
+}
+
+/* a subject's card holds links, so it is a box and not a link itself */
+.hub-subj:hover {
+  border-color: var(--line);
+  border-inline-start-color: var(--accent);
+  background: var(--panel-2);
+}
+
+.hub-start {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.hub-start:hover .hub-title {
+  text-decoration: underline;
+}
+
+.hub-subj .hub-meta {
+  margin-top: 0;
+}
+
+.hub-lessons {
+  margin: 6px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.hub-lessons a {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.hub-lessons a:hover {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.hub-lessons .n {
+  flex: 0 0 22px;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  text-align: center;
+}
+
+.hub-lessons .t {
+  flex: 1;
+  min-width: 0;
+}
+
+.hub-lessons .ck {
+  color: var(--ok);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hub-lessons .ck[hidden] {
+  display: none;
+}
+
+.hub-lessons .passed .n {
+  color: var(--ok);
+}
 </style>
 </head>
 <body>
 <a class="skip" href="#courses">דלג לרשימת הקורסים</a>
 <header class="hub-head">
-<div class="hub-top"><span class="hub-kick" dir="ltr">C · JavaScript · examples</span>
+<div class="hub-top"><span class="hub-kick" dir="ltr">C · Java · JavaScript · examples</span>
 <span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים">
 <button type="button" data-theme-set="light" aria-pressed="false">☀ בהיר</button>
 <button type="button" data-theme-set="dark" aria-pressed="false">☾ כהה</button>
@@ -385,14 +553,29 @@ body {
 <span class="hub-prog" data-prefix="lab:example-c:" data-ids="[&quot;sum-to&quot;,&quot;read-sum&quot;,&quot;sum-all&quot;,&quot;lab1-max&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
+<li class="hub-card"><a class="hub-link" href="example-java.html?course=example-java">
+<span class="hub-ctop"><span class="hub-title">קורס Java לדוגמה</span><span class="hub-tag" dir="ltr">Java</span></span>
+<span class="hub-ckick" dir="ltr">Java · JDK · TeaVM · tests</span>
+<span class="hub-desc">הדגמה של מנוע ה-Java: קלט מהמקלדת, עץ רקורסיה שגדל בכל קריאה, אובייקטים והפניות בזיכרון, ובדיקות שסופרות כמה צעדים הקוד שלכם עשה.</span>
+<span class="hub-meta">5 שיעורים · 5 תרגילים</span>
+<span class="hub-prog" data-prefix="lab:example-java:" data-ids="[&quot;until-zero&quot;,&quot;digit-sum&quot;,&quot;max-sum-naive&quot;,&quot;max-sum-fast&quot;,&quot;list-sum&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+</a></li>
 </ul>
 </main>
-<footer class="hub-foot">הקוד וההתקדמות נשמרים בדפדפן הזה, לכל קורס בנפרד.</footer>
+<footer class="hub-foot">
+<p>הקוד וההתקדמות נשמרים בדפדפן הזה, לכל קורס בנפרד.</p>
+<p>עמודי ה-<bdi dir="ltr">Java</bdi> כוללים את המהדר <bdi dir="ltr">javac</bdi> של <bdi dir="ltr">OpenJDK</bdi> (<bdi dir="ltr">GPL v2</bdi> עם <bdi dir="ltr">Classpath Exception</bdi>) בתוך <bdi dir="ltr">TeaVM</bdi> (<bdi dir="ltr">Apache 2.0</bdi>): <a href="java-compiler.html">הרישיונות וקוד המקור</a>.</p>
+<p><a href="LICENSE.txt">רישיון המעבדה</a> · 
+<a href="THIRD_PARTY_NOTICES.txt">תוכנה של צד שלישי</a></p>
+</footer>
 <script>/*
  * The hub page's script (inlined by src/vite/hub-page.ts; a classic script, no imports): the
  * theme switch, under the lab's own key 'lab:theme' so the courses follow it, and each course
  * card's progress: how many of the course's exercises passed, read from the keys the course page
- * writes ('<prefix>pass:<box id>', JSON true). The hub writes nothing else.
+ * writes ('<prefix>pass:<box id>', JSON true). The hub writes nothing else. A course with
+ * subjects has a second level, its subject list (index.html#<course id>): the address chooses
+ * which level is shown, so the browser's back and forward move between them.
  */
 
 /** The lab's theme key (the same as src/core/page/theme.js). */
@@ -468,19 +651,81 @@ function paintProgress(progress) {
 }
 
 /**
- * Fills every card's progress (again when the page comes back from the history).
+ * Marks a lesson of a subject list ✓ when it has exercises and all of them passed.
+ *
+ * @param {HTMLElement} lesson the lesson's li (data-prefix, data-ids)
+ * @returns {void}
+ * Side effects: shows or hides its ✓, sets its class 'passed'.
+ */
+function paintLesson(lesson) {
+  const ids = JSON.parse(lesson.dataset.ids || '[]');
+  const prefix = lesson.dataset.prefix;
+  const isPassed = ids.length > 0 && ids.every((id) => readStored(prefix + 'pass:' + id) === true);
+  lesson.querySelector('.ck').hidden = !isPassed;
+  lesson.classList.toggle('passed', isPassed);
+}
+
+/**
+ * Fills every card's progress and every lesson's ✓ (again when the page comes back from the
+ * history).
  *
  * @returns {void}
- * Side effects: see paintProgress.
+ * Side effects: see paintProgress and paintLesson.
  */
 function paintAllProgress() {
   document.querySelectorAll('.hub-prog').forEach(paintProgress);
+  document.querySelectorAll('.hub-lessons li').forEach(paintLesson);
+}
+
+/** The hub's own title, before a subject list adds the course's. */
+const SITE_TITLE = document.title;
+
+/** The course whose subject list is shown ('' = the list of courses). */
+let shownFolder = '';
+
+/**
+ * Shows the level the address names: index.html#<course id> is that course's subject list
+ * (docs/VITE.md section 11.5), anything else the list of courses. After a move inside the hub
+ * the focus goes to the new level's title, or back to the card of the course just left.
+ *
+ * @param {boolean} isMove true after the address changed (not on the first draw)
+ * @returns {void}
+ * Side effects: hides and shows the levels, sets the tab title, may scroll and move the focus.
+ */
+function showLevel(isMove) {
+  const wanted = decodeURIComponent(location.hash.slice(1));
+  let folder = null;
+  document.querySelectorAll('.hub-folder').forEach((section) => {
+    const isShown = section.dataset.folder === wanted;
+    section.hidden = !isShown;
+    folder = isShown ? section : folder;
+  });
+  document.querySelectorAll('.hub-main > .hub-list, .hub-main > h2.sr').forEach((element) => {
+    element.hidden = Boolean(folder);
+  });
+  document.title = folder ? folder.dataset.title + ' · ' + SITE_TITLE : SITE_TITLE;
+  const left = shownFolder;
+  shownFolder = folder ? folder.dataset.folder : '';
+  if (!isMove || left === shownFolder) {
+    return;
+  }
+  window.scrollTo(0, 0);
+  const card = left && document.querySelector('.hub-main > .hub-list a[href="#' + left + '"]');
+  const target = folder ? folder.querySelector('.hub-ftitle') : card;
+  if (target) {
+    target.focus({ preventScroll: true });
+  }
 }
 
 setUpThemeSwitch();
 paintAllProgress();
+showLevel(false);
+window.addEventListener('hashchange', () => showLevel(true));
 // back from a course page: the browser may show the page from its cache, so read again
-window.addEventListener('pageshow', paintAllProgress);
+window.addEventListener('pageshow', () => {
+  paintAllProgress();
+  showLevel(false);
+});
 </script>
 </body>
 </html>

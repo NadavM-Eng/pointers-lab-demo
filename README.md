@@ -16,6 +16,7 @@ The start page lists the courses of this demo. Each course is its own offline pa
 | `math-sequences.html` | A proof of concept for math: proofs about bounded sequences (a Calculus 1 question), stepped line by line like code. A panel shows the bounds known so far (M₁, m₁, K₁, …) the way the C courses show the call stack |
 | `example-net.html` | A networking example course: packet timing stepped event by event, with a live timeline, a panel of values with units, and answers checked with units |
 | `example-c.html` | A small C course: loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise |
+| `example-java.html` | A small Java course: input and output, recursion with a live recursion tree (Hanoi, digit sum), a slow and a fast solution checked by step counts, objects and references in a heap view, and a quiz |
 | `example.html` | A tiny course in an example language, which shows how the lab supports more than one language |
 
 ## What runs where
@@ -26,6 +27,8 @@ Everything runs in your browser:
   pointer is 4 bytes here.
 - In the sidebar you can switch ▶ Run and ✓ Tests to real gcc on
   [Compiler Explorer](https://godbolt.org) (64-bit). Line-by-line stepping stays in the browser.
+- The Java code is compiled in your browser by OpenJDK's javac, built for the browser by
+  [TeaVM](https://teavm.org). In the sidebar you can switch to a JDK on Compiler Explorer instead.
 - Line by line also steps into functions in your other `.c` files, and you can edit the code while
   stepping. Press ⏯ again to run the new code.
 - Your code and progress are saved only in your own browser (localStorage).
@@ -50,3 +53,9 @@ each page was built from is shown at the bottom of its sidebar.
 The lab itself is under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`): free for
 noncommercial use; commercial use is not allowed. The pages bundle xcc and tree-sitter, React and
 ProseMirror (all MIT). Their notices and full license texts are in `THIRD_PARTY_NOTICES.md`.
+
+`example-java.html` also bundles TeaVM (Apache 2.0) and OpenJDK's javac, which is under the GNU
+GPL version 2 with the Classpath Exception. `java-compiler.html` lists the bundled files with
+their SHA-256 and links to their exact source; the license texts are `LICENSE-GPL-2.0.txt`,
+`LICENSE-GPL-2.0-CLASSPATH-EXCEPTION.txt`, `LICENSE-Apache-2.0.txt` and
+`NOTICE-teavm-javac.txt`.

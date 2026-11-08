@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>המהדר של Java: רישיונות וקוד מקור · מעבדות קוד</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
+<script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=Secular+One&display=swap" onload="this.rel='stylesheet'">
+<style>/* ═══ Pointers Lab · color palette ═══
+   Based on the IntelliJ "New UI" themes: Dark (default) and Light.
+   Every color in the lab comes from these variables; nothing else hard-codes a color.
+   Theme is chosen by <html data-theme="dark|light">. */
+
+:root,
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  /* surfaces */
+  --bg:#1E1F22;          /* window / editor background */
+  --panel:#2B2D30;       /* sidebar, tool windows, lesson pane */
+  --panel-2:#313438;     /* cards, hovered rows */
+  --raised:#393B40;      /* buttons, inputs */
+  --line:#43454A;        /* borders */
+  --line-2:#2F3134;      /* faint dividers */
+  --sel:#2E436E;         /* selection / active row */
+  --caret-line:#26282E;  /* current line in the editor */
+  /* text */
+  --ink:#DFE1E5;         /* main text */
+  --ink-2:#B4B8BF;       /* secondary text */
+  --muted:#A2A5AB;       /* hints, labels (4.5:1 on every surface) */
+  --gutter:#888F9B;      /* line numbers (4.5:1 on the editor) */
+  --gutter-cur:#B4B8BF;
+  /* accents */
+  --accent:#2E6FEF;      /* primary buttons, focus (white text on it: 4.5:1) */
+  --accent-ink:#FFFFFF;
+  --accent-text:#6C9AF4; /* accent-colored text on dark surfaces */
+  --link:#6C9BF8;
+  --ok:#5FB865;          /* passed tests, exit 0 */
+  --err:#F86F7C;         /* errors, failed tests */
+  --warn:#F2C55C;        /* warnings, waiting for input */
+  --orange:#E08855;      /* task card, "changed" values */
+  --on-ok:#1E1F22;       /* text on a green fill (Run button) */
+  --on-orange:#1E1F22;   /* text on an orange fill (changed value, badge) */
+  --addr:#A2A5AB;        /* small addresses under array cells */
+  --ptr:#2FC0CC;         /* pointers and arrows in the memory view */
+  --knob:#FFFFFF;        /* the round knob of the admin switch */
+  --shadow:rgba(0,0,0,.35); /* drop shadow of the self-test panel and the drawer */
+  /* syntax (IntelliJ Dark) */
+  --syn-kw:#CF8E6D; --syn-str:#6AAB73; --syn-num:#2AACB8; --syn-com:#8B8F95;
+  --syn-fn:#56A8F5; --syn-pp:#B3AE60; --syn-plain:#BCBEC4;
+  /* scrollbar */
+  --sb-thumb:#4E5157; --sb-thumb-hover:#5A5D63;
+}
+
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#FFFFFF;
+  --panel:#F7F8FA;
+  --panel-2:#EBECF0;
+  --raised:#FFFFFF;
+  --line:#DFE1E5;
+  --line-2:#EBECF0;
+  --sel:#D4E2FF;
+  --caret-line:#F5F8FE;
+  --ink:#1E1F22;
+  --ink-2:#494B57;
+  --muted:#666A77;
+  --gutter:#68718B;
+  --gutter-cur:#494B57;
+  --accent:#2E6FEF;
+  --accent-ink:#FFFFFF;
+  --accent-text:#1960EE;
+  --link:#2E55A3;
+  --ok:#1C7935;
+  --err:#CD2636;
+  --warn:#956003;
+  --orange:#AE4E18;
+  --on-ok:#FFFFFF;
+  --on-orange:#FFFFFF;
+  --addr:#666A77;
+  --ptr:#0C6D76;
+  --knob:#FFFFFF;
+  --shadow:rgba(0,0,0,.35);
+  /* syntax (IntelliJ Light) */
+  --syn-kw:#0033B3; --syn-str:#067D17; --syn-num:#1750EB; --syn-com:#727272;
+  --syn-fn:#00627A; --syn-pp:#82700B; --syn-plain:#080808;
+  --sb-thumb:#C9CCD6; --sb-thumb-hover:#A8ADBD;
+}
+
+/* printing: black text on white paper in both themes (layout part is in style.css) */
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{
+    color-scheme:light;
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F2F2F2; --raised:#FFFFFF; --line:#BFBFBF; --line-2:#D9D9D9; --caret-line:#FFFFFF;
+    --ink:#000000; --ink-2:#222222; --muted:#444444; --gutter:#555555; --gutter-cur:#000000; --addr:#444444;
+    --link:#0033B3; --accent-text:#0033B3; --ok:#14602A; --err:#A00D1A; --warn:#7A4E00; --orange:#8A3E10; --ptr:#0A5F68;
+    --syn-kw:#0033B3; --syn-str:#067D17; --syn-num:#1750EB; --syn-com:#5A5A5A; --syn-fn:#00627A; --syn-pp:#82700B; --syn-plain:#000000;
+  }
+}
+
+/* our own scrollbar: thin, rounded, in the theme's colors */
+*{scrollbar-width:thin;scrollbar-color:var(--sb-thumb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--sb-thumb);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--sb-thumb-hover);border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-corner{background:transparent}
+</style>
+<style>/* ═══ The hub page of a site (src/vite/hub-page.ts): the course list. Only var(--token) colours
+   (design/tokens.css); the fonts and the theme switch are the course pages'. ═══ */
+
+:root {
+  --f-body: 'IBM Plex Sans Hebrew', 'Segoe UI', Arial, sans-serif;
+  --f-disp: 'Secular One', 'IBM Plex Sans Hebrew', 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', 'IBM Plex Mono', Consolas, 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 16px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+/* ── skip link and screen-reader text, as in the course pages ── */
+.skip {
+  position: absolute;
+  top: 8px;
+  transform: translateY(-200%);
+  inset-inline-start: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── header ── */
+.hub-head,
+.hub-main,
+.hub-foot {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.hub-head {
+  padding: 40px 0 8px;
+}
+
+.hub-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hub-kick {
+  color: var(--accent-text);
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.hub-head h1 {
+  margin: 10px 0 6px;
+  font-family: var(--f-disp);
+  font-size: clamp(30px, 3.6vw, 44px);
+  font-weight: 400;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.hub-intro {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.theme-sw {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.theme-sw button {
+  padding: 4px 10px;
+  border: 0;
+  background: var(--raised);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.theme-sw button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ── the course cards ── */
+.hub-main {
+  padding: 24px 0;
+}
+
+.hub-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hub-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.hub-link:hover {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+
+.hub-ctop {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hub-title {
+  font-family: var(--f-disp);
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.hub-tag {
+  padding: 0 6px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent-text);
+  font-family: var(--f-mono);
+  font-size: 12px;
+}
+
+.hub-ckick {
+  color: var(--accent-text);
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.hub-desc {
+  color: var(--ink-2);
+  font-size: 15px;
+  text-wrap: pretty;
+}
+
+.hub-meta {
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* the student's progress: the sidebar's bar of the course pages */
+.hub-prog {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.hub-prog[hidden] {
+  display: none;
+}
+
+.prog-bar {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--line);
+}
+
+.prog-bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--ok);
+}
+
+.prog-n {
+  color: var(--ink-2);
+  font-family: var(--f-mono);
+  white-space: nowrap;
+}
+
+/* ── footer ── */
+.hub-foot {
+  padding: 8px 0 32px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.hub-foot p {
+  max-width: 90ch;
+  margin: 0 0 6px;
+  text-wrap: pretty;
+}
+
+.hub-foot a,
+.hub-notice a {
+  color: var(--link);
+}
+
+/* ── a notice page (an engine's licences and source, hub-page.ts noticePageHtml) ── */
+.hub-head .hub-back {
+  margin-bottom: 0;
+}
+
+.hub-notice {
+  max-width: 90ch;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.hub-notice h2 {
+  margin: 28px 0 8px;
+  font-size: 20px;
+}
+
+.hub-notice code {
+  font-family: var(--f-mono);
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.hub-notice table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.hub-notice th,
+.hub-notice td {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: start;
+  vertical-align: top;
+}
+
+.hub-notice th {
+  background: var(--panel);
+}
+
+.hub-notice li {
+  margin-bottom: 8px;
+}
+
+/* ── a course with subjects: its card names them, and opens its subject list (hub.js) ── */
+.hub-subjs {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.hub-list[hidden],
+.hub-folder[hidden] {
+  display: none;
+}
+
+.hub-back {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--accent-text);
+  font-size: 14.5px;
+  text-decoration: none;
+}
+
+.hub-back:hover {
+  text-decoration: underline;
+}
+
+.hub-ftitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 6px;
+  font-family: var(--f-disp);
+  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/* a few subjects share the row (auto-fit: no empty columns beside them) */
+.hub-folder .hub-list {
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  margin-top: 18px;
+}
+
+/* a subject's card holds links, so it is a box and not a link itself */
+.hub-subj:hover {
+  border-color: var(--line);
+  border-inline-start-color: var(--accent);
+  background: var(--panel-2);
+}
+
+.hub-start {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.hub-start:hover .hub-title {
+  text-decoration: underline;
+}
+
+.hub-subj .hub-meta {
+  margin-top: 0;
+}
+
+.hub-lessons {
+  margin: 6px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.hub-lessons a {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.hub-lessons a:hover {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.hub-lessons .n {
+  flex: 0 0 22px;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  text-align: center;
+}
+
+.hub-lessons .t {
+  flex: 1;
+  min-width: 0;
+}
+
+.hub-lessons .ck {
+  color: var(--ok);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hub-lessons .ck[hidden] {
+  display: none;
+}
+
+.hub-lessons .passed .n {
+  color: var(--ok);
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#notice">דלג לתוכן</a>
+<header class="hub-head">
+<div class="hub-top"><a class="hub-back" href="index.html">→ כל הקורסים</a>
+<span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים">
+<button type="button" data-theme-set="light" aria-pressed="false">☀ בהיר</button>
+<button type="button" data-theme-set="dark" aria-pressed="false">☾ כהה</button>
+</span></div>
+<h1>המהדר של Java: רישיונות וקוד מקור</h1>
+</header>
+<main class="hub-main" id="notice" tabindex="-1">
+<p class="hub-intro">
+  עמודי הקורסים על מנוע ה-<bdi dir="ltr">Java</bdi> כוללים, בתוך הקובץ עצמו, את המהדר שרץ בדפדפן:
+  <bdi dir="ltr">teavm-javac</bdi>. בתוכו המהדר <bdi dir="ltr">javac</bdi> של
+  <bdi dir="ltr">OpenJDK</bdi>, ברישיון <bdi dir="ltr">GPL</bdi> גרסה 2 עם
+  <bdi dir="ltr">Classpath Exception</bdi>, ו-<bdi dir="ltr">TeaVM</bdi> עצמו ברישיון
+  <bdi dir="ltr">Apache 2.0</bdi>. כאן הקבצים בדיוק, הרישיונות והקישורים לקוד המקור שממנו נבנו.
+</p>
+<section class="hub-notice" dir="ltr" lang="en">
+  <h2>What the Java pages embed</h2>
+  <p>
+    Every course page of this site whose course runs on the Java engine embeds the in-browser Java
+    compiler of <a href="https://github.com/konsoletyper/teavm-javac">teavm-javac</a>, downloaded
+    unchanged from <code>https://teavm.org/playground/3/</code> on 2026-11-08. Three of the files
+    are stored gzip-compressed in the page (<code>gzip -9 -n</code>) and unpacked by the browser;
+    the sizes and SHA-256 sums below are those of the files themselves.
+  </p>
+  <table>
+    <tr>
+      <th>file</th>
+      <th>bytes</th>
+      <th>SHA-256</th>
+    </tr>
+    <tr>
+      <td><code>compiler.wasm</code></td>
+      <td>4,294,850</td>
+      <td><code>7f3828e4b7bddf5504dadebfc4016e40f4441e15ee0519071781813ba2ed3a4c</code></td>
+    </tr>
+    <tr>
+      <td><code>compiler.wasm-runtime.js</code></td>
+      <td>13,573</td>
+      <td><code>9ff6a6771f698be00ab9d5c7b46d904350a8d4115dc0b409553f31ed66688a55</code></td>
+    </tr>
+    <tr>
+      <td><code>compiler.wasm-deobfuscator.wasm</code></td>
+      <td>36,544</td>
+      <td><code>af49c0a76f47a30be2b23a74ffed502717b72019d871566841e66e754e5865e0</code></td>
+    </tr>
+    <tr>
+      <td><code>compile-classlib-teavm.bin</code></td>
+      <td>200,623</td>
+      <td><code>e80ae10423a39290c5f20b6bb6da34d21c3ad0a75cd8dbdda4998d2813045e15</code></td>
+    </tr>
+    <tr>
+      <td><code>runtime-classlib-teavm.bin</code></td>
+      <td>2,387,011</td>
+      <td><code>ea670e71967eda93828cb894c1741a8ed2e94b3422eb99cb9eccec0de67daaa8</code></td>
+    </tr>
+  </table>
+
+  <h2>Licences</h2>
+  <ul>
+    <li>
+      <b>javac</b>, inside <code>compiler.wasm</code>: from the OpenJDK project, under the GNU
+      General Public License, version 2 (<a href="LICENSE-GPL-2.0.txt">LICENSE-GPL-2.0.txt</a>),
+      with the Classpath Exception (<a href="LICENSE-GPL-2.0-CLASSPATH-EXCEPTION.txt"
+        >LICENSE-GPL-2.0-CLASSPATH-EXCEPTION.txt</a
+      >).
+    </li>
+    <li>
+      <b>TeaVM and teavm-javac</b> (the rest of <code>compiler.wasm</code>, the class libraries, the
+      runtime JavaScript and the deobfuscator): Copyright 2013-2026 Alexey Andreev, under the Apache
+      License 2.0 (<a href="LICENSE-Apache-2.0.txt">LICENSE-Apache-2.0.txt</a>,
+      <a href="NOTICE-teavm-javac.txt">NOTICE-teavm-javac.txt</a>).
+    </li>
+    <li>
+      The lab's own code: PolyForm Noncommercial 1.0.0 (<a href="LICENSE.txt">LICENSE.txt</a>).
+      Every third-party part of the pages:
+      <a href="THIRD_PARTY_NOTICES.txt">THIRD_PARTY_NOTICES.txt</a>.
+    </li>
+  </ul>
+
+  <h2>Source code</h2>
+  <ul>
+    <li>
+      <b>javac (OpenJDK, GPL v2 with the Classpath Exception).</b> teavm-javac compiles the
+      unmodified javac of the OpenJDK 25 updates repository at commit
+      <code>6c48f4ed707bf0b15f9b6098de30db8aae6fa40f</code> (its <code>gradle.properties</code>,
+      <code>jdk.revision</code>; the bundled javac knows Java releases up to 25). The source at that
+      commit:
+      <a href="https://github.com/openjdk/jdk25u/tree/6c48f4ed707bf0b15f9b6098de30db8aae6fa40f"
+        >github.com/openjdk/jdk25u/tree/6c48f4ed707b…</a
+      >, as one archive:
+      <a
+        href="https://github.com/openjdk/jdk25u/archive/6c48f4ed707bf0b15f9b6098de30db8aae6fa40f.zip"
+        >jdk25u-6c48f4ed707b….zip</a
+      >. The compiler is in <code>src/jdk.compiler</code> and <code>src/jdk.internal.opt</code>, its
+      build tools in <code>make/langtools/tools</code>.
+    </li>
+    <li>
+      <b>teavm-javac (Apache 2.0)</b>, the build that turns javac into <code>compiler.wasm</code>:
+      <a href="https://github.com/konsoletyper/teavm-javac">github.com/konsoletyper/teavm-javac</a>.
+      The playground build does not name its commit. Every commit from
+      <a
+        href="https://github.com/konsoletyper/teavm-javac/tree/9dd58592331f44c14e6f81712a445918b3039faf"
+        ><code>9dd58592</code></a
+      >
+      (2025-10-04, "Support Java 25") on builds javac from the OpenJDK commit above.
+    </li>
+    <li>
+      <b>TeaVM</b> itself:
+      <a href="https://github.com/konsoletyper/teavm">github.com/konsoletyper/teavm</a>.
+    </li>
+  </ul>
+</section>
+</main>
+<footer class="hub-foot">
+<p>הקוד וההתקדמות נשמרים בדפדפן הזה, לכל קורס בנפרד.</p>
+<p><a href="LICENSE.txt">רישיון המעבדה</a> · 
+<a href="THIRD_PARTY_NOTICES.txt">תוכנה של צד שלישי</a></p>
+</footer>
+<script>/*
+ * The hub page's script (inlined by src/vite/hub-page.ts; a classic script, no imports): the
+ * theme switch, under the lab's own key 'lab:theme' so the courses follow it, and each course
+ * card's progress: how many of the course's exercises passed, read from the keys the course page
+ * writes ('<prefix>pass:<box id>', JSON true). The hub writes nothing else. A course with
+ * subjects has a second level, its subject list (index.html#<course id>): the address chooses
+ * which level is shown, so the browser's back and forward move between them.
+ */
+
+/** The lab's theme key (the same as src/core/page/theme.js). */
+const THEME_KEY = 'lab:theme';
+
+/**
+ * Reads a JSON value from localStorage.
+ *
+ * @param {string} key the key
+ * @returns {unknown} the value, or null when it is missing or unreadable
+ */
+function readStored(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Shows a theme and marks its button pressed.
+ *
+ * @param {string} theme 'light' or 'dark'
+ * @returns {void}
+ * Side effects: the page's data-theme, the buttons' aria-pressed.
+ */
+function paintTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.querySelectorAll('[data-theme-set]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.themeSet === theme));
+  });
+}
+
+/**
+ * Sets up the theme buttons.
+ *
+ * @returns {void}
+ * Side effects: paints the theme; a click saves the chosen theme in localStorage.
+ */
+function setUpThemeSwitch() {
+  paintTheme(document.documentElement.dataset.theme || 'dark');
+  document.querySelectorAll('[data-theme-set]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const theme = button.dataset.themeSet;
+      paintTheme(theme);
+      try {
+        localStorage.setItem(THEME_KEY, JSON.stringify(theme));
+      } catch {
+        // no storage: the theme holds for this visit only
+      }
+    });
+  });
+}
+
+/**
+ * Fills one card's progress: N / M exercises passed, and the bar.
+ *
+ * @param {HTMLElement} progress the card's span.hub-prog
+ * @returns {void}
+ * Side effects: shows the progress when the course has exercises.
+ */
+function paintProgress(progress) {
+  const ids = JSON.parse(progress.dataset.ids || '[]');
+  if (!ids.length) {
+    return;
+  }
+  const prefix = progress.dataset.prefix;
+  const passed = ids.filter((id) => readStored(prefix + 'pass:' + id) === true).length;
+  progress.querySelector('.prog-n').textContent = passed + '/' + ids.length;
+  progress.querySelector('i').style.width = Math.round((passed / ids.length) * 100) + '%';
+  progress.setAttribute('aria-label', passed + ' מתוך ' + ids.length + ' תרגילים עברו');
+  progress.hidden = false;
+}
+
+/**
+ * Marks a lesson of a subject list ✓ when it has exercises and all of them passed.
+ *
+ * @param {HTMLElement} lesson the lesson's li (data-prefix, data-ids)
+ * @returns {void}
+ * Side effects: shows or hides its ✓, sets its class 'passed'.
+ */
+function paintLesson(lesson) {
+  const ids = JSON.parse(lesson.dataset.ids || '[]');
+  const prefix = lesson.dataset.prefix;
+  const isPassed = ids.length > 0 && ids.every((id) => readStored(prefix + 'pass:' + id) === true);
+  lesson.querySelector('.ck').hidden = !isPassed;
+  lesson.classList.toggle('passed', isPassed);
+}
+
+/**
+ * Fills every card's progress and every lesson's ✓ (again when the page comes back from the
+ * history).
+ *
+ * @returns {void}
+ * Side effects: see paintProgress and paintLesson.
+ */
+function paintAllProgress() {
+  document.querySelectorAll('.hub-prog').forEach(paintProgress);
+  document.querySelectorAll('.hub-lessons li').forEach(paintLesson);
+}
+
+/** The hub's own title, before a subject list adds the course's. */
+const SITE_TITLE = document.title;
+
+/** The course whose subject list is shown ('' = the list of courses). */
+let shownFolder = '';
+
+/**
+ * Shows the level the address names: index.html#<course id> is that course's subject list
+ * (docs/VITE.md section 11.5), anything else the list of courses. After a move inside the hub
+ * the focus goes to the new level's title, or back to the card of the course just left.
+ *
+ * @param {boolean} isMove true after the address changed (not on the first draw)
+ * @returns {void}
+ * Side effects: hides and shows the levels, sets the tab title, may scroll and move the focus.
+ */
+function showLevel(isMove) {
+  const wanted = decodeURIComponent(location.hash.slice(1));
+  let folder = null;
+  document.querySelectorAll('.hub-folder').forEach((section) => {
+    const isShown = section.dataset.folder === wanted;
+    section.hidden = !isShown;
+    folder = isShown ? section : folder;
+  });
+  document.querySelectorAll('.hub-main > .hub-list, .hub-main > h2.sr').forEach((element) => {
+    element.hidden = Boolean(folder);
+  });
+  document.title = folder ? folder.dataset.title + ' · ' + SITE_TITLE : SITE_TITLE;
+  const left = shownFolder;
+  shownFolder = folder ? folder.dataset.folder : '';
+  if (!isMove || left === shownFolder) {
+    return;
+  }
+  window.scrollTo(0, 0);
+  const card = left && document.querySelector('.hub-main > .hub-list a[href="#' + left + '"]');
+  const target = folder ? folder.querySelector('.hub-ftitle') : card;
+  if (target) {
+    target.focus({ preventScroll: true });
+  }
+}
+
+setUpThemeSwitch();
+paintAllProgress();
+showLevel(false);
+window.addEventListener('hashchange', () => showLevel(true));
+// back from a course page: the browser may show the page from its cache, so read again
+window.addEventListener('pageshow', () => {
+  paintAllProgress();
+  showLevel(false);
+});
+</script>
+</body>
+</html>

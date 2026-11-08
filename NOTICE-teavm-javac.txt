@@ -1,0 +1,48 @@
+TeaVM in-browser Java compiler (teavm-javac), as published by the TeaVM playground
+==================================================================================
+
+These files are the in-browser Java compiler of https://github.com/konsoletyper/teavm-javac,
+downloaded unchanged from https://teavm.org/playground/3/ on 2026-11-08 (the build that
+https://teavm.org/playground.html loads). Three of them are stored gzip-compressed here; the two
+class-library .bin files are already gzip streams and are stored as downloaded.
+
+  file in this folder                   downloaded from (https://teavm.org/playground/3/...)
+  compiler.wasm.gz                      compiler.wasm                     (gzip -9 -n)
+  compiler.wasm-runtime.js.gz           compiler.wasm-runtime.js          (gzip -9 -n)
+  compiler.wasm-deobfuscator.wasm.gz    compiler.wasm-deobfuscator.wasm   (gzip -9 -n)
+  compile-classlib-teavm.bin            compile-classlib-teavm.bin        (as downloaded)
+  runtime-classlib-teavm.bin            runtime-classlib-teavm.bin        (as downloaded)
+
+SHA-256 of the downloaded (uncompressed) files:
+  compiler.wasm                    7f3828e4b7bddf5504dadebfc4016e40f4441e15ee0519071781813ba2ed3a4c
+  compiler.wasm-runtime.js         9ff6a6771f698be00ab9d5c7b46d904350a8d4115dc0b409553f31ed66688a55
+  compiler.wasm-deobfuscator.wasm  af49c0a76f47a30be2b23a74ffed502717b72019d871566841e66e754e5865e0
+  compile-classlib-teavm.bin       e80ae10423a39290c5f20b6bb6da34d21c3ad0a75cd8dbdda4998d2813045e15
+  runtime-classlib-teavm.bin       ea670e71967eda93828cb894c1741a8ed2e94b3422eb99cb9eccec0de67daaa8
+
+Licences
+--------
+TeaVM and teavm-javac: Copyright 2013-2026 Alexey Andreev. Licensed under the Apache License,
+Version 2.0 (LICENSE-Apache-2.0.txt in this folder, or http://www.apache.org/licenses/LICENSE-2.0).
+The class libraries (*.bin) and the runtime JavaScript are TeaVM's.
+
+compiler.wasm also contains the Java compiler (javac) of the OpenJDK project, compiled to
+WebAssembly. OpenJDK is licensed under the GNU General Public License, version 2, with the
+Classpath Exception (LICENSE-GPL-2.0.txt and LICENSE-CLASSPATH-EXCEPTION.txt in this folder; the
+exception's text was copied from the end of legal/java.base/LICENSE of an OpenJDK 26 build, and
+is also at https://openjdk.org/legal/gplv2+ce.html). teavm-javac's README states that no OpenJDK
+code is modified.
+
+Source
+------
+javac: teavm-javac builds it from the OpenJDK 25 updates repository at commit
+6c48f4ed707bf0b15f9b6098de30db8aae6fa40f (gradle.properties, jdk.revision; the bundled javac
+knows Java releases up to 25):
+  https://github.com/openjdk/jdk25u/tree/6c48f4ed707bf0b15f9b6098de30db8aae6fa40f
+teavm-javac (the build that produces compiler.wasm): https://github.com/konsoletyper/teavm-javac.
+The playground build names no commit; every commit from 9dd58592331f44c14e6f81712a445918b3039faf
+(2025-10-04, "Support Java 25") on uses the OpenJDK commit above.
+TeaVM: https://github.com/konsoletyper/teavm.
+
+A site (npm run site) with a Java course carries these licences and SOURCE-OFFER.html (as
+java-compiler.html) next to its pages: ../../site.json.
