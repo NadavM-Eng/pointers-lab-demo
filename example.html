@@ -508,6 +508,7 @@ body.dragging{cursor:col-resize;user-select:none}
 .wb-badge .ok{color:var(--ok);font-size:13px}
 .wb-badge .no{color:var(--err);font-family:var(--f-mono);font-size:13px}
 .wb-badge .stale{color:var(--muted);font-size:13px}
+.wb-badge .teacher{color:var(--muted);font-size:13px;border:1px solid var(--line);border-radius:4px;padding:0 5px}
 .wb-task{margin:4px 14px;padding:8px 12px;border:1px solid var(--orange);border-radius:6px;font-size:14.5px}
 /* the bar reads left to right, like the code: run / step / tests on the left, full screen and reset on the right; it stays on one line,
    and below ~700 px the full-screen button keeps only its icon (the label stays for screen readers) */
@@ -644,6 +645,20 @@ body:not(.admin) .admin-tab{display:none}
 .ed-hl .ln{display:block;min-height:var(--ed-lh);margin:0 -14px 0 -6px;padding:0 14px 0 6px}
 .ed-hl .ln.cur{background:var(--caret-line)}
 .ed-hl .ln.err{background:color-mix(in srgb,var(--err) 16%,transparent)}
+/* the live preview of an engine with editorPreview (code-box/editor-preview.ts): a taller line
+   for the typeset math; a line with an error stays source, underlined */
+.ed.ed-pv{--ed-lh:32px}
+@container edh (min-width:880px){body.wide .ed.ed-pv{--ed-lh:34px}}
+.ed-hl .ln.pv-ln{height:var(--ed-lh);overflow:hidden;white-space:nowrap;
+  font-family:var(--f-body);color:var(--ink)}
+.ed-hl .ln.pv-err{text-decoration:underline wavy var(--err);text-underline-offset:5px;
+  text-decoration-skip-ink:none}
+.pv-switch{flex:none;align-self:center;display:inline-flex;margin:0 6px 3px;
+  border:1px solid var(--line);border-radius:6px;overflow:hidden;font:12px var(--f-body)}
+.pv-switch button{font:inherit;background:var(--raised);color:var(--muted);border:0;
+  padding:2px 10px;cursor:pointer}
+.pv-switch button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.pv-switch button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
 .ed-ta{height:calc(var(--n) * var(--ed-lh));position:absolute;top:8px;left:0;color:transparent;caret-color:var(--ink);background:transparent;resize:none;outline:none;overflow:hidden}
 .ed-ta::selection{background:color-mix(in srgb,var(--accent) 35%,transparent);color:transparent}
 .ro .ed-ta{caret-color:transparent;cursor:default}
@@ -1217,7 +1232,111 @@ body.au-editing .au-empty::before {
   color: var(--ink);
   font: inherit;
   font-size: 13px;
-}/* ═══ The guided tour (src/core/tour, docs/VITE.md section 12): the veil, the spotlight, the
+}
+
+/* ── LaTeX formulas (docs/ENGINE-API.md 2.11): a formula in the text, and its small editor ── */
+/* a formula that opens its editor on a click (only when the engine renders formulas) */
+.ProseMirror .tex.au-tex-edit {
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.ProseMirror .tex.au-tex-edit:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.au-texf {
+  position: fixed;
+  z-index: 96;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 12px));
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  box-shadow: 0 4px 16px var(--shadow);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+body:not(.admin) .au-texf {
+  display: none;
+}
+
+.au-texf-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.au-tex-in {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-variant-ligatures: none;
+  text-align: left;
+}
+
+.au-tex-in:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.au-tex-disp {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  align-self: flex-start;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.au-tex-disp input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* the live preview: the typeset formula, or the engine's message in the error colour */
+.au-tex-prev {
+  min-height: 30px;
+  max-height: 40vh;
+  overflow: auto;
+  padding: 6px 8px;
+  border: 1px dashed var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  font-size: 17px;
+  text-align: center;
+}
+
+.au-tex-err {
+  font-size: 13px;
+  display: block;
+  color: var(--err);
+  text-align: start;
+}
+
+/* the preview of an empty source: what to write */
+.au-tex-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: start;
+}
+/* ═══ The guided tour (src/core/tour, docs/VITE.md section 12): the veil, the spotlight, the
    speech bubble, the teacher's offer, and the sidebar's tour row. Only var(--token) colours, but
    the veil: half-transparent black in both themes, so a light page is dimmed as clearly as a
    dark one. ═══ */
@@ -2718,6 +2837,280 @@ async function exportCourse() {
 		message: "הדף הזה לא יכול לקרוא את קוד עצמו (הוא נפתח מקובץ), לכן נוצר קובץ חבילה " + fileName + " ולא דף. כדי לקבל דף שלם, ייצאו מהדף שמוגש דרך ההרצה."
 	};
 }
+// src/core/author/mathml-clean.ts
+var MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+var MATHML_TAGS = /* @__PURE__ */ new Set([
+	"math",
+	"semantics",
+	"annotation",
+	"mrow",
+	"mi",
+	"mn",
+	"mo",
+	"ms",
+	"mtext",
+	"mspace",
+	"msub",
+	"msup",
+	"msubsup",
+	"mfrac",
+	"msqrt",
+	"mroot",
+	"mstyle",
+	"mpadded",
+	"mphantom",
+	"menclose",
+	"merror",
+	"mover",
+	"munder",
+	"munderover",
+	"mmultiscripts",
+	"mprescripts",
+	"none",
+	"mtable",
+	"mtr",
+	"mtd",
+	"mlabeledtr"
+]);
+var MATHML_ATTRIBUTES = /* @__PURE__ */ new Set([
+	"dir",
+	"display",
+	"displaystyle",
+	"scriptlevel",
+	"mathvariant",
+	"mathsize",
+	"mathcolor",
+	"mathbackground",
+	"width",
+	"height",
+	"depth",
+	"lspace",
+	"rspace",
+	"voffset",
+	"stretchy",
+	"symmetric",
+	"fence",
+	"separator",
+	"form",
+	"largeop",
+	"movablelimits",
+	"minsize",
+	"maxsize",
+	"accent",
+	"accentunder",
+	"linethickness",
+	"linebreak",
+	"notation",
+	"encoding",
+	"columnalign",
+	"columnspacing",
+	"columnlines",
+	"rowalign",
+	"rowspacing",
+	"rowlines",
+	"frame",
+	"framespacing",
+	"columnspan",
+	"rowspan",
+	"align",
+	"numalign",
+	"denomalign",
+	"bevelled"
+]);
+var STYLE_PROPERTIES = /* @__PURE__ */ new Set([
+	"display",
+	"color",
+	"background-color",
+	"font-weight",
+	"font-style",
+	"font-family",
+	"text-align",
+	"white-space",
+	"justify-content",
+	"vertical-align",
+	"position",
+	"top",
+	"bottom",
+	"left",
+	"right",
+	"width",
+	"height",
+	"min-width",
+	"transform",
+	"math-depth",
+	"math-style",
+	"margin",
+	"margin-left",
+	"margin-right",
+	"margin-top",
+	"margin-bottom",
+	"padding",
+	"padding-left",
+	"padding-right",
+	"padding-top",
+	"padding-bottom",
+	"border",
+	"border-top",
+	"border-bottom",
+	"border-left",
+	"border-right"
+]);
+var PLAIN_VALUE = /^[-\w\s.,#%()+/]*$/;
+var BLOCKED_FUNCTION = /(url|expression|image|image-set|element|cross-fade|attr|var|env)\s*\(/i;
+var TEMML_CLASS = /^(tml-[\w-]+|mord)$/;
+var DIRECTIONS = ["ltr", "rtl"];
+function isPlainValue(value) {
+	return PLAIN_VALUE.test(value) && !BLOCKED_FUNCTION.test(value);
+}
+function cleanMathStyle(styleText) {
+	const kept = [];
+	for (const declaration of styleText.split(";")) {
+		const colon = declaration.indexOf(":");
+		const name = declaration.slice(0, colon).trim().toLowerCase();
+		const value = declaration.slice(colon + 1).trim();
+		if (colon > 0 && STYLE_PROPERTIES.has(name) && value && isPlainValue(value)) kept.push(name + ":" + value + ";");
+	}
+	return kept.join("");
+}
+function cleanAttributeValue(name, value) {
+	if (name === "class") {
+		const classes = value.split(/\s+/).filter((className) => TEMML_CLASS.test(className));
+		return classes.length ? classes.join(" ") : null;
+	}
+	if (name === "style") return cleanMathStyle(value) || null;
+	if (name === "dir") return DIRECTIONS.includes(value) ? value : null;
+	return MATHML_ATTRIBUTES.has(name) && isPlainValue(value) ? value : null;
+}
+function copyMathElement(source) {
+	const copy = document.createElementNS(MATHML_NAMESPACE, source.localName);
+	for (const attribute of Array.from(source.attributes)) {
+		const value = cleanAttributeValue(attribute.name.toLowerCase(), attribute.value);
+		if (value !== null) copy.setAttribute(attribute.name, value);
+	}
+	for (const child of Array.from(source.childNodes)) if (child.nodeType === Node.TEXT_NODE) copy.appendChild(document.createTextNode(child.data));
+	else if (isMathElement(child)) copy.appendChild(copyMathElement(child));
+	return copy;
+}
+function isMathElement(node) {
+	const element = node;
+	return node.nodeType === Node.ELEMENT_NODE && element.namespaceURI === MATHML_NAMESPACE && MATHML_TAGS.has(element.localName);
+}
+function cleanMathElement(source) {
+	if (!source || !isMathElement(source) || source.localName !== "math") return null;
+	return copyMathElement(source);
+}
+function cleanMathHtml(mathHtml) {
+	const template = document.createElement("template");
+	template.innerHTML = mathHtml;
+	const clean = cleanMathElement(template.content.firstElementChild);
+	return clean ? clean.outerHTML : "";
+}
+// src/core/author/formulas.ts
+var CACHE_SIZE = 500;
+var renderCache = /* @__PURE__ */ new Map();
+var PREFIX_BEFORE = /(^|[\s(])([והבכלמש]{1,3}-)?$/;
+var PUNCTUATION_AFTER = /^[.,:;!?)]+/;
+function formulaRenderer() {
+	const engine = window.LabEngine;
+	const formula = engine && engine.formula;
+	return formula && typeof formula.render === "function" ? formula : null;
+}
+function hasFormulaRenderer() {
+	return formulaRenderer() !== null;
+}
+function problemOf(error) {
+	const message = error instanceof Error ? error.message : String(error);
+	const pos = error?.pos;
+	return {
+		message,
+		pos: typeof pos === "number" ? pos : -1
+	};
+}
+function renderFormula(tex, isDisplay) {
+	const key = (isDisplay ? "D" : "I") + tex;
+	const cached = renderCache.get(key);
+	if (cached !== void 0) return cached;
+	const renderer = formulaRenderer();
+	if (!renderer) return {
+		message: "this course has no formula renderer",
+		pos: -1
+	};
+	let result;
+	try {
+		result = cleanMathHtml(renderer.render(tex, isDisplay));
+		if (!result) result = {
+			message: "the renderer gave no MathML",
+			pos: -1
+		};
+	} catch (error) {
+		result = problemOf(error);
+	}
+	if (renderCache.size >= CACHE_SIZE) renderCache.delete(renderCache.keys().next().value);
+	renderCache.set(key, result);
+	return result;
+}
+function formulaMathml(tex, isDisplay, stored) {
+	if (hasFormulaRenderer()) {
+		const rendered = renderFormula(tex, isDisplay);
+		if (typeof rendered === "string") return rendered;
+	}
+	const clean = cleanMathElement(stored);
+	return clean ? clean.outerHTML : "";
+}
+function buildFormulaSpan(tex, isDisplay, mathml) {
+	const span = document.createElement("span");
+	span.className = isDisplay ? "tex tex-display" : "tex";
+	span.setAttribute("data-tex", tex);
+	if (isDisplay) span.setAttribute("data-display", "1");
+	if (mathml) span.innerHTML = mathml;
+	else {
+		const code = document.createElement("code");
+		code.className = "math-bad";
+		code.textContent = tex;
+		span.appendChild(code);
+	}
+	return span;
+}
+function isFormulaSpan(element) {
+	return element.localName === "span" && element.classList.contains("tex") && element.hasAttribute("data-tex");
+}
+function isDisplayFormula(element) {
+	return element.getAttribute("data-display") === "1" || element.classList.contains("tex-display");
+}
+function cleanFormulaSpan(source) {
+	const tex = source.getAttribute("data-tex") || "";
+	const isDisplay = isDisplayFormula(source);
+	return buildFormulaSpan(tex, isDisplay, formulaMathml(tex, isDisplay, source.querySelector("math")));
+}
+function keepFormulaTogether(formula) {
+	const before = formula.previousSibling;
+	const after = formula.nextSibling;
+	const textBefore = before && before.nodeType === Node.TEXT_NODE ? before : null;
+	const textAfter = after && after.nodeType === Node.TEXT_NODE ? after : null;
+	const prefixMatch = textBefore ? PREFIX_BEFORE.exec(textBefore.data) : null;
+	if (textBefore && !prefixMatch) return;
+	const prefix = prefixMatch && prefixMatch[2] || "";
+	const punctuationMatch = textAfter ? PUNCTUATION_AFTER.exec(textAfter.data) : null;
+	const punctuation = punctuationMatch ? punctuationMatch[0] : "";
+	if (!prefix && !punctuation) return;
+	const wrapper = document.createElement("span");
+	wrapper.className = "math-nb";
+	formula.before(wrapper);
+	if (prefix) {
+		textBefore.data = textBefore.data.slice(0, -prefix.length);
+		wrapper.append(prefix);
+	}
+	wrapper.append(formula);
+	if (punctuation) {
+		textAfter.data = textAfter.data.slice(punctuation.length);
+		wrapper.append(punctuation);
+	}
+}
+function keepFormulasTogether(container) {
+	const formulas = container.querySelectorAll("span.tex:not(.tex-display)");
+	for (const formula of Array.from(formulas)) if (!formula.parentElement || !formula.parentElement.classList.contains("math-nb")) keepFormulaTogether(formula);
+	container.normalize();
+}
 // src/core/layer/package-clean.js
 var BLOCKED_TAGS = /* @__PURE__ */ new RegExp("^(script|style|iframe|frame|frameset|object|embed|link|meta|base|form|input|button|textarea|select|option|svg|math|template|noscript|audio|video|source|track|applet|portal|dialog)$", "i");
 var BLOCKED_ATTRIBUTES = [
@@ -2753,6 +3146,10 @@ function isBlockedAttribute(attribute) {
 }
 function cleanChildren(parentNode) {
 	for (const element of Array.from(parentNode.children)) {
+		if (isFormulaSpan(element)) {
+			element.replaceWith(cleanFormulaSpan(element));
+			continue;
+		}
 		if (BLOCKED_TAGS.test(element.tagName)) {
 			element.remove();
 			continue;
@@ -3886,10 +4283,15 @@ function refreshBadge(context) {
 		return;
 	}
 	const passedSignature = store.get("passsig:" + boxId, null);
-	paintBadge(context, passedSignature === null || passedSignature === codeSignature(context) ? true : "stale");
+	const isCurrent = passedSignature === null || passedSignature === codeSignature(context);
+	const kind = store.get("passkind:" + boxId, "") === "teacher" ? "teacher" : true;
+	paintBadge(context, isCurrent ? kind : "stale");
 }
 function setBadge(context, hasPassed, passedCount, testCount) {
-	if (hasPassed) store.set("passsig:" + context.box.id, codeSignature(context));
+	if (hasPassed) {
+		store.set("passsig:" + context.box.id, codeSignature(context));
+		store.set("passkind:" + context.box.id, hasPassed === "teacher" ? "teacher" : "");
+	}
 	paintBadge(context, hasPassed, passedCount, testCount);
 }
 // src/core/code-box/debug-frame.js
@@ -4708,6 +5110,139 @@ function handleEditorKey(textArea, event, actions) {
 	else if (event.key === "Enter" && !hasCtrlOrCmd && !event.shiftKey) pressEnter(textArea, event);
 	else if (event.key === "}" && !hasCtrlOrCmd) pressClosingBrace(textArea, event);
 }
+// src/core/code-box/editor-preview.ts
+var STORAGE_KEY = "lab:editor-view";
+var listeners$3 = /* @__PURE__ */ new Set();
+var isPreviewShown = readSetting();
+function readSetting() {
+	try {
+		return localStorage.getItem(STORAGE_KEY) !== "source";
+	} catch {
+		return true;
+	}
+}
+function enginePreview() {
+	const engine = window.LabEngine;
+	const preview = engine && engine.editorPreview;
+	return typeof preview === "function" ? preview : null;
+}
+function setPreviewShown(isShown) {
+	isPreviewShown = isShown;
+	try {
+		localStorage.setItem(STORAGE_KEY, isShown ? "preview" : "source");
+	} catch {}
+	listeners$3.forEach((listener) => listener());
+}
+function subscribe$3(listener) {
+	listeners$3.add(listener);
+	return () => {
+		listeners$3.delete(listener);
+	};
+}
+function snapshot() {
+	return isPreviewShown;
+}
+function usePreviewShown() {
+	return (0, import_react.useSyncExternalStore)(subscribe$3, snapshot);
+}
+function caretLines(textArea) {
+	if (!textArea || textArea.ownerDocument.activeElement !== textArea) return null;
+	const text = textArea.value;
+	const lineOf = (offset) => text.slice(0, offset).split("\n").length;
+	return [lineOf(textArea.selectionStart), lineOf(textArea.selectionEnd)];
+}
+var hasReportedThrow = false;
+function askEngine(preview, line, context) {
+	try {
+		return preview(line, context);
+	} catch (error) {
+		if (!hasReportedThrow) {
+			hasReportedThrow = true;
+			console.error("[editor preview] the engine failed on a line; it is shown as source", error);
+		}
+		return null;
+	}
+}
+function lineViews(preview, lines, caret, errors) {
+	return lines.map((line, index) => {
+		const lineNumber = index + 1;
+		if (caret && lineNumber >= caret[0] && lineNumber <= caret[1]) return null;
+		const result = askEngine(preview, line, {
+			index,
+			lines
+		});
+		if (!result) return null;
+		if (result.error) {
+			errors.set(lineNumber, result.error);
+			return {
+				html: null,
+				className: " pv-err"
+			};
+		}
+		return result.html ? {
+			html: result.html,
+			className: " pv-ln"
+		} : null;
+	});
+}
+function showErrorTitle(textArea, event, errors) {
+	const lineHeight = parseFloat(getComputedStyle(textArea).lineHeight) || 1;
+	const message = errors.get(Math.floor(event.offsetY / lineHeight) + 1);
+	if (message) textArea.title = message;
+	else textArea.removeAttribute("title");
+}
+function useCaretLines(textAreaRef, isOn) {
+	const [caret, setCaret] = (0, import_react.useState)(null);
+	(0, import_react.useEffect)(() => {
+		const textArea = textAreaRef.current;
+		if (!isOn || !textArea) return;
+		const onCaret = () => {
+			const next = caretLines(textArea);
+			setCaret((before) => String(before) === String(next) ? before : next);
+		};
+		const events = [
+			"focus",
+			"blur",
+			"input"
+		];
+		const document = textArea.ownerDocument;
+		document.addEventListener("selectionchange", onCaret);
+		events.forEach((name) => textArea.addEventListener(name, onCaret));
+		onCaret();
+		return () => {
+			document.removeEventListener("selectionchange", onCaret);
+			events.forEach((name) => textArea.removeEventListener(name, onCaret));
+		};
+	}, [textAreaRef, isOn]);
+	return isOn ? caret : null;
+}
+function useErrorTitle(textAreaRef, errors, isOn) {
+	const latest = (0, import_react.useRef)(errors);
+	(0, import_react.useLayoutEffect)(() => {
+		latest.current = errors;
+	});
+	(0, import_react.useEffect)(() => {
+		const textArea = textAreaRef.current;
+		if (!isOn || !textArea) return;
+		const onPointer = (event) => {
+			showErrorTitle(textArea, event, latest.current);
+		};
+		textArea.addEventListener("mousemove", onPointer);
+		return () => {
+			textArea.removeEventListener("mousemove", onPointer);
+			textArea.removeAttribute("title");
+		};
+	}, [textAreaRef, isOn]);
+}
+function useLivePreview(hasPreview, textAreaRef, lines) {
+	const isShown = usePreviewShown();
+	const preview = hasPreview && isShown ? enginePreview() : null;
+	const caret = useCaretLines(textAreaRef, Boolean(preview));
+	const errors = /* @__PURE__ */ new Map();
+	const views = preview ? lineViews(preview, lines, caret, errors) : null;
+	useErrorTitle(textAreaRef, errors, Boolean(preview));
+	return views;
+}
 // src/core/code-box/Editor.tsx
 var SPARE_WIDTH_CHARS = 3;
 var highlightCache = /* @__PURE__ */ new Map();
@@ -4775,18 +5310,22 @@ function Gutter(props) {
 	});
 }
 function ColourLayer(props) {
-	const { marks, lines, ref } = props;
+	const { marks, lines, ref, preview } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
 		className: "ed-hl",
 		"aria-hidden": "true",
 		ref,
-		children: lines.map((line, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: lineClasses("ln", marks, index + 1),
-			dangerouslySetInnerHTML: { __html: highlightLine(line) }
-		}, index))
+		children: lines.map((line, index) => {
+			const view = preview && preview[index];
+			const classes = lineClasses("ln", marks, index + 1) + (view ? view.className : "");
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: classes,
+				dangerouslySetInnerHTML: { __html: view?.html || highlightLine(line) }
+			}, index);
+		})
 	});
 }
-function Editor({ model }) {
+function Editor({ model, hasPreview }) {
 	const marks = (0, import_react.useSyncExternalStore)(model.subscribe, model.snapshot);
 	const textArea = (0, import_react.useRef)(null);
 	const scroller = (0, import_react.useRef)(null);
@@ -4798,12 +5337,13 @@ function Editor({ model }) {
 	}));
 	useTextArea(model, refs);
 	const lines = marks.text.split("\n");
+	const preview = useLivePreview(hasPreview, textArea, lines);
 	const areaStyle = {
 		width: "max(100%, calc(" + (lines.reduce((longest, line) => Math.max(longest, line.length), 0) + SPARE_WIDTH_CHARS) + "ch + 28px))",
 		"--n": lines.length + 1
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "ed",
+		className: preview ? "ed ed-pv" : "ed",
 		dir: "ltr",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Gutter, {
 			marks,
@@ -4818,7 +5358,8 @@ function Editor({ model }) {
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColourLayer, {
 					marks,
 					lines,
-					ref: colourLayer
+					ref: colourLayer,
+					preview
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
 					className: "ed-ta",
 					spellCheck: "false",
@@ -4841,7 +5382,10 @@ function EditorHost(props) {
 		"data-fh": props.fileKey,
 		lang: props.hasLang ? "en" : void 0,
 		hidden: props.isHidden,
-		children: model ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Editor, { model }) : null
+		children: model ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Editor, {
+			model,
+			hasPreview: Boolean(props.hasPreview)
+		}) : null
 	});
 }
 function noSubscription() {
@@ -5080,6 +5624,7 @@ function TabRowEnd(props) {
 			children: "+"
 		}) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "ft-sp" }),
+		enginePreview() ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PreviewSwitch, {}) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 			className: "b ft-load",
 			"data-load-sol": "",
@@ -5088,6 +5633,29 @@ function TabRowEnd(props) {
 			children: "load solution into " + files.main
 		})
 	] });
+}
+function PreviewSwitch() {
+	const isPreviewShown = usePreviewShown();
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pv-switch",
+		role: "group",
+		"aria-label": "תצוגת העורך",
+		dir: "rtl",
+		lang: "he",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			"aria-pressed": !isPreviewShown,
+			title: "הקוד כפי שנכתב (LaTeX)",
+			onClick: () => setPreviewShown(false),
+			children: "מקור"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			"aria-pressed": isPreviewShown,
+			title: "כל שורה מלבד שורת הסמן מוצגת מסודרת",
+			onClick: () => setPreviewShown(true),
+			children: "תצוגה"
+		})]
+	});
 }
 function NameField$1(props) {
 	const { context, isBad } = props;
@@ -5172,7 +5740,8 @@ function CodeColumn({ context }) {
 				fileKey: "main",
 				model: context.editor,
 				isHidden: shownFile !== "main",
-				hasLang: true
+				hasLang: true,
+				hasPreview: true
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "ed-hosts-user",
@@ -5334,11 +5903,17 @@ function SideColumn({ context }) {
 }
 // src/core/code-box/CodeBoxView.tsx
 var STALE_TITLE = "הקוד השתנה מאז שהבדיקות עברו. הרץ שוב ✓ בדיקות";
+var TEACHER_TITLE = "הבדיקות עברו, אבל אין צעד שאפשר לבדוק במספרים: המורה בודק את ההוכחה";
 function BadgeContent({ badge }) {
 	if (badge.result === "stale") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 		className: "stale",
 		title: STALE_TITLE,
 		children: "✓ עברו לפני השינוי"
+	});
+	if (badge.result === "teacher") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "teacher",
+		title: TEACHER_TITLE,
+		children: "בדיקת מורה"
 	});
 	if (badge.result) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 		className: "ok",
@@ -6504,7 +7079,8 @@ var ALLOWED_TAGS = {
 	span: { classes: [
 		"lbl",
 		"arr",
-		"cmt"
+		"cmt",
+		"math-nb"
 	] }
 };
 var INLINE_TAGS = /* @__PURE__ */ new Set([
@@ -6516,6 +7092,7 @@ var INLINE_TAGS = /* @__PURE__ */ new Set([
 	"bdi",
 	"a"
 ]);
+var INLINE_SPAN_CLASS = "math-nb";
 var BLOCK_LIKE_TAG_PATTERN = /^(p|div|li|h[1-6]|tr|td|th|pre|ul|ol|table)$/;
 var ALLOWED_HREF_PATTERN = /^(https?:\/\/|#)/i;
 var BLOCK_TAGS = /* @__PURE__ */ new Set([
@@ -6534,7 +7111,9 @@ function allowsPlainSpan(target) {
 }
 function keptClassesOf(source, tag, target, isInline) {
 	const rule = ALLOWED_TAGS[tag];
-	if (!rule || isInline && !INLINE_TAGS.has(tag)) return null;
+	const isInlineSpan = tag === "span" && source.classList.contains(INLINE_SPAN_CLASS);
+	if (!rule || isInline && !INLINE_TAGS.has(tag) && !isInlineSpan) return null;
+	if (isInline && isInlineSpan) return [INLINE_SPAN_CLASS];
 	const classes = rule.classes ? Array.from(source.classList).filter((name) => rule.classes.includes(name)) : [];
 	if (tag === "div" && !classes.length) return null;
 	if (tag === "span" && !classes.length && !allowsPlainSpan(target)) return null;
@@ -6565,6 +7144,10 @@ function copyAllowedChildren(source, target, mode) {
 			continue;
 		}
 		if (node.nodeType !== Node.ELEMENT_NODE) continue;
+		if (isFormulaSpan(node)) {
+			target.appendChild(cleanFormulaSpan(node));
+			continue;
+		}
 		const tag = RENAMED_TAGS[node.localName] || node.localName;
 		if (DROPPED_TAGS.has(tag)) continue;
 		const classes = keptClassesOf(node, tag, target, isInline);
@@ -6787,6 +7370,42 @@ function schemAttrsOf(element) {
 		label: element.getAttribute("aria-label") || ""
 	};
 }
+// src/core/rich/tex-node.ts
+function texAttrsOf(element) {
+	const tex = element.getAttribute("data-tex") || "";
+	const display = isDisplayFormula(element);
+	return {
+		tex,
+		display,
+		mathml: formulaMathml(tex, display, element.querySelector("math"))
+	};
+}
+function texDom(node) {
+	const attrs = node.attrs;
+	return buildFormulaSpan(attrs.tex, attrs.display, attrs.mathml);
+}
+function texText(node) {
+	const attrs = node.attrs;
+	return attrs.display ? "\\[" + attrs.tex + "\\]" : "$" + attrs.tex + "$";
+}
+var TEX_NODE = {
+	inline: true,
+	group: "inline",
+	atom: true,
+	selectable: true,
+	draggable: false,
+	attrs: {
+		tex: { default: "" },
+		display: { default: false },
+		mathml: { default: "" }
+	},
+	parseDOM: [{
+		tag: "span.tex[data-tex]",
+		getAttrs: texAttrsOf
+	}],
+	toDOM: texDom,
+	leafText: texText
+};
 // src/core/rich/schema.ts
 var PLAIN_PARAGRAPH = "p:not(.fine):not(.mono-big)";
 function calloutClassOf(kind) {
@@ -7000,7 +7619,8 @@ var INLINE_NODES = {
 		selectable: false,
 		parseDOM: [{ tag: "br" }],
 		toDOM: fixedDom(["br"])
-	}
+	},
+	tex: TEX_NODE
 };
 function simpleMark(tags, dom) {
 	return {
@@ -7659,6 +8279,211 @@ function surfaceKeymaps() {
 		"Shift-Tab": moveToCell(-1)
 	}), c(ie$1)];
 }
+// src/core/rich/tex-editor.ts
+var EDITOR_GAP_PX = 6;
+var EMPTY_HINT = "כתבו נוסחה ב-LaTeX, למשל ";
+var EMPTY_EXAMPLE = "\\frac{a_n}{b_n}";
+var openEditor = null;
+function showProblem(preview, problem) {
+	const line = buildElement("span", {
+		class: "au-tex-err",
+		dir: "rtl"
+	}, problem.pos >= 0 ? "שגיאה בתו " + (problem.pos + 1) + ": " : "שגיאה: ", buildElement("bdi", {
+		dir: "ltr",
+		lang: "en",
+		text: problem.message
+	}));
+	preview.replaceChildren(line);
+}
+function refreshPreview(editor) {
+	const source = editor.input.value.trim();
+	if (!source) {
+		const hint = buildElement("span", {
+			class: "au-tex-hint",
+			dir: "rtl"
+		}, EMPTY_HINT, buildElement("bdi", {
+			dir: "ltr",
+			lang: "en",
+			text: EMPTY_EXAMPLE
+		}));
+		editor.preview.replaceChildren(hint);
+		editor.input.classList.remove("bad");
+		editor.input.removeAttribute("aria-invalid");
+		editor.applyButton.disabled = true;
+		return null;
+	}
+	const rendered = renderFormula(source, editor.displayBox.checked);
+	const hasError = typeof rendered !== "string";
+	if (hasError) showProblem(editor.preview, rendered);
+	else editor.preview.innerHTML = rendered;
+	editor.input.classList.toggle("bad", hasError);
+	editor.input.setAttribute("aria-invalid", String(hasError));
+	editor.applyButton.disabled = hasError;
+	return hasError ? null : rendered;
+}
+function placeEditor() {
+	if (!openEditor || openEditor.target.view.isDestroyed) return;
+	const { panel, target } = openEditor;
+	const node = target.isNew ? null : target.view.nodeDOM(target.from);
+	const box = node instanceof HTMLElement ? node.getBoundingClientRect() : {
+		...target.view.coordsAtPos(target.from),
+		width: 0
+	};
+	const width = panel.offsetWidth;
+	const height = panel.offsetHeight;
+	const rightmost = window.innerWidth - width - EDITOR_GAP_PX;
+	const left = Math.max(EDITOR_GAP_PX, Math.min(rightmost, box.right - width));
+	const below = box.bottom + EDITOR_GAP_PX;
+	const isRoomBelow = below + height <= window.innerHeight - EDITOR_GAP_PX;
+	const above = box.top - height - EDITOR_GAP_PX;
+	const lowest = window.innerHeight - height - EDITOR_GAP_PX;
+	const top = Math.max(EDITOR_GAP_PX, Math.min(lowest, isRoomBelow ? below : above));
+	panel.style.left = left + "px";
+	panel.style.top = top + "px";
+}
+function closeFormulaEditor(isRefocus) {
+	const editor = openEditor;
+	if (!editor) return;
+	openEditor = null;
+	window.removeEventListener("scroll", placeEditor, true);
+	window.removeEventListener("resize", placeEditor);
+	editor.panel.remove();
+	const view = editor.target.view;
+	if (isRefocus && !view.isDestroyed) view.focus();
+}
+function forgetFormulaEditor(view) {
+	if (openEditor && openEditor.target.view === view) closeFormulaEditor(false);
+}
+function isTargetThere(target) {
+	const doc = target.view.state.doc;
+	if (target.isNew) return doc.eq(target.doc);
+	const node = target.from < doc.content.size ? doc.nodeAt(target.from) : null;
+	const before = target.doc.nodeAt(target.from);
+	return Boolean(node && before && node.type.name === "tex" && node.attrs.tex === before.attrs.tex);
+}
+function applyFormula() {
+	const editor = openEditor;
+	const mathml = editor ? refreshPreview(editor) : null;
+	if (!editor || mathml === null) {
+		editor?.input.focus();
+		return;
+	}
+	const { view, from, to, isNew } = editor.target;
+	closeFormulaEditor(false);
+	if (view.isDestroyed || !isTargetThere(editor.target)) return;
+	const attrs = {
+		tex: editor.input.value.trim(),
+		display: editor.displayBox.checked,
+		mathml
+	};
+	const tr = view.state.tr;
+	if (isNew) {
+		tr.replaceWith(from, to, view.state.schema.nodes.tex.create(attrs));
+		tr.setSelection(f$1.create(tr.doc, from + 1));
+	} else {
+		tr.setNodeMarkup(from, null, attrs);
+		tr.setSelection(m$1.create(tr.doc, from));
+	}
+	view.dispatch(tr.setMeta(STRUCTURAL, true).scrollIntoView());
+	view.focus();
+}
+function onEditorKey(event) {
+	const isOnButton = event.target?.localName === "button";
+	if (event.key === "Escape") {
+		event.preventDefault();
+		event.stopPropagation();
+		closeFormulaEditor(true);
+	} else if (event.key === "Enter" && !isOnButton) {
+		event.preventDefault();
+		applyFormula();
+	}
+}
+function onEditorFocusOut(event) {
+	const next = event.relatedTarget;
+	if (openEditor && !(next && openEditor.panel.contains(next))) closeFormulaEditor(false);
+}
+function buildEditor(tex, isDisplay) {
+	const input = buildElement("input", {
+		type: "text",
+		class: "au-tex-in",
+		dir: "ltr",
+		lang: "en",
+		spellcheck: "false",
+		autocomplete: "off",
+		"aria-label": "הנוסחה ב-LaTeX",
+		"aria-describedby": "au-tex-prev",
+		placeholder: EMPTY_EXAMPLE
+	});
+	input.value = tex;
+	const applyButton = iconButton("✓", "החלת הנוסחה (Enter)", applyFormula);
+	const cancelButton = iconButton("✕", "ביטול בלי שינוי (Esc)", () => closeFormulaEditor(true));
+	const displayBox = buildElement("input", { type: "checkbox" });
+	displayBox.checked = isDisplay;
+	const displayLabel = buildElement("label", { class: "au-tex-disp" }, displayBox, "בשורה נפרדת");
+	const preview = buildElement("div", {
+		id: "au-tex-prev",
+		class: "au-tex-prev",
+		dir: "ltr",
+		"aria-live": "polite"
+	});
+	return {
+		panel: buildElement("div", {
+			class: "au-texf",
+			role: "dialog",
+			"aria-label": "עריכת נוסחה",
+			dir: "rtl",
+			lang: "he"
+		}, buildElement("div", { class: "au-texf-row" }, input, applyButton, cancelButton), displayLabel, preview),
+		input,
+		displayBox,
+		preview,
+		applyButton
+	};
+}
+function openFor(target, tex, isDisplay) {
+	closeFormulaEditor(false);
+	const parts = buildEditor(tex, isDisplay);
+	const editor = {
+		target,
+		...parts
+	};
+	openEditor = editor;
+	parts.input.addEventListener("input", () => refreshPreview(editor));
+	parts.displayBox.addEventListener("change", () => refreshPreview(editor));
+	parts.panel.addEventListener("keydown", onEditorKey);
+	parts.panel.addEventListener("focusout", onEditorFocusOut);
+	document.body.appendChild(parts.panel);
+	refreshPreview(editor);
+	placeEditor();
+	window.addEventListener("scroll", placeEditor, true);
+	window.addEventListener("resize", placeEditor);
+	parts.input.focus();
+	parts.input.select();
+}
+function editFormulaAt(view, position) {
+	const node = view.state.doc.nodeAt(position);
+	if (!node || node.type.name !== "tex") return;
+	openFor({
+		view,
+		doc: view.state.doc,
+		from: position,
+		to: position + 1,
+		isNew: false
+	}, node.attrs.tex, node.attrs.display);
+}
+function insertFormula(view) {
+	const { $from, $to, from, to } = view.state.selection;
+	if (!$from.parent.inlineContent || !$from.sameParent($to)) return false;
+	const text = view.state.doc.textBetween(from, to, " ").trim();
+	openFor({
+		view,
+		doc: view.state.doc,
+		from,
+		to,
+		isNew: true
+	}, text, false);
+	return true;
+}
 // src/core/editor/SelectionToolbar.tsx
 var TOOLBAR_GAP_PX = 8;
 var FORMAT_BUTTONS = [
@@ -7767,16 +8592,32 @@ function FormatButtons(props) {
 		onClick: () => runFormat(name, toggleFormat),
 		children: text
 	}, name));
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [formatButtons, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		formatButtons,
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "au-ib au-sb",
+			"aria-label": "קישור (Ctrl+K)",
+			title: "קישור (Ctrl+K)",
+			"aria-pressed": Boolean(toolbar.active.link),
+			onMouseDown: keepTextFocus,
+			onClick: () => toolbar.view && openLinkForm(toolbar.view),
+			children: "🔗"
+		}),
+		hasFormulaRenderer() ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormulaButton, { toolbar }) : null
+	] });
+}
+function FormulaButton(props) {
+	const { view } = props.toolbar;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 		type: "button",
 		className: "au-ib au-sb",
-		"aria-label": "קישור (Ctrl+K)",
-		title: "קישור (Ctrl+K)",
-		"aria-pressed": Boolean(toolbar.active.link),
+		"aria-label": "נוסחה ב-LaTeX (Ctrl+M)",
+		title: "נוסחה ב-LaTeX (Ctrl+M)",
 		onMouseDown: keepTextFocus,
-		onClick: () => toolbar.view && openLinkForm(toolbar.view),
-		children: "🔗"
-	})] });
+		onClick: () => view && insertFormula(view),
+		children: "∑"
+	});
 }
 function useBarPlacement(barRef, toolbar) {
 	(0, import_react.useLayoutEffect)(() => {
@@ -9410,15 +10251,23 @@ function revertUnit(unitId) {
 	});
 }
 // src/core/editor/PageBar.tsx
-var KEY_HINTS_HTML = [
+var FORMAT_HINTS = [
 	"<bdi dir=\"ltr\">Ctrl+B</bdi> מודגש",
 	"<bdi dir=\"ltr\">Ctrl+I</bdi> נטוי",
 	"<bdi dir=\"ltr\">Ctrl+`</bdi> קוד",
 	"<bdi dir=\"ltr\">Ctrl+Shift+L</bdi> אנגלית",
-	"<bdi dir=\"ltr\">Ctrl+K</bdi> קישור",
-	"<bdi dir=\"ltr\">Ctrl+Z</bdi> / <bdi dir=\"ltr\">Ctrl+Y</bdi> ביטול ושחזור של טקסט ומבנה",
-	"הדבקה מנוקה לבלוקים של השיעור"
-].join(" · ");
+	"<bdi dir=\"ltr\">Ctrl+K</bdi> קישור"
+];
+var FORMULA_HINTS = ["<bdi dir=\"ltr\">Ctrl+M</bdi> נוסחה"];
+var OTHER_HINTS = ["<bdi dir=\"ltr\">Ctrl+Z</bdi> / <bdi dir=\"ltr\">Ctrl+Y</bdi> ביטול ושחזור של טקסט ומבנה", "הדבקה מנוקה לבלוקים של השיעור"];
+function keyHintsHtml() {
+	const formulaHints = hasFormulaRenderer() ? FORMULA_HINTS : [];
+	return [
+		...FORMAT_HINTS,
+		...formulaHints,
+		...OTHER_HINTS
+	].join(" · ");
+}
 function UndoRedoButtons() {
 	const canUndo = historyInfo.steps() > 0;
 	const canRedo = historyInfo.canRedo();
@@ -9519,7 +10368,7 @@ function PageBar(props) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NoteLine, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "au-keys",
-				dangerouslySetInnerHTML: { __html: KEY_HINTS_HTML }
+				dangerouslySetInnerHTML: { __html: keyHintsHtml() }
 			})
 		]
 	});
@@ -10645,6 +11494,7 @@ function inlineHtmlOfNode(node) {
 	const holder = document.createElement("div");
 	const writer = node.type.schema === inlineSchema ? fieldWriter : inlineWriter;
 	holder.append(writer.serializeFragment(node.content));
+	keepFormulasTogether(holder);
 	return sanitizeInline(holder.innerHTML);
 }
 function listHtml(list) {
@@ -10842,6 +11692,51 @@ function pasteIntoField(view, event) {
 	view.dispatch(tr.scrollIntoView().setMeta("paste", true));
 	return true;
 }
+// src/core/rich/tex-view.ts
+var EDIT_TITLE = "נוסחה: לחיצה או Enter לעריכה";
+var TexView = class {
+	dom;
+	node;
+	constructor(node, view, getPos) {
+		this.node = node;
+		this.dom = texDom(node);
+		if (hasFormulaRenderer()) {
+			this.dom.classList.add("au-tex-edit");
+			this.dom.title = EDIT_TITLE;
+			this.dom.addEventListener("click", () => {
+				const position = getPos();
+				if (position !== void 0 && view.editable) editFormulaAt(view, position);
+			});
+		}
+	}
+	update(node) {
+		const isSame = node.type === this.node.type && node.attrs === this.node.attrs;
+		if (isSame) this.node = node;
+		return isSame;
+	}
+	ignoreMutation() {
+		return true;
+	}
+};
+function texNodeView(node, view, getPos) {
+	return new TexView(node, view, getPos);
+}
+var editSelectedFormula = (state, _dispatch, view) => {
+	const selection = state.selection;
+	if (!(selection instanceof m$1 && selection.node.type.name === "tex") || !view) return false;
+	editFormulaAt(view, selection.from);
+	return true;
+};
+var insertFormulaKey = (_state, _dispatch, view) => {
+	return Boolean(view) && insertFormula(view);
+};
+function formulaPlugins() {
+	if (!hasFormulaRenderer()) return [];
+	return [c({
+		Enter: editSelectedFormula,
+		"Mod-m": insertFormulaKey
+	})];
+}
 // src/core/rich/editor-setup.ts
 var FRAMED_TYPES = [
 	"paragraph",
@@ -10908,7 +11803,10 @@ function surfaceNodeViews(context) {
 		const position = getPos();
 		return position !== void 0 && view.state.doc.resolve(position).depth === 0 ? new BlockFrameView(node, view, getPos, context) : renderOwnDom(node);
 	};
-	const views = { chip: chipView };
+	const views = {
+		chip: chipView,
+		tex: texNodeView
+	};
 	FRAMED_TYPES.forEach((typeName) => {
 		views[typeName] = frameOrPlain;
 	});
@@ -10921,6 +11819,7 @@ function createSurfaceView(mount, setup) {
 	const state = T$2.create({
 		doc: parseExplanation(setup.html),
 		plugins: [
+			...formulaPlugins(),
 			...surfaceKeymaps(),
 			surfaceDecorations(setup.kinds),
 			toolbarReporter()
@@ -10967,6 +11866,7 @@ function createFieldView(mount, setup) {
 	const state = T$2.create({
 		doc: parseInlineField(setup.html),
 		plugins: [
+			...formulaPlugins(),
 			keys,
 			c(ie$1),
 			toolbarReporter()
@@ -10976,6 +11876,7 @@ function createFieldView(mount, setup) {
 	view = new Or({ mount }, {
 		state,
 		attributes: fieldAttributes,
+		nodeViews: { tex: texNodeView },
 		handlePaste: pasteIntoField,
 		handleDOMEvents: COMMON_DOM_EVENTS,
 		dispatchTransaction: makeDispatch(() => view, inlineHtmlOfNode, setup.onChange)
@@ -10993,6 +11894,7 @@ function refillField(view, fieldHtml) {
 }
 function destroyRichView(view) {
 	forgetView(view);
+	forgetFormulaEditor(view);
 	view.destroy();
 }
 // src/core/editor/InlineEditable.tsx
@@ -13329,7 +14231,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e3428a8 מ-2026-11-08 13:57"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e3428a8</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 8799b95 מ-2026-11-08 17:10"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 8799b95</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
