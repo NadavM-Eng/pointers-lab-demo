@@ -1507,7 +1507,623 @@ body .tour-roomy .wb-grid {
 .tour-roomy .mem-panel {
   flex: 1 1 auto;
   max-height: none;
-}/* Networking engine styles (only var(--token) colours). Appended after src/core/style.css.
+}/* ═══ Step diagrams: the player (src/core/step-diagram/, docs/STEP-DIAGRAMS.md) ═══
+   A card in the lesson: the drawing on the code background, the caption, the bar.
+   Colours only as tokens (design/tokens.css); a diagram's colour names map to text tokens
+   whose contrast scripts/contrast.ps1 checks on --bg. The drawing is left to right (it is a
+   picture); its texts take their own direction. */
+
+/* ── The card ── */
+.sd {
+  margin: 18px 0 22px;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  container-type: inline-size;
+}
+
+.sd-title {
+  margin: 0 2px 8px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.sd-view {
+  max-height: min(64vh, 620px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.sd-view:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sd-svg {
+  display: block;
+  direction: ltr;
+  font-family: var(--f-body);
+  overflow: visible;
+}
+
+/* ── The caption and the bar ── */
+.sd-cap {
+  min-height: 3.2em;
+  margin: 10px 2px 8px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.sd-cap math {
+  font-size: 1.05em;
+}
+
+.sd-tex {
+  font-size: 0.88em;
+}
+
+.sd-tex-bad {
+  color: var(--err);
+}
+
+.sd-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sd-bar .b:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sd-next {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.sd-next:hover:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.sd-pos {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-inline: auto;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.sd-track {
+  width: 110px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.sd-track i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+@container (max-width: 430px) {
+  .sd-bar {
+    gap: 6px;
+  }
+
+  .sd-bar .b {
+    padding: 5px 9px;
+  }
+
+  .sd-track {
+    width: 64px;
+  }
+
+  .sd-restart-t {
+    display: none;
+  }
+}
+
+/* ── Colours: a diagram's colour names ── */
+.sd-svg {
+  --sd-c: var(--muted);
+}
+
+.sd-msg {
+  --sd-c: var(--accent-text);
+}
+
+.sd-c-blue {
+  --sd-c: var(--accent-text);
+}
+
+.sd-c-orange {
+  --sd-c: var(--orange);
+}
+
+.sd-c-green {
+  --sd-c: var(--ok);
+}
+
+.sd-c-red {
+  --sd-c: var(--err);
+}
+
+.sd-c-teal {
+  --sd-c: var(--ptr);
+}
+
+.sd-c-gray {
+  --sd-c: var(--muted);
+}
+
+/* ── Shared parts of the drawing ── */
+.sd-name {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+.sd-sub {
+  fill: var(--muted);
+}
+
+.sd-line {
+  stroke: var(--sd-c);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.sd-dashed {
+  stroke-dasharray: 6 4;
+}
+
+.sd-head {
+  fill: var(--sd-c);
+}
+
+.sd-label {
+  fill: var(--sd-c);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.sd-msg.sd-lit .sd-line {
+  stroke-width: 3.5;
+}
+
+.sd-lit .sd-label {
+  text-decoration: underline;
+}
+
+[data-sd-anim='pop'] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── sequence ── */
+.sd-lane {
+  stroke: var(--line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+.sd-actor rect,
+.sd-node rect {
+  fill: var(--panel-2);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.sd-actor.sd-lit rect,
+.sd-node.sd-lit rect,
+.sd-cell.sd-lit rect {
+  stroke: var(--warn);
+  stroke-width: 2.5;
+}
+
+.sd-band {
+  fill: color-mix(in srgb, var(--sd-c) 11%, transparent);
+}
+
+.sd-band.sd-lit {
+  fill: color-mix(in srgb, var(--sd-c) 20%, transparent);
+}
+
+.sd-span path {
+  fill: none;
+  stroke: var(--sd-c);
+  stroke-width: 2;
+}
+
+.sd-span text {
+  fill: var(--sd-c);
+  font-weight: 600;
+}
+
+.sd-note rect {
+  fill: color-mix(in srgb, var(--sd-c) 12%, var(--bg));
+  stroke: var(--sd-c);
+  stroke-width: 1.2;
+}
+
+.sd-note text {
+  fill: var(--ink);
+}
+
+.sd-note.sd-lit rect {
+  stroke: var(--warn);
+  stroke-width: 2.5;
+}
+
+/* ── map ── */
+.sd-icon {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sd-badge circle {
+  fill: var(--sd-c);
+}
+
+.sd-badge text {
+  fill: var(--bg);
+  font-weight: 700;
+}
+
+/* a message of an earlier step: faint, its number kept, its label hidden (MapView.tsx) */
+.sd-past .sd-line,
+.sd-past .sd-head {
+  opacity: 0.38;
+}
+
+.sd-past .sd-badge {
+  opacity: 0.7;
+}
+
+.sd-link line {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.sd-link text,
+.sd-mnote {
+  fill: var(--sd-c);
+}
+
+.sd-link.sd-lit line {
+  stroke: var(--warn);
+  stroke-width: 2.5;
+}
+
+/* ── layers ── */
+.sd-cell rect {
+  fill: var(--panel-2);
+  stroke: var(--line);
+  stroke-width: 1.2;
+}
+
+.sd-cell text {
+  fill: var(--ink-2);
+}
+
+.sd-cell.sd-here rect {
+  fill: color-mix(in srgb, var(--accent) 16%, var(--panel-2));
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.sd-cell.sd-here text {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+.sd-wire {
+  stroke: var(--muted);
+  stroke-width: 2;
+}
+
+.sd-trail polyline {
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+
+.sd-marker rect {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 1.5;
+}
+
+.sd-marker line {
+  stroke: var(--accent-ink);
+  stroke-width: 1.6;
+}
+
+.sd-chip rect {
+  fill: color-mix(in srgb, var(--sd-c) 22%, var(--bg));
+  stroke: var(--sd-c);
+  stroke-width: 1.5;
+}
+
+.sd-chip text {
+  fill: var(--ink);
+  font-family: var(--f-mono);
+  font-weight: 600;
+}
+
+.sd-chip.sd-lit rect {
+  stroke: var(--warn);
+  stroke-width: 3;
+}
+
+.sd-pdu {
+  fill: var(--muted);
+  font-weight: 600;
+}
+
+/* ── A diagram that does not validate (shown in its place, for the teacher) ── */
+.sd-bad {
+  margin: 16px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--err);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+
+.sd-bad b {
+  color: var(--err);
+}
+
+.sd-bad ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  text-align: left;
+  color: var(--ink);
+}
+
+.sd-bad p {
+  margin: 4px 0 0;
+}
+
+/* ── In the lesson editor (admin mode): the block, and the JSON dialog ── */
+.au-diagram-tools {
+  display: flex;
+  justify-content: flex-start;
+  margin: 2px 0 -6px;
+}
+
+.au-diagram-preview .sdd-list {
+  margin: 8px 0;
+}
+
+.sdd-back {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
+.sdd {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 12px 40px var(--shadow);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.sdd-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sdd-head h2 {
+  flex: 1;
+  margin: 0;
+  font-family: var(--f-disp);
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.sdd-intro {
+  margin: 6px 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.sdd-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 16px;
+  min-height: 0;
+}
+
+.sdd-src {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sdd-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sdd-row label {
+  font-weight: 600;
+  margin-inline-end: auto;
+}
+
+.sdd-text {
+  min-height: 300px;
+  height: 46vh;
+  resize: vertical;
+}
+
+.sdd-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sdd-status.ok {
+  color: var(--ok);
+}
+
+.sdd-status.bad {
+  color: var(--err);
+}
+
+.sdd-note {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.sdd-list {
+  max-height: 22vh;
+  overflow: auto;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  list-style: none;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  text-align: left;
+  color: var(--ink);
+}
+
+.sdd-list li {
+  margin: 2px 0;
+}
+
+.sdd-error {
+  border-color: var(--err);
+}
+
+.sdd-warning {
+  border-color: var(--warn);
+}
+
+.sdd-line {
+  margin-inline-end: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--raised);
+  color: var(--link);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sdd-error .sdd-line {
+  color: var(--err);
+}
+
+.sdd-warning .sdd-line {
+  color: var(--warn);
+}
+
+.sdd-preview {
+  min-width: 0;
+}
+
+.sdd-preview .sd {
+  margin: 0;
+}
+
+.sdd-empty {
+  margin: 0;
+  padding: 40px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.sdd-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sdd-save {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.sdd-save:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sdd-ask {
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .sdd-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sdd-text {
+    height: 34vh;
+    min-height: 200px;
+  }
+}
+/* Networking engine styles (only var(--token) colours). Appended after src/core/style.css.
    Formulas are native MathML from Temml (no web fonts): every <math> is a left-to-right island
    inside the Hebrew text (dir="ltr", set by tex-text.ts). */
 
@@ -2441,12 +3057,12 @@ var EQUAL_RELATIVE = 1e-9;
 function sameDims(a, b) {
 	return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
-function kindOf$1(dims) {
+function kindOf$2(dims) {
 	const entry = Object.entries(KIND_DIMS).find(([, kindDims]) => sameDims(kindDims, dims));
 	return entry ? entry[0] : "";
 }
 function describeDims(dims) {
-	const kind = kindOf$1(dims);
+	const kind = kindOf$2(dims);
 	return kind ? KIND_NAMES[kind] : "bit^" + dims[0] + " s^" + dims[1] + " m^" + dims[2];
 }
 function multiply(a, b, isDivision) {
@@ -2494,7 +3110,7 @@ var SHOW_UNITS = {
 var MINUTES_FROM_S = 600;
 var MBIT_FROM = 1e7;
 function showUnitFor(quantity) {
-	const kind = kindOf$1(quantity.dims);
+	const kind = kindOf$2(quantity.dims);
 	const units = SHOW_UNITS[kind];
 	if (!units) return null;
 	const size = Math.abs(quantity.value);
@@ -2633,7 +3249,21 @@ function power(base, exponent) {
 		]
 	};
 }
+var WHOLE_SLACK = 1e-9;
+function roundFunction(name, args) {
+	if (args.length !== 1) throw new InputError(name + "() takes one value");
+	const value = args[0];
+	if (!sameDims(value.dims, [
+		0,
+		0,
+		0
+	])) throw new InputError(name + "() rounds a plain number, such as a count of rounds (n / m), not " + describeDims(value.dims));
+	const nearest = Math.round(value.value);
+	if (Math.abs(value.value - nearest) <= WHOLE_SLACK * Math.max(1, Math.abs(value.value))) return plain(nearest);
+	return plain(name === "ceil" ? Math.ceil(value.value) : Math.floor(value.value));
+}
 function callFunction(name, args) {
+	if (name === "ceil" || name === "floor") return roundFunction(name, args);
 	if (name === "abs") {
 		if (args.length !== 1) throw new InputError("abs() takes one value");
 		return {
@@ -2684,7 +3314,9 @@ function evaluateBinary(node, env) {
 var FUNCTIONS = [
 	"min",
 	"max",
-	"abs"
+	"abs",
+	"ceil",
+	"floor"
 ];
 var NAME_START = /[A-Za-zμµ_]/;
 var NAME_CHAR = /[A-Za-z0-9μµ_]/;
@@ -2868,7 +3500,7 @@ var Parser = class {
 		throw new InputError("unexpected '" + token.text + "'");
 	}
 	parseCall(name) {
-		if (!FUNCTIONS.includes(name)) throw new InputError("unknown function '" + name + "' (use min, max or abs)");
+		if (!FUNCTIONS.includes(name)) throw new InputError("unknown function '" + name + "' (use min, max, abs, ceil or floor)");
 		const args = [this.parseSum()];
 		while (this.accept(",")) args.push(this.parseSum());
 		if (!this.accept(")")) throw new InputError("'" + name + "(' has no ')'");
@@ -3026,23 +3658,44 @@ function renderTex(latex, options) {
 // src/engines/net/tex-text.ts
 var TEMML_ERROR = /^<span class="temml-error"/;
 function escapeText$4(text) {
-	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 function math(latex, isDisplay = false) {
 	const html = renderTex(latex, { display: isDisplay });
 	if (TEMML_ERROR.test(html)) return "<code class=\"math-bad\">" + escapeText$4(latex) + "</code>";
 	return html.replace(/^<math/, "<math dir=\"ltr\"");
 }
+function formulaError(message, pos) {
+	return Object.assign(new Error(message), { pos });
+}
+function formulaMathml$1(latex, isDisplay) {
+	if (!latex.trim()) throw formulaError("the formula is empty", 0);
+	try {
+		return renderTex(latex, {
+			display: isDisplay,
+			throwOnError: true
+		}).replace(/^<math/, "<math dir=\"ltr\"");
+	} catch (error) {
+		const position = error.position;
+		throw formulaError((error instanceof Error ? error.message : String(error)).replace(/^\s*(ParseError:\s*)?/, "").split(/ at (position \d+|end of input)/)[0].trim() || "this formula cannot be read", typeof position === "number" ? position : -1);
+	}
+}
+function formulaSpan(latex, isDisplay) {
+	const className = isDisplay ? "tex tex-display" : "tex";
+	const display = isDisplay ? " data-display=\"1\"" : "";
+	const source = " data-tex=\"" + escapeText$4(latex) + "\"";
+	return "<span class=\"" + className + "\"" + source + display + ">" + math(latex, isDisplay) + "</span>";
+}
 function unescapeHtml(text) {
 	return text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
-var MATH_WITH_NEIGHBOURS = /(^|[\s(>])([והבכלמש]{1,3}-?)?(<math dir="ltr"(?![^>]*display="block")[^>]*>(?:(?!<\/math>)[\s\S])*<\/math>)([.,:;!?)]*)/g;
+var MATH_WITH_NEIGHBOURS = /(^|[\s(>])([והבכלמש]{1,3}-?)?(<span class="tex" data-tex="[^"]*">(?:(?!<\/span>)[\s\S])*<\/span>)([.,:;!?)]*)/g;
 function keepTogether(_, before, prefix, formula, punctuation) {
 	if (!prefix && !punctuation) return before + formula;
 	return before + "<span class=\"math-nb\">" + (prefix || "") + formula + punctuation + "</span>";
 }
 function richTex(html) {
-	return html.replace(/\$\$([^$]+)\$\$/g, (_, formula) => math(unescapeHtml(formula), true)).replace(/\$([^$]+)\$/g, (_, formula) => math(unescapeHtml(formula))).replace(MATH_WITH_NEIGHBOURS, keepTogether);
+	return html.replace(/\$\$([^$]+)\$\$/g, (_, formula) => formulaSpan(unescapeHtml(formula), true)).replace(/\$([^$]+)\$/g, (_, formula) => formulaSpan(unescapeHtml(formula), false)).replace(MATH_WITH_NEIGHBOURS, keepTogether);
 }
 // src/engines/net/model/expr-tex.ts
 var WORD = /^[A-Za-z]{2,}$/;
@@ -3078,6 +3731,7 @@ function exprTex(node, style = {}) {
 function callTex(node, style) {
 	const args = node.args.map((arg) => exprTex(arg, style));
 	if (node.name === "abs") return "\\left|" + args.join(", ") + "\\right|";
+	if (node.name === "ceil" || node.name === "floor") return "\\left\\l" + node.name + " " + args.join(", ") + " \\right\\r" + node.name;
 	return "\\" + node.name + "\\left(" + args.join(",\\ ") + "\\right)";
 }
 function binaryTex(node, style) {
@@ -3839,6 +4493,7 @@ function recordText(text, source) {
 	};
 }
 // src/engines/net/tests.ts
+var NAME_PATTERN$1 = /^[A-Za-z][A-Za-z0-9_]*$/;
 var DEFAULT_TOLERANCE = .01;
 var SUMMARY_RULE_WIDTH = 36;
 var DETAIL_INDENT = "       ";
@@ -3903,8 +4558,16 @@ function compare(what, value, test) {
 	};
 	return { ok: true };
 }
-function answerOf(recorded, box) {
-	const name = box.net && box.net.answer || "answer";
+function nameRead(box, test) {
+	if (test.of === void 0) return box.net && box.net.answer || "answer";
+	if (typeof test.of !== "string" || !NAME_PATTERN$1.test(test.of)) throw new InputError("the test's of must be a name of the box, like of: 'rounds'");
+	return test.of;
+}
+function whatIsRead(test) {
+	return test.of === void 0 ? "the answer" : String(test.of);
+}
+function answerOf(recorded, box, test) {
+	const name = nameRead(box, test);
 	if (recorded.problem) return {
 		ok: false,
 		detail: problemDetail(recorded)
@@ -3916,7 +4579,7 @@ function answerOf(recorded, box) {
 	};
 	if (!Number.isFinite(value.value)) return {
 		ok: false,
-		detail: "the answer is not a finite number"
+		detail: whatIsRead(test) + " is not a finite number"
 	};
 	return value;
 }
@@ -3927,17 +4590,18 @@ function unitTest(recorded, box, test) {
 		const kinds = Object.keys(KIND_DIMS).join(", ");
 		throw new InputError("unknown kind '" + kind + "' in the test (use " + kinds + ")");
 	}
-	const value = answerOf(recorded, box);
+	const value = answerOf(recorded, box, test);
 	if ("ok" in value) return value;
 	if (sameDims(value.dims, want)) return { ok: true };
 	const hint = sameDims(value.dims, KIND_DIMS.number) ? ": add a unit, like 12 ms or 0.012 s" : "";
 	return {
 		ok: false,
-		detail: "the answer is " + describeDims(value.dims) + ", not " + describeDims(want) + hint
+		detail: whatIsRead(test) + " is " + describeDims(value.dims) + ", not " + describeDims(want) + hint
 	};
 }
 function runOneTest(box, recorded, test) {
 	if (!test || typeof test !== "object") throw new InputError("a test must be an object like {type: 'steps', name: '...'}");
+	if (test.of !== void 0 && test.type !== "answer" && test.type !== "unit") throw new InputError("of is for answer and unit tests: a " + test.type + " test reads no name");
 	if (test.type === "steps") return stepsTest(recorded);
 	if (test.type === "total") {
 		if (recorded.problem) return {
@@ -3959,8 +4623,8 @@ function runOneTest(box, recorded, test) {
 	}
 	if (test.type === "unit") return unitTest(recorded, box, test);
 	if (test.type === "answer") {
-		const value = answerOf(recorded, box);
-		return "ok" in value ? value : compare("the answer", value, test);
+		const value = answerOf(recorded, box, test);
+		return "ok" in value ? value : compare(whatIsRead(test), value, test);
 	}
 	throw new InputError("unknown test type " + test.type + " (use steps, total, unit or answer)");
 }
@@ -5032,7 +5696,7 @@ var PACKET_COLOURS = 4;
 var SCROLL_MARGIN = 10;
 var SCROLL_MARGIN_RIGHT = 200;
 var lastWidth = 560;
-function useWidth() {
+function useWidth$1() {
 	const ref = (0, import_react.useRef)(null);
 	const [width, setWidth] = (0, import_react.useState)(lastWidth);
 	(0, import_react.useLayoutEffect)(() => {
@@ -5235,7 +5899,7 @@ function NotDrawable({ ref }) {
 	});
 }
 function Timeline({ scenario, event, tag }) {
-	const [boxRef, width] = useWidth();
+	const [boxRef, width] = useWidth$1();
 	const [prefs, change] = usePrefs(scenario);
 	const drawable = isDrawable(scenario);
 	const now = event ? event.time : 0;
@@ -5970,6 +6634,7 @@ window.LabEngine = {
 	name: "Networks",
 	highlight,
 	tour,
+	formula: { render: formulaMathml$1 },
 	files: {
 		main: "scenario.txt",
 		solution: "solution.txt"
@@ -5989,11 +6654,42 @@ window.LabEngine = {
 	init: () => Promise.resolve(),
 	runTests: (box, code) => Promise.resolve(runTests(box, code))
 };
+// src/core/step-diagram/embed.ts
+var DIAGRAM_CLASS = "step-diagram";
+function escapeAttribute(text) {
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\$/g, "&#36;");
+}
+function diagramHtml(source) {
+	let compact = source;
+	try {
+		compact = JSON.stringify(JSON.parse(source));
+	} catch {}
+	return "<div class=\"step-diagram\" data-diagram=\"" + escapeAttribute(compact) + "\"></div>";
+}
+function installCourseDiagrams(sources) {
+	const source = (name) => Object.prototype.hasOwnProperty.call(sources, name) ? sources[name] : "";
+	const html = (name) => diagramHtml(source(name) || JSON.stringify({ missingDiagram: name }));
+	const diagrams = {
+		names: Object.keys(sources),
+		html,
+		source
+	};
+	globalThis.LabDiagrams = diagrams;
+}
+function diagramsInHtml(html) {
+	if (!html.includes("step-diagram")) return [];
+	const template = document.createElement("template");
+	template.innerHTML = html;
+	return Array.from(template.content.querySelectorAll("div.step-diagram")).map((element) => element.getAttribute("data-diagram") || "");
+}
+// \0lab-diagrams
+installCourseDiagrams({ "request-response": "{\r\n  \"format\": \"step-diagram/1\",\r\n  \"style\": \"sequence\",\r\n  \"title\": \"בקשה ותשובה בין PC לשרת\",\r\n  \"description\": \"PC שולח בקשה לשרת SRV, השרת מעבד אותה ושולח תשובה; כל החץ הוא זמן שעובר.\",\r\n  \"actors\": [\r\n    { \"id\": \"pc\", \"label\": \"PC\", \"sub\": \"המחשב\" },\r\n    { \"id\": \"srv\", \"label\": \"SRV\", \"sub\": \"השרת\" }\r\n  ],\r\n  \"steps\": [\r\n    {\r\n      \"caption\": \"שני הצדדים, כל אחד בעמודה משלו. הזמן יורד למטה: כל שורה בתרשים היא רגע מאוחר יותר.\"\r\n    },\r\n    {\r\n      \"caption\": \"המחשב שולח בקשה קצרה. החץ נוטה כי הזמן עובר בדרך: הבקשה מגיעה לשרת אחרי זמן ההתפשטות, $\\\\frac{d}{s}$.\",\r\n      \"add\": [\r\n        { \"type\": \"message\", \"id\": \"req\", \"from\": \"pc\", \"to\": \"srv\", \"label\": \"בקשה\" }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"השרת קורא את הבקשה ומכין תשובה. גם זה לוקח זמן: זמן העיבוד, $d_{\\\\text{proc}}$.\",\r\n      \"add\": [\r\n        { \"type\": \"note\", \"id\": \"work\", \"at\": \"srv\", \"text\": \"מכין תשובה\" }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"השרת שולח את התשובה. היא ארוכה יותר, ולכן החץ שלה ארוך: קודם זמן השידור, $\\\\frac{L}{R}$, ואז שוב $\\\\frac{d}{s}$ בדרך חזרה.\",\r\n      \"add\": [\r\n        { \"type\": \"message\", \"id\": \"res\", \"from\": \"srv\", \"to\": \"pc\", \"label\": \"תשובה\", \"color\": \"green\", \"rows\": 1.5 }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"מהרגע שהבקשה יצאה ועד שהתשובה הגיעה כולה: זה זמן התגובה שהמחשב מרגיש.\",\r\n      \"add\": [\r\n        { \"type\": \"span\", \"id\": \"wait\", \"from\": \"req\", \"to\": \"res\", \"label\": \"תגובה\", \"color\": \"blue\", \"band\": true }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"בסך הכול $2\\\\cdot\\\\frac{d}{s} + d_{\\\\text{proc}} + \\\\frac{L}{R}$. הבקשה קצרה, אז זמן השידור שלה כמעט לא מורגש.\",\r\n      \"highlight\": [\"req\", \"work\", \"res\"]\r\n    }\r\n  ]\r\n}\r\n" });
 // src/courses/example-net/content.js
 (function() {
 	"use strict";
 	const R = String.raw;
 	const LT = window.LabTex || { rich: (html) => html };
+	const DIAGRAMS = window.LabDiagrams || { html: () => "" };
 	const H = (html) => LT.rich(html);
 	const body = (parts) => parts.map((part) => typeof part === "string" ? H(part) : part);
 	const quiz = (questions) => questions.map((q) => ({
@@ -6379,6 +7075,17 @@ link G -> SRV: R = 2 Mbps, d = 500 km`,
 			R`<p>אם הכיוון מתוקן אבל הקצב שגוי, <code>steps</code> עובר ו-<code>total</code> נכשל, למשל
 <code>the total delay is 7.5 ms, expected 10 ms</code>.</p>`
 		])
+	});
+	U.push({
+		id: "step-diagram",
+		title: "תרשים צעדים: בקשה ותשובה",
+		body: body([R`<p>לא כל תהליך ברשת הוא שרשרת של קווים. בקשה ותשובה הולכות וחוזרות, ולכן מציגים אותן
+ב<b>תרשים צעדים</b>: ציור שנבנה צעד אחרי צעד, עם הסבר קצר לכל צעד.</p>
+<p>כל צד הוא עמודה, והזמן יורד למטה. לחצו <b>צעד הבא ←</b> (או החץ שמאלה במקלדת) וראו איך
+הבקשה נוסעת לשרת והתשובה חוזרת.</p>` + DIAGRAMS.html("request-response") + R`<div class="callout"><b>מאיפה התרשים</b><p>התרשים הוא קובץ נתונים, לא קוד:
+<code>diagrams/request-response.json</code> בתיקיית הקורס. הקובץ מתאר את הצדדים, ולכל צעד את
+ההסבר ומה נוסף לציור. מורה יכול גם להדביק קובץ כזה בשיעור, במצב מנהל: בעריכה, <b>+</b> בין
+בלוקים, ואז "תרשים צעדים". המבנה המלא נמצא ב-<bdi dir="ltr">docs/STEP-DIAGRAMS.md</bdi>.</p></div>`])
 	});
 	U.push({
 		id: "teachers",
@@ -7190,7 +7897,7 @@ var SafeHtml = class {
 		return this.text;
 	}
 };
-function escapeHtml(text) {
+function escapeHtml$1(text) {
 	return String(text).replace(/[&<>"]/g, (character) => HTML_ESCAPES[character]);
 }
 function rawHtml(text) {
@@ -7200,7 +7907,7 @@ function valueToHtml(value) {
 	if (value instanceof SafeHtml) return value.text;
 	if (Array.isArray(value)) return value.map(valueToHtml).join("");
 	if (value === null || value === void 0 || value === false) return "";
-	return escapeHtml(value);
+	return escapeHtml$1(value);
 }
 function html(strings, ...values) {
 	let text = strings[0];
@@ -7546,7 +8253,7 @@ function cleanMathHtml(mathHtml) {
 	return clean ? clean.outerHTML : "";
 }
 // src/core/author/formulas.ts
-var CACHE_SIZE = 500;
+var CACHE_SIZE$1 = 500;
 var renderCache = /* @__PURE__ */ new Map();
 var PREFIX_BEFORE = /(^|[\s(])([והבכלמש]{1,3}-)?$/;
 var PUNCTUATION_AFTER = /^[.,:;!?)]+/;
@@ -7585,7 +8292,7 @@ function renderFormula(tex, isDisplay) {
 	} catch (error) {
 		result = problemOf(error);
 	}
-	if (renderCache.size >= CACHE_SIZE) renderCache.delete(renderCache.keys().next().value);
+	if (renderCache.size >= CACHE_SIZE$1) renderCache.delete(renderCache.keys().next().value);
 	renderCache.set(key, result);
 	return result;
 }
@@ -7745,7 +8452,7 @@ function isolateDirection(name) {
 	return FIRST_STRONG_ISOLATE + name + POP_DIRECTIONAL_ISOLATE;
 }
 // src/core/layer/package-import.js
-var MAX_FILE_BYTES = 62914560;
+var MAX_FILE_BYTES$1 = 62914560;
 var TITLE_IN_MESSAGE_LENGTH = 40;
 var ENGINE_IN_MESSAGE_LENGTH = 20;
 var JSON_START_PATTERN = /^\s*\{/;
@@ -7762,7 +8469,7 @@ function packageFromPage(pageText) {
 }
 async function readPackageFile(file) {
 	if (!file) return { error: "לא נבחר קובץ." };
-	if (file.size > MAX_FILE_BYTES) return { error: "הקובץ גדול מדי." };
+	if (file.size > MAX_FILE_BYTES$1) return { error: "הקובץ גדול מדי." };
 	let text;
 	try {
 		text = await file.text();
@@ -9498,7 +10205,7 @@ function StepPosition({ context }) {
 		children: position
 	})] });
 }
-function StepBar({ context }) {
+function StepBar$1({ context }) {
 	const isDebugging = useBoxView(context.view, (view) => view.isDebugging);
 	const firstLabel = "חזרה לצעד הראשון";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -10001,7 +10708,7 @@ function closeNewFileForm(context, shouldFocusAddTab) {
 }
 function nameProblemHtml(context, name) {
 	const { files, userFiles } = context;
-	if (!files.extraRe.test(name)) return html`שם לא תקין. ${rawHtml(ltrCode(escapeHtml(files.hint || files.badName || "")))}`.text;
+	if (!files.extraRe.test(name)) return html`שם לא תקין. ${rawHtml(ltrCode(escapeHtml$1(files.hint || files.badName || "")))}`.text;
 	if (name === files.main || userFiles.some((file) => file.name === name)) return html`הקובץ <bdi dir="ltr">${name}</bdi> כבר קיים`.text;
 	if (userFiles.length >= MAX_USER_FILES) return "אפשר להוסיף עד 10 קבצים";
 	return "";
@@ -10513,7 +11220,7 @@ function CodeBoxView({ context }) {
 			dangerouslySetInnerHTML: { __html: box.task || "" }
 		}) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ActionBar, { context }),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar, { context }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$1, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaleNotice, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "wb-grid",
@@ -10628,7 +11335,7 @@ function buildEngineUi(context) {
 		ed: context.editor,
 		state,
 		store,
-		esc: escapeHtml,
+		esc: escapeHtml$1,
 		userFiles() {
 			return userFileTexts(context);
 		},
@@ -10820,7 +11527,7 @@ var CodeBox = {
 	Editor: createEditorModel,
 	store,
 	ltrCode,
-	esc: escapeHtml
+	esc: escapeHtml$1
 };
 window.PStore = store;
 // node_modules/orderedmap/dist/index.js
@@ -11435,6 +12142,3556 @@ function showNote(message, actionLabel, action) {
 		setView({ note: null });
 	}, NOTE_DURATION_MS);
 }
+// src/core/step-diagram/format.ts
+var FORMAT = "step-diagram/1";
+var STYLES = [
+	"sequence",
+	"map",
+	"layers"
+];
+var ELEMENT_TYPES = {
+	sequence: [
+		"message",
+		"note",
+		"span"
+	],
+	map: [
+		"message",
+		"link",
+		"note"
+	],
+	layers: ["packet", "note"]
+};
+var COLORS = [
+	"blue",
+	"orange",
+	"green",
+	"red",
+	"teal",
+	"gray"
+];
+var ICONS = [
+	"host",
+	"server",
+	"router",
+	"switch",
+	"cloud",
+	"database"
+];
+var LIMITS = {
+	steps: 40,
+	actors: {
+		sequence: 8,
+		map: 10,
+		layers: 6
+	},
+	elementsPerStep: 12,
+	elements: 200,
+	sequenceRows: 80,
+	layers: 7,
+	parts: 8,
+	title: 80,
+	description: 300,
+	caption: 300,
+	label: 40,
+	actorLabel: 32,
+	sub: 40,
+	noteText: 80,
+	spanLabel: 16,
+	partText: 12,
+	id: 24
+};
+var DEFAULT_LAYERS = [
+	{
+		id: "application",
+		label: "יישום"
+	},
+	{
+		id: "transport",
+		label: "תעבורה"
+	},
+	{
+		id: "network",
+		label: "רשת"
+	},
+	{
+		id: "link",
+		label: "קו"
+	},
+	{
+		id: "physical",
+		label: "פיזית"
+	}
+];
+var ELEMENT_FIELDS = {
+	message: [
+		"type",
+		"id",
+		"from",
+		"to",
+		"label",
+		"color",
+		"dashed",
+		"parallel",
+		"rows"
+	],
+	note: [
+		"type",
+		"id",
+		"at",
+		"text",
+		"color"
+	],
+	span: [
+		"type",
+		"id",
+		"from",
+		"to",
+		"label",
+		"color",
+		"side",
+		"band"
+	],
+	link: [
+		"type",
+		"id",
+		"from",
+		"to",
+		"label",
+		"dashed"
+	],
+	packet: [
+		"type",
+		"id",
+		"at",
+		"layer",
+		"parts",
+		"label"
+	]
+};
+var CHANGE_FIELDS = {
+	message: [
+		"label",
+		"color",
+		"dashed"
+	],
+	note: ["text", "color"],
+	span: ["label", "color"],
+	link: ["label", "dashed"],
+	packet: [
+		"at",
+		"layer",
+		"parts",
+		"label"
+	],
+	actor: ["label", "sub"]
+};
+// src/core/step-diagram/check-values.ts
+var MAX_PROBLEMS = 40;
+var ID_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
+function isPlainObject(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function editDistance(a, b) {
+	const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+	for (let i = 1; i <= a.length; i++) {
+		let diagonal = row[0];
+		row[0] = i;
+		for (let j = 1; j <= b.length; j++) {
+			const above = row[j];
+			const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+			row[j] = Math.min(row[j] + 1, row[j - 1] + 1, diagonal + cost);
+			diagonal = above;
+		}
+	}
+	return row[b.length];
+}
+function closest(word, known) {
+	const lower = word.toLowerCase();
+	let best = "";
+	let bestDistance = Infinity;
+	for (const name of known) {
+		const distance = editDistance(lower, name.toLowerCase());
+		if (distance < bestDistance) {
+			best = name;
+			bestDistance = distance;
+		}
+	}
+	const allowed = word.length <= 3 ? 1 : 2;
+	return bestDistance <= allowed ? best : "";
+}
+function suggestion(word, known) {
+	const near = closest(word, known);
+	if (near) return " (did you mean '" + near + "'?)";
+	if (!known.length) return "";
+	return " (use: " + (known.length > 8 ? known.slice(0, 8).join(", ") + ", ..." : known.join(", ")) + ")";
+}
+function kindOf$1(value) {
+	if (value === null) return "null";
+	if (Array.isArray(value)) return "a list [...]";
+	if (typeof value === "object") return "an object {...}";
+	if (typeof value === "string") return "text \"" + (value.length > 20 ? value.slice(0, 20) + "..." : value) + "\"";
+	return typeof value === "number" ? "the number " + value : String(value);
+}
+var ProblemList = class {
+	problems = [];
+	warnings = [];
+	dropped = 0;
+	lines;
+	constructor(lines) {
+		this.lines = lines;
+	}
+	lineOf(path) {
+		let current = path;
+		for (;;) {
+			const line = this.lines.get(current);
+			if (line) return line;
+			if (!current) return 0;
+			const parent = current.replace(/(\.[^.[\]]+|\[\d+\])$/, "");
+			current = parent === current ? "" : parent;
+		}
+	}
+	add(path, message) {
+		if (this.problems.length >= MAX_PROBLEMS) {
+			this.dropped++;
+			return;
+		}
+		this.problems.push({
+			path,
+			line: this.lineOf(path),
+			message
+		});
+	}
+	warn(path, message) {
+		if (this.warnings.length < MAX_PROBLEMS) this.warnings.push({
+			path,
+			line: this.lineOf(path),
+			message
+		});
+	}
+	finish() {
+		if (this.dropped) this.problems.push({
+			path: "",
+			line: 0,
+			message: "and " + this.dropped + " more problems"
+		});
+	}
+	hasProblems() {
+		return this.problems.length > 0;
+	}
+};
+function checkId(list, path, value, required) {
+	if (value === void 0) {
+		if (required) list.add(path, "is missing: give it a short English id, like \"client\"");
+		return "";
+	}
+	if (typeof value !== "string" || !ID_PATTERN.test(value) || value.length > LIMITS.id) {
+		list.add(path, "must be a short English id: a letter, then letters, digits, - or _ (at most " + LIMITS.id + " characters), like \"client\" or \"syn1\", not " + kindOf$1(value));
+		return "";
+	}
+	return value;
+}
+function checkFlag(list, path, value, fallback) {
+	if (value === void 0) return fallback;
+	if (typeof value !== "boolean") {
+		list.add(path, "must be true or false (without quotes), not " + kindOf$1(value));
+		return fallback;
+	}
+	return value;
+}
+function checkNumber(list, path, value, range) {
+	if (value === void 0) return range.fallback;
+	if (typeof value !== "number" || !Number.isFinite(value)) {
+		list.add(path, "must be a number (without quotes), not " + kindOf$1(value));
+		return range.fallback;
+	}
+	if (value < range.min || value > range.max) {
+		list.add(path, "must be from " + range.min + " to " + range.max + ", not " + value);
+		return range.fallback;
+	}
+	return value;
+}
+function checkChoice(list, path, value, choices, fallback) {
+	if (value === void 0) {
+		if (!fallback) list.add(path, "is missing: use one of " + choices.join(", "));
+		return fallback;
+	}
+	if (typeof value === "string" && choices.includes(value)) return value;
+	const written = typeof value === "string" ? "'" + value + "'" : kindOf$1(value);
+	list.add(path, "must be one of " + choices.join(", ") + ", not " + written + (typeof value === "string" ? suggestion(value, choices).replace(/ \(use: .*\)$/, "") : ""));
+	return fallback;
+}
+function checkColor(list, path, value, fallback) {
+	if (value === "grey") {
+		list.add(path, "write 'gray' (American spelling), not 'grey'");
+		return fallback;
+	}
+	if (typeof value === "string" && /^(#|rgb|hsl)/i.test(value)) {
+		list.add(path, "write a colour name (" + COLORS.join(", ") + "), not a colour code: the lab picks the shade for the light and dark themes");
+		return fallback;
+	}
+	return checkChoice(list, path, value, COLORS, fallback) || fallback;
+}
+function checkFields(list, path, value, allowed, duplicates, where) {
+	for (const key of duplicates.get(path) || []) list.add(childField(path, key), "is written twice in this object: keep one");
+	for (const key of Object.keys(value)) if (!allowed.includes(key)) {
+		const near = closest(key, allowed);
+		const hint = near ? " (did you mean '" + near + "'?)" : " (" + where + " has: " + allowed.join(", ") + ")";
+		list.add(childField(path, key), "unknown field '" + key + "'" + hint);
+	}
+}
+function childField(path, key) {
+	return path ? path + "." + key : key;
+}
+function checkList(list, path, value, size) {
+	if (value === void 0) {
+		if (size.min > 0) list.add(path, "is missing: write a list [...]");
+		return [];
+	}
+	if (!Array.isArray(value)) {
+		list.add(path, "must be a list [...], not " + kindOf$1(value));
+		return [];
+	}
+	if (value.length < size.min) list.add(path, "needs at least " + size.min + (size.min === 1 ? " item" : " items"));
+	if (value.length > size.max) {
+		list.add(path, "has " + value.length + " items: at most " + size.max);
+		return value.slice(0, size.max);
+	}
+	return value;
+}
+// src/core/step-diagram/check-text.ts
+var HTML_PATTERN = /<\s*\/?\s*[A-Za-z!?]|&[A-Za-z]+;|&#\d+;/;
+var LINK_PATTERN = /\b(https?|ftp|file):\/\/|\b(javascript|vbscript):|\bdata:[a-z]+\/|\bmailto:\S|\bwww\./i;
+var BLOCKED_TEX = /\\(href|url|html\w*|includegraphics|input|include|def|let|newcommand|renewcommand)\b/;
+var CONTROL_PATTERN = new RegExp("[" + String.fromCharCode(0) + "-]");
+var HEBREW_PATTERN = /[֐-׿]/;
+function splitMath(text) {
+	const pieces = [""];
+	for (let i = 0; i < text.length; i++) {
+		const character = text[i];
+		if (character === "\\" && text[i + 1] === "$") {
+			pieces[pieces.length - 1] += pieces.length % 2 ? "$" : "\\$";
+			i++;
+		} else if (character === "$") pieces.push("");
+		else pieces[pieces.length - 1] += character;
+	}
+	return pieces;
+}
+function checkFormulas(list, path, text, checkFormula) {
+	const pieces = splitMath(text);
+	if (pieces.length % 2 === 0) {
+		list.add(path, "a $ has no closing $: a formula is written $...$ (a dollar sign is \\$)");
+		return;
+	}
+	pieces.forEach((piece, index) => {
+		if (index % 2 === 0) return;
+		const blocked = BLOCKED_TEX.exec(piece);
+		if (blocked) list.add(path, "the formula $" + piece + "$ uses \\" + blocked[1] + ", which is not allowed");
+		else if (!piece.trim()) list.add(path, "an empty formula $$: write the formula between the two $");
+		else if (checkFormula) {
+			const problem = checkFormula(piece);
+			if (problem) list.add(path, "the formula $" + piece + "$ cannot be read: " + problem);
+		}
+	});
+}
+function checkText(list, path, value, rule) {
+	if (value === void 0) {
+		if (rule.required) list.add(path, "is missing: write it as text in \"...\"");
+		return "";
+	}
+	if (typeof value !== "string") {
+		list.add(path, "must be text in \"...\", not " + kindOf$1(value));
+		return "";
+	}
+	const text = value.trim();
+	if (rule.required && !text) {
+		list.add(path, "is empty: write the text");
+		return "";
+	}
+	if (text.length > rule.max) {
+		list.add(path, "is too long: " + text.length + " characters, at most " + rule.max);
+		return "";
+	}
+	if (!checkPlain(list, path, text, rule)) return "";
+	if (rule.math) checkFormulas(list, path, text, rule.checkFormula);
+	else if (text.includes("$")) {
+		list.add(path, "formulas ($...$) are only allowed in a caption: write plain text here");
+		return "";
+	}
+	return text;
+}
+function checkPlain(list, path, text, rule) {
+	const outsideMath = rule.math ? splitMath(text).filter((_, i) => i % 2 === 0).join(" ") : text;
+	if (CONTROL_PATTERN.test(text)) {
+		list.add(path, "has a line break or a control character: a text here is one line");
+		return false;
+	}
+	if (HTML_PATTERN.test(outsideMath)) {
+		list.add(path, "looks like HTML: write plain text (no tags such as <b>, no &...;)");
+		return false;
+	}
+	if (LINK_PATTERN.test(text)) {
+		list.add(path, "has a link: a diagram holds no links or web addresses");
+		return false;
+	}
+	return true;
+}
+function hasHebrew(text) {
+	return HEBREW_PATTERN.test(text);
+}
+// src/core/step-diagram/caption.ts
+var PREFIX_HYPHEN$1 = /(^|[^א-ת])([והבכלמש]{1,3})-(?=\S|$)/g;
+var cache = /* @__PURE__ */ new Map();
+var CACHE_SIZE = 400;
+function escapeHtml(text) {
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function formulaHtml(latex) {
+	const cached = cache.get(latex);
+	if (cached !== void 0) return cached;
+	const engine = window.LabEngine;
+	let html = "<code class=\"sd-tex\" dir=\"ltr\">" + escapeHtml(latex) + "</code>";
+	try {
+		if (engine && engine.formula && typeof engine.formula.render === "function") html = engine.formula.render(latex, false);
+	} catch {
+		html = "<code class=\"sd-tex sd-tex-bad\" dir=\"ltr\">" + escapeHtml(latex) + "</code>";
+	}
+	if (cache.size >= CACHE_SIZE) cache.clear();
+	cache.set(latex, html);
+	return html;
+}
+function captionHtml(caption) {
+	return splitMath(caption).map((piece, index) => {
+		if (index % 2) return "<span class=\"sd-math\">" + formulaHtml(piece) + "</span>";
+		return escapeHtml(piece).replace(PREFIX_HYPHEN$1, "$1$2-⁠");
+	}).join("");
+}
+function formulaProblem(latex) {
+	const engine = window.LabEngine;
+	if (!engine || !engine.formula || typeof engine.formula.render !== "function") return null;
+	try {
+		engine.formula.render(latex, false);
+		return null;
+	} catch (error) {
+		return error instanceof Error ? error.message : String(error);
+	}
+}
+// src/core/step-diagram/sample.ts
+var DIAGRAM_SAMPLE = JSON.stringify({
+	format: "step-diagram/1",
+	style: "sequence",
+	title: "שאלה ותשובה",
+	actors: [{
+		id: "student",
+		label: "תלמיד"
+	}, {
+		id: "teacher",
+		label: "מורה"
+	}],
+	steps: [
+		{
+			caption: "התלמיד שואל שאלה. החץ נוטה כי לשאלה לוקח זמן להגיע.",
+			add: [{
+				type: "message",
+				id: "ask",
+				from: "student",
+				to: "teacher",
+				label: "שאלה"
+			}]
+		},
+		{
+			caption: "המורה חושב על התשובה.",
+			add: [{
+				type: "note",
+				at: "teacher",
+				text: "חושב"
+			}]
+		},
+		{
+			caption: "התשובה חוזרת לתלמיד.",
+			add: [{
+				type: "message",
+				id: "answer",
+				from: "teacher",
+				to: "student",
+				label: "תשובה",
+				color: "green"
+			}]
+		},
+		{
+			caption: "כל הזמן מהשאלה ועד התשובה: $t_{\\text{wait}}$.",
+			add: [{
+				type: "span",
+				from: "ask",
+				to: "answer",
+				label: "המתנה",
+				color: "orange",
+				band: true
+			}],
+			highlight: ["ask", "answer"]
+		}
+	]
+}, null, 2);
+// src/core/step-diagram/clock.ts
+function prefersReducedMotion() {
+	return Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+function runAnimation(durationMs, onFrame, onEnd) {
+	let frame = 0;
+	let isStopped = false;
+	const startedAt = performance.now();
+	const freeze = window.__stepDiagramFreeze;
+	const tick = (now) => {
+		if (isStopped) return;
+		const elapsed = Math.min(durationMs, Math.max(0, now - startedAt));
+		if (typeof freeze === "number" && elapsed >= freeze * durationMs) {
+			onFrame(freeze * durationMs);
+			return;
+		}
+		onFrame(elapsed);
+		if (elapsed >= durationMs) {
+			onEnd();
+			return;
+		}
+		frame = requestAnimationFrame(tick);
+	};
+	onFrame(0);
+	frame = requestAnimationFrame(tick);
+	return () => {
+		isStopped = true;
+		cancelAnimationFrame(frame);
+	};
+}
+// src/core/step-diagram/animate.ts
+function easeOut(t) {
+	return 1 - Math.pow(1 - t, 3);
+}
+function numberOf(element, name) {
+	return Number(element.getAttribute(name)) || 0;
+}
+function collect(root) {
+	return Array.from(root.querySelectorAll("[data-sd-anim]")).map((element) => ({
+		element,
+		kind: element.dataset.sdAnim || "fade",
+		delay: numberOf(element, "data-sd-delay"),
+		duration: Math.max(1, numberOf(element, "data-sd-dur")),
+		x1: numberOf(element, "x1") || numberOf(element, "data-sd-x1"),
+		y1: numberOf(element, "y1") || numberOf(element, "data-sd-y1"),
+		x2: numberOf(element, "x2") || numberOf(element, "data-sd-x2"),
+		y2: numberOf(element, "y2") || numberOf(element, "data-sd-y2"),
+		dx: numberOf(element, "data-sd-dx"),
+		dy: numberOf(element, "data-sd-dy")
+	}));
+}
+function drawFrame(item, t) {
+	const style = item.element.style;
+	switch (item.kind) {
+		case "draw":
+			item.element.setAttribute("x2", String(item.x1 + (item.x2 - item.x1) * t));
+			item.element.setAttribute("y2", String(item.y1 + (item.y2 - item.y1) * t));
+			style.opacity = t > 0 ? "1" : "0";
+			break;
+		case "head": {
+			const back = 1 - t;
+			const offsetX = (item.x1 - item.x2) * back;
+			const offsetY = (item.y1 - item.y2) * back;
+			style.transform = "translate(" + offsetX + "px," + offsetY + "px)";
+			style.opacity = t > 0 ? "1" : "0";
+			break;
+		}
+		case "move":
+			style.transform = "translate(" + item.dx * (1 - t) + "px," + item.dy * (1 - t) + "px)";
+			break;
+		case "slide":
+			style.transform = "translateX(" + -14 * (1 - t) + "px)";
+			style.opacity = String(t);
+			break;
+		case "pop":
+			style.transform = "scale(" + (.86 + .14 * t) + ")";
+			style.opacity = String(t);
+			break;
+		case "out":
+			style.opacity = String(1 - t);
+			break;
+		default: style.opacity = String(t);
+	}
+}
+function drawFinal(item) {
+	if (item.kind === "draw") {
+		item.element.setAttribute("x2", String(item.x2));
+		item.element.setAttribute("y2", String(item.y2));
+	}
+	item.element.style.transform = "";
+	item.element.style.opacity = item.kind === "out" ? "0" : "";
+}
+function animateDrawing(root) {
+	const items = collect(root);
+	if (!items.length) return () => void 0;
+	const total = Math.max(...items.map((item) => item.delay + item.duration));
+	const frame = (elapsed) => {
+		for (const item of items) {
+			const t = Math.min(1, Math.max(0, (elapsed - item.delay) / item.duration));
+			drawFrame(item, item.kind === "out" ? t : easeOut(t));
+		}
+	};
+	const finish = () => {
+		items.forEach(drawFinal);
+	};
+	const stop = runAnimation(total, frame, finish);
+	return () => {
+		stop();
+		finish();
+	};
+}
+function animAttributes(kind, delay, duration, extra = {}) {
+	const attributes = {
+		"data-sd-anim": kind,
+		"data-sd-delay": String(Number.isFinite(delay) ? Math.max(0, Math.round(delay)) : 0),
+		"data-sd-dur": String(Math.round(duration))
+	};
+	for (const [name, value] of Object.entries(extra)) attributes["data-sd-" + name] = String(Math.round(value * 10) / 10);
+	return attributes;
+}
+// src/core/step-diagram/geometry.ts
+var CHARACTER_WIDTH = .56;
+var FIRST_STRONG = /[֐-ࣿיִ-﷿ﹰ-ﻼ]|[A-Za-zÀ-ɏ]/;
+function textWidth(text, fontSize) {
+	return text.length * fontSize * CHARACTER_WIDTH;
+}
+function wrapLabel(text, width, fontSize, maxLines = 2) {
+	const perLine = Math.max(3, Math.floor(width / (fontSize * CHARACTER_WIDTH)));
+	const words = text.split(" ").filter(Boolean);
+	const lines = [];
+	while (words.length && lines.length < maxLines) {
+		let line = "";
+		while (words.length && (line + " " + words[0]).trim().length <= perLine) line = (line + " " + words.shift()).trim();
+		lines.push(line || fitText(words.shift() || "", width, fontSize));
+	}
+	if (words.length) lines[lines.length - 1] = fitText(lines[lines.length - 1] + " " + words.join(" "), width, fontSize);
+	return lines.length ? lines : [""];
+}
+function fitText(text, width, fontSize) {
+	const most = Math.max(3, Math.floor(width / (fontSize * CHARACTER_WIDTH)));
+	return text.length <= most ? text : text.slice(0, most - 1).trimEnd() + "…";
+}
+function textDirection(text) {
+	const match = FIRST_STRONG.exec(text);
+	return match && /[^A-Za-zÀ-ɏ]/.test(match[0]) ? "rtl" : "ltr";
+}
+function edgePoint(box, towardX, towardY, gap) {
+	const dx = towardX - box.cx;
+	const dy = towardY - box.cy;
+	if (!dx && !dy) return {
+		x: box.cx,
+		y: box.cy
+	};
+	const scaleX = dx ? (box.w / 2 + gap) / Math.abs(dx) : Infinity;
+	const scaleY = dy ? (box.h / 2 + gap) / Math.abs(dy) : Infinity;
+	const scale = Math.min(scaleX, scaleY);
+	return {
+		x: box.cx + dx * scale,
+		y: box.cy + dy * scale
+	};
+}
+function clamp(value, low, high) {
+	return Math.min(high, Math.max(low, value));
+}
+function arrowHead(x1, y1, x2, y2, size) {
+	const angle = Math.atan2(y2 - y1, x2 - x1);
+	const spread = .42;
+	const left = [x2 - size * Math.cos(angle - spread), y2 - size * Math.sin(angle - spread)];
+	const right = [x2 - size * Math.cos(angle + spread), y2 - size * Math.sin(angle + spread)];
+	return [
+		left,
+		[x2, y2],
+		right
+	].map((point) => point.map((n) => n.toFixed(1)).join(",")).join(" ");
+}
+// src/core/step-diagram/layout-layers.ts
+var LAYERS_FONT = {
+	cell: 12.5,
+	device: 13.5,
+	sub: 11.5,
+	part: 13,
+	packet: 12.5
+};
+var CELL_HEIGHT = 26;
+var CELL_GAP = 4;
+function layoutDevices(diagram, width) {
+	const devices = /* @__PURE__ */ new Map();
+	const columnWidth = (width - 16) / diagram.actors.length;
+	const cellW = clamp(columnWidth - 30, 58, 132);
+	diagram.actors.forEach((actor, index) => {
+		const cx = 8 + columnWidth * (index + .5);
+		const cellX = cx - cellW / 2 - 7;
+		const lines = wrapLabel(actor.label, columnWidth - 6, LAYERS_FONT.device);
+		devices.set(actor.id, {
+			cx,
+			cellX,
+			cellW,
+			trailX: cellX + cellW + 9,
+			lines
+		});
+	});
+	return devices;
+}
+function layoutLayers(diagram, width) {
+	const drawWidth = Math.max(260, width);
+	const devices = layoutDevices(diagram, drawWidth);
+	const layerY = /* @__PURE__ */ new Map();
+	const stackTop = 10;
+	diagram.layers.forEach((layer, index) => {
+		layerY.set(layer.id, stackTop + index * 30);
+	});
+	const wireY = stackTop + diagram.layers.length * 30 - CELL_GAP + 14;
+	const lineCount = Math.max(1, ...Array.from(devices.values()).map((d) => d.lines.length));
+	const hasSub = diagram.actors.some((actor) => actor.sub);
+	const labelY = wireY + 22;
+	const elements = diagram.steps.flatMap((step) => step.add);
+	const hasNotes = elements.some((element) => element.type === "note");
+	const noteY = labelY + (lineCount - 1) * 17 + (hasSub ? 16 : 0) + 18;
+	const stripTop = noteY + (hasNotes ? 10 : -8) + 10;
+	const packetRows = elements.filter((element) => element.type === "packet").map((packet) => packet.id);
+	return {
+		width: drawWidth,
+		height: stripTop + Math.max(1, packetRows.length) * 38 + 6,
+		cellHeight: CELL_HEIGHT,
+		devices,
+		layerY,
+		wireY,
+		labelY,
+		noteY,
+		stripTop,
+		packetRows
+	};
+}
+function placePoint(layout, place) {
+	return {
+		x: layout.devices.get(place.at).trailX,
+		y: (layout.layerY.get(place.layer) || 0) + layout.cellHeight / 2
+	};
+}
+function trailPoints(layout, trail) {
+	if (trail.length < 2) return "";
+	const points = [placePoint(layout, trail[0])];
+	for (let i = 1; i < trail.length; i++) {
+		const before = placePoint(layout, trail[i - 1]);
+		const after = placePoint(layout, trail[i]);
+		if (trail[i].at !== trail[i - 1].at) points.push({
+			x: before.x,
+			y: layout.wireY
+		}, {
+			x: after.x,
+			y: layout.wireY
+		});
+		points.push(after);
+	}
+	return points.map((point) => point.x.toFixed(1) + "," + point.y.toFixed(1)).join(" ");
+}
+function chipWidth(text) {
+	return Math.max(30, textWidth(text, LAYERS_FONT.part) + 18);
+}
+// src/core/step-diagram/layout-map.ts
+var MAP_FONT = {
+	node: 13.5,
+	sub: 11.5,
+	label: 12.5,
+	note: 12,
+	badge: 11.5
+};
+var PAIR_GAP = 13;
+var PAIR_SPREAD = 26;
+var LABEL_OFFSET = 15;
+function layoutNodes(diagram, width, height, talking) {
+	const preferred = clamp(width / 5.4, 70, 132);
+	const wide = placeNodes$1(diagram, width, height, preferred);
+	const room = narrowestRoom(wide, talking);
+	return room < preferred ? placeNodes$1(diagram, width, height, Math.max(MIN_BOX_WIDTH, room)) : wide;
+}
+var MIN_BOX_WIDTH = 64;
+var ICON_BOX_WIDTH = 92;
+var ROW_GAP = 18;
+var TALK_GAP = 56;
+function pairKey(a, b) {
+	return [a, b].sort().join("\0");
+}
+function placeNodes$1(diagram, width, height, boxW) {
+	const nodes = /* @__PURE__ */ new Map();
+	diagram.actors.forEach((actor) => {
+		const icon = actor.icon !== null && boxW >= ICON_BOX_WIDTH;
+		const lines = wrapLabel(actor.label, boxW - 14 - (icon ? 18 : 0), MAP_FONT.node, 3);
+		const h = 14 + lines.length * 17 + (actor.sub ? 15 : 0);
+		const cx = clamp(boxW / 2 + 6 + actor.x / 100 * (width - boxW - 12), boxW / 2, width - boxW / 2);
+		const cy = clamp(h / 2 + 8 + actor.y / 100 * (height - h - 16), h / 2, height - h / 2);
+		nodes.set(actor.id, {
+			cx,
+			cy,
+			w: boxW,
+			h,
+			lines,
+			icon
+		});
+	});
+	return nodes;
+}
+function narrowestRoom(nodes, talking) {
+	const entries = Array.from(nodes.entries());
+	let room = Infinity;
+	entries.forEach(([idA, a], i) => {
+		entries.slice(i + 1).forEach(([idB, b]) => {
+			if (Math.abs(a.cy - b.cy) < (a.h + b.h) / 2 + 6) {
+				const gap = talking.has(pairKey(idA, idB)) ? TALK_GAP : ROW_GAP;
+				room = Math.min(room, Math.abs(a.cx - b.cx) - gap);
+			}
+		});
+	});
+	return room;
+}
+var CROWDED_PAIR = 3;
+function pairPlaces(messages) {
+	const groups = /* @__PURE__ */ new Map();
+	for (const message of messages) {
+		const key = pairKey(message.from, message.to);
+		groups.set(key, [...groups.get(key) || [], message]);
+	}
+	const places = /* @__PURE__ */ new Map();
+	groups.forEach((group) => {
+		const count = group.length;
+		const gap = count > 1 ? Math.min(PAIR_GAP, PAIR_SPREAD / (count - 1)) : 0;
+		const crowded = count > CROWDED_PAIR;
+		group.forEach((message, index) => {
+			const along = count > 1 ? .25 + .5 * index / (count - 1) : .5;
+			places.set(message.id, {
+				offset: (index - (count - 1) / 2) * gap,
+				along,
+				crowded
+			});
+		});
+	});
+	return places;
+}
+function messageGeometry$1(message, nodes, place) {
+	const from = nodes.get(message.from);
+	const to = nodes.get(message.to);
+	const isForward = message.from < message.to;
+	const a = isForward ? from : to;
+	const b = isForward ? to : from;
+	const length = Math.hypot(b.cx - a.cx, b.cy - a.cy) || 1;
+	const nx = -(b.cy - a.cy) / length;
+	const ny = (b.cx - a.cx) / length;
+	const offset = place.offset;
+	const shift = (box) => ({
+		...box,
+		cx: box.cx + nx * offset,
+		cy: box.cy + ny * offset
+	});
+	const start = edgePoint(shift(from), to.cx + nx * offset, to.cy + ny * offset, 5);
+	const end = edgePoint(shift(to), from.cx + nx * offset, from.cy + ny * offset, 6);
+	const along = isForward ? place.along : 1 - place.along;
+	const badgeX = start.x + (end.x - start.x) * along;
+	const badgeY = start.y + (end.y - start.y) * along;
+	const side = offset < 0 ? -1 : 1;
+	const isMostlyVertical = Math.abs(nx) > .6;
+	const labelAnchor = !isMostlyVertical ? "middle" : nx * side > 0 ? "start" : "end";
+	return {
+		x1: start.x,
+		y1: start.y,
+		x2: end.x,
+		y2: end.y,
+		badgeX,
+		badgeY,
+		labelAnchor,
+		labelX: isMostlyVertical ? badgeX + nx * side * LABEL_OFFSET * 1.4 : badgeX,
+		labelY: badgeY + ny * side * LABEL_OFFSET + 4,
+		crowded: place.crowded
+	};
+}
+function linkGeometry(link, nodes, isTalking) {
+	const from = nodes.get(link.from);
+	const to = nodes.get(link.to);
+	const start = edgePoint(from, to.cx, to.cy, 0);
+	const end = edgePoint(to, from.cx, from.cy, 0);
+	const length = Math.hypot(end.x - start.x, end.y - start.y) || 1;
+	const away = isTalking ? 27 : 6;
+	const up = (end.x - start.x) / length >= 0 ? 1 : -1;
+	const nx = (end.y - start.y) / length * up;
+	const ny = -(end.x - start.x) / length * up;
+	return {
+		x1: start.x,
+		y1: start.y,
+		x2: end.x,
+		y2: end.y,
+		labelX: (start.x + end.x) / 2 + nx * away,
+		labelY: (start.y + end.y) / 2 + ny * away + (isTalking ? 4 : 0)
+	};
+}
+function layoutMap(diagram, width) {
+	const drawWidth = Math.max(260, width);
+	const height = Math.round(clamp(drawWidth * .56, 240, 420));
+	const elements = diagram.steps.flatMap((step) => step.add);
+	const messages = elements.filter((e) => e.type === "message");
+	const talking = new Set(messages.map((message) => pairKey(message.from, message.to)));
+	const nodes = layoutNodes(diagram, drawWidth, height, talking);
+	const places = pairPlaces(messages);
+	const layout = {
+		width: drawWidth,
+		height,
+		nodes,
+		messages: /* @__PURE__ */ new Map(),
+		links: /* @__PURE__ */ new Map(),
+		notes: /* @__PURE__ */ new Map()
+	};
+	for (const message of messages) layout.messages.set(message.id, messageGeometry$1(message, nodes, places.get(message.id)));
+	for (const element of elements) if (element.type === "link") {
+		const isTalking = talking.has(pairKey(element.from, element.to));
+		layout.links.set(element.id, linkGeometry(element, nodes, isTalking));
+	} else if (element.type === "note") {
+		const node = nodes.get(element.at);
+		const lines = wrapLabel(element.text, Math.max(node.w + 30, 120), MAP_FONT.note);
+		const below = node.cy + node.h / 2 + 16;
+		const y = below + lines.length * 15 < height ? below : node.cy - node.h / 2 - 8 - (lines.length - 1) * 15;
+		layout.notes.set(element.id, {
+			x: node.cx,
+			y,
+			lines
+		});
+	}
+	return layout;
+}
+// src/core/step-diagram/check-context.ts
+function checkActorRef(context, path, value) {
+	const list = context.list;
+	if (value === void 0) {
+		list.add(path, "is missing: write the id of an actor");
+		return "";
+	}
+	if (typeof value !== "string") {
+		list.add(path, "must be an actor's id in \"...\", not " + kindOf$1(value));
+		return "";
+	}
+	if (!context.actors.has(value)) {
+		const isElement = context.elements.has(value);
+		const ids = Array.from(context.actors.keys());
+		list.add(path, isElement ? "'" + value + "' is an element, not an actor" : "'" + value + "' is not an actor" + suggestion(value, ids));
+		return "";
+	}
+	if (!context.actorShown.get(value)) {
+		list.add(path, "the actor '" + value + "' is hidden in this step: show it first, in this step or before (show: [\"" + value + "\"])");
+		return "";
+	}
+	return value;
+}
+// src/core/step-diagram/check-packet.ts
+function checkParts(context, path, value) {
+	const list = context.list;
+	return checkList(list, path, value, {
+		min: 1,
+		max: LIMITS.parts
+	}).map((item, index) => {
+		const itemPath = path + "[" + index + "]";
+		if (typeof item === "string") return {
+			text: checkText(list, itemPath, item, {
+				max: LIMITS.partText,
+				required: true
+			}),
+			color: ""
+		};
+		if (!isPlainObject(item)) {
+			list.add(itemPath, "must be text such as \"Ht\", or {\"text\": \"Ht\", \"color\": \"orange\"}");
+			return {
+				text: "",
+				color: ""
+			};
+		}
+		for (const key of Object.keys(item)) if (key !== "text" && key !== "color") list.add(childField(itemPath, key), "unknown field '" + key + "' (a part has: text, color)");
+		const rule = {
+			max: LIMITS.partText,
+			required: true
+		};
+		return {
+			text: checkText(list, childField(itemPath, "text"), item.text, rule),
+			color: item.color === void 0 ? "" : checkColor(list, childField(itemPath, "color"), item.color, "gray")
+		};
+	});
+}
+function checkLayerRef(context, path, value, deviceId) {
+	const device = context.actors.get(deviceId);
+	if (typeof value !== "string") {
+		context.list.add(path, value === void 0 ? "is missing: write the layer it is at, like \"transport\"" : "must be a layer's id in \"...\", not " + kindOf$1(value));
+		return "";
+	}
+	if (device && !device.layers.includes(value)) {
+		context.list.add(path, "the device '" + deviceId + "' has no layer '" + value + "' (it has: " + device.layers.join(", ") + ")");
+		return "";
+	}
+	return value;
+}
+function checkPacket(context, path, raw, id) {
+	const at = checkActorRef(context, childField(path, "at"), raw.at);
+	return {
+		type: "packet",
+		id,
+		at,
+		layer: checkLayerRef(context, childField(path, "layer"), raw.layer, at),
+		parts: checkParts(context, childField(path, "parts"), raw.parts),
+		label: checkText(context.list, childField(path, "label"), raw.label, { max: LIMITS.spanLabel })
+	};
+}
+// src/core/step-diagram/check-elements.ts
+var MAP_MESSAGE_FIELDS = ELEMENT_FIELDS.message.filter((f) => f !== "parallel" && f !== "rows");
+function checkEnds(context, path, raw) {
+	const from = checkActorRef(context, childField(path, "from"), raw.from);
+	const to = checkActorRef(context, childField(path, "to"), raw.to);
+	if (from && from === to) context.list.add(childField(path, "to"), "goes from " + from + " to itself: from and to must be two different actors");
+	return {
+		from,
+		to
+	};
+}
+function checkMessage(context, path, raw, id) {
+	const list = context.list;
+	const ends = checkEnds(context, path, raw);
+	const isSequence = context.style === "sequence";
+	const parallel = isSequence && checkFlag(list, childField(path, "parallel"), raw.parallel, false);
+	if (parallel && !context.hasMessageBefore()) list.add(childField(path, "parallel"), "the first message has no message before it to leave with: leave out \"parallel\"");
+	return {
+		type: "message",
+		id,
+		from: ends.from,
+		to: ends.to,
+		label: checkText(list, childField(path, "label"), raw.label, { max: LIMITS.label }),
+		color: checkColor(list, childField(path, "color"), raw.color, "blue"),
+		dashed: checkFlag(list, childField(path, "dashed"), raw.dashed, false),
+		parallel,
+		rows: isSequence ? checkNumber(list, childField(path, "rows"), raw.rows, {
+			min: .5,
+			max: 4,
+			fallback: 1
+		}) : 1
+	};
+}
+function checkSpan(context, path, raw, id) {
+	const list = context.list;
+	return {
+		type: "span",
+		id,
+		from: checkMessageRef(context, childField(path, "from"), raw.from),
+		to: checkMessageRef(context, childField(path, "to"), raw.to),
+		label: checkText(list, childField(path, "label"), raw.label, { max: LIMITS.spanLabel }),
+		color: checkColor(list, childField(path, "color"), raw.color, "gray"),
+		side: checkChoice(list, childField(path, "side"), raw.side, ["left", "right"], "left") || "left",
+		band: checkFlag(list, childField(path, "band"), raw.band, false)
+	};
+}
+function checkMessageRef(context, path, value) {
+	if (typeof value !== "string") {
+		context.list.add(path, value === void 0 ? "is missing: write the id of a message" : "must be a message's id in \"...\", not " + kindOf$1(value));
+		return "";
+	}
+	const element = context.elements.get(value);
+	if (!element || element.type !== "message") {
+		const messageIds = Array.from(context.elements.values()).filter((e) => e.type === "message" && !e.id.startsWith("#")).map((e) => e.id);
+		context.list.add(path, "'" + value + "' is not a message added in this step or before (give the message an \"id\")" + suggestion(value, messageIds).replace(/ \(use: .*\)$/, ""));
+		return "";
+	}
+	return value;
+}
+function checkElement(context, path, raw) {
+	const list = context.list;
+	if (!isPlainObject(raw)) {
+		list.add(path, "must be an object {\"type\": ...}, not " + kindOf$1(raw));
+		return null;
+	}
+	const type = checkElementType(context, path, raw.type);
+	if (!type) return null;
+	checkStyleFields(context, path, raw, context.style === "map" && type === "message" ? MAP_MESSAGE_FIELDS : ELEMENT_FIELDS[type], type);
+	const id = checkNewId(context, path, raw.id, type === "packet");
+	if (id === null) return null;
+	return checkByType(context, path, raw, type, id);
+}
+function checkStyleFields(context, path, raw, fields, type) {
+	for (const key of ["parallel", "rows"]) if (type === "message" && context.style === "map" && key in raw) {
+		context.list.add(childField(path, key), "'" + key + "' is for sequence diagrams only (a map has no time axis): leave it out");
+		delete raw[key];
+	}
+	const where = "a " + type;
+	const known = ["type", ...fields.filter((field) => field !== "type")];
+	for (const key of context.duplicates.get(path) || []) context.list.add(childField(path, key), "is written twice in this object: keep one");
+	for (const key of Object.keys(raw)) if (!known.includes(key)) {
+		const hint = suggestion(key, known).replace(/ \(use: .*\)$/, "") || " (" + where + " has: " + known.join(", ") + ")";
+		context.list.add(childField(path, key), "unknown field '" + key + "'" + hint);
+	}
+}
+function checkElementType(context, path, value) {
+	const typesOfStyle = ELEMENT_TYPES;
+	const allowed = typesOfStyle[context.style];
+	const typePath = childField(path, "type");
+	if (value === void 0) {
+		context.list.add(typePath, "is missing: a " + context.style + " diagram adds " + allowed.join(", ") + " elements");
+		return "";
+	}
+	if (typeof value === "string" && allowed.includes(value)) return value;
+	const written = typeof value === "string" ? "'" + value + "'" : kindOf$1(value);
+	const elsewhere = typeof value === "string" && ELEMENT_FIELDS[value] ? " (a " + value + " belongs in a " + Object.keys(typesOfStyle).filter((s) => typesOfStyle[s].includes(value)).join(" or ") + " diagram)" : typeof value === "string" ? suggestion(value, allowed).replace(/ \(use: .*\)$/, "") : "";
+	context.list.add(typePath, written + " is not an element of a " + context.style + " diagram: use " + allowed.join(", ") + elsewhere);
+	return "";
+}
+function checkNewId(context, path, value, isRequired) {
+	const idPath = childField(path, "id");
+	if (value === void 0 && isRequired) {
+		context.list.add(idPath, "is missing: a packet needs an id, like \"pkt\", so later steps can move it with \"change\"");
+		return null;
+	}
+	if (value === void 0) return context.autoId();
+	const id = checkId(context.list, idPath, value, true);
+	if (!id) return null;
+	if (context.actors.has(id) || context.elements.has(id)) {
+		const what = context.actors.has(id) ? "an actor" : "an element added before";
+		context.list.add(idPath, "the id '" + id + "' is already used by " + what + ": every id in a diagram is different (to change an element, use \"change\")");
+		return null;
+	}
+	return id;
+}
+function checkByType(context, path, raw, type, id) {
+	const list = context.list;
+	if (type === "message") return checkMessage(context, path, raw, id);
+	if (type === "span") return checkSpan(context, path, raw, id);
+	if (type === "packet") return checkPacket(context, path, raw, id);
+	if (type === "link") {
+		const ends = checkEnds(context, path, raw);
+		const label = checkText(list, childField(path, "label"), raw.label, { max: LIMITS.label });
+		const dashed = checkFlag(list, childField(path, "dashed"), raw.dashed, false);
+		return {
+			type: "link",
+			id,
+			from: ends.from,
+			to: ends.to,
+			label,
+			dashed
+		};
+	}
+	const at = checkActorRef(context, childField(path, "at"), raw.at);
+	const rule = {
+		max: LIMITS.noteText,
+		required: true
+	};
+	return {
+		type: "note",
+		id,
+		at,
+		text: checkText(list, childField(path, "text"), raw.text, rule),
+		color: checkColor(list, childField(path, "color"), raw.color, "gray")
+	};
+}
+// src/core/step-diagram/check-highlight.ts
+function unknownIdProblem(state, id) {
+	const hint = suggestion(id, [...state.actors.keys(), ...state.elements.keys()].filter((k) => !k.startsWith("#"))).replace(/ \(use: .*\)$/, "");
+	return `'${id}' is not an actor or an element added in this step or before` + hint;
+}
+function partProblem(state, target, id, part) {
+	const actor = state.actors.get(id);
+	const element = state.elements.get(id);
+	if (actor && state.style === "layers") {
+		const layers = actor.layers.join(", ");
+		return actor.layers.includes(part) ? "" : `the device '${id}' has no layer '${part}' (it has: ${layers})`;
+	}
+	if (element && element.type === "packet") {
+		const parts = element.parts.map((p) => p.text);
+		return parts.includes(part) ? "" : `the packet '${id}' has no part '${part}' now (it has: ${parts.join(", ")})`;
+	}
+	return `'${target}': only a device's layer (device.layer) or a packet's part (packet.part) can be named after a dot`;
+}
+function highlightProblem(state, target) {
+	const [id, part] = target.split(/\.(.*)/s);
+	const actor = state.actors.get(id);
+	const element = state.elements.get(id);
+	if (!actor && !element) return unknownIdProblem(state, id);
+	if (!(actor ? state.actorShown.get(id) : state.shown.get(id))) return `'${id}' is hidden in this step, so it cannot be highlighted`;
+	return part === void 0 ? "" : partProblem(state, target, id, part);
+}
+// src/core/step-diagram/check-steps.ts
+var STEP_FIELDS = [
+	"caption",
+	"add",
+	"change",
+	"hide",
+	"show",
+	"highlight"
+];
+var StepWalk = class {
+	elements = /* @__PURE__ */ new Map();
+	shown = /* @__PURE__ */ new Map();
+	actorShown = /* @__PURE__ */ new Map();
+	autoCount = 0;
+	messageCount = 0;
+	cursor = 0;
+	lastStart = 0;
+	context;
+	style;
+	list;
+	duplicates;
+	actors;
+	checkFormula;
+	constructor(style, list, duplicates, actors, checkFormula) {
+		this.style = style;
+		this.list = list;
+		this.duplicates = duplicates;
+		this.actors = actors;
+		this.checkFormula = checkFormula;
+		actors.forEach((actor, id) => this.actorShown.set(id, !actor.hidden));
+		this.context = {
+			style,
+			list,
+			duplicates,
+			actors,
+			actorShown: this.actorShown,
+			elements: this.elements,
+			autoId: this.autoId.bind(this),
+			hasMessageBefore: this.hasMessageBefore.bind(this)
+		};
+	}
+	autoId() {
+		this.autoCount++;
+		return "#" + this.autoCount;
+	}
+	hasMessageBefore() {
+		return this.messageCount > 0;
+	}
+	countTime(path, element) {
+		if (this.style !== "sequence") return;
+		let end = this.cursor;
+		if (element.type === "message") {
+			const start = element.parallel ? this.lastStart : this.cursor;
+			end = start + element.rows;
+			this.lastStart = start;
+			this.messageCount++;
+		} else if (element.type === "note") {
+			this.lastStart = this.cursor;
+			end = this.cursor + 1;
+		}
+		this.cursor = Math.max(this.cursor, end);
+		if (this.cursor > LIMITS.sequenceRows) this.list.add(path, "the diagram is too long: at most " + LIMITS.sequenceRows + " rows of time (a message takes one row, a note one row)");
+	}
+	addAll(path, value) {
+		const addPath = childField(path, "add");
+		const items = checkList(this.list, addPath, value, {
+			min: 0,
+			max: LIMITS.elementsPerStep
+		});
+		const added = [];
+		items.forEach((raw, index) => {
+			const elementPath = addPath + "[" + index + "]";
+			const element = checkElement(this.context, elementPath, raw);
+			if (!element) return;
+			if (this.elements.size >= LIMITS.elements) {
+				this.list.add(elementPath, "too many elements: a diagram has at most " + LIMITS.elements);
+				return;
+			}
+			this.elements.set(element.id, element);
+			this.shown.set(element.id, true);
+			this.countTime(elementPath, element);
+			added.push(element);
+		});
+		return added;
+	}
+	changeAll(path, value) {
+		const changePath = childField(path, "change");
+		const items = checkList(this.list, changePath, value, {
+			min: 0,
+			max: LIMITS.elementsPerStep
+		});
+		const changes = [];
+		items.forEach((raw, index) => {
+			const change = this.checkChange(changePath + "[" + index + "]", raw);
+			if (change) changes.push(change);
+		});
+		return changes;
+	}
+	checkChange(path, raw) {
+		if (!isPlainObject(raw) || typeof raw.id !== "string") {
+			this.list.add(path, "must be {\"id\": \"...\", and the fields that change}, not " + kindOf$1(raw));
+			return null;
+		}
+		const id = raw.id;
+		const element = this.elements.get(id);
+		const actor = this.actors.get(id);
+		if (!element && !actor) {
+			this.list.add(childField(path, "id"), unknownIdProblem(this, id));
+			return null;
+		}
+		const kind = element ? element.type : "actor";
+		const allowed = CHANGE_FIELDS[kind];
+		checkFields(this.list, path, raw, ["id", ...allowed], this.duplicates, "a change of a " + kind);
+		const keys = Object.keys(raw).filter((key) => allowed.includes(key));
+		if (!keys.length) {
+			this.list.add(path, "changes nothing: a change of a " + kind + " sets " + allowed.join(", "));
+			return null;
+		}
+		return {
+			id,
+			fields: element ? this.changedElementFields(path, element, raw, keys) : this.changedActorFields(path, raw, keys)
+		};
+	}
+	changedField(path, element, key, value) {
+		const list = this.list;
+		if (key === "color") return checkColor(list, path, value, "gray");
+		if (key === "dashed") return checkFlag(list, path, value, false);
+		if (key === "parts") return checkParts(this.context, path, value);
+		if (key === "at") return checkActorRef(this.context, path, value);
+		const labelMax = element.type === "span" ? LIMITS.spanLabel : LIMITS.label;
+		return checkText(list, path, value, {
+			max: key === "text" ? LIMITS.noteText : labelMax,
+			required: key === "text"
+		});
+	}
+	changedElementFields(path, element, raw, keys) {
+		const fields = {};
+		for (const key of keys.filter((name) => name !== "layer")) fields[key] = this.changedField(childField(path, key), element, key, raw[key]);
+		if (element.type === "packet" && (keys.includes("at") || keys.includes("layer"))) {
+			const at = fields.at ?? element.at;
+			const layerValue = keys.includes("layer") ? raw.layer : element.layer;
+			fields.layer = checkLayerRef(this.context, childField(path, keys.includes("layer") ? "layer" : "at"), layerValue, at);
+		}
+		this.elements.set(element.id, {
+			...element,
+			...fields
+		});
+		return fields;
+	}
+	changedActorFields(path, raw, keys) {
+		const fields = {};
+		for (const key of keys) {
+			const max = key === "label" ? LIMITS.actorLabel : LIMITS.sub;
+			fields[key] = checkText(this.list, childField(path, key), raw[key], {
+				max,
+				required: key === "label"
+			});
+		}
+		return fields;
+	}
+	toggleAll(path, key, value) {
+		const listPath = childField(path, key);
+		const items = checkList(this.list, listPath, value, {
+			min: 0,
+			max: LIMITS.elements
+		});
+		const ids = [];
+		const shouldShow = key === "show";
+		items.forEach((item, index) => {
+			const itemPath = listPath + "[" + index + "]";
+			const id = typeof item === "string" ? item : "";
+			const isActor = this.actors.has(id);
+			const states = isActor ? this.actorShown : this.shown;
+			if (!isActor && !this.elements.has(id)) {
+				const problem = typeof item === "string" ? unknownIdProblem(this, item) : "";
+				this.list.add(itemPath, problem || "must be an id in \"...\", not " + kindOf$1(item));
+				return;
+			}
+			if (states.get(id) === shouldShow) {
+				this.list.add(itemPath, "'" + id + "' is already " + (shouldShow ? "shown" : "hidden"));
+				return;
+			}
+			states.set(id, shouldShow);
+			ids.push(id);
+		});
+		return ids;
+	}
+	highlightAll(path, value) {
+		const listPath = childField(path, "highlight");
+		const items = checkList(this.list, listPath, value, {
+			min: 0,
+			max: LIMITS.elements
+		});
+		const ids = [];
+		items.forEach((item, index) => {
+			const problem = typeof item === "string" ? highlightProblem(this, item) : "must be an id in \"...\"";
+			if (problem) this.list.add(listPath + "[" + index + "]", problem);
+			else ids.push(item);
+		});
+		return ids;
+	}
+	step(path, raw) {
+		checkFields(this.list, path, raw, STEP_FIELDS, this.duplicates, "a step");
+		const caption = checkText(this.list, childField(path, "caption"), raw.caption, {
+			max: LIMITS.caption,
+			required: true,
+			math: true,
+			checkFormula: this.checkFormula
+		});
+		if (caption && !hasHebrew(caption)) this.list.warn(childField(path, "caption"), "the caption has no Hebrew: captions are in Hebrew");
+		const show = this.toggleAll(path, "show", raw.show);
+		const add = this.addAll(path, raw.add);
+		const change = this.changeAll(path, raw.change);
+		const hide = this.toggleAll(path, "hide", raw.hide);
+		const highlight = this.highlightAll(path, raw.highlight);
+		if (!show.length && !add.length && !change.length && !hide.length && !highlight.length && path !== "steps[0]") this.list.warn(path, "this step changes nothing in the picture (only its caption)");
+		return {
+			caption,
+			add,
+			change,
+			hide,
+			show,
+			highlight
+		};
+	}
+};
+function checkSteps(value, style, list, duplicates, actors, checkFormula) {
+	const items = checkList(list, "steps", value, {
+		min: 1,
+		max: LIMITS.steps
+	});
+	const walk = new StepWalk(style, list, duplicates, actors, checkFormula);
+	const steps = [];
+	items.forEach((raw, index) => {
+		const path = "steps[" + index + "]";
+		if (!isPlainObject(raw)) {
+			list.add(path, "must be an object {\"caption\": \"...\", ...}, not " + kindOf$1(raw));
+			return;
+		}
+		steps.push(walk.step(path, raw));
+	});
+	return steps;
+}
+// src/core/step-diagram/scene.ts
+var PART_PALETTE = [
+	"gray",
+	"orange",
+	"green",
+	"blue",
+	"teal",
+	"red"
+];
+function sequenceTimes(diagram) {
+	const times = /* @__PURE__ */ new Map();
+	let cursor = 0;
+	let lastStart = 0;
+	for (const step of diagram.steps) for (const element of step.add) if (element.type === "message") {
+		const start = element.parallel ? lastStart : cursor;
+		times.set(element.id, {
+			start,
+			end: start + element.rows
+		});
+		lastStart = start;
+		cursor = Math.max(cursor, start + element.rows);
+	} else if (element.type === "note") {
+		times.set(element.id, {
+			start: cursor,
+			end: cursor + 1
+		});
+		lastStart = cursor;
+		cursor += 1;
+	}
+	return {
+		times,
+		rows: Math.max(cursor, 1)
+	};
+}
+function partColors(diagram) {
+	const colors = /* @__PURE__ */ new Map();
+	const visit = (parts) => {
+		for (const part of parts || []) if (!colors.has(part.text)) colors.set(part.text, part.color || PART_PALETTE[colors.size % PART_PALETTE.length]);
+	};
+	for (const step of diagram.steps) {
+		step.add.forEach((element) => visit(element.type === "packet" ? element.parts : void 0));
+		step.change.forEach((change) => visit(change.fields.parts));
+	}
+	return colors;
+}
+function nextScene(scene, index, caption) {
+	const actors = /* @__PURE__ */ new Map();
+	scene.actors.forEach((state, id) => actors.set(id, { ...state }));
+	const elements = /* @__PURE__ */ new Map();
+	scene.elements.forEach((state, id) => elements.set(id, { ...state }));
+	const trails = /* @__PURE__ */ new Map();
+	scene.trails.forEach((trail, id) => trails.set(id, trail.slice()));
+	return {
+		index,
+		caption,
+		actors,
+		elements,
+		highlight: /* @__PURE__ */ new Set(),
+		added: /* @__PURE__ */ new Set(),
+		changed: /* @__PURE__ */ new Set(),
+		trails
+	};
+}
+function extendTrail(scene, packet) {
+	const trail = scene.trails.get(packet.id) || [];
+	const last = trail[trail.length - 1];
+	if (!last || last.at !== packet.at || last.layer !== packet.layer) trail.push({
+		at: packet.at,
+		layer: packet.layer
+	});
+	scene.trails.set(packet.id, trail);
+}
+function applyStep(scene, diagram, messageCount) {
+	const step = diagram.steps[scene.index];
+	let count = messageCount;
+	for (const id of step.show) {
+		setShown(scene, id, true);
+		scene.added.add(id);
+	}
+	for (const element of step.add) {
+		const isNumbered = diagram.style === "map" && element.type === "message";
+		count += isNumbered ? 1 : 0;
+		scene.elements.set(element.id, {
+			element,
+			shown: true,
+			addedAt: scene.index,
+			number: isNumbered ? count : 0
+		});
+		scene.added.add(element.id);
+	}
+	for (const change of step.change) applyChange(scene, change.id, change.fields);
+	step.hide.forEach((id) => setShown(scene, id, false));
+	step.highlight.forEach((id) => scene.highlight.add(id));
+	scene.elements.forEach((state) => {
+		if (state.element.type === "packet" && state.shown) extendTrail(scene, state.element);
+	});
+	return count;
+}
+function setShown(scene, id, isShown) {
+	const actor = scene.actors.get(id);
+	const element = scene.elements.get(id);
+	if (actor) actor.shown = isShown;
+	else if (element) element.shown = isShown;
+}
+function applyChange(scene, id, fields) {
+	const actor = scene.actors.get(id);
+	const element = scene.elements.get(id);
+	if (actor) {
+		actor.label = fields.label ?? actor.label;
+		actor.sub = fields.sub ?? actor.sub;
+	} else if (element) element.element = {
+		...element.element,
+		...fields
+	};
+	scene.changed.add(id);
+}
+function buildScenes(diagram) {
+	const actors = /* @__PURE__ */ new Map();
+	diagram.actors.forEach((actor) => {
+		actors.set(actor.id, {
+			actor,
+			label: actor.label,
+			sub: actor.sub,
+			shown: !actor.hidden
+		});
+	});
+	let scene = {
+		index: -1,
+		caption: "",
+		actors,
+		elements: /* @__PURE__ */ new Map(),
+		highlight: /* @__PURE__ */ new Set(),
+		added: /* @__PURE__ */ new Set(),
+		changed: /* @__PURE__ */ new Set(),
+		trails: /* @__PURE__ */ new Map()
+	};
+	const scenes = [];
+	let messageCount = 0;
+	diagram.steps.forEach((step, index) => {
+		scene = nextScene(scene, index, step.caption);
+		messageCount = applyStep(scene, diagram, messageCount);
+		scenes.push(scene);
+	});
+	return scenes;
+}
+// src/core/step-diagram/layout-sequence.ts
+var SEQUENCE_FONT = {
+	actor: 14,
+	sub: 12,
+	label: 13,
+	note: 12.5,
+	span: 12.5
+};
+var TOP_GAP = 16;
+var BOTTOM_GAP = 18;
+var LABEL_ALONG = .42;
+function rowHeightFor(rows) {
+	if (rows <= 8) return 40;
+	if (rows <= 14) return 34;
+	return rows <= 24 ? 28 : 24;
+}
+var MAX_LANE_WIDTH = 260;
+function widestLabel(spans, side) {
+	const widths = spans.filter((s) => s.side === side).map((s) => textWidth(s.label, 12.5));
+	return Math.max(0, ...widths);
+}
+function spanMargins(spans) {
+	return {
+		left: sideMargin(spans, "left"),
+		right: sideMargin(spans, "right")
+	};
+}
+function sideMargin(spans, side) {
+	return spans.some((s) => s.side === side) ? clamp(widestLabel(spans, side) + 30, 38, 124) : 10;
+}
+function layoutLanes(diagram, width, margins) {
+	const lanes = /* @__PURE__ */ new Map();
+	const count = diagram.actors.length;
+	const room = width - margins.left - margins.right;
+	const laneWidth = Math.min(MAX_LANE_WIDTH, room / count);
+	const start = margins.left + (room - laneWidth * count) / 2;
+	let lineCount = 1;
+	diagram.actors.forEach((actor, index) => {
+		const x = start + laneWidth * (index + .5);
+		const nameWidth = textWidth(actor.label, SEQUENCE_FONT.actor);
+		const boxW = clamp(Math.max(nameWidth, textWidth(actor.sub, SEQUENCE_FONT.sub)) + 22, 64, Math.max(40, laneWidth - 8));
+		const lines = wrapLabel(actor.label, boxW - 12, SEQUENCE_FONT.actor);
+		lineCount = Math.max(lineCount, lines.length);
+		lanes.set(actor.id, {
+			x,
+			boxX: x - boxW / 2,
+			boxW,
+			lines
+		});
+	});
+	const hasSub = diagram.actors.some((actor) => actor.sub);
+	return {
+		lanes,
+		laneWidth,
+		headerHeight: 12 + lineCount * 18 + (hasSub ? 16 : 0)
+	};
+}
+var LABEL_TRIES = [
+	LABEL_ALONG,
+	.72,
+	.22,
+	.86,
+	.57
+];
+function overlaps(box, placed) {
+	return placed.some((other) => {
+		return Math.abs(box.y - other.y) < 16 && Math.abs(box.x - other.x) < (box.w + other.w) / 2 + 14;
+	});
+}
+function messageGeometry(layout, message, placed) {
+	const time = layout.times.get(message.id);
+	const x1 = layout.lanes.get(message.from).x;
+	const x2 = layout.lanes.get(message.to).x;
+	const y1 = layout.rowTop + time.start * layout.rowHeight;
+	const y2 = layout.rowTop + time.end * layout.rowHeight;
+	const w = textWidth(message.label, SEQUENCE_FONT.label);
+	const boxes = LABEL_TRIES.map((t) => ({
+		x: x1 + (x2 - x1) * t,
+		y: y1 + (y2 - y1) * t - 6,
+		w
+	}));
+	const box = boxes.find((candidate) => !overlaps(candidate, placed)) || boxes[0];
+	if (message.label) placed.push(box);
+	return {
+		x1,
+		y1,
+		x2,
+		y2,
+		labelX: box.x,
+		labelY: box.y
+	};
+}
+function layoutSequence(diagram, width) {
+	const drawWidth = Math.max(200, width);
+	const { times, rows } = sequenceTimes(diagram);
+	const elements = diagram.steps.flatMap((step) => step.add);
+	const spans = elements.filter((e) => e.type === "span");
+	const { lanes, laneWidth, headerHeight } = layoutLanes(diagram, drawWidth, spanMargins(spans));
+	const rowHeight = rowHeightFor(rows);
+	const rowTop = headerHeight + TOP_GAP;
+	const layout = {
+		width: drawWidth,
+		height: rowTop + rows * rowHeight + BOTTOM_GAP,
+		headerHeight,
+		laneTop: headerHeight,
+		laneBottom: rowTop + rows * rowHeight + BOTTOM_GAP / 2,
+		rowHeight,
+		rowTop,
+		lanes,
+		messages: /* @__PURE__ */ new Map(),
+		notes: /* @__PURE__ */ new Map(),
+		spans: /* @__PURE__ */ new Map(),
+		times
+	};
+	const placed = [];
+	for (const element of elements) if (element.type === "message") layout.messages.set(element.id, messageGeometry(layout, element, placed));
+	else if (element.type === "note") layout.notes.set(element.id, noteGeometry(layout, element, laneWidth));
+	spans.forEach((span) => layout.spans.set(span.id, spanGeometry(span, layout)));
+	return layout;
+}
+function noteGeometry(layout, note, laneWidth) {
+	const laneX = layout.lanes.get(note.at).x;
+	const top = layout.rowTop + layout.times.get(note.id).start * layout.rowHeight;
+	const maxW = Math.max(60, laneWidth - 10);
+	const w = clamp(textWidth(note.text, SEQUENCE_FONT.note) + 18, 60, maxW);
+	const lines = wrapLabel(note.text, w - 12, SEQUENCE_FONT.note);
+	const h = Math.max(20, Math.min(layout.rowHeight - 4, 8 + lines.length * 15));
+	return {
+		x: laneX - w / 2,
+		y: top + (layout.rowHeight - h) / 2,
+		w,
+		h,
+		lines
+	};
+}
+function spanGeometry(span, layout) {
+	const from = layout.times.get(span.from);
+	const to = layout.times.get(span.to);
+	const y1 = layout.rowTop + Math.min(from.start, to.start) * layout.rowHeight;
+	const y2 = layout.rowTop + Math.max(from.end, to.end) * layout.rowHeight;
+	const lanes = Array.from(layout.lanes.values());
+	const first = lanes[0];
+	const last = lanes[lanes.length - 1];
+	const bandX1 = Math.min(first.boxX, first.x - 30);
+	const bandX2 = Math.max(last.boxX + last.boxW, last.x + 30);
+	const isLeft = span.side === "left";
+	const x = isLeft ? bandX1 - 8 : bandX2 + 8;
+	return {
+		x,
+		y1,
+		y2,
+		side: span.side,
+		labelX: isLeft ? x - 8 : x + 8,
+		bandX1,
+		bandX2
+	};
+}
+// src/core/step-diagram/svg-parts.tsx
+function partClass(scene, id, base, color = "") {
+	return [
+		base,
+		color ? "sd-c-" + color : "",
+		scene.highlight.has(id) ? "sd-lit" : ""
+	].filter(Boolean).join(" ");
+}
+function animIf(isNew, kind, delay, duration) {
+	return isNew ? animAttributes(kind, delay, duration) : {};
+}
+function Arrow(props) {
+	const { ends, timing } = props;
+	const draw = timing ? animAttributes("draw", timing.delay, timing.duration) : {};
+	const head = timing ? animAttributes("head", timing.delay, timing.duration, { ...ends }) : {};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		...ends,
+		className: props.dashed ? "sd-line sd-dashed" : "sd-line",
+		...draw
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
+		className: "sd-head",
+		points: arrowHead(ends.x1, ends.y1, ends.x2, ends.y2, 9),
+		...head
+	})] });
+}
+function SvgFrame(props) {
+	const size = `0 0 ${props.width} ${props.height}`;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		className: "sd-svg",
+		width: props.width,
+		height: props.height,
+		viewBox: size,
+		"aria-hidden": "true",
+		children: props.children
+	});
+}
+function NameLines(props) {
+	const { x, y, lines, lineStep } = props;
+	const sub = fitText(props.sub, props.width, props.subSize);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [lines.map((line, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+		className: "sd-name",
+		x,
+		y: y + index * lineStep,
+		text: line,
+		size: props.size
+	}, index)), sub ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+		className: "sd-sub",
+		x,
+		y: y - 2 + lines.length * lineStep,
+		text: sub,
+		size: props.subSize
+	}) : null] });
+}
+function SvgText(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+		className: props.className,
+		x: props.x,
+		y: props.y,
+		textAnchor: props.anchor || "middle",
+		direction: textDirection(props.text),
+		fontSize: props.size,
+		...props.anim || {},
+		children: props.text
+	});
+}
+// src/core/step-diagram/LayersView.tsx
+function packetCells(scene) {
+	const here = /* @__PURE__ */ new Set();
+	scene.elements.forEach((state) => {
+		if (state.shown && state.element.type === "packet") here.add(state.element.at + "." + state.element.layer);
+	});
+	return here;
+}
+function LayerCell(props) {
+	const { diagram, scene, layout, actor, layerId } = props;
+	const device = layout.devices.get(actor.id);
+	const label = diagram.layers.find((layer) => layer.id === layerId)?.label || layerId;
+	const y = layout.layerY.get(layerId) || 0;
+	const className = partClass(scene, actor.id + "." + layerId, "sd-cell") + (props.isHere ? " sd-here" : "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: device.cellX,
+			y,
+			width: device.cellW,
+			height: layout.cellHeight,
+			rx: 5
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			x: device.cellX + device.cellW / 2,
+			y: y + 17.5,
+			text: label,
+			size: LAYERS_FONT.cell
+		})]
+	});
+}
+function Device(props) {
+	const { scene, layout, actor } = props;
+	const state = scene.actors.get(actor.id);
+	if (!state.shown) return null;
+	const device = layout.devices.get(actor.id);
+	const lowest = actor.layers[actor.layers.length - 1];
+	const bottom = (layout.layerY.get(lowest) || 0) + layout.cellHeight;
+	const isNew = props.previous !== null && (scene.added.has(actor.id) || scene.changed.has(actor.id));
+	const lines = state.label === actor.label ? device.lines : [state.label];
+	const x = device.trailX;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, actor.id, "sd-device"),
+		...animIf(isNew, "fade", 0, 260),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "sd-wire",
+				x1: x,
+				y1: bottom,
+				x2: x,
+				y2: layout.wireY
+			}),
+			actor.layers.map((layerId) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LayerCell, {
+				...props,
+				layerId,
+				isHere: props.here.has(actor.id + "." + layerId)
+			}, layerId)),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NameLines, {
+				x: device.cx,
+				y: layout.labelY,
+				lines,
+				sub: state.sub,
+				size: LAYERS_FONT.device,
+				subSize: LAYERS_FONT.sub,
+				lineStep: 17,
+				width: device.cellW + 24
+			})
+		]
+	});
+}
+function Stacks(props) {
+	const { diagram, scene, layout } = props;
+	const here = packetCells(scene);
+	const ends = diagram.actors.filter((actor) => scene.actors.get(actor.id).shown).map((actor) => layout.devices.get(actor.id).trailX);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [ends.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		className: "sd-wire",
+		x1: Math.min(...ends),
+		y1: layout.wireY,
+		x2: Math.max(...ends),
+		y2: layout.wireY
+	}) : null, diagram.actors.map((actor) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Device, {
+		...props,
+		actor,
+		here
+	}, actor.id))] });
+}
+function Trail(props) {
+	const { scene, previous, layout, packet } = props;
+	const trail = scene.trails.get(packet.id) || [];
+	const before = previous ? previous.trails.get(packet.id) || [] : trail;
+	const isMoving = previous !== null && before.length > 0 && before.length < trail.length;
+	const oldPart = trailPoints(layout, isMoving ? before : trail);
+	const newPart = isMoving ? trailPoints(layout, trail.slice(before.length - 1)) : "";
+	const point = placePoint(layout, {
+		at: packet.at,
+		layer: packet.layer
+	});
+	const from = isMoving ? placePoint(layout, before[before.length - 1]) : point;
+	const offset = {
+		dx: from.x - point.x,
+		dy: from.y - point.y
+	};
+	const isNew = previous !== null && scene.added.has(packet.id);
+	const markerAnim = isMoving ? animAttributes("move", 0, 560, offset) : animIf(isNew, "pop", 0, 260);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, packet.id, "sd-trail"),
+		children: [
+			oldPart ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polyline", { points: oldPart }) : null,
+			newPart ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polyline", {
+				points: newPart,
+				...animAttributes("fade", 168, 392)
+			}) : null,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				className: "sd-marker",
+				...markerAnim,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					x: point.x - 9,
+					y: point.y - 7,
+					width: 18,
+					height: 14,
+					rx: 3
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+					x1: point.x - 4,
+					y1: point.y,
+					x2: point.x + 4,
+					y2: point.y
+				})]
+			})
+		]
+	});
+}
+function chipsOf(packet, width, colors) {
+	const labelWidth = packet.label ? packet.label.length * LAYERS_FONT.packet * .56 + 12 : 0;
+	const widths = packet.parts.map((part) => chipWidth(part.text));
+	const total = labelWidth + widths.reduce((sum, w) => sum + w + 3, 0) - 3;
+	const labelX = Math.max(6, (width - total) / 2);
+	let x = labelX + labelWidth;
+	return {
+		chips: packet.parts.map((part, index) => {
+			const color = part.color || colors.get(part.text) || "gray";
+			const chip = {
+				text: part.text,
+				color,
+				x,
+				w: widths[index]
+			};
+			x += widths[index] + 3;
+			return chip;
+		}),
+		labelX
+	};
+}
+function chipAnimation(chip, before) {
+	if (!before) return {};
+	const earlier = before.find((other) => other.text === chip.text);
+	if (!earlier) return animAttributes("slide", 156, 340);
+	if (earlier.x === chip.x) return {};
+	return animAttributes("move", 0, 448, {
+		dx: earlier.x - chip.x,
+		dy: 0
+	});
+}
+function chipsBefore(previous, packetId, width, colors) {
+	const old = previous?.elements.get(packetId);
+	if (!old || !old.shown || old.element.type !== "packet") return null;
+	return chipsOf(old.element, width, colors).chips;
+}
+function Strip(props) {
+	const { scene, previous, layout, packet, colors } = props;
+	const top = layout.stripTop + props.row * 38;
+	const now = chipsOf(packet, layout.width, colors);
+	const before = chipsBefore(previous, packet.id, layout.width, colors);
+	const gone = (before || []).filter((chip) => !packet.parts.some((p) => p.text === chip.text));
+	const out = animAttributes("out", 0, 260);
+	const label = {
+		y: top + 14 + 5,
+		size: LAYERS_FONT.packet
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, packet.id, "sd-strip"),
+		children: [
+			packet.label ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+				className: "sd-pdu",
+				x: now.labelX,
+				text: packet.label,
+				anchor: "start",
+				...label
+			}) : null,
+			gone.map((chip, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChipBox, {
+				chip,
+				top,
+				lit: false,
+				anim: out
+			}, "gone-" + index)),
+			now.chips.map((chip, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChipBox, {
+				chip,
+				top,
+				lit: scene.highlight.has(packet.id + "." + chip.text),
+				anim: chipAnimation(chip, before)
+			}, chip.text + "#" + index))
+		]
+	});
+}
+function ChipBox(props) {
+	const { chip, top } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: "sd-chip sd-c-" + chip.color + (props.lit ? " sd-lit" : ""),
+		...props.anim,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: chip.x,
+			y: top,
+			width: chip.w,
+			height: 28,
+			rx: 5
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			x: chip.x + chip.w / 2,
+			y: top + 14 + 5,
+			text: chip.text,
+			size: LAYERS_FONT.part
+		})]
+	});
+}
+function DeviceNote(props) {
+	const { scene, layout, note, previous } = props;
+	const device = layout.devices.get(note.at);
+	const isNew = previous !== null && (scene.added.has(note.id) || scene.changed.has(note.id));
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+		className: partClass(scene, note.id, "sd-mnote", note.color),
+		x: device.cx,
+		y: layout.noteY,
+		text: note.text,
+		size: LAYERS_FONT.sub,
+		anim: animIf(isNew, "fade", 280, 260)
+	});
+}
+function LayersView(props) {
+	const { scene, layout } = props;
+	const shown = Array.from(scene.elements.values()).filter((state) => state.shown);
+	const packets = shown.map((s) => s.element).filter((e) => e.type === "packet");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SvgFrame, {
+		width: layout.width,
+		height: layout.height,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stacks, { ...props }),
+			packets.map((packet) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trail, {
+				...props,
+				packet
+			}, "t" + packet.id)),
+			shown.map(({ element }) => element.type === "note" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DeviceNote, {
+				...props,
+				note: element
+			}, element.id) : null),
+			packets.map((packet) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Strip, {
+				...props,
+				packet,
+				row: layout.packetRows.indexOf(packet.id)
+			}, "s" + packet.id))
+		]
+	});
+}
+// src/core/step-diagram/map-icons.tsx
+var ICON_PATHS = {
+	host: "M2 3h12v8H2z M6 14h4 M8 11v3",
+	server: "M3 2h10v5H3z M3 9h10v5H3z M5 4.5h1 M5 11.5h1",
+	router: "M8 1.5a6.5 6.5 0 1 0 0.01 0 M3.5 8h9 M8 3.5v9 M10.5 6l2 2-2 2 M5.5 6l-2 2 2 2",
+	switch: "M1.5 4h13v8h-13z M4 7h7l-1.5-1.5 M12 9H5l1.5 1.5",
+	cloud: "M4.5 12.5h7.5a3 3 0 0 0 0-6 4 4 0 0 0-7.6-0.9A3.4 3.4 0 0 0 4.5 12.5z",
+	database: "M3 3.5c0-2 10-2 10 0v9c0 2-10 2-10 0z M3 3.5c0 2 10 2 10 0 M3 8c0 2 10 2 10 0"
+};
+function MapIcon(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+		className: "sd-icon",
+		d: ICON_PATHS[props.icon],
+		transform: `translate(${props.x},${props.y})`,
+		"aria-hidden": "true"
+	});
+}
+// src/core/step-diagram/MapView.tsx
+function Message$1(props) {
+	const { scene, layout, message } = props;
+	const place = layout.messages.get(message.id);
+	const isNow = scene.added.has(message.id) || scene.highlight.has(message.id);
+	const isNew = props.animate && scene.added.has(message.id);
+	const delay = (props.order.get(message.id) || 0) * 520;
+	const ends = {
+		x1: place.x1,
+		y1: place.y1,
+		x2: place.x2,
+		y2: place.y2
+	};
+	const later = delay + 364;
+	const className = partClass(scene, message.id, "sd-msg", message.color);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: className + (isNow ? "" : " sd-past"),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow, {
+				ends,
+				dashed: message.dashed,
+				timing: isNew ? {
+					delay,
+					duration: 520
+				} : null
+			}),
+			isNow || !place.crowded ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				className: "sd-badge",
+				...animIf(isNew, "pop", later, 260),
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: place.badgeX,
+					cy: place.badgeY,
+					r: 9.5
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+					x: place.badgeX,
+					y: place.badgeY + 4,
+					textAnchor: "middle",
+					fontSize: MAP_FONT.badge,
+					children: props.number
+				})]
+			}) : null,
+			message.label && isNow ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+				className: "sd-label",
+				x: place.labelX,
+				y: place.labelY,
+				text: message.label,
+				size: MAP_FONT.label,
+				anchor: place.labelAnchor,
+				anim: animIf(isNew, "fade", later, 260)
+			}) : null
+		]
+	});
+}
+function Link(props) {
+	const { scene, layout, link } = props;
+	const place = layout.links.get(link.id);
+	const isNew = props.animate && scene.added.has(link.id);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, link.id, "sd-link"),
+		...animIf(isNew, "fade", 0, 364),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			x1: place.x1,
+			y1: place.y1,
+			x2: place.x2,
+			y2: place.y2,
+			className: link.dashed ? "sd-dashed" : ""
+		}), link.label ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			x: place.labelX,
+			y: place.labelY,
+			text: link.label,
+			size: MAP_FONT.note
+		}) : null]
+	});
+}
+function Note$1(props) {
+	const { scene, layout, note } = props;
+	const place = layout.notes.get(note.id);
+	const isNew = props.animate && (scene.added.has(note.id) || scene.changed.has(note.id));
+	const room = Math.max(layout.nodes.get(note.at).w + 30, 120);
+	const lines = wrapLabel(note.text, room, MAP_FONT.note);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+		className: partClass(scene, note.id, "sd-mnote", note.color),
+		x: place.x,
+		y: place.y,
+		textAnchor: "middle",
+		direction: textDirection(note.text),
+		fontSize: MAP_FONT.note,
+		...animIf(isNew, "fade", props.order.size * 520, 260),
+		children: lines.map((line, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
+			x: place.x,
+			dy: index ? 15 : 0,
+			children: line
+		}, index))
+	});
+}
+function Node$1(props) {
+	const { scene, layout, actor } = props;
+	const state = scene.actors.get(actor.id);
+	const box = layout.nodes.get(actor.id);
+	if (!state.shown) return null;
+	const isNew = props.animate && (scene.added.has(actor.id) || scene.changed.has(actor.id));
+	const textX = box.cx + (box.icon ? 9 : 0);
+	const lines = state.label === actor.label ? box.lines : [state.label];
+	const top = box.cy - box.h / 2;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, actor.id, "sd-node"),
+		...animIf(isNew, "pop", 0, 260),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: box.cx - box.w / 2,
+				y: top,
+				width: box.w,
+				height: box.h,
+				rx: 8
+			}),
+			box.icon && actor.icon ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapIcon, {
+				icon: actor.icon,
+				x: box.cx - box.w / 2 + 6,
+				y: box.cy - 8
+			}) : null,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NameLines, {
+				x: textX,
+				y: top + 20,
+				lines,
+				sub: state.sub,
+				size: MAP_FONT.node,
+				subSize: MAP_FONT.sub,
+				lineStep: 17,
+				width: box.w - 12 - (box.icon ? 18 : 0)
+			})
+		]
+	});
+}
+function newMessageOrder(scene) {
+	const order = /* @__PURE__ */ new Map();
+	scene.elements.forEach((state) => {
+		if (state.shown && state.element.type === "message" && scene.added.has(state.element.id)) order.set(state.element.id, order.size);
+	});
+	return order;
+}
+function MapView(props) {
+	const { scene, layout } = props;
+	const isNow = (id) => scene.added.has(id) || scene.highlight.has(id) ? 1 : 0;
+	const shown = Array.from(scene.elements.values()).filter((state) => state.shown).sort((a, b) => isNow(a.element.id) - isNow(b.element.id));
+	const parts = {
+		scene,
+		layout,
+		animate: props.animate,
+		order: newMessageOrder(scene)
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SvgFrame, {
+		width: layout.width,
+		height: layout.height,
+		children: [
+			shown.map(({ element }) => element.type === "link" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
+				...parts,
+				link: element
+			}, element.id) : null),
+			props.diagram.actors.map((actor) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Node$1, {
+				...parts,
+				actor
+			}, actor.id)),
+			shown.map(({ element, number }) => {
+				if (element.type === "message") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Message$1, {
+					...parts,
+					message: element,
+					number
+				}, element.id);
+				return element.type === "note" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Note$1, {
+					...parts,
+					note: element
+				}, element.id) : null;
+			})
+		]
+	});
+}
+// src/core/step-diagram/check-actors.ts
+var ACTOR_FIELDS = {
+	sequence: [
+		"id",
+		"label",
+		"sub",
+		"hidden"
+	],
+	map: [
+		"id",
+		"label",
+		"sub",
+		"hidden",
+		"x",
+		"y",
+		"icon"
+	],
+	layers: [
+		"id",
+		"label",
+		"sub",
+		"hidden",
+		"layers"
+	]
+};
+var MIN_NODE_DISTANCE = 12;
+var ACTOR_WORD = {
+	sequence: "actor",
+	map: "node",
+	layers: "device"
+};
+function checkLayers(list, value, duplicates) {
+	if (value === void 0) return DEFAULT_LAYERS.map((layer) => ({ ...layer }));
+	const items = checkList(list, "layers", value, {
+		min: 1,
+		max: LIMITS.layers
+	});
+	const layers = [];
+	items.forEach((raw, index) => {
+		const path = "layers[" + index + "]";
+		if (!isPlainObject(raw)) {
+			list.add(path, "must be {\"id\": \"transport\", \"label\": \"תעבורה\"}, not " + kindOf$1(raw));
+			return;
+		}
+		checkFields(list, path, raw, ["id", "label"], duplicates, "a layer");
+		const id = checkId(list, childField(path, "id"), raw.id, true);
+		const label = checkText(list, childField(path, "label"), raw.label, {
+			max: LIMITS.actorLabel,
+			required: true
+		});
+		if (id && layers.some((layer) => layer.id === id)) list.add(childField(path, "id"), "the layer '" + id + "' is written twice");
+		else if (id) layers.push({
+			id,
+			label
+		});
+	});
+	return layers;
+}
+function checkDeviceLayers(list, path, value, stack) {
+	const all = stack.map((layer) => layer.id);
+	if (value === void 0) return all;
+	const items = checkList(list, path, value, {
+		min: 1,
+		max: LIMITS.layers
+	});
+	const ids = items.filter((item) => typeof item === "string");
+	const unknown = ids.find((id) => !all.includes(id));
+	if (ids.length !== items.length || unknown !== void 0) {
+		list.add(path, unknown !== void 0 ? "'" + unknown + "' is not a layer" + suggestion(unknown, all) : "must list layer ids in \"...\"");
+		return all;
+	}
+	const bottom = all.slice(all.length - ids.length);
+	if (ids.join(" ") !== bottom.join(" ")) {
+		list.add(path, "a device has the bottom layers of the stack, in order: with " + ids.length + " layers that is " + JSON.stringify(bottom));
+		return all;
+	}
+	return ids;
+}
+function checkActor(list, path, raw, style, stack, duplicates) {
+	checkFields(list, path, raw, ACTOR_FIELDS[style], duplicates, "an " + ACTOR_WORD[style]);
+	const id = checkId(list, childField(path, "id"), raw.id, true);
+	const label = checkText(list, childField(path, "label"), raw.label, {
+		max: LIMITS.actorLabel,
+		required: true
+	});
+	const sub = checkText(list, childField(path, "sub"), raw.sub, { max: LIMITS.sub });
+	const hidden = checkFlag(list, childField(path, "hidden"), raw.hidden, false);
+	const place = {
+		min: 0,
+		max: 100,
+		fallback: -1
+	};
+	const isMap = style === "map";
+	const hasIcon = isMap && raw.icon !== void 0;
+	const layersPath = childField(path, "layers");
+	const actor = {
+		id,
+		label,
+		sub,
+		hidden,
+		x: isMap ? checkNumber(list, childField(path, "x"), raw.x, place) : -1,
+		y: isMap ? checkNumber(list, childField(path, "y"), raw.y, place) : -1,
+		icon: hasIcon ? checkChoice(list, childField(path, "icon"), raw.icon, ICONS, "host") || null : null,
+		layers: style === "layers" ? checkDeviceLayers(list, layersPath, raw.layers, stack) : []
+	};
+	return id ? actor : null;
+}
+function placeNodes(actors) {
+	const perRow = actors.length > 5 ? Math.ceil(actors.length / 2) : actors.length;
+	actors.forEach((actor, index) => {
+		const row = Math.floor(index / perRow);
+		const column = index % perRow;
+		const inRow = Math.min(perRow, actors.length - row * perRow);
+		actor.x = Math.round((column + .5) / inRow * 100);
+		actor.y = actors.length > perRow ? row === 0 ? 25 : 75 : 50;
+	});
+}
+function checkPlaces(list, actors) {
+	const placed = actors.filter((actor) => actor.x >= 0 && actor.y >= 0);
+	const half = actors.filter((actor) => actor.x >= 0 !== actor.y >= 0);
+	if (half.length) {
+		list.add("actors", "the node '" + half[0].id + "' has only one of x and y: give both");
+		return;
+	}
+	if (!placed.length) {
+		placeNodes(actors);
+		return;
+	}
+	if (placed.length !== actors.length) {
+		const missing = actors.find((actor) => actor.x < 0);
+		list.add("actors", "give every node x and y, or none (then they are placed in a row): '" + (missing ? missing.id : "") + "' has none");
+		return;
+	}
+	for (let i = 0; i < actors.length; i++) for (let j = i + 1; j < actors.length; j++) if (Math.hypot(actors[i].x - actors[j].x, actors[i].y - actors[j].y) < MIN_NODE_DISTANCE) {
+		list.add("actors", "the nodes '" + actors[i].id + "' and '" + actors[j].id + "' are almost at the same place: move one (x and y go from 0 to 100)");
+		return;
+	}
+}
+function checkActors(list, value, style, stack, duplicates) {
+	const max = LIMITS.actors[style];
+	const items = checkList(list, "actors", value, {
+		min: 1,
+		max
+	});
+	const actors = /* @__PURE__ */ new Map();
+	items.forEach((raw, index) => {
+		const path = "actors[" + index + "]";
+		if (!isPlainObject(raw)) {
+			list.add(path, "must be an object {\"id\": \"...\", \"label\": \"...\"}, not " + kindOf$1(raw));
+			return;
+		}
+		const actor = checkActor(list, path, raw, style, stack, duplicates);
+		if (actor && actors.has(actor.id)) list.add(childField(path, "id"), "the id '" + actor.id + "' is used twice: every " + ACTOR_WORD[style] + " has its own id");
+		else if (actor) actors.set(actor.id, actor);
+	});
+	if (style === "map" && actors.size) checkPlaces(list, Array.from(actors.values()));
+	if (actors.size && Array.from(actors.values()).every((actor) => actor.hidden)) list.add("actors", "every " + ACTOR_WORD[style] + " is hidden: show at least one at the start");
+	return actors;
+}
+// src/core/step-diagram/json-error.ts
+var JsonTextError = class extends Error {
+	line;
+	column;
+	constructor(message, line, column) {
+		super(message);
+		this.line = line;
+		this.column = column;
+	}
+};
+function shown(character) {
+	if (!character) return "the end of the text";
+	const code = character.charCodeAt(0);
+	if (code < 32) return "the control character U+" + code.toString(16).toUpperCase().padStart(4, "0");
+	return "'" + character + "'";
+}
+function childPath(path, key) {
+	if (typeof key === "number") return path + "[" + key + "]";
+	return path ? path + "." + key : key;
+}
+var Reader = class {
+	position = 0;
+	depth = 0;
+	lines = /* @__PURE__ */ new Map();
+	duplicates = /* @__PURE__ */ new Map();
+	lineStarts = [0];
+	text;
+	constructor(text) {
+		this.text = text;
+		for (let i = 0; i < text.length; i++) if (text[i] === "\n") this.lineStarts.push(i + 1);
+	}
+	where(offset) {
+		let low = 0;
+		let high = this.lineStarts.length - 1;
+		while (low < high) {
+			const middle = low + high + 1 >> 1;
+			if (this.lineStarts[middle] <= offset) low = middle;
+			else high = middle - 1;
+		}
+		return {
+			line: low + 1,
+			column: offset - this.lineStarts[low] + 1
+		};
+	}
+	fail(message, offset = this.position) {
+		const place = this.where(offset);
+		return new JsonTextError(message, place.line, place.column);
+	}
+	skipSpace() {
+		const text = this.text;
+		while (this.position < text.length) {
+			const character = text[this.position];
+			if (character === " " || character === "	" || character === "\n" || character === "\r") this.position++;
+			else if (character === "/" && (text[this.position + 1] === "/" || text[this.position + 1] === "*")) throw this.fail("JSON has no comments: remove the comment (// or /* */)");
+			else return;
+		}
+	}
+	peek() {
+		return this.text[this.position] || "";
+	}
+	readValue(path) {
+		this.skipSpace();
+		this.lines.set(path, this.where(this.position).line);
+		const character = this.peek();
+		if (character === "{") return this.nested(() => this.readObject(path));
+		if (character === "[") return this.nested(() => this.readArray(path));
+		if (character === "\"") return this.readString();
+		return this.readWord();
+	}
+	nested(read) {
+		if (this.depth >= 20) throw this.fail("the objects and lists nest too deeply (at most 20)");
+		this.depth++;
+		const value = read();
+		this.depth--;
+		return value;
+	}
+	readWord() {
+		const rest = this.text.slice(this.position, this.position + 40);
+		const number = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(rest);
+		if (number && number[0]) {
+			this.position += number[0].length;
+			return Number(number[0]);
+		}
+		for (const [word, value] of [
+			["true", true],
+			["false", false],
+			["null", null]
+		]) if (rest.startsWith(word)) {
+			this.position += word.length;
+			return value;
+		}
+		throw this.fail(this.wordProblem(rest));
+	}
+	wordProblem(rest) {
+		const character = rest[0] || "";
+		if (character === "'" || "‘’‚‛".includes(character)) return "write strings in straight double quotes \"...\", not single quotes";
+		if ("“”„‟″«»".includes(character)) return "write strings in straight double quotes \"...\", not curly quotes";
+		if (/^(NaN|Infinity|-Infinity|undefined)/.test(rest)) return "JSON has no NaN, Infinity or undefined: write a number, or leave the field out";
+		if (/^[A-Za-z_]/.test(rest)) return "a word without quotes: write text in double quotes, like \"" + rest.split(/\W/)[0] + "\"";
+		if (character === "}" || character === "]") return "a value is missing before " + shown(character);
+		return "expected a value (text in \"...\", a number, true, false, null, {...} or [...]) at " + shown(character);
+	}
+	readString() {
+		const start = this.position;
+		this.position++;
+		let result = "";
+		while (this.position < this.text.length) {
+			const character = this.text[this.position];
+			if (character === "\"") {
+				this.position++;
+				return result;
+			}
+			if (character === "\\") {
+				result += this.readEscape();
+				continue;
+			}
+			if (character < " ") {
+				const what = character === "\n" ? "a line break" : shown(character);
+				throw this.fail(what + " inside a string: a string ends on its line (write \\n for a new line)");
+			}
+			result += character;
+			this.position++;
+		}
+		throw this.fail("a string that starts here has no closing \"", start);
+	}
+	readEscape() {
+		const next = this.text[this.position + 1] || "";
+		const simple = {
+			"\"": "\"",
+			"\\": "\\",
+			"/": "/",
+			b: "\b",
+			f: "\f",
+			n: "\n",
+			r: "\r",
+			t: "	"
+		};
+		if (next in simple) {
+			this.position += 2;
+			return simple[next];
+		}
+		if (next === "u") {
+			const hex = this.text.slice(this.position + 2, this.position + 6);
+			if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+				this.position += 6;
+				return String.fromCharCode(parseInt(hex, 16));
+			}
+		}
+		throw this.fail("a backslash in a string must start an escape such as \\\" or \\\\ (in LaTeX write \\\\frac)");
+	}
+	readKey() {
+		const character = this.peek();
+		if (character === "\"") return this.readString();
+		if (/[A-Za-z_$]/.test(character)) {
+			const word = this.text.slice(this.position).split(/[^\w$]/)[0];
+			throw this.fail("a key without quotes: write \"" + word + "\" in double quotes");
+		}
+		if (character === "'" || "‘’‚‛".includes(character) || "“”„‟″«»".includes(character)) throw this.fail("write keys in straight double quotes \"...\", not single or curly quotes");
+		throw this.fail("expected a key in double quotes, like \"caption\", at " + shown(character));
+	}
+	readObject(path) {
+		const start = this.position;
+		this.position++;
+		const result = Object.create(null);
+		this.skipSpace();
+		if (this.peek() === "}") {
+			this.position++;
+			return result;
+		}
+		for (;;) {
+			this.skipSpace();
+			const key = this.readKey();
+			this.skipSpace();
+			if (this.peek() !== ":") throw this.fail("expected : after the key \"" + key + "\", found " + shown(this.peek()));
+			this.position++;
+			if (Object.prototype.hasOwnProperty.call(result, key)) {
+				const list = this.duplicates.get(path) || [];
+				list.push(key);
+				this.duplicates.set(path, list);
+			}
+			result[key] = this.readValue(childPath(path, key));
+			if (this.endOfList("}", start, "object")) return result;
+		}
+	}
+	readArray(path) {
+		const start = this.position;
+		this.position++;
+		const result = [];
+		this.skipSpace();
+		if (this.peek() === "]") {
+			this.position++;
+			return result;
+		}
+		for (;;) {
+			result.push(this.readValue(childPath(path, result.length)));
+			if (this.endOfList("]", start, "list")) return result;
+		}
+	}
+	endOfList(closing, start, what) {
+		this.skipSpace();
+		const character = this.peek();
+		if (character === closing) {
+			this.position++;
+			return true;
+		}
+		if (character === ",") {
+			this.position++;
+			this.skipSpace();
+			if (this.peek() === closing) throw this.fail("a comma before " + shown(closing) + " is not allowed in JSON: remove it");
+			return false;
+		}
+		if (!character) {
+			const opening = closing === "}" ? "{" : "[";
+			throw this.fail("the " + what + " that starts here with '" + opening + "' is not closed", start);
+		}
+		if (character === (closing === "}" ? "]" : "}")) throw this.fail("expected " + shown(closing) + " to close the " + what + ", found " + shown(character));
+		throw this.fail("expected , or " + shown(closing) + " after a value, found " + shown(character) + " (a comma is missing?)");
+	}
+};
+function readJsonText(text) {
+	if (text.length > 2e5) throw new JsonTextError("the file is too large: at most 200000 characters", 1, 1);
+	const reader = new Reader(text);
+	if (text.charCodeAt(0) === 65279) reader.position = 1;
+	reader.skipSpace();
+	const first = reader.peek();
+	if (!first) throw reader.fail("the file is empty: a step diagram is a JSON object that starts with {");
+	if (first === "`") throw reader.fail("remove the ``` lines around the JSON: the file holds only the JSON");
+	if (first !== "{") throw reader.fail("a step diagram is one JSON object: the text must start with {, not " + shown(first));
+	const value = reader.readValue("");
+	reader.skipSpace();
+	if (reader.position < text.length) {
+		const message = text.slice(reader.position).trimStart().startsWith("`") ? "remove the ``` line after the JSON: the file holds only the JSON" : "text after the end of the JSON object: the file holds one object only";
+		throw reader.fail(message);
+	}
+	return {
+		value,
+		lines: reader.lines,
+		duplicates: reader.duplicates
+	};
+}
+// src/core/step-diagram/validate.ts
+var TOP_FIELDS = [
+	"format",
+	"style",
+	"title",
+	"description",
+	"actors",
+	"layers",
+	"steps"
+];
+function checkFormat(list, value) {
+	if (value === "step-diagram/1") return true;
+	if (value === void 0) list.add("format", "is missing: start the object with \"format\": \"" + FORMAT + "\"");
+	else list.add("format", "must be \"" + FORMAT + "\" (this lab reads version 1), not " + kindOf$1(value));
+	return false;
+}
+function checkValue(value, options, lines, duplicates) {
+	const list = new ProblemList(lines);
+	if (!isPlainObject(value)) {
+		list.add("", "a step diagram is one JSON object {...}, not " + kindOf$1(value));
+		return {
+			diagram: null,
+			problems: list.problems,
+			warnings: []
+		};
+	}
+	if (typeof value.missingDiagram === "string" && Object.keys(value).length === 1) {
+		const file = "diagrams/" + value.missingDiagram + ".json";
+		list.add("", "the course has no " + file + ": add the file to the course folder, or fix the name");
+		return {
+			diagram: null,
+			problems: list.problems,
+			warnings: []
+		};
+	}
+	checkFields(list, "", value, TOP_FIELDS, duplicates, "a diagram");
+	const isFormatRight = checkFormat(list, value.format);
+	const style = checkChoice(list, "style", value.style, STYLES, "");
+	const diagram = style && isFormatRight ? checkBody(list, value, style, duplicates, options) : null;
+	list.finish();
+	if (list.hasProblems() || !diagram) return {
+		diagram: null,
+		problems: list.problems,
+		warnings: list.warnings
+	};
+	return {
+		diagram,
+		problems: [],
+		warnings: list.warnings
+	};
+}
+function checkBody(list, value, style, duplicates, options) {
+	const title = checkText(list, "title", value.title, { max: LIMITS.title });
+	const description = checkText(list, "description", value.description, { max: LIMITS.description });
+	if (style !== "layers" && value.layers !== void 0) list.add("layers", "is for layers diagrams only: leave it out");
+	const layers = style === "layers" ? checkLayers(list, value.layers, duplicates) : [];
+	const actors = checkActors(list, value.actors, style, layers, duplicates);
+	const steps = checkSteps(value.steps, style, list, duplicates, actors, options.checkFormula);
+	return {
+		format: FORMAT,
+		style,
+		title,
+		description: description || title,
+		actors: Array.from(actors.values()),
+		layers,
+		steps
+	};
+}
+function checkDiagramText(text, options = {}) {
+	try {
+		if (typeof text !== "string") return failed("", 0, "the diagram must be JSON text");
+		const read = readJsonText(text);
+		return checkValue(read.value, options, read.lines, read.duplicates);
+	} catch (error) {
+		if (error instanceof JsonTextError) return failed("", error.line, error.message + " (column " + error.column + ")");
+		return failed("", 0, "internal error in the diagram checker: " + String(error));
+	}
+}
+function failed(path, line, message) {
+	return {
+		diagram: null,
+		problems: [{
+			path,
+			line,
+			message
+		}],
+		warnings: []
+	};
+}
+function problemLine(problem, file = "diagram.json", kind = "error") {
+	const place = problem.line ? file + ":" + problem.line : file;
+	const path = problem.path ? problem.path + ": " : "";
+	return place + ": " + kind + ": " + path + problem.message;
+}
+// src/core/step-diagram/player-parts.tsx
+function StepBar(props) {
+	const { index, count, move } = props;
+	const isFirst = index === 0;
+	const isLast = index === count - 1;
+	const percent = count > 1 ? index / (count - 1) * 100 : 100;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sd-bar",
+		role: "toolbar",
+		"aria-label": "מעבר בין צעדי התרשים",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b ghost sd-back",
+				disabled: isFirst,
+				onClick: () => move("back"),
+				children: "→ צעד אחורה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b sd-next",
+				disabled: isLast,
+				onClick: () => move("next"),
+				children: "צעד הבא ←"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "sd-pos",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+					className: "sd-pos-t",
+					children: [
+						"צעד ",
+						index + 1,
+						" מתוך ",
+						count
+					]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "sd-track",
+					"aria-hidden": "true",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { style: { width: percent + "%" } })
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RestartButton, {
+				isFirst,
+				move
+			})
+		]
+	});
+}
+function RestartButton(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+		type: "button",
+		className: "b ghost sd-restart",
+		disabled: props.isFirst,
+		"aria-label": "מההתחלה",
+		onClick: () => props.move("first"),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			"aria-hidden": "true",
+			children: "↺"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "sd-restart-t",
+			"aria-hidden": "true",
+			children: [" ", "מההתחלה"]
+		})]
+	});
+}
+function Caption(props) {
+	const position = "צעד " + (props.scene.index + 1) + " מתוך " + props.count + ": ";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sd-cap",
+		"aria-live": "polite",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "sr",
+			children: position
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { dangerouslySetInnerHTML: { __html: captionHtml(props.scene.caption) } })]
+	});
+}
+function sceneSummary(diagram, scene) {
+	const lines = [];
+	scene.elements.forEach((state) => {
+		const line = state.shown ? elementLine(diagram, scene, state) : "";
+		if (line) lines.push(line);
+	});
+	return lines;
+}
+function elementLine(diagram, scene, state) {
+	const name = (id) => scene.actors.get(id)?.label || id;
+	const element = state.element;
+	switch (element.type) {
+		case "message": {
+			const number = state.number ? state.number + ". " : "";
+			const label = element.label ? ": " + element.label : "";
+			return number + name(element.from) + " אל " + name(element.to) + label;
+		}
+		case "note": return name(element.at) + ": " + element.text;
+		case "span": return element.label;
+		case "link": return "קו בין " + name(element.from) + " ל-" + name(element.to);
+		default: {
+			const layer = diagram.layers.find((l) => l.id === element.layer)?.label || element.layer;
+			const parts = element.parts.map((part) => part.text).join(" ");
+			const where = " ב" + name(element.at) + ", שכבת " + layer;
+			return (element.label || "חבילה") + where + ": " + parts;
+		}
+	}
+}
+function DiagramProblems(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sd-bad",
+		role: "alert",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "תרשים הצעדים לא תקין" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+			lang: "en",
+			dir: "ltr",
+			children: props.problems.map((problem, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: problemLine(problem, props.file) }, index))
+		})]
+	});
+}
+var DiagramBoundary = class extends import_react.Component {
+	state = { message: "" };
+	static getDerivedStateFromError(error) {
+		return { message: error instanceof Error ? error.message : String(error) };
+	}
+	componentDidCatch(error, info) {
+		console.error("step diagram: internal error", error, info.componentStack);
+	}
+	render() {
+		if (this.state.message) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "sd-bad",
+			role: "alert",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "שגיאה פנימית בתרשים הצעדים" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "זו תקלה במעבדה, לא בשיעור. הפרטים נכתבו במסוף הדפדפן (F12)." })]
+		});
+		return this.props.children;
+	}
+};
+// src/core/step-diagram/SequenceView.tsx
+function Message(props) {
+	const { scene, layout, message } = props;
+	const place = layout.messages.get(message.id);
+	const time = layout.times.get(message.id);
+	const isNew = props.animate && scene.added.has(message.id);
+	const delay = (time.start - props.firstRow) * 380;
+	const duration = (time.end - time.start) * 380;
+	const ends = {
+		x1: place.x1,
+		y1: place.y1,
+		x2: place.x2,
+		y2: place.y2
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, message.id, "sd-msg", message.color),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow, {
+			ends,
+			dashed: message.dashed,
+			timing: isNew ? {
+				delay,
+				duration
+			} : null
+		}), message.label ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			className: "sd-label",
+			x: place.labelX,
+			y: place.labelY,
+			text: message.label,
+			size: SEQUENCE_FONT.label,
+			anim: animIf(isNew, "fade", delay + duration * .45, 260)
+		}) : null]
+	});
+}
+function Note(props) {
+	const { scene, layout, note } = props;
+	const place = layout.notes.get(note.id);
+	const time = layout.times.get(note.id);
+	const isNew = props.animate && (scene.added.has(note.id) || scene.changed.has(note.id));
+	const lines = wrapLabel(note.text, place.w - 12, SEQUENCE_FONT.note);
+	const firstLine = place.y + place.h / 2 - (lines.length - 1) * 15 / 2 + 4.5;
+	const delay = (time.start - props.firstRow) * 380;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, note.id, "sd-note", note.color),
+		...animIf(isNew, "pop", delay, 260),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: place.x,
+			y: place.y,
+			width: place.w,
+			height: place.h,
+			rx: 6
+		}), lines.map((line, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			x: place.x + place.w / 2,
+			y: firstLine + index * 15,
+			text: line,
+			size: SEQUENCE_FONT.note
+		}, index))]
+	});
+}
+function Span(props) {
+	const { scene, layout, span } = props;
+	const place = layout.spans.get(span.id);
+	const isNew = props.animate && scene.added.has(span.id);
+	const tick = place.side === "left" ? 5 : -5;
+	const path = `M${place.x + tick},${place.y1} H${place.x} V${place.y2} H${place.x + tick}`;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, span.id, "sd-span", span.color),
+		...animIf(isNew, "fade", 0, 364),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: path }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SvgText, {
+			x: place.labelX,
+			y: (place.y1 + place.y2) / 2 + 4.5,
+			text: span.label,
+			size: SEQUENCE_FONT.span,
+			anchor: place.side === "left" ? "end" : "start"
+		})]
+	});
+}
+function Band(props) {
+	const { scene, layout, span } = props;
+	const place = layout.spans.get(span.id);
+	if (!span.band) return null;
+	const isNew = props.animate && scene.added.has(span.id);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: partClass(scene, span.id, "sd-band", span.color),
+		x: place.bandX1,
+		y: place.y1,
+		width: place.bandX2 - place.bandX1,
+		height: place.y2 - place.y1,
+		rx: 4,
+		...animIf(isNew, "fade", 0, 364)
+	});
+}
+function Lane(props) {
+	const { scene, layout, actor } = props;
+	const state = scene.actors.get(actor.id);
+	const lane = layout.lanes.get(actor.id);
+	if (!state.shown) return null;
+	const isNew = props.animate && (scene.added.has(actor.id) || scene.changed.has(actor.id));
+	const lines = state.label === actor.label ? lane.lines : [state.label];
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: partClass(scene, actor.id, "sd-actor"),
+		...animIf(isNew, "fade", 0, 260),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "sd-lane",
+				x1: lane.x,
+				y1: layout.laneTop,
+				x2: lane.x,
+				y2: layout.laneBottom
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: lane.boxX,
+				y: 2,
+				width: lane.boxW,
+				height: layout.headerHeight - 8,
+				rx: 7
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NameLines, {
+				x: lane.x,
+				y: 22,
+				lines,
+				sub: state.sub,
+				size: SEQUENCE_FONT.actor,
+				subSize: SEQUENCE_FONT.sub,
+				lineStep: 18,
+				width: lane.boxW - 10
+			})
+		]
+	});
+}
+function firstNewRow(scene, layout) {
+	const rows = Array.from(scene.added).map((id) => layout.times.get(id)?.start).filter((row) => row !== void 0);
+	return Math.min(Infinity, ...rows);
+}
+function SequenceView(props) {
+	const { scene, layout } = props;
+	const parts = {
+		scene,
+		layout,
+		animate: props.animate,
+		firstRow: firstNewRow(scene, layout)
+	};
+	const shown = Array.from(scene.elements.values()).filter((state) => state.shown);
+	const spans = shown.map((s) => s.element).filter((e) => e.type === "span");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SvgFrame, {
+		width: layout.width,
+		height: layout.height,
+		children: [
+			spans.map((span) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Band, {
+				...parts,
+				span
+			}, "b" + span.id)),
+			props.diagram.actors.map((actor) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Lane, {
+				...parts,
+				actor
+			}, actor.id)),
+			spans.map((span) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Span, {
+				...parts,
+				span
+			}, span.id)),
+			shown.map(({ element }) => {
+				if (element.type === "message") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Message, {
+					...parts,
+					message: element
+				}, element.id);
+				return element.type === "note" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Note, {
+					...parts,
+					note: element
+				}, element.id) : null;
+			})
+		]
+	});
+}
+// src/core/step-diagram/StepDiagram.tsx
+function layoutFor(diagram, width) {
+	if (diagram.style === "sequence") return {
+		style: "sequence",
+		layout: layoutSequence(diagram, width)
+	};
+	if (diagram.style === "map") return {
+		style: "map",
+		layout: layoutMap(diagram, width)
+	};
+	return {
+		style: "layers",
+		layout: layoutLayers(diagram, width)
+	};
+}
+function useWidth(ref) {
+	const [width, setWidth] = (0, import_react.useState)(0);
+	(0, import_react.useLayoutEffect)(() => {
+		const element = ref.current;
+		if (!element) return;
+		setWidth(Math.floor(element.clientWidth));
+		if (!window.ResizeObserver) return;
+		const observer = new ResizeObserver(() => setWidth(Math.floor(element.clientWidth)));
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, [ref]);
+	return width;
+}
+function newRange(drawing, scene) {
+	if (!drawing || drawing.style !== "sequence") return null;
+	const ys = [];
+	scene.added.forEach((id) => {
+		const message = drawing.layout.messages.get(id);
+		const note = drawing.layout.notes.get(id);
+		const span = drawing.layout.spans.get(id);
+		if (message) ys.push(message.y1, message.y2);
+		if (note) ys.push(note.y, note.y + note.h);
+		if (span) ys.push(span.y1, span.y2);
+	});
+	return ys.length ? {
+		top: Math.min(...ys),
+		bottom: Math.max(...ys)
+	} : null;
+}
+function scrollIntoBox(box, range, isSmooth) {
+	const margin = 28;
+	let target = box.scrollTop;
+	if (range.bottom + margin > box.scrollTop + box.clientHeight) target = range.bottom + margin - box.clientHeight;
+	if (range.top - margin < target) target = Math.max(0, range.top - margin);
+	if (target !== box.scrollTop) box.scrollTo({
+		top: target,
+		behavior: isSmooth ? "smooth" : "auto"
+	});
+}
+function Drawing(props) {
+	const { diagram, drawing, scene, previous } = props;
+	const colors = (0, import_react.useMemo)(() => partColors(diagram), [diagram]);
+	const animate = previous !== null;
+	if (drawing.style === "sequence") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SequenceView, {
+		diagram,
+		scene,
+		layout: drawing.layout,
+		animate
+	});
+	if (drawing.style === "map") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapView, {
+		diagram,
+		scene,
+		layout: drawing.layout,
+		animate
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LayersView, {
+		diagram,
+		scene,
+		previous,
+		layout: drawing.layout,
+		colors
+	});
+}
+function onPlayerKey(event, move) {
+	const kind = {
+		ArrowLeft: "next",
+		ArrowRight: "back",
+		Home: "first",
+		End: "last"
+	}[event.key];
+	if (!kind || event.altKey || event.ctrlKey || event.metaKey) return;
+	event.preventDefault();
+	event.stopPropagation();
+	move(kind);
+}
+function moved(position, kind, count) {
+	const targets = {
+		next: position.index + 1,
+		back: position.index - 1,
+		first: 0,
+		last: count - 1
+	};
+	const index = Math.max(0, Math.min(count - 1, targets[kind]));
+	if (index === position.index) return position;
+	return {
+		index,
+		animate: kind === "next" && !prefersReducedMotion()
+	};
+}
+function useStepEffects(boxRef, position, drawing, scene) {
+	const animatedRef = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		const box = boxRef.current;
+		const svg = box && box.querySelector("svg");
+		if (!box || !svg) return;
+		const range = newRange(drawing, scene);
+		if (range) scrollIntoBox(box, range, position.animate);
+		if (!position.animate || animatedRef.current === position) return;
+		animatedRef.current = position;
+		return animateDrawing(svg);
+	}, [
+		boxRef,
+		position,
+		drawing,
+		scene
+	]);
+}
+function DiagramPlayer(props) {
+	const { diagram } = props;
+	const scenes = (0, import_react.useMemo)(() => buildScenes(diagram), [diagram]);
+	const [position, setPosition] = (0, import_react.useState)({
+		index: 0,
+		animate: false
+	});
+	const boxRef = (0, import_react.useRef)(null);
+	const width = useWidth(boxRef);
+	const drawing = (0, import_react.useMemo)(() => width ? layoutFor(diagram, width) : null, [diagram, width]);
+	const index = Math.min(position.index, scenes.length - 1);
+	const scene = scenes[index];
+	const move = (0, import_react.useCallback)((kind) => setPosition((before) => moved(before, kind, scenes.length)), [scenes.length]);
+	useStepEffects(boxRef, position, drawing, scene);
+	const previous = position.animate && index > 0 ? scenes[index - 1] : null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", {
+		className: "sd sd-" + diagram.style,
+		role: "group",
+		"aria-roledescription": "תרשים צעדים",
+		"aria-label": diagram.title || "תרשים צעדים",
+		onKeyDown: (event) => onPlayerKey(event, move),
+		children: [
+			diagram.title ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "sd-title",
+				children: diagram.title
+			}) : null,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "sd-view",
+				ref: boxRef,
+				tabIndex: -1,
+				children: drawing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Drawing, {
+					diagram,
+					drawing,
+					scene,
+					previous
+				}) : null
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Caption, {
+				scene,
+				count: scenes.length
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar, {
+				index,
+				count: scenes.length,
+				move
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+				className: "sr",
+				children: sceneSummary(diagram, scene).map((line, lineIndex) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: line }, lineIndex))
+			})
+		]
+	});
+}
+function StepDiagramBlock(props) {
+	const check = (0, import_react.useMemo)(() => checkDiagramText(props.source), [props.source]);
+	if (!check.diagram) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramProblems, { problems: check.problems });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramPlayer, { diagram: check.diagram }) });
+}
+// src/core/step-diagram/DiagramDialog.tsx
+var MAX_FILE_BYTES = 2e5;
+function checkPasted(raw) {
+	let text = raw.trim();
+	let shift = raw.slice(0, raw.length - raw.trimStart().length).split("\n").length - 1;
+	const hadFence = text.startsWith("```");
+	if (hadFence) {
+		text = text.replace(/^```[^\n]*\n?/, "").replace(/\n?```\s*$/, "");
+		shift += 1;
+	}
+	return {
+		text,
+		shift,
+		hadFence,
+		check: checkDiagramText(text, { checkFormula: formulaProblem })
+	};
+}
+function readable(source) {
+	try {
+		return JSON.stringify(JSON.parse(source), null, 2);
+	} catch {
+		return source;
+	}
+}
+function selectLine(field, line) {
+	const lines = field.value.split("\n");
+	const index = Math.max(0, Math.min(lines.length - 1, line - 1));
+	const start = lines.slice(0, index).reduce((sum, text) => sum + text.length + 1, 0);
+	field.focus();
+	field.setSelectionRange(start, start + lines[index].length);
+	const lineHeight = parseFloat(getComputedStyle(field).lineHeight) || 20;
+	field.scrollTop = Math.max(0, index * lineHeight - field.clientHeight / 3);
+}
+function ProblemItems(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+		className: "sdd-list sdd-" + props.kind,
+		lang: "en",
+		dir: "ltr",
+		children: props.items.map((problem, index) => {
+			const line = problem.line ? problem.line + props.shift : 0;
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [line ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "sdd-line",
+				onClick: () => props.onLine(line),
+				children: ["line ", line]
+			}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (problem.path ? problem.path + ": " : "") + problem.message })] }, index);
+		})
+	});
+}
+function Status(props) {
+	const { pasted, isEmpty } = props;
+	const diagram = pasted.check.diagram;
+	let text = "הדביקו כאן את ה-JSON של התרשים, או ייבאו קובץ.";
+	let className = "sdd-status";
+	if (!isEmpty && diagram) {
+		text = "✓ התרשים תקין: " + diagram.steps.length + " צעדים, " + diagram.actors.length + " משתתפים";
+		className += " ok";
+	} else if (!isEmpty) {
+		const count = pasted.check.problems.length;
+		text = "✗ " + (count === 1 ? "בעיה אחת" : count + " בעיות") + ": התיקון כאן בשדה";
+		className += " bad";
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className,
+		role: "status",
+		children: [text, pasted.hadFence ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "sdd-note",
+			children: " (שורות ``` סביב ה-JSON הוסרו)"
+		}) : null]
+	});
+}
+function importFile(file, setText, setNote) {
+	if (file.size > MAX_FILE_BYTES) {
+		setNote("הקובץ " + file.name + " גדול מדי: עד 200,000 בתים");
+		return;
+	}
+	file.text().then((text) => {
+		setText(text);
+		setNote("יובא: " + file.name);
+	}, () => setNote("לא הצלחתי לקרוא את " + file.name));
+}
+function onDialogKey(event, dialog, onEscape) {
+	if (event.key === "Escape") {
+		event.preventDefault();
+		event.stopPropagation();
+		onEscape();
+		return;
+	}
+	if (event.key !== "Tab" || !dialog) return;
+	const focusable = Array.from(dialog.querySelectorAll("button:not([disabled]), textarea, [tabindex=\"0\"]")).filter((element) => element.offsetParent !== null);
+	const first = focusable[0];
+	const last = focusable[focusable.length - 1];
+	if (event.shiftKey && document.activeElement === first) {
+		event.preventDefault();
+		last.focus();
+	} else if (!event.shiftKey && document.activeElement === last) {
+		event.preventDefault();
+		first.focus();
+	}
+}
+function SourceTools(props) {
+	const [note, setNote] = (0, import_react.useState)("");
+	const fileRef = (0, import_react.useRef)(null);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-row",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", {
+				htmlFor: "sdd-text",
+				children: "JSON"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b ghost au-sm",
+				onClick: () => fileRef.current?.click(),
+				children: "ייבוא קובץ ‎.json…"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b ghost au-sm",
+				onClick: () => props.setText(DIAGRAM_SAMPLE),
+				children: "דוגמה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+				ref: fileRef,
+				type: "file",
+				accept: ".json,application/json",
+				hidden: true,
+				onChange: (event) => {
+					const file = event.target.files && event.target.files[0];
+					if (file) importFile(file, props.setText, setNote);
+					event.target.value = "";
+				}
+			}),
+			note ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "sdd-note",
+				children: note
+			}) : null
+		]
+	});
+}
+function SourcePane(props) {
+	const { pasted } = props;
+	const fieldRef = (0, import_react.useRef)(null);
+	const isEmpty = !props.text.trim();
+	const goToLine = (line) => {
+		if (fieldRef.current) selectLine(fieldRef.current, line);
+	};
+	const lists = {
+		shift: pasted.shift,
+		onLine: goToLine
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-src",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceTools, { setText: props.setText }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
+				id: "sdd-text",
+				ref: fieldRef,
+				className: "au-code sdd-text",
+				dir: "ltr",
+				lang: "en",
+				spellCheck: false,
+				autoFocus: true,
+				value: props.text,
+				placeholder: "{\n  \"format\": \"step-diagram/1\",\n  \"style\": \"sequence\",\n  ...\n}",
+				onChange: (event) => props.setText(event.target.value)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Status, {
+				pasted,
+				isEmpty
+			}),
+			!isEmpty && !pasted.check.diagram ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProblemItems, {
+				items: pasted.check.problems,
+				kind: "error",
+				...lists
+			}) : null,
+			!isEmpty && pasted.check.warnings.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProblemItems, {
+				items: pasted.check.warnings,
+				kind: "warning",
+				...lists
+			}) : null
+		]
+	});
+}
+function DiagramDialog(props) {
+	const [text, setText] = (0, import_react.useState)(props.source ? readable(props.source) : "");
+	const [isAsking, setIsAsking] = (0, import_react.useState)(false);
+	const dialogRef = (0, import_react.useRef)(null);
+	const pasted = (0, import_react.useMemo)(() => checkPasted(text), [text]);
+	const diagram = text.trim() ? pasted.check.diagram : null;
+	const isChanged = text !== (props.source ? readable(props.source) : "");
+	const save = () => {
+		if (diagram) {
+			props.onSave(pasted.text);
+			props.onClose();
+		}
+	};
+	const cancel = () => {
+		if (isChanged && !isAsking) setIsAsking(true);
+		else props.onClose();
+	};
+	const foot = {
+		isNew: props.isNew,
+		canSave: Boolean(diagram),
+		isAsking,
+		onSave: save
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "sdd-back",
+		onKeyDown: (event) => onDialogKey(event, dialogRef.current, cancel),
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "sdd",
+			role: "dialog",
+			"aria-modal": "true",
+			"aria-labelledby": "sdd-h",
+			ref: dialogRef,
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHead, {
+					isNew: props.isNew,
+					onClose: cancel
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "sdd-body",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourcePane, {
+						text,
+						setText,
+						pasted
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Preview, {
+						pasted,
+						isEmpty: !text.trim()
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogFoot, {
+					...foot,
+					onCancel: cancel,
+					onClose: props.onClose,
+					onKeep: () => setIsAsking(false)
+				})
+			]
+		})
+	});
+}
+var INTRO = "תרשים צעדים הוא קובץ JSON: המשתתפים, ולכל צעד ההסבר ומה נוסף לציור. הוא נבדק בכל שינוי, והתצוגה מתעדכנת. המבנה המלא: ";
+var INTRO_AI = "; לכתיבה בעזרת AI: ";
+function Preview(props) {
+	const diagram = props.isEmpty ? null : props.pasted.check.diagram;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "sdd-preview",
+		"aria-label": "תצוגה מקדימה",
+		children: diagram ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramPlayer, { diagram }, props.pasted.text) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			className: "sdd-empty",
+			children: "התצוגה המקדימה תופיע כאן כשהתרשים תקין."
+		})
+	});
+}
+function DialogHead(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-head",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+			id: "sdd-h",
+			children: props.isNew ? "תרשים צעדים חדש" : "עריכת תרשים הצעדים"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "au-ib sdd-x",
+			"aria-label": "סגירה",
+			onClick: props.onClose,
+			children: "✕"
+		})]
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "sdd-intro",
+		children: [
+			INTRO,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
+				dir: "ltr",
+				children: "docs/STEP-DIAGRAMS.md"
+			}),
+			INTRO_AI,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
+				dir: "ltr",
+				children: "docs/step-diagrams/AI-INSTRUCTIONS.md"
+			}),
+			"."
+		]
+	})] });
+}
+function DialogFoot(props) {
+	if (props.isAsking) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-foot",
+		role: "group",
+		"aria-label": "לסגור בלי לשמור?",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "sdd-ask",
+				children: "לסגור בלי לשמור את התרשים?"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b ask-yes",
+				onClick: props.onClose,
+				autoFocus: true,
+				children: "סגירה בלי שמירה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b ghost",
+				onClick: props.onKeep,
+				children: "המשך עריכה"
+			})
+		]
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-foot",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "b sdd-save",
+			disabled: !props.canSave,
+			onClick: props.onSave,
+			children: props.isNew ? "הוספה לשיעור" : "שמירה"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "b ghost",
+			onClick: props.onCancel,
+			children: "ביטול"
+		})]
+	});
+}
+function openDiagramDialog(options) {
+	const returnFocus = document.activeElement;
+	const host = document.createElement("div");
+	host.className = "sdd-host";
+	document.body.appendChild(host);
+	const root = (0, import_client.createRoot)(host);
+	const close = () => {
+		setTimeout(() => {
+			root.unmount();
+			host.remove();
+			if (returnFocus && returnFocus.isConnected) returnFocus.focus();
+		});
+	};
+	root.render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramDialog, {
+		...options,
+		onClose: close
+	}));
+}
 // src/core/author/elements.js
 function splitProperties(properties) {
 	const attributes = {};
@@ -11492,6 +15749,7 @@ var BLOCK_LABELS = {
 	code: "קוד להצגה",
 	ul: "רשימה",
 	schem: "תרשים זיכרון",
+	diagram: "תרשים צעדים",
 	kick: "שורת פתיחה",
 	h1: "כותרת ראשית",
 	chips: "תגיות",
@@ -11507,7 +15765,8 @@ var MENU_KINDS = [
 	"table",
 	"code",
 	"ul",
-	"schem"
+	"schem",
+	"diagram"
 ];
 var HOME_KINDS = [
 	"kick",
@@ -11620,7 +15879,8 @@ var ALLOWED_TAGS = {
 		"schem",
 		"row",
 		"box",
-		"p"
+		"p",
+		"step-diagram"
 	] },
 	span: { classes: [
 		"lbl",
@@ -11680,6 +15940,7 @@ function cleanCopyOf(source, tag, classes) {
 	}
 	const label = source.getAttribute("aria-label");
 	if (tag === "div" && classes.includes("schem") && label) copy.setAttribute("aria-label", label);
+	if (tag === "div" && classes.includes("step-diagram")) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
 	return copy;
 }
 function copyAllowedChildren(source, target, mode) {
@@ -11772,6 +16033,7 @@ function kindOf(block) {
 	if (tag === "p") return classes.contains("fine") ? "fine" : "p";
 	if (tag === "div") {
 		if (classes.contains("callout")) return calloutKindOf$1(block);
+		if (classes.contains("step-diagram")) return "diagram";
 		for (const kind of [
 			"schem",
 			"kick",
@@ -12023,6 +16285,15 @@ function contentBy(read) {
 function codeAttrs(element) {
 	return { text: codeTextOf(element) };
 }
+function diagramAttrs(element) {
+	return { source: element.getAttribute("data-diagram") || "" };
+}
+function diagramDom(node) {
+	return ["div", {
+		class: "step-diagram",
+		"data-diagram": node.attrs.source
+	}];
+}
 function linkAttrs(element) {
 	return { href: element.getAttribute("href") };
 }
@@ -12138,6 +16409,16 @@ var OTHER_NODES = {
 			getAttrs: schemAttrsOf
 		}],
 		toDOM: schemDom
+	},
+	step_diagram: {
+		group: "block",
+		atom: true,
+		attrs: { source: { default: "" } },
+		parseDOM: [{
+			tag: "div.step-diagram",
+			getAttrs: diagramAttrs
+		}],
+		toDOM: diagramDom
 	},
 	chips: {
 		group: "block",
@@ -12269,6 +16550,7 @@ function buildBlockNode(kind, element) {
 		case "table": return nodes.table.create(null, buildTableRows(element, richSchema));
 		case "code": return nodes.code_static.create({ text: codeTextOf(element) });
 		case "schem": return nodes.schem.create(schemAttrsOf(element));
+		case "diagram": return nodes.step_diagram.create({ source: element.getAttribute("data-diagram") || "" });
 		case "chips": return nodes.chips.create(null, buildChips(element, richSchema));
 		default: return buildInlineNode(nodes[TEXTBLOCK_TYPE_OF_KIND[kind] || "paragraph"], element.innerHTML);
 	}
@@ -12294,6 +16576,7 @@ var KIND_OF_TYPE = {
 	table: "table",
 	code_static: "code",
 	schem: "schem",
+	step_diagram: "diagram",
 	chips: "chips"
 };
 function kindOfNode(node) {
@@ -12350,7 +16633,21 @@ function focusBlock(view, position) {
 	view.focus();
 }
 function insertBlock(view, index, kind) {
-	const node = newBlockNode(kind, defaultBlockHtml(kind));
+	if (kind === "diagram") {
+		const onSave = (source) => {
+			insertNode(view, index, richSchema.nodes.step_diagram.create({ source }));
+		};
+		openDiagramDialog({
+			source: "",
+			isNew: true,
+			onSave
+		});
+		return;
+	}
+	insertNode(view, index, newBlockNode(kind, defaultBlockHtml(kind)));
+}
+function insertNode(view, index, node) {
+	if (view.isDestroyed) return;
 	const doc = view.state.doc;
 	const tr = view.state.tr;
 	let position = positionOfIndex(doc, index);
@@ -15672,6 +19969,31 @@ function buildSchemForm(rows, ariaLabel, onChange) {
 	paintPreview(editor);
 	return frame;
 }
+// src/core/step-diagram/editor-block.tsx
+function mountDiagramPreview(element, source) {
+	const root = (0, import_client.createRoot)(element);
+	const draw = (text) => {
+		root.render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PreviewBlock, { source: text }));
+	};
+	const destroy = () => {
+		setTimeout(() => root.unmount());
+	};
+	draw(source);
+	return {
+		update: draw,
+		destroy
+	};
+}
+function PreviewBlock(props) {
+	const check = (0, import_react.useMemo)(() => checkDiagramText(props.source), [props.source]);
+	if (!check.diagram) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProblemItems, {
+		items: check.problems,
+		shift: 0,
+		kind: "error",
+		onLine: () => void 0
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramPlayer, { diagram: check.diagram }, props.source);
+}
 // src/core/rich/atom-views.ts
 var CODE_MIN_ROWS = 3;
 var CODE_MAX_ROWS = 18;
@@ -15791,12 +20113,47 @@ function schemView(node, view, getPos) {
 		ignoreMutation: always$1(true)
 	};
 }
+function diagramView(node, view, getPos) {
+	let source = node.attrs.source;
+	const previewElement = buildElement("div", { class: "au-diagram-preview" });
+	const preview = mountDiagramPreview(previewElement, source);
+	const onSave = (newSource) => {
+		const position = getPos();
+		if (position !== void 0 && !view.isDestroyed) {
+			const tr = view.state.tr.setNodeMarkup(position, null, { source: newSource });
+			view.dispatch(tr.setMeta(STRUCTURAL, true));
+		}
+	};
+	const tools = buildElement("div", { class: "au-diagram-tools" }, iconButton("✎ עריכת התרשים (JSON)", null, () => openDiagramDialog({
+		source,
+		isNew: false,
+		onSave
+	}), "b ghost au-sm"));
+	const update = (newNode) => {
+		if (newNode.attrs.source !== source) {
+			source = newNode.attrs.source;
+			preview.update(source);
+		}
+		return true;
+	};
+	return {
+		dom: buildElement("div", {
+			class: "au-diagram",
+			contenteditable: "false"
+		}, tools, previewElement),
+		update,
+		stopEvent: always$1(true),
+		ignoreMutation: always$1(true),
+		destroy: preview.destroy
+	};
+}
 function innerViewOf(node, view, getPos) {
 	switch (node.type.name) {
 		case "table": return tableView(view, getPos);
 		case "chips": return chipsView(view, getPos);
 		case "code_static": return codeStaticView(node, view, getPos);
 		case "schem": return schemView(node, view, getPos);
+		case "step_diagram": return diagramView(node, view, getPos);
 		default: return null;
 	}
 }
@@ -16112,6 +20469,7 @@ function blockHtml(block) {
 		case "table": return tableHtml(block);
 		case "code_static": return codeStaticHtml(block.attrs.text);
 		case "schem": return serializeSchem(block.attrs.rows, block.attrs.label);
+		case "step_diagram": return diagramHtml(block.attrs.source);
 		case "chips": return chipsHtml(block);
 		default: {
 			const [tag, className] = TEXTBLOCK_TAGS[block.type.name] || TEXTBLOCK_TAGS.paragraph;
@@ -16513,8 +20871,8 @@ function textOf(page, which) {
 }
 // src/core/lesson/text-fit.ts
 var PREFIX_HYPHEN = /(^|[^א-ת])([והבכלמש]{1,3})-(?![\s⁠])/g;
-var NO_JOIN_SELECTOR = "code, pre, kbd, samp, textarea, input, script, style, .ed, [contenteditable=\"true\"]";
-var NO_FIT_SELECTOR = "pre, .ed, [contenteditable=\"true\"]";
+var NO_JOIN_SELECTOR = "code, pre, kbd, samp, textarea, input, script, style, .ed, .sd, [contenteditable=\"true\"]";
+var NO_FIT_SELECTOR = "pre, .ed, .sd, [contenteditable=\"true\"]";
 var FIT_OVERHANG_PX = 8;
 var FIT_ROUNDS = 3;
 function joinPrefixHyphens(root) {
@@ -17061,9 +21419,34 @@ function PageEditor(props) {
 		page.box ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BoxParts, { page }) : null
 	] });
 }
+// src/core/lesson/LessonHtml.tsx
+function HtmlWithDiagrams(props) {
+	const hostRef = (0, import_react.useRef)(null);
+	const [slots, setSlots] = (0, import_react.useState)([]);
+	(0, import_react.useLayoutEffect)(() => {
+		const host = hostRef.current;
+		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS)) : [];
+		setSlots(found);
+	}, [props.html]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		ref: hostRef,
+		className: props.className,
+		dangerouslySetInnerHTML: { __html: props.html }
+	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
+}
+function LessonHtml(props) {
+	if (!props.html.includes("step-diagram")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: props.className,
+		dangerouslySetInnerHTML: { __html: props.html }
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HtmlWithDiagrams, {
+		html: props.html,
+		className: props.className
+	}, props.html);
+}
 // src/core/lesson/UnitPage.tsx
 function TextParts(props) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: props.parts.map((part, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { dangerouslySetInnerHTML: { __html: part } }, index)) });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: props.parts.map((part, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LessonHtml, { html: part }, index)) });
 }
 function PageTitles(props) {
 	const page = props.page;
@@ -17087,9 +21470,9 @@ function UnitPage(props) {
 // src/core/lesson/Lessons.tsx
 function HomeContent(props) {
 	const welcome = props.course.welcome || "<h1>" + props.course.title + "</h1>";
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LessonHtml, {
 		className: "hello",
-		dangerouslySetInnerHTML: { __html: welcome }
+		html: welcome
 	});
 }
 function LessonPage(props) {
@@ -18014,6 +22397,84 @@ function LabApp(props) {
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tour, {}), document.body)
 	] });
 }
+// src/core/step-diagram/self-check.tsx
+var WIDTHS = [358, 640];
+function courseDiagrams(course) {
+	const found = [];
+	const add = (place, html) => {
+		if (typeof html !== "string") return;
+		for (const source of diagramsInHtml(html)) {
+			const number = found.filter((f) => f.place.startsWith(place + " #")).length + 1;
+			found.push({
+				place: place + " #" + number,
+				source
+			});
+		}
+	};
+	add("welcome", course.welcome);
+	for (const unit of course.units) (unit.body || []).forEach((part) => add(unit.id, part));
+	return found;
+}
+function nextFrame() {
+	return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+async function press(host, selector, expected, count) {
+	const button = host.querySelector(selector);
+	if (!button || button.disabled) return "the button " + selector + " cannot be pressed at step " + (expected - 1);
+	(0, import_react_dom.flushSync)(() => button.click());
+	await nextFrame();
+	const position = host.querySelector(".sd-pos-t")?.textContent || "";
+	if (host.querySelector(".sd-bad")) return "an error note appeared at step " + expected;
+	const want = "צעד " + expected + " מתוך " + count;
+	return position.replace(/\s+/g, " ").trim() === want ? "" : "expected \"" + want + "\", saw \"" + position + "\"";
+}
+async function stepThrough(source, count, width) {
+	const host = document.createElement("div");
+	host.className = "sd-check-host";
+	host.style.cssText = "position:fixed;left:-10000px;top:0;width:" + width + "px;visibility:hidden";
+	document.body.appendChild(host);
+	const root = (0, import_client.createRoot)(host);
+	try {
+		(0, import_react_dom.flushSync)(() => root.render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source })));
+		await nextFrame();
+		if (!host.querySelector("svg")) return "nothing was drawn at " + width + " px";
+		for (let step = 2; step <= count; step++) {
+			const problem = await press(host, ".sd-next", step, count);
+			if (problem) return problem + " (" + width + " px, forward)";
+		}
+		for (let step = count - 1; step >= 1; step--) {
+			const problem = await press(host, ".sd-back", step, count);
+			if (problem) return problem + " (" + width + " px, back)";
+		}
+		return "";
+	} finally {
+		root.unmount();
+		host.remove();
+	}
+}
+async function checkCourseDiagrams(course) {
+	const lines = [];
+	let problems = 0;
+	for (const found of courseDiagrams(course)) {
+		const check = checkDiagramText(found.source);
+		if (!check.diagram) {
+			problems++;
+			lines.push("✗ diagram " + found.place + ": " + check.problems.map((p) => problemLine(p)).join("; "));
+			continue;
+		}
+		const count = check.diagram.steps.length;
+		let problem = "";
+		for (const width of WIDTHS) problem = problem || await stepThrough(found.source, count, width);
+		problems += problem ? 1 : 0;
+		const title = check.diagram.title ? " \"" + check.diagram.title + "\"" : "";
+		const outcome = problem || count + " steps, to the end and back";
+		lines.push((problem ? "✗ " : "✓ ") + "diagram " + found.place + title + ": " + outcome);
+	}
+	return {
+		lines,
+		problems
+	};
+}
 // src/core/page/dom.js
 function makeElement(tag, className, content) {
 	const element = document.createElement(tag);
@@ -18088,7 +22549,14 @@ async function runSelfTest(engine, allBoxes, isReal) {
 		session.output.textContent = lines.join("\n");
 		await wait(0);
 	}
-	session.panel.querySelector("b").textContent = problemCount ? "בדיקה עצמית: " + problemCount + " בעיות" : "בדיקה עצמית: הכול תקין (" + allBoxes.length + " קופסאות)";
+	const diagrams = await checkCourseDiagrams(window.LabCourse);
+	if (session.isCancelled) return;
+	problemCount += diagrams.problems;
+	lines.push(...diagrams.lines);
+	session.output.textContent = lines.join("\n");
+	const diagramCount = diagrams.lines.length;
+	const diagramText = diagramCount ? ", " + diagramCount + " תרשימי צעדים" : "";
+	session.panel.querySelector("b").textContent = problemCount ? "בדיקה עצמית: " + problemCount + " בעיות" : "בדיקה עצמית: הכול תקין (" + allBoxes.length + " קופסאות" + diagramText + ")";
 	document.title = "SELFTEST " + (problemCount ? "FAIL " + problemCount : "OK");
 	window.__selftest = {
 		bad: problemCount,
@@ -18905,7 +23373,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 893b499 מ-2026-11-09 00:39"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 893b499</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 2dca632 מ-2026-11-09 02:28"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 2dca632</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
