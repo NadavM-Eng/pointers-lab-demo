@@ -36,7 +36,7 @@ SOFTWARE.
 
 `lab.html` embeds [web-tree-sitter](https://github.com/tree-sitter/tree-sitter) 0.24.7 and the
 [tree-sitter-c](https://github.com/tree-sitter/tree-sitter-c) 0.23.6 grammar, compiled to WebAssembly
-(`src/vendor/tree-sitter/`). They are used to step through code that does not compile.
+(`src/engines/c/vendor/tree-sitter/`). They are used to step through code that does not compile.
 
 ```
 The MIT License (MIT)
@@ -186,7 +186,8 @@ compiler of [teavm-javac](https://github.com/konsoletyper/teavm-javac): javac an
 to WebAssembly, TeaVM's class libraries, its runtime JavaScript and its stack deobfuscator. They
 were downloaded unchanged from <https://teavm.org/playground/3/> on 2026-11-08 and are kept in
 `src/engines/java/vendor/teavm/` (three of them gzip-compressed; the page inlines them and
-unpacks them with the browser's `DecompressionStream`). The page is about 4.2 MB larger for it.
+unpacks them with the browser's `DecompressionStream`). The page is about 5.7 MB larger for it:
+the five files it inlines are 4.25 MB, and base64 makes them a third bigger.
 
 | file (downloaded) | bytes | SHA-256 |
 |---|---|---|

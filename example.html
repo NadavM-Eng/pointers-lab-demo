@@ -2709,36 +2709,80 @@ var __exportAll = (all, no_symbols) => {
 	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
 	return target;
 };
-// src/engines/example-js/run.js
-var LINES_BEFORE_PROGRAM = 4;
-var STACK_LINE = /<anonymous>:(\d+):\d+/;
-var NeedInput = class extends Error {};
-function inputLines(stdin) {
-	const lines = (stdin || "").split("\n");
-	return lines.filter((line, index) => index < lines.length - 1 || line !== "");
+// src/engines/example-js/run-worker.js
+function stopError(reason) {
+	const error = /* @__PURE__ */ new Error("the run stops here: " + reason);
+	error.labStop = reason;
+	return error;
+}
+function newOutput(send, maxOutputChars) {
+	return {
+		send,
+		maxOutputChars,
+		waiting: "",
+		size: 0,
+		prints: 0,
+		sentAt: 0,
+		isFull: false
+	};
+}
+function sendOutput(output) {
+	if (output.waiting) {
+		output.send({
+			type: "out",
+			text: output.waiting
+		});
+		output.waiting = "";
+	}
+	output.sentAt = Date.now();
+}
+function addOutput(output, text) {
+	const FIRST_PRINTS_SENT_AT_ONCE = 1e3;
+	const GATHER_MS = 50;
+	if (output.isFull) throw stopError("output");
+	const room = output.maxOutputChars - output.size;
+	output.waiting += text.length > room ? text.slice(0, room) : text;
+	output.size += text.length;
+	output.prints += 1;
+	if (output.prints <= FIRST_PRINTS_SENT_AT_ONCE || Date.now() - output.sentAt >= GATHER_MS) sendOutput(output);
+	if (output.size > output.maxOutputChars) {
+		output.isFull = true;
+		throw stopError("output");
+	}
 }
 function makePrint(output) {
 	return (...values) => {
-		const texts = values.map((value) => typeof value === "string" ? value : JSON.stringify(value));
-		output.text += texts.join(" ") + "\n";
+		addOutput(output, values.map((value) => typeof value === "string" ? value : JSON.stringify(value)).join(" ") + "\n");
 	};
 }
 function makeInput(lines) {
 	let nextIndex = 0;
 	return () => {
 		if (nextIndex < lines.length) return lines[nextIndex++];
-		throw new NeedInput();
+		throw stopError("input");
 	};
 }
 function describeError(error) {
+	const LINES_BEFORE_PROGRAM = 4;
+	const STACK_LINE = /<anonymous>:(\d+):\d+/;
+	if (!(error instanceof Error)) return {
+		error: "Uncaught " + String(error),
+		errLine: 0
+	};
 	const lineMatch = STACK_LINE.exec(String(error.stack || ""));
 	return {
 		error: error.name + ": " + error.message,
 		errLine: lineMatch ? Number(lineMatch[1]) - LINES_BEFORE_PROGRAM : 0
 	};
 }
-function execute(code, lines, extra) {
-	const output = { text: "" };
+function endingOf(error) {
+	const reason = error instanceof Error ? error.labStop : void 0;
+	if (reason === "input") return { needInput: true };
+	if (reason === "output") return { outputLimit: true };
+	return describeError(error);
+}
+function runProgram$1(request, send) {
+	const output = newOutput(send, request.maxOutputChars);
 	const print = makePrint(output);
 	const programConsole = {
 		log: print,
@@ -2748,23 +2792,126 @@ function execute(code, lines, extra) {
 	};
 	const body = [
 		"\"use strict\";",
-		extra ? extra.pre || "" : "",
-		code,
-		extra ? extra.post || "" : ""
+		request.pre || "",
+		request.code,
+		request.post || ""
 	].join("\n");
+	let ending = {};
 	try {
-		new Function("console", "print", "input", body)(programConsole, print, makeInput(lines));
-		return { out: output.text };
+		new Function("console", "print", "input", body)(programConsole, print, makeInput(request.lines));
 	} catch (error) {
-		if (error instanceof NeedInput) return {
-			out: output.text,
-			needInput: true
-		};
-		return {
-			out: output.text,
-			...describeError(error)
-		};
+		ending = endingOf(error);
 	}
+	if (output.isFull) ending = { outputLimit: true };
+	sendOutput(output);
+	send({
+		type: "done",
+		...ending
+	});
+}
+function listenForRuns(scope) {
+	scope.onmessage = (event) => {
+		runProgram$1(event.data, (message) => scope.postMessage(message));
+	};
+}
+// src/engines/example-js/run.js
+var TIME_LIMIT_MS = 5e3;
+var MAX_OUTPUT_CHARS = 2e5;
+var TIME_LIMIT_TEXT = "stopped: the program ran too long (an endless loop?)";
+var OUTPUT_LIMIT_TEXT = "stopped: the program printed more than " + MAX_OUTPUT_CHARS.toLocaleString("en-US") + " characters (an endless loop?)";
+var WORKER_PARTS = [
+	stopError,
+	newOutput,
+	sendOutput,
+	addOutput,
+	makePrint,
+	makeInput,
+	describeError,
+	endingOf,
+	runProgram$1,
+	listenForRuns
+];
+var workerUrl = null;
+function workerScript() {
+	return WORKER_PARTS.map((part) => part.toString()).join("\n\n") + "\n\n" + listenForRuns.name + "(self);\n";
+}
+function startPageWorker() {
+	if (!workerUrl) {
+		const blob = new Blob([workerScript()], { type: "text/javascript" });
+		workerUrl = URL.createObjectURL(blob);
+	}
+	return new Worker(workerUrl);
+}
+function endingOfMessage(message) {
+	if (message.outputLimit) return {
+		error: OUTPUT_LIMIT_TEXT,
+		outputLimit: true
+	};
+	if (message.needInput) return { needInput: true };
+	if (message.error) return {
+		error: message.error,
+		errLine: message.errLine || 0
+	};
+	return {};
+}
+function runInWorker(startWorker, request, timeLimitMs) {
+	return new Promise((resolve) => {
+		const run = {
+			out: "",
+			isDone: false,
+			worker: null,
+			timer: 0
+		};
+		const finish = (ending) => {
+			if (run.isDone) return;
+			run.isDone = true;
+			clearTimeout(run.timer);
+			if (run.worker) run.worker.terminate();
+			resolve({
+				out: run.out,
+				...ending
+			});
+		};
+		try {
+			run.worker = startWorker();
+		} catch (error) {
+			finish({ error: "internal error: the run worker did not start (" + error.message + ")" });
+			return;
+		}
+		run.timer = setTimeout(() => finish({
+			error: TIME_LIMIT_TEXT,
+			timedOut: true
+		}), timeLimitMs);
+		listenToWorker(run, finish);
+		run.worker.postMessage({
+			...request,
+			maxOutputChars: MAX_OUTPUT_CHARS
+		});
+	});
+}
+function listenToWorker(run, finish) {
+	run.worker.onmessage = (event) => {
+		const message = event.data;
+		if (run.isDone) return;
+		if (message.type === "out") run.out += message.text;
+		else if (message.type === "done") finish(endingOfMessage(message));
+	};
+	run.worker.onerror = (event) => {
+		if (event.preventDefault) event.preventDefault();
+		finish({ error: "internal error: the run worker failed (" + event.message + ")" });
+	};
+}
+function inputLines(stdin) {
+	const lines = (stdin || "").split("\n");
+	return lines.filter((line, index) => index < lines.length - 1 || line !== "");
+}
+function execute(code, lines, extra) {
+	return runInWorker(startPageWorker, {
+		code,
+		lines,
+		pre: extra ? extra.pre : "",
+		post: extra ? extra.post : ""
+	}, TIME_LIMIT_MS);
 }
 // src/engines/example-js/authoring.js
 var EXAMPLE_TEMPLATE = {
@@ -2861,7 +3008,7 @@ var EXPRESSION_TEST_KIND = {
 	}
 };
 async function runOnce(code, stdin) {
-	const run = execute(code, inputLines(stdin));
+	const run = await execute(code, inputLines(stdin));
 	if (run.error) return {
 		error: run.error,
 		out: run.out
@@ -2928,23 +3075,23 @@ var SUMMARY_RULE_WIDTH = 36;
 function normalise(text) {
 	return String(text).replace(/\r/g, "").split("\n").map((line) => line.replace(/\s+$/, "")).join("\n").replace(/\n+$/, "");
 }
-function runIoTest(code, test) {
-	const run = execute(code, inputLines(test.stdin));
+async function runIoTest(code, test) {
+	const run = await execute(code, inputLines(test.stdin));
 	const actual = run.error ? run.out + run.error : run.out;
 	return {
 		ok: !run.error && !run.needInput && normalise(actual) === normalise(test.expect),
 		actual
 	};
 }
-function runExpressionTest(code, test) {
-	const run = execute(code, [], { post: "print(JSON.stringify(" + test.expr + "));" });
+async function runExpressionTest(code, test) {
+	const run = await execute(code, [], { post: "print(JSON.stringify(" + test.expr + "));" });
 	const actual = run.error || run.out.trim().split("\n").pop();
 	return {
 		ok: !run.error && actual === JSON.stringify(test.expect),
 		actual
 	};
 }
-function runOneTest(code, test) {
+async function runOneTest(code, test) {
 	if (test.type === "io") return runIoTest(code, test);
 	if (test.type === "expr") return runExpressionTest(code, test);
 	return {
@@ -2961,11 +3108,11 @@ function summaryLine(passCount, testCount) {
 	if (passCount !== testCount || !testCount) return passCount + " / " + testCount + " tests passed";
 	return testCount === 1 ? "1 TEST PASSED" : "ALL " + testCount + " TESTS PASSED";
 }
-function runTests(box, code) {
+async function runTests(box, code) {
 	const results = [];
 	let log = "$ node main.js  (tests)\n";
 	for (const test of box.tests || []) {
-		const outcome = runOneTest(code, test);
+		const outcome = await runOneTest(code, test);
 		results.push({
 			name: test.name,
 			ok: outcome.ok
@@ -2983,6 +3130,8 @@ function runTests(box, code) {
 // src/engines/example-js/box.js
 var PASS_MARK = "<span class=\"tpass\">[PASS]</span>";
 var FAIL_MARK = "<span class=\"tfail\">[FAIL]</span>";
+var SLOW_RUN_MS = 400;
+var TIMED_OUT_STATUS = "timed out: the program ran for more than " + TIME_LIMIT_MS / 1e3 + " seconds";
 function showResult(ui, result) {
 	const { state } = ui;
 	ui.showErrs(result.errLine ? { "main.js": [result.errLine] } : {});
@@ -2993,7 +3142,7 @@ function showResult(ui, result) {
 	}
 	ui.showTerm();
 	if (result.error) {
-		ui.setStatus("error", "bad");
+		ui.setStatus(result.timedOut ? TIMED_OUT_STATUS : "error", "bad");
 		ui.showInput(false);
 		return;
 	}
@@ -3007,10 +3156,25 @@ function showResult(ui, result) {
 	ui.showInput(false);
 	ui.setStatus("finished", "ok");
 }
+async function runAndShow(ui) {
+	const runNumber = (ui.state.runNumber || 0) + 1;
+	ui.state.runNumber = runNumber;
+	ui.showInput(false);
+	const slowTimer = setTimeout(() => {
+		const seconds = TIME_LIMIT_MS / 1e3;
+		ui.setStatus("running… (stopped after " + seconds + " s)", "busy", true);
+	}, SLOW_RUN_MS);
+	try {
+		const result = await execute(ui.ed.value, ui.state.lines);
+		if (ui.state.runNumber === runNumber) showResult(ui, result);
+	} finally {
+		clearTimeout(slowTimer);
+	}
+}
 function runProgram(ui) {
 	ui.state.inputs = [];
 	ui.state.lines = [];
-	showResult(ui, execute(ui.ed.value, ui.state.lines));
+	return runAndShow(ui);
 }
 function typeInput(ui, text) {
 	ui.state.inputs.push({
@@ -3018,15 +3182,16 @@ function typeInput(ui, text) {
 		text
 	});
 	ui.state.lines.push(text);
-	showResult(ui, execute(ui.ed.value, ui.state.lines));
+	return runAndShow(ui);
 }
 function colourLog(log) {
 	return escapeHtml$1(log).replace(/^\[PASS\]/gm, PASS_MARK).replace(/^\[FAIL\]/gm, FAIL_MARK);
 }
 async function runBoxTests(ui) {
 	const { box, state } = ui;
+	ui.state.runNumber = (ui.state.runNumber || 0) + 1;
 	ui.showInput(false);
-	const testRun = runTests(box, ui.ed.value);
+	const testRun = await runTests(box, ui.ed.value);
 	const passCount = testRun.res.filter((result) => result.ok).length;
 	const testCount = testRun.res.length;
 	const ok = passCount === testCount && testCount > 0;
@@ -3045,13 +3210,13 @@ function attach(ui) {
 	ui.setEngineLabel("JavaScript · in browser", "");
 	return {
 		run() {
-			runProgram(ui);
+			return runProgram(ui);
 		},
 		test() {
 			return runBoxTests(ui);
 		},
 		input(text) {
-			typeInput(ui, text);
+			return typeInput(ui, text);
 		},
 		stopDebug() {}
 	};
@@ -3110,7 +3275,7 @@ window.LabEngine = {
 	},
 	attach,
 	init: () => Promise.resolve(),
-	runTests: (box, code) => Promise.resolve(runTests(box, code)),
+	runTests: (box, code) => runTests(box, code),
 	authoring
 };
 // src/core/step-diagram/embed.ts
@@ -10140,14 +10305,33 @@ function toggleMenu$1(deps, island, trigger) {
 function resetLayout(deps) {
 	applyLayout(deps, deps.model.defaults);
 }
-// src/core/islands/area-hooks.ts
-var PHONE_QUERY$1 = "(max-width: 767px)";
-function innerSize(element) {
+// src/core/islands/area-size.ts
+function readSize(element) {
 	return {
-		width: element.clientWidth,
-		height: element.clientHeight
+		size: {
+			width: element.clientWidth,
+			height: element.clientHeight
+		},
+		isDrawn: element.isConnected && element.getClientRects().length > 0
 	};
 }
+function keptSize(old, reading) {
+	if (!reading.isDrawn) return old;
+	const { size } = reading;
+	return old.width === size.width && old.height === size.height ? old : size;
+}
+function makeSizeMeasurer(read, sink) {
+	let wasDrawn = false;
+	return (isFromObserver) => {
+		const reading = read();
+		const hasComeOnScreen = reading.isDrawn && !wasDrawn;
+		wasDrawn = reading.isDrawn;
+		if (!reading.isDrawn) return;
+		(hasComeOnScreen && isFromObserver ? sink.applyNow : sink.apply)((old) => keptSize(old, reading));
+	};
+}
+// src/core/islands/area-hooks.ts
+var PHONE_QUERY$1 = "(max-width: 767px)";
 function useElementSize(ref, redrawKey) {
 	const [size, setSize] = (0, import_react.useState)({
 		width: 0,
@@ -10156,12 +10340,15 @@ function useElementSize(ref, redrawKey) {
 	(0, import_react.useLayoutEffect)(() => {
 		const element = ref.current;
 		if (!element) return;
-		const measure = () => {
-			const next = innerSize(element);
-			setSize((old) => old.width === next.width && old.height === next.height ? old : next);
+		const applyNow = (update) => {
+			(0, import_react_dom.flushSync)(() => setSize(update));
 		};
-		measure();
-		const observer = new ResizeObserver(measure);
+		const measure = makeSizeMeasurer(() => readSize(element), {
+			apply: setSize,
+			applyNow
+		});
+		measure(false);
+		const observer = new ResizeObserver(() => measure(true));
 		observer.observe(element);
 		return () => observer.disconnect();
 	}, [ref, redrawKey]);
@@ -23254,7 +23441,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit f1c2c66 מ-2026-11-09 10:08"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · f1c2c66</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e7fd351 מ-2026-11-09 16:22"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e7fd351</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
@@ -23268,8 +23455,8 @@ window.__lab = {
 </div>
 <div class="boot" id="boot" lang="he"></div>
 
-<!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then the ES modules (they run after the page is parsed): engine (window.LabEngine), course (window.LabCourse), the local layer (window.PLayer), the code box (window.PApp), the page (lab.js), the authoring UI (author.js) -->
+<!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then one ES module, lab-entry.js (made by src/vite/lab-page-plugins.ts; it runs after the page is parsed), which imports in this order: the engine (window.LabEngine), the course (window.LabCourse), the local layer (layer.js), the code box (app.js), the page (lab.ts), the authoring UI (author.ts) -->
 <script></script>
-<!--lab-package-here-->
+<!--lab-package-here-->
 </body>
 </html>
