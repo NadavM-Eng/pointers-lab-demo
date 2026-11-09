@@ -1757,9 +1757,14 @@ body .tour-roomy .wb-grid {
   stroke-width: 2;
 }
 
+/* the label in the text's own colour, with a halo, so it reads beside its coloured bracket */
 .sd-span text {
-  fill: var(--sd-c);
+  fill: var(--ink);
   font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 
 .sd-note rect {
@@ -3017,6 +3022,222 @@ body.debugging .tour-roomy .wb-grid {
   color: var(--ink);
 }
 
+/* a map: a key → value table (MapTable.tsx); the card grows to its values (an array's cells)
+   and its rows scroll inside it, under a sticky header, as tall as the island lets it be */
+.jv-heap-island .jv-obj.jv-mapcard {
+  flex: 0 1 auto;
+  min-width: 220px;
+  max-width: 100%;
+}
+
+.jv-obj.jv-mapcard {
+  position: relative;
+}
+
+.jv-map-scroll {
+  max-height: 16em;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.jv-map {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 13px var(--f-mono);
+  line-height: 1.4;
+}
+
+.jv-map th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 1px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  font: 600 11.5px var(--f-body);
+  color: var(--ink);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.jv-map th i {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.jv-mtype {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  font: 600 11.5px var(--f-mono);
+  color: var(--accent-text);
+}
+
+.jv-map td {
+  padding: 1px 10px;
+  border-top: 1px solid var(--line-2);
+  white-space: nowrap;
+}
+
+.jv-map tbody tr:first-child td {
+  border-top: 0;
+}
+
+/* the key column is as narrow as its widest key; the value column takes the rest */
+.jv-map td.jv-mkey {
+  width: 1%;
+  border-right: 1px solid var(--line-2);
+  font-weight: 700;
+}
+
+.jv-mrow.jv-mnew td {
+  background: color-mix(in srgb, var(--ok) 18%, transparent);
+}
+
+.jv-mrow.jv-mnew td.jv-mkey {
+  box-shadow: inset 3px 0 0 var(--ok);
+}
+
+.jv-mrow.jv-mhit td {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.jv-mrow.jv-mhit td.jv-mkey {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.jv-map tbody tr.jv-mrow.jv-mmiss td {
+  border-top: 1px dashed var(--orange);
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
+  color: var(--orange);
+}
+
+.jv-mrow.jv-mmiss .jv-mv {
+  color: inherit;
+}
+
+.jv-mmiss-t {
+  font: 600 12px var(--f-body);
+}
+
+.jv-mmiss-t i {
+  font-style: normal;
+  font-weight: 400;
+  color: inherit;
+}
+
+.jv-mmore td,
+.jv-mempty td {
+  font: 12px var(--f-body);
+  color: var(--muted);
+}
+
+.jv-mempty i {
+  font-style: normal;
+}
+
+/* a key or a value: text in its kind's colour; a Long's "L" muted; a cut String underlined
+   (its whole text on hover); a changed value orange, as everywhere */
+.jv-mv {
+  display: inline-flex;
+  align-items: baseline;
+  border-radius: 5px;
+}
+
+.jv-mtext {
+  display: inline-block;
+}
+
+.jv-mv.jv-num {
+  color: var(--syn-num);
+}
+
+.jv-mv.jv-str,
+.jv-mv.jv-char {
+  color: var(--syn-str);
+}
+
+.jv-mv.jv-bool {
+  color: var(--syn-kw);
+}
+
+.jv-mv.jv-null {
+  color: var(--muted);
+}
+
+.jv-mv[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.jv-sfx {
+  margin-left: 1px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.jv-mv.chg,
+.jv-mref.chg .v {
+  padding: 0 6px;
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+.jv-mv.chg .jv-sfx {
+  color: inherit;
+}
+
+/* an array or a list: its reference and its first cells */
+.jv-mref {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jv-mref .v {
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.jv-mcells {
+  display: inline-flex;
+}
+
+.jv-mcells i {
+  min-width: 22px;
+  margin-left: -1px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-size: 12px;
+  font-style: normal;
+  text-align: center;
+  color: var(--syn-num);
+}
+
+.jv-mcells i:first-child {
+  margin-left: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.jv-mcells i:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.jv-mcells i:only-child {
+  border-radius: 4px;
+}
+
+.jv-mcells .jv-mcmore,
+.jv-mcells.jv-mnone {
+  color: var(--muted);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .jv-obj.new {
     animation: jv-fade-in 0.5s ease-out;
@@ -3560,7 +3781,7 @@ var __exportAll = (all, no_symbols) => {
 // src/engines/java/runtime/Check.java?raw
 var Check_default = "/*\r\n * Check: the helpers of the lab's hidden test class LabTests (docs/engines/java.md, \"Tests\").\r\n * Every check prints one line, \"[PASS] what\" or \"[FAIL] what: expected X, got Y\", the format\r\n * the student's own IntelliJ labs already use; the page counts these lines.\r\n * Compiled with the student's code by the engine (src/engines/java/tests/), on all three\r\n * compilers; plain Java 8, no reflection.\r\n */\r\nimport java.util.Arrays;\r\n\r\npublic final class Check {\r\n    private Check() {\r\n    }\r\n\r\n    /** Prints a result line. */\r\n    private static void result(boolean ok, String what, String detail) {\r\n        System.out.println((ok ? \"[PASS] \" : \"[FAIL] \") + what + (ok ? \"\" : \": \" + detail));\r\n    }\r\n\r\n    /** Checks two whole numbers (int, long, char codes...). */\r\n    public static void eq(String what, long actual, long expected) {\r\n        result(actual == expected, what, \"expected \" + expected + \", got \" + actual);\r\n    }\r\n\r\n    /** Checks two numbers with a fraction, to 1e-9 (relative for big ones). */\r\n    public static void eq(String what, double actual, double expected) {\r\n        double tolerance = 1e-9 * Math.max(1.0, Math.abs(expected));\r\n        boolean ok = Math.abs(actual - expected) <= tolerance;\r\n        result(ok, what, \"expected \" + expected + \", got \" + actual);\r\n    }\r\n\r\n    /** Checks two booleans. */\r\n    public static void eq(String what, boolean actual, boolean expected) {\r\n        result(actual == expected, what, \"expected \" + expected + \", got \" + actual);\r\n    }\r\n\r\n    /** Checks two chars. */\r\n    public static void eq(String what, char actual, char expected) {\r\n        result(actual == expected, what, \"expected '\" + expected + \"', got '\" + actual + \"'\");\r\n    }\r\n\r\n    /** Checks two strings (null-safe). */\r\n    public static void eq(String what, String actual, String expected) {\r\n        boolean ok = actual == null ? expected == null : actual.equals(expected);\r\n        result(ok, what, \"expected \\\"\" + expected + \"\\\", got \\\"\" + actual + \"\\\"\");\r\n    }\r\n\r\n    /** Checks two objects with equals (null-safe). */\r\n    public static void same(String what, Object actual, Object expected) {\r\n        boolean ok = actual == null ? expected == null : actual.equals(expected);\r\n        result(ok, what, \"expected \" + expected + \", got \" + actual);\r\n    }\r\n\r\n    /** Checks two int arrays, cell by cell. */\r\n    public static void arr(String what, int[] actual, int[] expected) {\r\n        boolean ok = Arrays.equals(actual, expected);\r\n        String got = actual == null ? \"null\" : Arrays.toString(actual);\r\n        result(ok, what, \"expected \" + Arrays.toString(expected) + \", got \" + got);\r\n    }\r\n\r\n    /** Checks a condition. */\r\n    public static void isTrue(String what, boolean condition) {\r\n        result(condition, what, \"the condition is false\");\r\n    }\r\n\r\n    /** Reports a test that threw instead of finishing. */\r\n    public static void crash(String what, Throwable thrown) {\r\n        result(false, what, \"threw \" + thrown);\r\n    }\r\n\r\n    /** @return {0, 1, ..., n-1} */\r\n    public static int[] range(int n) {\r\n        int[] values = new int[n];\r\n        for (int i = 0; i < n; i++) {\r\n            values[i] = i;\r\n        }\r\n        return values;\r\n    }\r\n\r\n    /** @return n sorted odd numbers 1, 3, 5, ... (no two add up to an odd number) */\r\n    public static int[] odds(int n) {\r\n        int[] values = new int[n];\r\n        for (int i = 0; i < n; i++) {\r\n            values[i] = 2 * i + 1;\r\n        }\r\n        return values;\r\n    }\r\n\r\n    /** @return n numbers from a fixed seed (the same on every compiler), from 0 to bound-1 */\r\n    public static int[] random(int n, int bound, long seed) {\r\n        int[] values = new int[n];\r\n        long state = seed;\r\n        for (int i = 0; i < n; i++) {\r\n            state = (state * 6364136223846793005L + 1442695040888963407L);\r\n            values[i] = (int) ((state >>> 33) % bound);\r\n        }\r\n        return values;\r\n    }\r\n}\r\n";
 // src/engines/java/runtime/LabRt.java?raw
-var LabRt_default = "/*\r\n * LabRt: the lab's trace runtime for line by line in Java (docs/engines/java.md, \"The trace\").\r\n * The instrumenter (src/engines/java/stepping/instrument.ts) inserts calls to it into a copy\r\n * of the student's code; it is compiled together with that copy on all three compilers (the\r\n * JDK through the runner, TeaVM in the page, Compiler Explorer). Its records go to the real\r\n * System.out, one per line; the student's own System.out is LabRt.out, whose text becomes P\r\n * records, so the page knows how much had been printed at every step.\r\n *\r\n * Written in plain Java 8 with no reflection, because TeaVM's reflection is partial: student\r\n * classes give their fields through the generated method __labF() (interface Obj).\r\n */\r\nimport java.io.OutputStream;\r\nimport java.io.PrintStream;\r\nimport java.util.ArrayList;\r\nimport java.util.Iterator;\r\nimport java.util.List;\r\nimport java.util.Map;\r\n\r\npublic final class LabRt {\r\n    /** A student class: the instrumenter adds \"implements LabRt.Obj\" and __labF(). */\r\n    public interface Obj {\r\n        /** @return the class's name, then the values of its fields, in the meta's order */\r\n        Object[] __labF();\r\n    }\r\n\r\n    /** Thrown by the lab's Scanner when the program wants more input than was typed. */\r\n    public static final class NeedInput extends RuntimeException {\r\n        /** Makes the signal. */\r\n        public NeedInput() {\r\n            super(\"the program is waiting for input\");\r\n        }\r\n    }\r\n\r\n    /** Thrown when a run makes far too many steps (an endless loop in a counted run). */\r\n    public static final class TooManySteps extends RuntimeException {\r\n        /** Makes the signal. */\r\n        public TooManySteps() {\r\n            super(\"more than \" + MAX_OPS + \" steps\");\r\n        }\r\n    }\r\n\r\n    static final int MAX_STEPS = 4000;\r\n    static final int MAX_CALLS = 30000;\r\n    static final int MAX_OBJECTS = 300;\r\n    static final int MAX_CELLS = 100;\r\n    static final int MAX_TEXT = 200;\r\n    static final int MAX_OUT = 200000;\r\n    static final long MAX_OPS = 200000000L;\r\n\r\n    /** Where the records go: the real System.out of the program. */\r\n    private static final PrintStream TRACE = System.out;\r\n    /** What the student's code writes to instead of System.out (the instrumenter's rewrite). */\r\n    private static final Capture CAPTURE = new Capture();\r\n    public static final PrintStream out = CAPTURE;\r\n\r\n    private static boolean tracing = true;\r\n    private static boolean tracingCalls = true;\r\n    private static boolean quiet;\r\n    private static long steps;\r\n    private static long calls;\r\n    private static int tracedSteps;\r\n    private static int tracedCalls;\r\n    private static int depth;\r\n    private static int outChars;\r\n    private static final ArrayList<Object> OBJECTS = new ArrayList<Object>();\r\n    private static final ArrayList<String> SHOWN = new ArrayList<String>();\r\n    private static Throwable lastThrown;\r\n    /**\r\n     * The array cells being written (copyTo), until copyFrom writes the copy or the next point\r\n     * of the same frame says it was a write of another value: array, cell and frame depth.\r\n     */\r\n    private static final int MAX_PENDING = 64;\r\n    private static final Object[] PENDING_ARRAY = new Object[MAX_PENDING];\r\n    private static final int[] PENDING_INDEX = new int[MAX_PENDING];\r\n    private static final int[] PENDING_DEPTH = new int[MAX_PENDING];\r\n    private static int pending;\r\n\r\n    private LabRt() {\r\n    }\r\n\r\n    /**\r\n     * Collects what the student prints, as text, until the next record. Every print method\r\n     * is overridden, so no text is turned into bytes and back (TeaVM's charset decoding\r\n     * cannot be linked to WebAssembly); a raw write of bytes is kept one char per byte. No\r\n     * @Override marks: TeaVM's PrintStream lacks some of these overloads.\r\n     */\r\n    static final class Capture extends PrintStream {\r\n        private final StringBuilder text = new StringBuilder();\r\n\r\n        /** Makes the stream. */\r\n        Capture() {\r\n            super(new OutputStream() {\r\n                @Override\r\n                public void write(int b) {\r\n                    CAPTURE.text.append((char) (b & 0xff));\r\n                }\r\n            }, true);\r\n        }\r\n\r\n        /** @return the text printed since the last call, '' when none */\r\n        String take() {\r\n            if (text.length() == 0) {\r\n                return \"\";\r\n            }\r\n            String taken = text.toString();\r\n            text.setLength(0);\r\n            return taken;\r\n        }\r\n\r\n        public void print(String s) { text.append(s); }\r\n        public void print(Object o) { text.append(String.valueOf(o)); }\r\n        public void print(char[] s) { text.append(s); }\r\n        public void print(char c) { text.append(c); }\r\n        public void print(int i) { text.append(i); }\r\n        public void print(long l) { text.append(l); }\r\n        public void print(float f) { text.append(f); }\r\n        public void print(double d) { text.append(d); }\r\n        public void print(boolean b) { text.append(b); }\r\n        public void println() { text.append('\\n'); }\r\n        public void println(String s) { text.append(s).append('\\n'); }\r\n        public void println(Object o) { text.append(String.valueOf(o)).append('\\n'); }\r\n        public void println(char[] s) { text.append(s).append('\\n'); }\r\n        public void println(char c) { text.append(c).append('\\n'); }\r\n        public void println(int i) { text.append(i).append('\\n'); }\r\n        public void println(long l) { text.append(l).append('\\n'); }\r\n        public void println(float f) { text.append(f).append('\\n'); }\r\n        public void println(double d) { text.append(d).append('\\n'); }\r\n        public void println(boolean b) { text.append(b).append('\\n'); }\r\n        public PrintStream append(CharSequence s) { text.append(s); return this; }\r\n        public PrintStream append(char c) { text.append(c); return this; }\r\n\r\n        public PrintStream format(String format, Object... args) {\r\n            text.append(String.format(format, args));\r\n            return this;\r\n        }\r\n\r\n        public PrintStream printf(String format, Object... args) {\r\n            return format(format, args);\r\n        }\r\n    }\r\n\r\n    // ---- what the tests use: counting only ----\r\n\r\n    /** Turns the records off: the run only counts steps and calls (the growth tests). */\r\n    public static void countOnly() {\r\n        tracing = false;\r\n        tracingCalls = false;\r\n        quiet = true;\r\n    }\r\n\r\n    /** Sets the counters to zero. */\r\n    public static void reset() {\r\n        steps = 0;\r\n        calls = 0;\r\n    }\r\n\r\n    /** @return the steps (statements and loop tests) since the last reset */\r\n    public static long steps() {\r\n        return steps;\r\n    }\r\n\r\n    /** @return the calls of the student's methods since the last reset */\r\n    public static long calls() {\r\n        return calls;\r\n    }\r\n\r\n    // ---- the calls the instrumenter inserts ----\r\n\r\n    /**\r\n     * A point before a statement: counts it and, while recording, writes the changed objects\r\n     * and the record \"T p values...\".\r\n     *\r\n     * @param p the point's id (meta.points)\r\n     * @param values the locals in scope, in the order the meta names them\r\n     */\r\n    public static void t(int p, Object... values) {\r\n        steps++;\r\n        if (steps > MAX_OPS) {\r\n            throw new TooManySteps();\r\n        }\r\n        flushOutput();\r\n        if (pending > 0) {\r\n            flushWrites();\r\n        }\r\n        if (!tracing) {\r\n            return;\r\n        }\r\n        if (tracedSteps >= MAX_STEPS) {\r\n            tracing = false;\r\n            write(\"L\");\r\n            return;\r\n        }\r\n        tracedSteps++;\r\n        StringBuilder record = new StringBuilder(\"T \").append(p);\r\n        appendValues(record, values);\r\n        writeChanges();\r\n        write(record.toString());\r\n    }\r\n\r\n    /**\r\n     * A point in a loop's condition: like t, and true, so \"c(...) && (cond)\" keeps the test.\r\n     *\r\n     * @param p the point's id\r\n     * @param values the locals in scope\r\n     * @return true\r\n     */\r\n    public static boolean c(int p, Object... values) {\r\n        t(p, values);\r\n        return true;\r\n    }\r\n\r\n    /**\r\n     * A method starts: \"E f depth args...\".\r\n     *\r\n     * @param f the method's id (meta.funcs)\r\n     * @param args its parameters (this first for an instance method)\r\n     */\r\n    public static void e(int f, Object... args) {\r\n        calls++;\r\n        depth++;\r\n        flushOutput();\r\n        if (!tracingCalls) {\r\n            return;\r\n        }\r\n        if (tracedCalls >= MAX_CALLS) {\r\n            tracingCalls = false;\r\n            write(\"K\");\r\n            return;\r\n        }\r\n        tracedCalls++;\r\n        StringBuilder record = new StringBuilder(\"E \").append(f).append(' ').append(depth);\r\n        appendValues(record, args);\r\n        if (tracing) {\r\n            writeChanges();\r\n        }\r\n        write(record.toString());\r\n    }\r\n\r\n    /**\r\n     * A method ends (normally or by an exception): \"X f\".\r\n     *\r\n     * @param f the method's id\r\n     */\r\n    public static void x(int f) {\r\n        flushOutput();\r\n        if (pending > 0) {\r\n            flushWrites();\r\n        }\r\n        depth--;\r\n        if (tracingCalls) {\r\n            write(\"X \" + f);\r\n        }\r\n    }\r\n\r\n    /**\r\n     * An exception leaves a method: \"! f class message\", once per exception object.\r\n     *\r\n     * @param f the method's id\r\n     * @param thrown the exception\r\n     */\r\n    public static void th(int f, Throwable thrown) {\r\n        if (thrown == lastThrown || !tracingCalls) {\r\n            return;\r\n        }\r\n        lastThrown = thrown;\r\n        write(\"! \" + f + \" \" + text(thrown.getClass().getName()) + \" \" + text(messageOf(thrown)));\r\n    }\r\n\r\n    /**\r\n     * Records a return value \"R f value\" and gives it back.\r\n     *\r\n     * @param f the method's id\r\n     * @param value the value\r\n     * @return the value\r\n     */\r\n    public static Object rv(int f, Object value) {\r\n        if (tracingCalls) {\r\n            StringBuilder record = new StringBuilder(\"R \").append(f).append(' ');\r\n            record.append(encode(value));\r\n            write(record.toString());\r\n        }\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static <T> T ro(int f, T value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static int ri(int f, int value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static long rl(int f, long value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static double rd(int f, double value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static float rf(int f, float value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static boolean rz(int f, boolean value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return the char code, recorded as a char (see rv) */\r\n    public static int rc(int f, int value) {\r\n        rv(f, (char) value);\r\n        return value;\r\n    }\r\n\r\n    /**\r\n     * The cell an array write goes to: a[k] = L[i] becomes\r\n     * a[LabRt.copyTo(a, k)] = L[LabRt.copyFrom(L, i)], and a[k] = v becomes\r\n     * a[LabRt.copyTo(a, k)] = v. Kept until copyFrom writes the copy, or until the frame's next\r\n     * point (or its end) writes it as a write of another value.\r\n     *\r\n     * @param array the array written to\r\n     * @param index the cell written\r\n     * @return the index, unchanged\r\n     */\r\n    public static int copyTo(Object array, int index) {\r\n        if (tracing && pending < MAX_PENDING) {\r\n            PENDING_ARRAY[pending] = array;\r\n            PENDING_INDEX[pending] = index;\r\n            PENDING_DEPTH[pending] = depth;\r\n            pending++;\r\n        }\r\n        return index;\r\n    }\r\n\r\n    /**\r\n     * The source of an array cell copy: writes \"Y to toIndex from fromIndex\" (object ids) for\r\n     * the cell copyTo kept. Java evaluates the destination's index first, so the two calls of\r\n     * one statement always come in this order (a call in the source's index runs deeper).\r\n     *\r\n     * @param array the array read from\r\n     * @param index the cell read\r\n     * @return the index, unchanged\r\n     */\r\n    public static int copyFrom(Object array, int index) {\r\n        if (pending == 0 || PENDING_DEPTH[pending - 1] != depth) {\r\n            return index;\r\n        }\r\n        pending--;\r\n        Object to = PENDING_ARRAY[pending];\r\n        PENDING_ARRAY[pending] = null;\r\n        if (tracing && to != null && array != null) {\r\n            int toId = idOf(to);\r\n            int fromId = idOf(array);\r\n            if (toId > 0 && fromId > 0) {\r\n                write(\"Y \" + toId + \" \" + PENDING_INDEX[pending] + \" \" + fromId + \" \" + index);\r\n            }\r\n        }\r\n        return index;\r\n    }\r\n\r\n    /**\r\n     * Writes \"Y to toIndex\" for the cells this frame wrote with another value since its last\r\n     * point (a[k] = v): called at its next point and at its end.\r\n     */\r\n    private static void flushWrites() {\r\n        while (pending > 0 && PENDING_DEPTH[pending - 1] >= depth) {\r\n            pending--;\r\n            Object to = PENDING_ARRAY[pending];\r\n            PENDING_ARRAY[pending] = null;\r\n            int toId = tracing && to != null ? idOf(to) : -1;\r\n            if (toId > 0) {\r\n                write(\"Y \" + toId + \" \" + PENDING_INDEX[pending]);\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Joins a parent class's fields and the class's own (for __labF() of a subclass).\r\n     *\r\n     * @param parent the parent's __labF()\r\n     * @param own the class's name and own fields\r\n     * @return the class's name, the parent's fields, then the own fields\r\n     */\r\n    public static Object[] cat(Object[] parent, Object[] own) {\r\n        Object[] all = new Object[parent.length + own.length - 1];\r\n        all[0] = own[0];\r\n        System.arraycopy(parent, 1, all, 1, parent.length - 1);\r\n        System.arraycopy(own, 1, all, parent.length, own.length - 1);\r\n        return all;\r\n    }\r\n\r\n    /**\r\n     * The end of the run (called by the entry class LabMain): the uncaught exception, if any,\r\n     * the counters and the end mark \"Z\".\r\n     *\r\n     * @param thrown the uncaught exception, or null\r\n     */\r\n    public static void end(Throwable thrown) {\r\n        flushOutput();\r\n        if (thrown instanceof NeedInput) {\r\n            write(\"I\");\r\n        } else if (thrown != null) {\r\n            write(\"U \" + text(thrown.getClass().getName()) + \" \" + text(messageOf(thrown)));\r\n        }\r\n        write(\"C \" + steps + \" \" + calls);\r\n        write(\"Z\");\r\n        TRACE.flush();\r\n    }\r\n\r\n    // ---- values and objects ----\r\n\r\n    /** @return the exception's message, '' when it has none */\r\n    private static String messageOf(Throwable thrown) {\r\n        String message = thrown.getMessage();\r\n        return message == null ? \"\" : message;\r\n    }\r\n\r\n    /** Appends \" value\" for each value. */\r\n    private static void appendValues(StringBuilder record, Object[] values) {\r\n        for (Object value : values) {\r\n            record.append(' ').append(encode(value));\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Writes one value as a token without spaces: n (null), i5, d2.5, z1, c65, s\"text, #3.\r\n     *\r\n     * @param value the value (a boxed primitive, a String, or an object)\r\n     * @return the token\r\n     */\r\n    static String encode(Object value) {\r\n        if (value == null) {\r\n            return \"n\";\r\n        }\r\n        if (value instanceof Integer || value instanceof Long || value instanceof Short\r\n                || value instanceof Byte) {\r\n            return \"i\" + value;\r\n        }\r\n        if (value instanceof Double || value instanceof Float) {\r\n            return \"d\" + value;\r\n        }\r\n        if (value instanceof Boolean) {\r\n            return ((Boolean) value) ? \"z1\" : \"z0\";\r\n        }\r\n        if (value instanceof Character) {\r\n            return \"c\" + (int) ((Character) value).charValue();\r\n        }\r\n        if (value instanceof String) {\r\n            return \"s\" + text((String) value);\r\n        }\r\n        int id = idOf(value);\r\n        return id < 0 ? \"#?\" : \"#\" + id;\r\n    }\r\n\r\n    /** @return the object's id, registering it when new; -1 past the object cap */\r\n    private static int idOf(Object value) {\r\n        for (int i = 0; i < OBJECTS.size(); i++) {\r\n            if (OBJECTS.get(i) == value) {\r\n                return i + 1;\r\n            }\r\n        }\r\n        if (OBJECTS.size() >= MAX_OBJECTS) {\r\n            return -1;\r\n        }\r\n        OBJECTS.add(value);\r\n        SHOWN.add(\"\");\r\n        return OBJECTS.size();\r\n    }\r\n\r\n    /** Writes \"O id shape\" for every registered object whose shape changed (new ones too). */\r\n    private static void writeChanges() {\r\n        for (int i = 0; i < OBJECTS.size(); i++) {\r\n            String shape = shapeOf(OBJECTS.get(i));\r\n            if (!shape.equals(SHOWN.get(i))) {\r\n                SHOWN.set(i, shape);\r\n                write(\"O \" + (i + 1) + \" \" + shape);\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Describes an object: \"A int 5 i1 i2...\" (an array: element type, length, cells),\r\n     * \"C Node i3 #4\" (a student class), \"L ArrayList 2 i1 i2\", \"M HashMap 1 s\"a i1\", or\r\n     * \"U name\" (anything else).\r\n     *\r\n     * @param value the object\r\n     * @return the shape\r\n     */\r\n    private static String shapeOf(Object value) {\r\n        if (value instanceof Obj) {\r\n            Object[] fields = ((Obj) value).__labF();\r\n            StringBuilder shape = new StringBuilder(\"C \").append(text(String.valueOf(fields[0])));\r\n            for (int i = 1; i < fields.length; i++) {\r\n                shape.append(' ').append(encode(fields[i]));\r\n            }\r\n            return shape.toString();\r\n        }\r\n        String array = arrayShape(value);\r\n        if (array != null) {\r\n            return array;\r\n        }\r\n        if (value instanceof List) {\r\n            return listShape((List<?>) value);\r\n        }\r\n        if (value instanceof Map) {\r\n            return mapShape((Map<?, ?>) value);\r\n        }\r\n        return \"U \" + text(value.getClass().getName());\r\n    }\r\n\r\n    /** @return the shape of an array, or null when value is not one */\r\n    private static String arrayShape(Object value) {\r\n        if (value instanceof int[]) {\r\n            int[] a = (int[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"int\", a.length, cells);\r\n        }\r\n        if (value instanceof long[]) {\r\n            long[] a = (long[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"long\", a.length, cells);\r\n        }\r\n        if (value instanceof double[]) {\r\n            double[] a = (double[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"double\", a.length, cells);\r\n        }\r\n        return otherArrayShape(value);\r\n    }\r\n\r\n    /** @return the shape of a char[], boolean[] or Object[], or null */\r\n    private static String otherArrayShape(Object value) {\r\n        if (value instanceof char[]) {\r\n            char[] a = (char[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"char\", a.length, cells);\r\n        }\r\n        if (value instanceof boolean[]) {\r\n            boolean[] a = (boolean[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"boolean\", a.length, cells);\r\n        }\r\n        if (value instanceof Object[]) {\r\n            Object[] a = (Object[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            System.arraycopy(a, 0, cells, 0, cells.length);\r\n            return cells(\"Object\", a.length, cells);\r\n        }\r\n        return null;\r\n    }\r\n\r\n    /** @return \"A type length cells...\" */\r\n    private static String cells(String type, int length, Object[] cells) {\r\n        StringBuilder shape = new StringBuilder(\"A \").append(type).append(' ').append(length);\r\n        for (Object cell : cells) {\r\n            shape.append(' ').append(encode(cell));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    /** @return \"L class size items...\" */\r\n    private static String listShape(List<?> list) {\r\n        StringBuilder shape = new StringBuilder(\"L \").append(text(list.getClass().getName()));\r\n        shape.append(' ').append(list.size());\r\n        Iterator<?> items = list.iterator();\r\n        for (int i = 0; i < MAX_CELLS && items.hasNext(); i++) {\r\n            shape.append(' ').append(encode(items.next()));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    /** @return \"M class size key value...\" */\r\n    private static String mapShape(Map<?, ?> map) {\r\n        StringBuilder shape = new StringBuilder(\"M \").append(text(map.getClass().getName()));\r\n        shape.append(' ').append(map.size());\r\n        int shown = 0;\r\n        for (Map.Entry<?, ?> entry : map.entrySet()) {\r\n            if (shown++ >= MAX_CELLS) {\r\n                break;\r\n            }\r\n            shape.append(' ').append(encode(entry.getKey()));\r\n            shape.append(' ').append(encode(entry.getValue()));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    // ---- writing ----\r\n\r\n    /** Turns the text printed since the last record into a P record (up to MAX_OUT chars). */\r\n    private static void flushOutput() {\r\n        String printed = CAPTURE.take();\r\n        if (printed.isEmpty() || quiet || outChars > MAX_OUT) {\r\n            return;\r\n        }\r\n        outChars += printed.length();\r\n        write(\"P \" + escape(printed));\r\n    }\r\n\r\n    /** @return text cut to MAX_TEXT characters and escaped (see escape) */\r\n    private static String text(String value) {\r\n        String cut = value.length() > MAX_TEXT ? value.substring(0, MAX_TEXT) + \"…\" : value;\r\n        return escape(cut);\r\n    }\r\n\r\n    /**\r\n     * Escapes a text so it has no spaces or line breaks: a backslash becomes \\\\, and every\r\n     * character up to the space becomes \\\\u and four hex digits.\r\n     *\r\n     * @param value the text\r\n     * @return the escaped text\r\n     */\r\n    static String escape(String value) {\r\n        StringBuilder escaped = new StringBuilder(value.length() + 8);\r\n        for (int i = 0; i < value.length(); i++) {\r\n            char ch = value.charAt(i);\r\n            if (ch == '\\\\') {\r\n                escaped.append(\"\\\\\\\\\");\r\n            } else if (ch <= ' ') {\r\n                String hex = Integer.toHexString(ch);\r\n                escaped.append(\"\\\\u\").append(\"0000\".substring(hex.length())).append(hex);\r\n            } else {\r\n                escaped.append(ch);\r\n            }\r\n        }\r\n        return escaped.toString();\r\n    }\r\n\r\n    /** Writes one record and its line break. */\r\n    private static void write(String record) {\r\n        TRACE.print(record + \"\\n\");\r\n        TRACE.flush();\r\n    }\r\n}\r\n";
+var LabRt_default = "/*\r\n * LabRt: the lab's trace runtime for line by line in Java (docs/engines/java.md, \"The trace\").\r\n * The instrumenter (src/engines/java/stepping/instrument.ts) inserts calls to it into a copy\r\n * of the student's code; it is compiled together with that copy on all three compilers (the\r\n * JDK through the runner, TeaVM in the page, Compiler Explorer). Its records go to the real\r\n * System.out, one per line; the student's own System.out is LabRt.out, whose text becomes P\r\n * records, so the page knows how much had been printed at every step.\r\n *\r\n * Written in plain Java 8 with no reflection, because TeaVM's reflection is partial: student\r\n * classes give their fields through the generated method __labF() (interface Obj).\r\n */\r\nimport java.io.OutputStream;\r\nimport java.io.PrintStream;\r\nimport java.util.ArrayList;\r\nimport java.util.Iterator;\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.SortedMap;\r\n\r\npublic final class LabRt {\r\n    /** A student class: the instrumenter adds \"implements LabRt.Obj\" and __labF(). */\r\n    public interface Obj {\r\n        /** @return the class's name, then the values of its fields, in the meta's order */\r\n        Object[] __labF();\r\n    }\r\n\r\n    /** Thrown by the lab's Scanner when the program wants more input than was typed. */\r\n    public static final class NeedInput extends RuntimeException {\r\n        /** Makes the signal. */\r\n        public NeedInput() {\r\n            super(\"the program is waiting for input\");\r\n        }\r\n    }\r\n\r\n    /** Thrown when a run makes far too many steps (an endless loop in a counted run). */\r\n    public static final class TooManySteps extends RuntimeException {\r\n        /** Makes the signal. */\r\n        public TooManySteps() {\r\n            super(\"more than \" + MAX_OPS + \" steps\");\r\n        }\r\n    }\r\n\r\n    static final int MAX_STEPS = 4000;\r\n    static final int MAX_CALLS = 30000;\r\n    static final int MAX_OBJECTS = 300;\r\n    static final int MAX_CELLS = 100;\r\n    static final int MAX_TEXT = 200;\r\n    static final int MAX_OUT = 200000;\r\n    static final long MAX_OPS = 200000000L;\r\n\r\n    /** Where the records go: the real System.out of the program. */\r\n    private static final PrintStream TRACE = System.out;\r\n    /** What the student's code writes to instead of System.out (the instrumenter's rewrite). */\r\n    private static final Capture CAPTURE = new Capture();\r\n    public static final PrintStream out = CAPTURE;\r\n\r\n    private static boolean tracing = true;\r\n    private static boolean tracingCalls = true;\r\n    private static boolean quiet;\r\n    private static long steps;\r\n    private static long calls;\r\n    private static int tracedSteps;\r\n    private static int tracedCalls;\r\n    private static int depth;\r\n    private static int outChars;\r\n    private static final ArrayList<Object> OBJECTS = new ArrayList<Object>();\r\n    private static final ArrayList<String> SHOWN = new ArrayList<String>();\r\n    private static Throwable lastThrown;\r\n    /**\r\n     * The array cells being written (copyTo), until copyFrom writes the copy or the next point\r\n     * of the same frame says it was a write of another value: array, cell and frame depth.\r\n     */\r\n    private static final int MAX_PENDING = 64;\r\n    private static final Object[] PENDING_ARRAY = new Object[MAX_PENDING];\r\n    private static final int[] PENDING_INDEX = new int[MAX_PENDING];\r\n    private static final int[] PENDING_DEPTH = new int[MAX_PENDING];\r\n    private static int pending;\r\n\r\n    private LabRt() {\r\n    }\r\n\r\n    /**\r\n     * Collects what the student prints, as text, until the next record. Every print method\r\n     * is overridden, so no text is turned into bytes and back (TeaVM's charset decoding\r\n     * cannot be linked to WebAssembly); a raw write of bytes is kept one char per byte. No\r\n     * @Override marks: TeaVM's PrintStream lacks some of these overloads.\r\n     */\r\n    static final class Capture extends PrintStream {\r\n        private final StringBuilder text = new StringBuilder();\r\n\r\n        /** Makes the stream. */\r\n        Capture() {\r\n            super(new OutputStream() {\r\n                @Override\r\n                public void write(int b) {\r\n                    CAPTURE.text.append((char) (b & 0xff));\r\n                }\r\n            }, true);\r\n        }\r\n\r\n        /** @return the text printed since the last call, '' when none */\r\n        String take() {\r\n            if (text.length() == 0) {\r\n                return \"\";\r\n            }\r\n            String taken = text.toString();\r\n            text.setLength(0);\r\n            return taken;\r\n        }\r\n\r\n        public void print(String s) { text.append(s); }\r\n        public void print(Object o) { text.append(String.valueOf(o)); }\r\n        public void print(char[] s) { text.append(s); }\r\n        public void print(char c) { text.append(c); }\r\n        public void print(int i) { text.append(i); }\r\n        public void print(long l) { text.append(l); }\r\n        public void print(float f) { text.append(f); }\r\n        public void print(double d) { text.append(d); }\r\n        public void print(boolean b) { text.append(b); }\r\n        public void println() { text.append('\\n'); }\r\n        public void println(String s) { text.append(s).append('\\n'); }\r\n        public void println(Object o) { text.append(String.valueOf(o)).append('\\n'); }\r\n        public void println(char[] s) { text.append(s).append('\\n'); }\r\n        public void println(char c) { text.append(c).append('\\n'); }\r\n        public void println(int i) { text.append(i).append('\\n'); }\r\n        public void println(long l) { text.append(l).append('\\n'); }\r\n        public void println(float f) { text.append(f).append('\\n'); }\r\n        public void println(double d) { text.append(d).append('\\n'); }\r\n        public void println(boolean b) { text.append(b).append('\\n'); }\r\n        public PrintStream append(CharSequence s) { text.append(s); return this; }\r\n        public PrintStream append(char c) { text.append(c); return this; }\r\n\r\n        public PrintStream format(String format, Object... args) {\r\n            text.append(String.format(format, args));\r\n            return this;\r\n        }\r\n\r\n        public PrintStream printf(String format, Object... args) {\r\n            return format(format, args);\r\n        }\r\n    }\r\n\r\n    // ---- what the tests use: counting only ----\r\n\r\n    /** Turns the records off: the run only counts steps and calls (the growth tests). */\r\n    public static void countOnly() {\r\n        tracing = false;\r\n        tracingCalls = false;\r\n        quiet = true;\r\n    }\r\n\r\n    /** Sets the counters to zero. */\r\n    public static void reset() {\r\n        steps = 0;\r\n        calls = 0;\r\n    }\r\n\r\n    /** @return the steps (statements and loop tests) since the last reset */\r\n    public static long steps() {\r\n        return steps;\r\n    }\r\n\r\n    /** @return the calls of the student's methods since the last reset */\r\n    public static long calls() {\r\n        return calls;\r\n    }\r\n\r\n    // ---- the calls the instrumenter inserts ----\r\n\r\n    /**\r\n     * A point before a statement: counts it and, while recording, writes the changed objects\r\n     * and the record \"T p values...\".\r\n     *\r\n     * @param p the point's id (meta.points)\r\n     * @param values the locals in scope, in the order the meta names them\r\n     */\r\n    public static void t(int p, Object... values) {\r\n        steps++;\r\n        if (steps > MAX_OPS) {\r\n            throw new TooManySteps();\r\n        }\r\n        flushOutput();\r\n        if (pending > 0) {\r\n            flushWrites();\r\n        }\r\n        if (!tracing) {\r\n            return;\r\n        }\r\n        if (tracedSteps >= MAX_STEPS) {\r\n            tracing = false;\r\n            write(\"L\");\r\n            return;\r\n        }\r\n        tracedSteps++;\r\n        StringBuilder record = new StringBuilder(\"T \").append(p);\r\n        appendValues(record, values);\r\n        writeChanges();\r\n        write(record.toString());\r\n    }\r\n\r\n    /**\r\n     * A point in a loop's condition: like t, and true, so \"c(...) && (cond)\" keeps the test.\r\n     *\r\n     * @param p the point's id\r\n     * @param values the locals in scope\r\n     * @return true\r\n     */\r\n    public static boolean c(int p, Object... values) {\r\n        t(p, values);\r\n        return true;\r\n    }\r\n\r\n    /**\r\n     * A method starts: \"E f depth args...\".\r\n     *\r\n     * @param f the method's id (meta.funcs)\r\n     * @param args its parameters (this first for an instance method)\r\n     */\r\n    public static void e(int f, Object... args) {\r\n        calls++;\r\n        depth++;\r\n        flushOutput();\r\n        if (!tracingCalls) {\r\n            return;\r\n        }\r\n        if (tracedCalls >= MAX_CALLS) {\r\n            tracingCalls = false;\r\n            write(\"K\");\r\n            return;\r\n        }\r\n        tracedCalls++;\r\n        StringBuilder record = new StringBuilder(\"E \").append(f).append(' ').append(depth);\r\n        appendValues(record, args);\r\n        if (tracing) {\r\n            writeChanges();\r\n        }\r\n        write(record.toString());\r\n    }\r\n\r\n    /**\r\n     * A method ends (normally or by an exception): \"X f\".\r\n     *\r\n     * @param f the method's id\r\n     */\r\n    public static void x(int f) {\r\n        flushOutput();\r\n        if (pending > 0) {\r\n            flushWrites();\r\n        }\r\n        depth--;\r\n        if (tracingCalls) {\r\n            write(\"X \" + f);\r\n        }\r\n    }\r\n\r\n    /**\r\n     * An exception leaves a method: \"! f class message\", once per exception object.\r\n     *\r\n     * @param f the method's id\r\n     * @param thrown the exception\r\n     */\r\n    public static void th(int f, Throwable thrown) {\r\n        if (thrown == lastThrown || !tracingCalls) {\r\n            return;\r\n        }\r\n        lastThrown = thrown;\r\n        write(\"! \" + f + \" \" + text(thrown.getClass().getName()) + \" \" + text(messageOf(thrown)));\r\n    }\r\n\r\n    /**\r\n     * Records a return value \"R f value\" and gives it back.\r\n     *\r\n     * @param f the method's id\r\n     * @param value the value\r\n     * @return the value\r\n     */\r\n    public static Object rv(int f, Object value) {\r\n        if (tracingCalls) {\r\n            StringBuilder record = new StringBuilder(\"R \").append(f).append(' ');\r\n            record.append(encode(value));\r\n            write(record.toString());\r\n        }\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static <T> T ro(int f, T value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static int ri(int f, int value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static long rl(int f, long value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static double rd(int f, double value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static float rf(int f, float value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return value, recorded (see rv) */\r\n    public static boolean rz(int f, boolean value) {\r\n        rv(f, value);\r\n        return value;\r\n    }\r\n\r\n    /** @return the char code, recorded as a char (see rv) */\r\n    public static int rc(int f, int value) {\r\n        rv(f, (char) value);\r\n        return value;\r\n    }\r\n\r\n    /**\r\n     * The cell an array write goes to: a[k] = L[i] becomes\r\n     * a[LabRt.copyTo(a, k)] = L[LabRt.copyFrom(L, i)], and a[k] = v becomes\r\n     * a[LabRt.copyTo(a, k)] = v. Kept until copyFrom writes the copy, or until the frame's next\r\n     * point (or its end) writes it as a write of another value.\r\n     *\r\n     * @param array the array written to\r\n     * @param index the cell written\r\n     * @return the index, unchanged\r\n     */\r\n    public static int copyTo(Object array, int index) {\r\n        if (tracing && pending < MAX_PENDING) {\r\n            PENDING_ARRAY[pending] = array;\r\n            PENDING_INDEX[pending] = index;\r\n            PENDING_DEPTH[pending] = depth;\r\n            pending++;\r\n        }\r\n        return index;\r\n    }\r\n\r\n    /**\r\n     * The source of an array cell copy: writes \"Y to toIndex from fromIndex\" (object ids) for\r\n     * the cell copyTo kept. Java evaluates the destination's index first, so the two calls of\r\n     * one statement always come in this order (a call in the source's index runs deeper).\r\n     *\r\n     * @param array the array read from\r\n     * @param index the cell read\r\n     * @return the index, unchanged\r\n     */\r\n    public static int copyFrom(Object array, int index) {\r\n        if (pending == 0 || PENDING_DEPTH[pending - 1] != depth) {\r\n            return index;\r\n        }\r\n        pending--;\r\n        Object to = PENDING_ARRAY[pending];\r\n        PENDING_ARRAY[pending] = null;\r\n        if (tracing && to != null && array != null) {\r\n            int toId = idOf(to);\r\n            int fromId = idOf(array);\r\n            if (toId > 0 && fromId > 0) {\r\n                write(\"Y \" + toId + \" \" + PENDING_INDEX[pending] + \" \" + fromId + \" \" + index);\r\n            }\r\n        }\r\n        return index;\r\n    }\r\n\r\n    /**\r\n     * A lookup in a map: m.get(k) becomes m.get(LabRt.look(m, \"get\", k)) (also containsKey\r\n     * and getOrDefault). While recording, writes \"G map method key found\" for a map the trace\r\n     * already shows (a student's own class is not a map here).\r\n     *\r\n     * @param map the map looked in (the receiver, evaluated again: a name)\r\n     * @param method get, containsKey or getOrDefault\r\n     * @param key the key\r\n     * @return the key, unchanged\r\n     */\r\n    public static <T> T look(Object map, String method, T key) {\r\n        if (!tracing || !(map instanceof Map) || map instanceof Obj) {\r\n            return key;\r\n        }\r\n        int id = knownId(map);\r\n        if (id > 0) {\r\n            String found = found((Map<?, ?>) map, key);\r\n            write(\"G \" + id + \" \" + method + \" \" + encode(key) + \" \" + found);\r\n        }\r\n        return key;\r\n    }\r\n\r\n    /**\r\n     * Asks a map whether it has a key, unless asking could run the student's own code (a key\r\n     * of a student class, a comparator), whose steps the trace must not show twice, or fail\r\n     * (null in a sorted map: TeaVM cannot catch that NullPointerException).\r\n     *\r\n     * @param map the map\r\n     * @param key the key\r\n     * @return \"1\" (it has it), \"0\" (it does not) or \"?\" (not asked)\r\n     */\r\n    private static String found(Map<?, ?> map, Object key) {\r\n        boolean isSorted = map instanceof SortedMap;\r\n        boolean isPlainKey = key == null ? !isSorted : !(key instanceof Obj)\r\n                && (key instanceof Number || key instanceof String || key instanceof Character\r\n                || key instanceof Boolean || key instanceof Enum);\r\n        boolean isPlainOrder = !isSorted || ((SortedMap<?, ?>) map).comparator() == null;\r\n        if (!isPlainKey || !isPlainOrder) {\r\n            return \"?\";\r\n        }\r\n        try {\r\n            return map.containsKey(key) ? \"1\" : \"0\";\r\n        } catch (RuntimeException e) {\r\n            return \"?\";\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Writes \"Y to toIndex\" for the cells this frame wrote with another value since its last\r\n     * point (a[k] = v): called at its next point and at its end.\r\n     */\r\n    private static void flushWrites() {\r\n        while (pending > 0 && PENDING_DEPTH[pending - 1] >= depth) {\r\n            pending--;\r\n            Object to = PENDING_ARRAY[pending];\r\n            PENDING_ARRAY[pending] = null;\r\n            int toId = tracing && to != null ? idOf(to) : -1;\r\n            if (toId > 0) {\r\n                write(\"Y \" + toId + \" \" + PENDING_INDEX[pending]);\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Joins a parent class's fields and the class's own (for __labF() of a subclass).\r\n     *\r\n     * @param parent the parent's __labF()\r\n     * @param own the class's name and own fields\r\n     * @return the class's name, the parent's fields, then the own fields\r\n     */\r\n    public static Object[] cat(Object[] parent, Object[] own) {\r\n        Object[] all = new Object[parent.length + own.length - 1];\r\n        all[0] = own[0];\r\n        System.arraycopy(parent, 1, all, 1, parent.length - 1);\r\n        System.arraycopy(own, 1, all, parent.length, own.length - 1);\r\n        return all;\r\n    }\r\n\r\n    /**\r\n     * The end of the run (called by the entry class LabMain): the uncaught exception, if any,\r\n     * the counters and the end mark \"Z\".\r\n     *\r\n     * @param thrown the uncaught exception, or null\r\n     */\r\n    public static void end(Throwable thrown) {\r\n        flushOutput();\r\n        if (thrown instanceof NeedInput) {\r\n            write(\"I\");\r\n        } else if (thrown != null) {\r\n            write(\"U \" + text(thrown.getClass().getName()) + \" \" + text(messageOf(thrown)));\r\n        }\r\n        write(\"C \" + steps + \" \" + calls);\r\n        write(\"Z\");\r\n        TRACE.flush();\r\n    }\r\n\r\n    // ---- values and objects ----\r\n\r\n    /** @return the exception's message, '' when it has none */\r\n    private static String messageOf(Throwable thrown) {\r\n        String message = thrown.getMessage();\r\n        return message == null ? \"\" : message;\r\n    }\r\n\r\n    /** Appends \" value\" for each value. */\r\n    private static void appendValues(StringBuilder record, Object[] values) {\r\n        for (Object value : values) {\r\n            record.append(' ').append(encode(value));\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Writes one value as a token without spaces: n (null), i5, d2.5, z1, c65, s\"text, #3.\r\n     *\r\n     * @param value the value (a boxed primitive, a String, or an object)\r\n     * @return the token\r\n     */\r\n    static String encode(Object value) {\r\n        if (value == null) {\r\n            return \"n\";\r\n        }\r\n        if (value instanceof Integer || value instanceof Long || value instanceof Short\r\n                || value instanceof Byte) {\r\n            return \"i\" + value;\r\n        }\r\n        if (value instanceof Double || value instanceof Float) {\r\n            return \"d\" + value;\r\n        }\r\n        if (value instanceof Boolean) {\r\n            return ((Boolean) value) ? \"z1\" : \"z0\";\r\n        }\r\n        if (value instanceof Character) {\r\n            return \"c\" + (int) ((Character) value).charValue();\r\n        }\r\n        if (value instanceof String) {\r\n            return \"s\" + text((String) value);\r\n        }\r\n        int id = idOf(value);\r\n        return id < 0 ? \"#?\" : \"#\" + id;\r\n    }\r\n\r\n    /** @return the object's id when the trace already has it, else -1 (nothing registered) */\r\n    private static int knownId(Object value) {\r\n        for (int i = 0; i < OBJECTS.size(); i++) {\r\n            if (OBJECTS.get(i) == value) {\r\n                return i + 1;\r\n            }\r\n        }\r\n        return -1;\r\n    }\r\n\r\n    /** @return the object's id, registering it when new; -1 past the object cap */\r\n    private static int idOf(Object value) {\r\n        int known = knownId(value);\r\n        if (known > 0) {\r\n            return known;\r\n        }\r\n        if (OBJECTS.size() >= MAX_OBJECTS) {\r\n            return -1;\r\n        }\r\n        OBJECTS.add(value);\r\n        SHOWN.add(\"\");\r\n        return OBJECTS.size();\r\n    }\r\n\r\n    /** Writes \"O id shape\" for every registered object whose shape changed (new ones too). */\r\n    private static void writeChanges() {\r\n        for (int i = 0; i < OBJECTS.size(); i++) {\r\n            String shape = shapeOf(OBJECTS.get(i));\r\n            if (!shape.equals(SHOWN.get(i))) {\r\n                SHOWN.set(i, shape);\r\n                write(\"O \" + (i + 1) + \" \" + shape);\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Describes an object: \"A int 5 i1 i2...\" (an array: element type, length, cells),\r\n     * \"C Node i3 #4\" (a student class), \"L ArrayList 2 i1 i2\", \"M HashMap 1 s\"a i1\", or\r\n     * \"U name\" (anything else).\r\n     *\r\n     * @param value the object\r\n     * @return the shape\r\n     */\r\n    private static String shapeOf(Object value) {\r\n        if (value instanceof Obj) {\r\n            Object[] fields = ((Obj) value).__labF();\r\n            StringBuilder shape = new StringBuilder(\"C \").append(text(String.valueOf(fields[0])));\r\n            for (int i = 1; i < fields.length; i++) {\r\n                shape.append(' ').append(encode(fields[i]));\r\n            }\r\n            return shape.toString();\r\n        }\r\n        String array = arrayShape(value);\r\n        if (array != null) {\r\n            return array;\r\n        }\r\n        if (value instanceof List) {\r\n            return listShape((List<?>) value);\r\n        }\r\n        if (value instanceof Map) {\r\n            return mapShape((Map<?, ?>) value);\r\n        }\r\n        return \"U \" + text(value.getClass().getName());\r\n    }\r\n\r\n    /** @return the shape of an array, or null when value is not one */\r\n    private static String arrayShape(Object value) {\r\n        if (value instanceof int[]) {\r\n            int[] a = (int[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"int\", a.length, cells);\r\n        }\r\n        if (value instanceof long[]) {\r\n            long[] a = (long[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"long\", a.length, cells);\r\n        }\r\n        if (value instanceof double[]) {\r\n            double[] a = (double[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"double\", a.length, cells);\r\n        }\r\n        return otherArrayShape(value);\r\n    }\r\n\r\n    /** @return the shape of a char[], boolean[] or Object[], or null */\r\n    private static String otherArrayShape(Object value) {\r\n        if (value instanceof char[]) {\r\n            char[] a = (char[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"char\", a.length, cells);\r\n        }\r\n        if (value instanceof boolean[]) {\r\n            boolean[] a = (boolean[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            for (int i = 0; i < cells.length; i++) {\r\n                cells[i] = a[i];\r\n            }\r\n            return cells(\"boolean\", a.length, cells);\r\n        }\r\n        if (value instanceof Object[]) {\r\n            Object[] a = (Object[]) value;\r\n            Object[] cells = new Object[Math.min(a.length, MAX_CELLS)];\r\n            System.arraycopy(a, 0, cells, 0, cells.length);\r\n            return cells(\"Object\", a.length, cells);\r\n        }\r\n        return null;\r\n    }\r\n\r\n    /** @return \"A type length cells...\" */\r\n    private static String cells(String type, int length, Object[] cells) {\r\n        StringBuilder shape = new StringBuilder(\"A \").append(type).append(' ').append(length);\r\n        for (Object cell : cells) {\r\n            shape.append(' ').append(encode(cell));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    /** @return \"L class size items...\" */\r\n    private static String listShape(List<?> list) {\r\n        StringBuilder shape = new StringBuilder(\"L \").append(text(list.getClass().getName()));\r\n        shape.append(' ').append(list.size());\r\n        Iterator<?> items = list.iterator();\r\n        for (int i = 0; i < MAX_CELLS && items.hasNext(); i++) {\r\n            shape.append(' ').append(encode(items.next()));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    /** @return \"M class size key value...\" */\r\n    private static String mapShape(Map<?, ?> map) {\r\n        StringBuilder shape = new StringBuilder(\"M \").append(text(map.getClass().getName()));\r\n        shape.append(' ').append(map.size());\r\n        int shown = 0;\r\n        for (Map.Entry<?, ?> entry : map.entrySet()) {\r\n            if (shown++ >= MAX_CELLS) {\r\n                break;\r\n            }\r\n            shape.append(' ').append(encode(entry.getKey()));\r\n            shape.append(' ').append(encode(entry.getValue()));\r\n        }\r\n        return shape.toString();\r\n    }\r\n\r\n    // ---- writing ----\r\n\r\n    /** Turns the text printed since the last record into a P record (up to MAX_OUT chars). */\r\n    private static void flushOutput() {\r\n        String printed = CAPTURE.take();\r\n        if (printed.isEmpty() || quiet || outChars > MAX_OUT) {\r\n            return;\r\n        }\r\n        outChars += printed.length();\r\n        write(\"P \" + escape(printed));\r\n    }\r\n\r\n    /** @return text cut to MAX_TEXT characters and escaped (see escape) */\r\n    private static String text(String value) {\r\n        String cut = value.length() > MAX_TEXT ? value.substring(0, MAX_TEXT) + \"…\" : value;\r\n        return escape(cut);\r\n    }\r\n\r\n    /**\r\n     * Escapes a text so it has no spaces or line breaks: a backslash becomes \\\\, and every\r\n     * character up to the space becomes \\\\u and four hex digits.\r\n     *\r\n     * @param value the text\r\n     * @return the escaped text\r\n     */\r\n    static String escape(String value) {\r\n        StringBuilder escaped = new StringBuilder(value.length() + 8);\r\n        for (int i = 0; i < value.length(); i++) {\r\n            char ch = value.charAt(i);\r\n            if (ch == '\\\\') {\r\n                escaped.append(\"\\\\\\\\\");\r\n            } else if (ch <= ' ') {\r\n                String hex = Integer.toHexString(ch);\r\n                escaped.append(\"\\\\u\").append(\"0000\".substring(hex.length())).append(hex);\r\n            } else {\r\n                escaped.append(ch);\r\n            }\r\n        }\r\n        return escaped.toString();\r\n    }\r\n\r\n    /** Writes one record and its line break. */\r\n    private static void write(String record) {\r\n        TRACE.print(record + \"\\n\");\r\n        TRACE.flush();\r\n    }\r\n}\r\n";
 // src/engines/java/runtime/Scanner.java?raw
 var Scanner_default = "/*\r\n * Scanner: the lab's small replacement of java.util.Scanner for TeaVM in the page, which has\r\n * none (docs/engines/java.md, \"Input\"). The engine adds it only for the in-page compiler and\r\n * blanks the student's \"import java.util.Scanner;\" (keeping the line). It reads the text typed\r\n * so far (TeaSys.stdin()); when the program wants more, it throws LabRt.NeedInput, and the page\r\n * asks for one more line and runs the program again, as the C course's in-page compiler does.\r\n */\r\npublic class Scanner {\r\n    private final String text;\r\n    private int position;\r\n\r\n    /** Reads the program's input (the argument is System.in; it is not read). */\r\n    public Scanner(Object ignored) {\r\n        text = TeaSys.stdin();\r\n    }\r\n\r\n    /** Skips spaces and line breaks. */\r\n    private void skipSpace() {\r\n        while (position < text.length() && Character.isWhitespace(text.charAt(position))) {\r\n            position++;\r\n        }\r\n    }\r\n\r\n    /** @return true when another word follows */\r\n    public boolean hasNext() {\r\n        skipSpace();\r\n        return position < text.length();\r\n    }\r\n\r\n    /** @return true when the next word is a whole number */\r\n    public boolean hasNextInt() {\r\n        if (!hasNext()) {\r\n            return false;\r\n        }\r\n        int start = position;\r\n        String word = next();\r\n        position = start;\r\n        try {\r\n            Integer.parseInt(word);\r\n            return true;\r\n        } catch (NumberFormatException e) {\r\n            return false;\r\n        }\r\n    }\r\n\r\n    /** @return true when a line (even an empty one) follows */\r\n    public boolean hasNextLine() {\r\n        return position < text.length();\r\n    }\r\n\r\n    /** @return the next word */\r\n    public String next() {\r\n        if (!hasNext()) {\r\n            throw new LabRt.NeedInput();\r\n        }\r\n        int start = position;\r\n        while (position < text.length() && !Character.isWhitespace(text.charAt(position))) {\r\n            position++;\r\n        }\r\n        return text.substring(start, position);\r\n    }\r\n\r\n    /** @return the next word as an int */\r\n    public int nextInt() {\r\n        return Integer.parseInt(next());\r\n    }\r\n\r\n    /** @return the next word as a long */\r\n    public long nextLong() {\r\n        return Long.parseLong(next());\r\n    }\r\n\r\n    /** @return the next word as a double */\r\n    public double nextDouble() {\r\n        return Double.parseDouble(next());\r\n    }\r\n\r\n    /** @return the next word as a boolean */\r\n    public boolean nextBoolean() {\r\n        return Boolean.parseBoolean(next());\r\n    }\r\n\r\n    /** @return the rest of the current line, without its line break */\r\n    public String nextLine() {\r\n        if (position >= text.length()) {\r\n            throw new LabRt.NeedInput();\r\n        }\r\n        int end = text.indexOf('\\n', position);\r\n        if (end < 0) {\r\n            throw new LabRt.NeedInput();\r\n        }\r\n        String line = text.substring(position, end);\r\n        position = end + 1;\r\n        return line.endsWith(\"\\r\") ? line.substring(0, line.length() - 1) : line;\r\n    }\r\n\r\n    /** Does nothing (there is nothing to close). */\r\n    public void close() {\r\n    }\r\n}\r\n\r\n";
 // src/engines/java/runtime-sources.ts
@@ -3701,6 +3922,52 @@ function findAtDepth(tokens, from, stops, limit) {
 		i++;
 	}
 	return limit;
+}
+// src/engines/java/stepping/map-lookups.ts
+var LOOKUPS = /* @__PURE__ */ new Set([
+	"get",
+	"containsKey",
+	"getOrDefault"
+]);
+var MAP_TYPE = /* @__PURE__ */ new RegExp("^(?:java\\.util\\.(?:concurrent\\.)?)?(?:Map|HashMap|LinkedHashMap|TreeMap|SortedMap|NavigableMap|Hashtable|WeakHashMap|IdentityHashMap|EnumMap|AbstractMap|ConcurrentMap|ConcurrentHashMap|ConcurrentSkipListMap)(?:<.*>)?$");
+function isMapType(type) {
+	return MAP_TYPE.test(type.replace(/\s+/g, ""));
+}
+function mapNames(declared, fields) {
+	const all = new Set(declared.map((named) => named.name));
+	const notMaps = new Set(declared.filter((named) => !isMapType(named.type)).map((n) => n.name));
+	return {
+		locals: new Set([...all].filter((name) => !notMaps.has(name))),
+		fields: new Set(fields.filter((field) => isMapType(field.type)).map((field) => field.name)),
+		declared: all
+	};
+}
+function receiverOf(tokens, at, names) {
+	const name = tokens[at - 2];
+	if (tokens[at - 1]?.text !== "." || name?.kind !== "word") return null;
+	if (tokens[at - 3]?.text === ".") return tokens[at - 4]?.text === "this" && tokens[at - 5]?.text !== "." && names.fields.has(name.text) ? "this." + name.text : null;
+	if (names.locals.has(name.text)) return name.text;
+	return !names.declared.has(name.text) && names.fields.has(name.text) ? name.text : null;
+}
+function lookupEdits(tokens, from, to, names) {
+	const edits = [];
+	for (let at = from; at + 1 < to; at++) {
+		const method = tokens[at].text;
+		if (tokens[at].kind !== "word" || !LOOKUPS.has(method) || tokens[at + 1].text !== "(") continue;
+		const receiver = receiverOf(tokens, at, names);
+		const open = at + 1;
+		const close = matching(tokens, open);
+		const keyEnd = method === "getOrDefault" ? findAtDepth(tokens, open + 1, [","], close) : close;
+		if (!receiver || close >= to || keyEnd <= open + 1) continue;
+		edits.push({
+			at: tokens[open + 1].start,
+			text: "LabRt.look(" + receiver + ", \"" + method + "\", "
+		}, {
+			at: tokens[keyEnd - 1].end,
+			text: ")"
+		});
+	}
+	return edits;
 }
 // src/engines/java/stepping/type-arguments.ts
 function skipAngles(tokens, i) {
@@ -4395,10 +4662,16 @@ function instrumentMethod(program, file, tokens, owner, method, edits) {
 	};
 	walkStatements(walk, bodyStart, method.close, scope);
 	meta.points.push(...walk.points);
+	edits.push(...methodLookups(program, owner, walk, params, [bodyStart, method.close]));
 	edits.push({
 		at: tokens[method.close].start,
 		text: exitText(func)
 	});
+}
+function methodLookups(program, owner, walk, params, body) {
+	const declared = [...params, ...walk.points.flatMap((point) => point.locals)];
+	const fields = program.meta.classes[owner.name]?.fields ?? owner.fields;
+	return lookupEdits(walk.tokens, body[0], body[1], mapNames(declared, fields));
 }
 function allFields(program, info, seen = /* @__PURE__ */ new Set()) {
 	const parent = program.classes.get(info.parent);
@@ -5788,7 +6061,8 @@ function reach(reader, parts) {
 		changed: reader.changed,
 		outLength: reader.trace.out.length,
 		call: frame.call,
-		copies: []
+		copies: [],
+		lookups: []
 	});
 	reader.isHeapShared = true;
 	reader.changed = /* @__PURE__ */ new Set();
@@ -5829,6 +6103,19 @@ function copyCell(reader, parts) {
 		call: top.call
 	});
 }
+function lookUp(reader, parts) {
+	const step = reader.trace.steps[reader.trace.steps.length - 1];
+	const top = reader.frames[reader.frames.length - 1];
+	const [map, method, key, answer] = parts;
+	const found = answer === "1" ? true : answer === "0" ? false : null;
+	if (step && top && Number.isInteger(Number(map)) && key !== void 0) step.lookups.push({
+		map: Number(map),
+		method,
+		key,
+		found,
+		call: top.call
+	});
+}
 function readRecord(reader, line) {
 	const [kind, ...parts] = line.split(" ");
 	const { trace } = reader;
@@ -5844,6 +6131,7 @@ function readRecord(reader, line) {
 		reader.changed.add(Number(parts[0]));
 	} else if (kind === "P") trace.out += unescapeText(parts.join(" "));
 	else if (kind === "Y") copyCell(reader, parts);
+	else if (kind === "G") lookUp(reader, parts);
 	else readEndRecord(reader, kind, parts);
 }
 function readEndRecord(reader, kind, parts) {
@@ -6064,6 +6352,9 @@ function charText(code) {
 	const character = String.fromCharCode(code);
 	return "'" + (ESCAPES[character] ?? (character === "'" ? "\\'" : character)) + "'";
 }
+function quotedString(token, max) {
+	return "\"" + escapeText$3(unescapeText(token.slice(1)), max) + "\"";
+}
 function primitiveView(token, maxString) {
 	const body = token.slice(1);
 	switch (token[0]) {
@@ -6082,7 +6373,7 @@ function primitiveView(token, maxString) {
 		};
 		case "s": return {
 			kind: "str",
-			text: "\"" + escapeText$3(unescapeText(body), maxString) + "\""
+			text: quotedString(token, maxString)
 		};
 		default: return {
 			kind: "null",
@@ -6180,7 +6471,8 @@ function viewMemory(trace) {
 	if (!memory) {
 		memory = {
 			zoom: DEFAULT_ZOOM,
-			isLogScale: false
+			isLogScale: false,
+			mapScroll: /* @__PURE__ */ new Map()
 		};
 		memories.set(trace, memory);
 	}
@@ -7049,8 +7341,12 @@ function CountsView(props) {
 		]
 	});
 }
-// src/engines/java/view/heap-model.ts
+// src/shared/index-names.ts
 var INDEX_NAME = /* @__PURE__ */ new RegExp("^(?:[ijklmpqr]\\d?|lo|hi|mid|low|high|left|right|start|end|begin|from|to|idx|index|pos|cur|top|front|rear|head|tail|min|max|minIdx|maxIdx|first|last|slow|fast|w|write|read)$");
+function isIndexName(name) {
+	return INDEX_NAME.test(name);
+}
+// src/engines/java/view/heap-model.ts
 var INT_TYPES$1 = /* @__PURE__ */ new Set([
 	"int",
 	"long",
@@ -7139,7 +7435,7 @@ function indexMarkers(frame, arrayId, length) {
 	frame.names.forEach((named, i) => {
 		const token = frame.values[i] || "";
 		const value = Number(token.slice(1));
-		if (token[0] === "i" && INT_TYPES$1.has(named.type) && INDEX_NAME.test(named.name) && value >= 0 && value < length) markers.push({
+		if (token[0] === "i" && INT_TYPES$1.has(named.type) && isIndexName(named.name) && value >= 0 && value < length) markers.push({
 			name: named.name,
 			index: value
 		});
@@ -8062,6 +8358,12 @@ function draw(spec) {
 		...spec
 	};
 }
+function count(spec) {
+	return {
+		kind: "count",
+		...spec
+	};
+}
 function together(motions) {
 	return {
 		kind: "together",
@@ -8130,6 +8432,7 @@ var FIELDS = {
 		from: "anchor?",
 		to: "anchor?",
 		was: "anchor?",
+		into: "flag?",
 		tone: "tone?",
 		ms: "ms?"
 	},
@@ -8161,7 +8464,8 @@ var RULE_CHECKS = {
 	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
 	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
 	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
-	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
+	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px",
+	flag: (value) => typeof value === "boolean" ? null : "not true or false"
 };
 var TIMING_FIELDS = {
 	delay: "delay?",
@@ -8503,6 +8807,9 @@ var MotionPlayer = class {
 };
 // src/shared/motion/geometry.ts
 var ARROW_GAP_PX = 3;
+function tipGap(isInto) {
+	return isInto ? -7 : ARROW_GAP_PX;
+}
 function stageBoxOf(probe, probeSize) {
 	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
 	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
@@ -8534,8 +8841,8 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 	const centre = centreOf(rect);
 	const dx = toward.x - centre.x;
 	const dy = toward.y - centre.y;
-	const halfWidth = rect.width / 2 + gap;
-	const halfHeight = rect.height / 2 + gap;
+	const halfWidth = Math.max(0, rect.width / 2 + gap);
+	const halfHeight = Math.max(0, rect.height / 2 + gap);
 	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
 	if (!Number.isFinite(reach) || reach >= 1) return centre;
 	return {
@@ -8543,9 +8850,9 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 		y: centre.y + dy * reach
 	};
 }
-function arrowBetween(from, to) {
+function arrowBetween(from, to, isInto = false) {
 	const tail = edgeToward(from, centreOf(to));
-	const tip = edgeToward(to, centreOf(from));
+	const tip = edgeToward(to, centreOf(from), tipGap(isInto));
 	return {
 		tail,
 		tip,
@@ -8942,9 +9249,10 @@ function playDraw(scene, track, motion) {
 	const from = scene.anchors.get(motion.from);
 	const to = scene.anchors.get(motion.to);
 	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
-	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const isInto = motion.into === true;
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to), isInto);
 	const was = motion.was ? scene.placeOf(motion.was) : null;
-	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const start = was ? edgeToward(was, arrow.tail, tipGap(isInto)) : arrow.tail;
 	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
 	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
 	swingArrow(scene, track, motion, {
@@ -8958,7 +9266,7 @@ function retractArrow(scene, track, motion, fromName, wasName) {
 	const from = scene.anchors.get(fromName);
 	const was = scene.placeOf(wasName);
 	if (!from || !was) return "no end " + (from ? wasName : fromName);
-	const arrow = arrowBetween(scene.rect(from), was);
+	const arrow = arrowBetween(scene.rect(from), was, motion.into === true);
 	swingArrow(scene, track, motion, {
 		angle: arrow.angle,
 		startLength: arrow.length
@@ -10203,6 +10511,402 @@ function heapMarks(trace, meta, setting, index) {
 	}
 	return marks;
 }
+var SUFFIXES = {
+	Long: "L",
+	"java.lang.Long": "L",
+	Float: "f",
+	"java.lang.Float": "f"
+};
+var SAFE_KEY = /^[!#-&(-[\]-~]{1,48}$/;
+function typeArguments(type) {
+	const open = type.indexOf("<");
+	const close = type.lastIndexOf(">");
+	if (open < 0 || close < open) return [];
+	const inner = type.slice(open + 1, close);
+	const parts = [];
+	let depth = 0;
+	let start = 0;
+	for (let i = 0; i < inner.length; i++) {
+		depth += inner[i] === "<" ? 1 : inner[i] === ">" ? -1 : 0;
+		if (inner[i] === "," && depth === 0) {
+			parts.push(inner.slice(start, i));
+			start = i + 1;
+		}
+	}
+	parts.push(inner.slice(start));
+	return parts.map((part) => part.trim().replace(/,(?=\S)/g, ", ")).filter(Boolean);
+}
+function holderTypes(step, meta, id) {
+	const ref = "#" + id;
+	const types = [];
+	for (const frame of [...step.frames].reverse()) frame.values.forEach((token, i) => {
+		if (token === ref && frame.names[i]) types.push(frame.names[i].type);
+	});
+	for (const shape of step.heap.values()) (shape.kind === "object" ? classOf(meta, shape.cls)?.fields ?? [] : []).forEach((field, i) => {
+		if (shape.kind === "object" && shape.fields[i] === ref) types.push(field.type);
+	});
+	return types;
+}
+function mapTypes(step, meta, id) {
+	for (const type of holderTypes(step, meta, id)) {
+		const args = typeArguments(type);
+		if (args.length === 2) return {
+			key: args[0],
+			value: args[1]
+		};
+	}
+	return null;
+}
+function numberSuffix(type) {
+	return type !== void 0 && Object.hasOwn(SUFFIXES, type) ? SUFFIXES[type] : "";
+}
+function lookupsOf(step, id) {
+	if (!step) return [];
+	const shape = step.heap.get(id);
+	const keys = new Set(shape?.kind === "map" ? shape.entries.map(([key]) => key) : []);
+	return step.lookups.filter((lookup) => lookup.map === id).map((lookup) => ({
+		method: lookup.method,
+		key: lookup.key,
+		found: lookup.found ?? (keys.has(lookup.key) ? true : null)
+	}));
+}
+function entryMarks(shape, before) {
+	const marks = /* @__PURE__ */ new Map();
+	const old = before?.kind === "map" ? new Map(before.entries) : null;
+	const isWhole = before?.kind === "map" && before.entries.length >= before.size;
+	const grew = before?.kind === "map" && shape.size > before.size;
+	for (const [key, value] of shape.entries) {
+		const was = old?.get(key);
+		if (old?.has(key) && was !== value) marks.set(key, {
+			mark: "changed",
+			was
+		});
+		else if (old && !old.has(key) && (isWhole || grew)) marks.set(key, { mark: "new" });
+		else marks.set(key, { mark: null });
+	}
+	return marks;
+}
+function mapTable(shape, before, lookups) {
+	const marks = entryMarks(shape, before);
+	const rows = shape.entries.map(([key, value]) => {
+		const hitBy = lookups.filter((lookup) => lookup.found === true && lookup.key === key).map((lookup) => lookup.method);
+		const { mark, was } = marks.get(key) ?? { mark: null };
+		const row = {
+			key,
+			value,
+			mark,
+			isHit: hitBy.length > 0,
+			hitBy
+		};
+		return was === void 0 ? row : {
+			...row,
+			was
+		};
+	});
+	const keys = new Set(shape.entries.map(([key]) => key));
+	const missed = lookups.filter((lookup) => lookup.found === false && !keys.has(lookup.key));
+	return {
+		rows,
+		misses: [...new Set(missed.map((lookup) => lookup.key))],
+		more: Math.max(0, shape.size - shape.entries.length)
+	};
+}
+function keyName$1(token) {
+	if (SAFE_KEY.test(token)) return token;
+	let hash = 2166136261;
+	for (let i = 0; i < token.length; i++) hash = Math.imul(hash ^ token.charCodeAt(i), 16777619) >>> 0;
+	return "h" + hash.toString(16);
+}
+function mapAnchor(id, part, key) {
+	return "heap#" + id + "." + part + ":" + keyName$1(key);
+}
+function referenceView(id, heap) {
+	const shape = id > 0 ? heap.get(id) : void 0;
+	if (id < 0 || !shape) return {
+		kind: "ref",
+		text: id < 0 ? "→ ?" : "→ #" + id,
+		suffix: "",
+		ref: id
+	};
+	if (shape.kind === "array" || shape.kind === "list") {
+		const tokens = shape.kind === "array" ? shape.cells : shape.items;
+		const length = shape.kind === "array" ? shape.length : shape.size;
+		const cells = tokens.slice(0, 8).map((token) => shortValue(token, heap));
+		return {
+			kind: "ref",
+			text: "→ #" + id,
+			suffix: "",
+			ref: id,
+			cells,
+			more: length - cells.length
+		};
+	}
+	return {
+		kind: "ref",
+		text: "→ #" + id + " " + shapeName(shape),
+		suffix: "",
+		ref: id
+	};
+}
+function cellView(token, heap, type) {
+	const id = refId(token);
+	if (id !== null) return referenceView(id, heap);
+	const view = valueView(token, heap);
+	if (view.kind === "str") {
+		const full = quotedString(token, Infinity);
+		const text = quotedString(token, 18);
+		return text === full ? {
+			kind: "str",
+			text,
+			suffix: ""
+		} : {
+			kind: "str",
+			text,
+			full,
+			suffix: ""
+		};
+	}
+	return {
+		kind: view.kind,
+		text: view.text,
+		suffix: view.kind === "num" ? numberSuffix(type) : ""
+	};
+}
+function numberOf(token) {
+	if (!token || token[0] !== "i" && token[0] !== "d") return null;
+	const value = Number(token.slice(1));
+	return Number.isFinite(value) ? value : null;
+}
+function fitHeight(available) {
+	return Math.max(64, Math.floor(available));
+}
+function cardShift(above, below) {
+	if (above > 0) return -above;
+	return below > 0 ? Math.min(below, -above) : 0;
+}
+function revealTop(scrollTop, viewHeight, rowTop, rowHeight, headerHeight) {
+	if (rowTop - headerHeight < scrollTop) return Math.max(0, rowTop - headerHeight);
+	if (rowTop + rowHeight > scrollTop + viewHeight) return rowTop + rowHeight - viewHeight;
+	return scrollTop;
+}
+// src/engines/java/view/MapTable.tsx
+var CARD_BOTTOM_PX = 2;
+function MapCell(props) {
+	const cell = cellView(props.token, props.heap, props.type);
+	const named = props.name ? anchor(props.name) : {};
+	if (cell.ref !== void 0 && cell.ref > 0) {
+		const label = "reference to object #" + cell.ref + " " + shapeName(props.heap.get(cell.ref));
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "jv-mref" + (props.isChanged ? " chg" : ""),
+			...named,
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "v jv-ref",
+				tabIndex: 0,
+				"data-ref": cell.ref,
+				"aria-label": label,
+				children: cell.text
+			}), cell.cells ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PreviewCells, {
+				cells: cell.cells,
+				more: cell.more ?? 0
+			}) : null]
+		});
+	}
+	const classes = "jv-mv jv-" + cell.kind + (props.isChanged ? " chg" : "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: classes,
+		title: cell.full,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "jv-mtext",
+			...named,
+			children: cell.text
+		}), cell.suffix ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", {
+			className: "jv-sfx",
+			children: cell.suffix
+		}) : null]
+	});
+}
+function PreviewCells(props) {
+	if (!props.cells.length && !props.more) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "jv-mcells jv-mnone",
+		children: "{ }"
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "jv-mcells",
+		"aria-label": "cells " + props.cells.join(", "),
+		children: [props.cells.map((text, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { children: text }, i)), props.more > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+			className: "jv-mcmore",
+			children: "… +" + props.more
+		}) : null]
+	});
+}
+function EntryRow(props) {
+	const { id, row } = props;
+	const classes = "jv-mrow" + (row.mark ? " jv-m" + row.mark : "") + (row.isHit ? " jv-mhit" : "");
+	const title = row.isHit ? row.hitBy.join(", ") + ": found" : void 0;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", {
+		className: classes,
+		title,
+		...anchor(mapAnchor(id, "row", row.key)),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "jv-mkey",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapCell, {
+				token: row.key,
+				heap: props.heap,
+				type: props.types?.key
+			})
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "jv-mval",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapCell, {
+				token: row.value,
+				heap: props.heap,
+				type: props.types?.value,
+				name: mapAnchor(id, "value", row.key),
+				isChanged: row.mark === "changed"
+			})
+		})]
+	});
+}
+function MissRow(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", {
+		className: "jv-mrow jv-mmiss",
+		...anchor(mapAnchor(props.id, "miss", props.token)),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "jv-mkey",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapCell, {
+				token: props.token,
+				heap: props.heap,
+				type: props.types?.key
+			})
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "jv-mval",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "jv-mmiss-t",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+					prefix: "✗ ",
+					english: "miss",
+					hebrew: "לא נמצא"
+				})
+			})
+		})]
+	});
+}
+function HeaderRow(props) {
+	const { types } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("th", {
+		scope: "col",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			english: "key",
+			hebrew: "מפתח"
+		}), types ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+			className: "jv-mtype",
+			children: types.key
+		}) : null]
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("th", {
+		scope: "col",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			english: "value",
+			hebrew: "ערך"
+		}), types ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", {
+			className: "jv-mtype",
+			children: types.value
+		}) : null]
+	})] }) });
+}
+function fitBox(box) {
+	const body = box.closest(".mem-body");
+	if (!(body instanceof HTMLElement)) return;
+	const style = getComputedStyle(body);
+	const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+	const available = body.clientHeight - padding - box.offsetTop - CARD_BOTTOM_PX;
+	box.style.maxHeight = fitHeight(available) + "px";
+}
+function scrollToMarked(box, kept) {
+	box.scrollTop = kept;
+	const row = box.querySelector(".jv-mnew, .jv-mchanged, .jv-mhit, .jv-mmiss");
+	const header = box.querySelector("thead");
+	if (!row) return false;
+	const headerHeight = header instanceof HTMLElement ? header.offsetHeight : 0;
+	box.scrollTop = revealTop(box.scrollTop, box.clientHeight, row.offsetTop, row.offsetHeight, headerHeight);
+	return true;
+}
+function revealCard(box) {
+	const card = box.closest(".jv-obj");
+	const body = box.closest(".mem-body");
+	if (!(card instanceof HTMLElement) || !(body instanceof HTMLElement) || !body.offsetHeight) return;
+	const cardRect = card.getBoundingClientRect();
+	const bodyRect = body.getBoundingClientRect();
+	const scale = bodyRect.height / body.offsetHeight || 1;
+	const above = (bodyRect.top - cardRect.top) / scale;
+	const below = (cardRect.bottom - bodyRect.bottom) / scale;
+	body.scrollTop += cardShift(above, below);
+}
+function useFitAndReveal(box, trace, id) {
+	(0, import_react.useLayoutEffect)(() => {
+		const element = box.current;
+		if (!element) return;
+		fitBox(element);
+		if (scrollToMarked(element, viewMemory(trace).mapScroll.get(id) ?? 0)) revealCard(element);
+		const body = element.closest(".mem-body");
+		if (!body || typeof ResizeObserver === "undefined") return;
+		const observer = new ResizeObserver(() => fitBox(element));
+		observer.observe(body);
+		return () => observer.disconnect();
+	}, [
+		box,
+		trace,
+		id
+	]);
+}
+function MapTable(props) {
+	const { id, shape, heap, types } = props;
+	const box = (0, import_react.useRef)(null);
+	useFitAndReveal(box, props.trace, id);
+	const table = mapTable(shape, props.before, props.lookups);
+	const onScroll = () => {
+		if (box.current) viewMemory(props.trace).mapScroll.set(id, box.current.scrollTop);
+	};
+	const isEmpty = !table.rows.length && !table.misses.length && !table.more;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "jv-map-scroll",
+		ref: box,
+		onScroll,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", {
+			className: "jv-map",
+			"aria-label": "#" + id + " " + shapeName(shape) + ": key → value",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeaderRow, { types }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tbody", { children: [
+				table.rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EntryRow, {
+					id,
+					row,
+					heap,
+					types
+				}, "k" + row.key)),
+				table.misses.map((key) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MissRow, {
+					id,
+					token: key,
+					heap,
+					types
+				}, "m" + key)),
+				table.more > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tr", {
+					className: "jv-mmore",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+						colSpan: 2,
+						children: "… +" + table.more + " more"
+					})
+				}) : null,
+				isEmpty ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tr", {
+					className: "jv-mempty",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+						colSpan: 2,
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+							english: "empty",
+							hebrew: "ריקה"
+						})
+					})
+				}) : null
+			] })]
+		})
+	});
+}
 // src/engines/java/view/HeapCards.tsx
 function Cell(props) {
 	const view = valueView(props.token, props.heap);
@@ -10272,10 +10976,7 @@ function Pairs(props) {
 		className: "jv-fields",
 		children: props.pairs.map(([name, token, position]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "jv-field",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", { children: props.isKeyToken ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ValueChip, {
-				token: name,
-				heap: props.heap
-			}) : name }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ValueChip, {
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", { children: name }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ValueChip, {
 				token,
 				heap: props.heap,
 				isChanged: props.changed.has(position)
@@ -10284,20 +10985,28 @@ function Pairs(props) {
 	});
 }
 function shapePairs(shape, meta) {
-	if (shape.kind === "object") {
-		const fields = classOf(meta, shape.cls)?.fields ?? [];
-		return shape.fields.map((token, i) => [
-			fields[i]?.name ?? "f" + i,
-			token,
-			i
-		]);
-	}
-	if (shape.kind === "map") return shape.entries.map(([key, value], i) => [
-		key,
-		value,
-		2 * i + 1
+	if (shape.kind !== "object") return null;
+	const fields = classOf(meta, shape.cls)?.fields ?? [];
+	return shape.fields.map((token, i) => [
+		fields[i]?.name ?? "f" + i,
+		token,
+		i
 	]);
-	return null;
+}
+function MapBody({ card, context }) {
+	if (card.shape.kind !== "map") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "jv-empty",
+		children: "{ }"
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapTable, {
+		trace: context.trace,
+		id: card.id,
+		shape: card.shape,
+		before: card.isNew ? void 0 : context.previous?.heap.get(card.id),
+		lookups: card.isGarbage ? [] : lookupsOf(context.previous, card.id),
+		heap: context.step.heap,
+		types: mapTypes(context.step, context.meta, card.id)
+	});
 }
 function CardBody({ card, context }) {
 	const { shape } = card;
@@ -10319,10 +11028,13 @@ function CardBody({ card, context }) {
 			marks: card.isGarbage ? void 0 : context.marks.get(card.id)
 		});
 	}
+	if (shape.kind === "map") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapBody, {
+		card,
+		context
+	});
 	const pairs = shapePairs(shape, context.meta);
 	if (pairs) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pairs, {
 		pairs,
-		isKeyToken: shape.kind === "map",
 		changed,
 		heap
 	});
@@ -10333,7 +11045,7 @@ function CardBody({ card, context }) {
 }
 function ObjectCard(props) {
 	const { card } = props;
-	const classes = "jv-obj" + (card.isGarbage ? " gone" : "") + (card.isNew && !card.isGarbage ? " new" : "") + (card.isChanged ? " changed" : "") + (props.isTarget ? " tgt" : "");
+	const classes = "jv-obj" + (card.shape.kind === "map" ? " jv-mapcard" : "") + (card.isGarbage ? " gone" : "") + (card.isNew && !card.isGarbage ? " new" : "") + (card.isChanged ? " changed" : "") + (props.isTarget ? " tgt" : "");
 	const size = card.shape.kind === "list" || card.shape.kind === "map" ? " · size " + card.shape.size : "";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: classes,
@@ -10375,6 +11087,7 @@ function ObjectCard(props) {
 }
 function HeapCards(props) {
 	const context = {
+		trace: props.trace,
 		step: props.step,
 		previous: props.previous,
 		meta: props.meta,
@@ -10402,6 +11115,94 @@ function HeapCards(props) {
 			})
 		})]
 	});
+}
+// src/engines/java/view/map-motion.ts
+var MAX_MOTIONS = 24;
+var HIT_MS = 700;
+var SPAN_HIT_MS = 360;
+var MISS_RING_MS = 480;
+var ROW_IN_MS = 240;
+function lookupMotions(trace, span, id, shape, fresh) {
+	const [from, index] = span;
+	const keys = new Set(shape.entries.map(([key]) => key));
+	const seen = /* @__PURE__ */ new Set();
+	const motions = [];
+	for (let at = from; at < index; at++) for (const lookup of lookupsOf(trace.steps[at], id)) {
+		const isHit = lookup.found === true && keys.has(lookup.key) && !fresh.has(lookup.key);
+		const isMiss = lookup.found === false && at === index - 1 && !keys.has(lookup.key);
+		const sign = (isHit ? "+" : "-") + lookup.key;
+		if (seen.has(sign) || !(isHit || isMiss)) continue;
+		seen.add(sign);
+		if (isHit) {
+			const ms = index - from > 1 ? SPAN_HIT_MS : HIT_MS;
+			motions.push(highlight$1({
+				anchor: mapAnchor(id, "row", lookup.key),
+				tone: "focus",
+				ms
+			}));
+		} else {
+			const miss = mapAnchor(id, "miss", lookup.key);
+			const ring = highlight$1({
+				anchor: miss,
+				tone: "compare",
+				ms: MISS_RING_MS
+			});
+			motions.push(inOrder([appear({
+				anchor: miss,
+				style: "fade",
+				dx: -12
+			}), ring]));
+		}
+	}
+	return motions;
+}
+function putMotions(id, shape, marks) {
+	const motions = [];
+	for (const [key, value] of shape.entries) {
+		const { mark, was } = marks.get(key) ?? { mark: null };
+		const valueAnchor = mapAnchor(id, "value", key);
+		if (mark === "new") {
+			const row = appear({
+				anchor: mapAnchor(id, "row", key),
+				style: "fade",
+				ms: ROW_IN_MS
+			});
+			motions.push(inOrder([row, appear({
+				anchor: valueAnchor,
+				dy: -14,
+				scale: .6
+			})]));
+		} else if (mark === "changed") {
+			const old = numberOf(was);
+			const now = numberOf(value);
+			motions.push(old !== null && now !== null ? count({
+				anchor: valueAnchor,
+				from: old,
+				to: now
+			}) : appear({ anchor: valueAnchor }));
+		}
+	}
+	return motions;
+}
+function mapMotion(trace, from, index, drawn) {
+	const now = trace.steps[index];
+	const then = trace.steps[from];
+	if (from < 0 || index <= from || !now || !then) return null;
+	const motions = [];
+	for (const id of [...drawn].sort((a, b) => a - b)) {
+		const shape = now.heap.get(id);
+		if (shape?.kind === "map") {
+			const marks = entryMarks(shape, then.heap.get(id));
+			const fresh = new Set([...marks].filter(([, entry]) => entry.mark === "new").map(([k]) => k));
+			motions.push(...lookupMotions(trace, [from, index], id, shape, fresh));
+			motions.push(...putMotions(id, shape, marks));
+		}
+	}
+	return motions.length ? inOrder(motions.slice(0, MAX_MOTIONS)) : null;
+}
+function heapIslandMotion(trace, from, index, drawn) {
+	const present = [heapMotion(trace, from, index, drawn), mapMotion(trace, from, index, drawn)].filter((part) => part !== null);
+	return present.length > 1 ? together(present) : present[0] ?? null;
 }
 // src/engines/java/view/StackHeap.tsx
 var NEWEST_FRAMES = 24;
@@ -10673,7 +11474,7 @@ function HeapIsland(props) {
 	const previous = trace.steps[index - 1];
 	const cards = step ? heapCards(step, previous) : [];
 	const drawn = new Set(cards.map((card) => card.id));
-	const motion = props.from !== null ? heapMotion(trace, props.from, index, drawn) : null;
+	const motion = props.from !== null ? heapIslandMotion(trace, props.from, index, drawn) : null;
 	const { stage } = useMotion(index, props.transition, motion);
 	if (!step) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "mem-empty",
@@ -10684,6 +11485,7 @@ function HeapIsland(props) {
 		ref: stage,
 		...refHandlers(trace),
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeapCards, {
+			trace,
 			cards,
 			step,
 			previous,
@@ -20112,6 +20914,10 @@ function textDirection(text) {
 	const match = FIRST_STRONG.exec(text);
 	return match && /[^A-Za-zÀ-ɏ]/.test(match[0]) ? "rtl" : "ltr";
 }
+function svgAnchor(anchor, direction) {
+	if (direction === "ltr" || anchor === "middle") return anchor;
+	return anchor === "start" ? "end" : "start";
+}
 function edgePoint(box, towardX, towardY, gap) {
 	const dx = towardX - box.cx;
 	const dy = towardY - box.cy;
@@ -21453,12 +22259,13 @@ function NameLines(props) {
 	}) : null] });
 }
 function SvgText(props) {
+	const direction = textDirection(props.text);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 		className: props.className,
 		x: props.x,
 		y: props.y,
-		textAnchor: props.anchor || "middle",
-		direction: textDirection(props.text),
+		textAnchor: svgAnchor(props.anchor || "middle", direction),
+		direction,
 		fontSize: props.size,
 		...props.name,
 		children: props.text
@@ -30950,7 +31757,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e7fd351 מ-2026-11-09 16:22"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e7fd351</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit a40b5ae מ-2026-11-09 21:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · a40b5ae</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

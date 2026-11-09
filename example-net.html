@@ -1757,9 +1757,14 @@ body .tour-roomy .wb-grid {
   stroke-width: 2;
 }
 
+/* the label in the text's own colour, with a halo, so it reads beside its coloured bracket */
 .sd-span text {
-  fill: var(--sd-c);
+  fill: var(--ink);
   font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 
 .sd-note rect {
@@ -2824,6 +2829,18 @@ code.math-bad {
   color: var(--warn);
 }
 
+/* what happens at the step, framed in the "now" colour that rings its bit on the diagram */
+.net-now-ev {
+  display: inline-block;
+  margin-inline-start: 10px;
+  padding: 0 8px;
+  border: 1.5px solid var(--warn);
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--ink);
+  unicode-bidi: isolate;
+}
+
 /* many nodes: the list scrolls (NowStatus.tsx keeps the highlighted row in view) */
 .net-now-list {
   list-style: none;
@@ -3092,7 +3109,6 @@ code.math-bad {
 
 .nt-plabel,
 .nt-qlabel,
-.nt-evlabel,
 .nt-nowt {
   paint-order: stroke;
   stroke: var(--bg);
@@ -3113,20 +3129,6 @@ code.math-bad {
 .nt-plabel.nt-later,
 .nt-qlabel.nt-later {
   opacity: 0.45;
-}
-
-/* the event's label: on a pill of the page colour, framed in the "now" colour */
-.nt-evlabel {
-  fill: var(--ink);
-  font: 700 13px var(--f-body);
-  text-anchor: middle;
-  stroke: none;
-}
-
-.nt-evpill {
-  fill: var(--bg);
-  stroke: var(--warn);
-  stroke-width: 1.5;
 }
 
 .nt-nowt {
@@ -3196,6 +3198,33 @@ code.math-bad {
 .nt-bitlead {
   stroke: var(--nt-pk);
   stroke-width: 1;
+}
+
+/* the step's bit (step-focus.ts): a ring in the "now" colour, and its label framed in it */
+.nt-ring {
+  fill: none;
+  stroke: var(--warn);
+  stroke-width: 2.2;
+}
+
+.nt-bitpill.nt-step {
+  stroke: var(--warn);
+  stroke-width: 1.8;
+}
+
+/* a packet the step is not about: muted, so the eye follows the step's packet */
+.nt-band.nt-muted {
+  opacity: 0.32;
+}
+
+.nt-qbox.nt-muted,
+.nt-bits .nt-muted > * {
+  opacity: 0.4;
+}
+
+.nt-plabel.nt-muted,
+.nt-qlabel.nt-muted {
+  opacity: 0.35;
 }
 
 /* every node's queue (buffer): a faint lane beside its line, a box per waiting packet */
@@ -4524,6 +4553,7 @@ var TEXTS = {
 		done: "כבר קרה",
 		toCome: "עוד יקרה",
 		now: "עכשיו",
+		thisStep: "הצעד הזה",
 		firstBit: "ביט ראשון",
 		lastBit: "ביט אחרון",
 		firstShort: "ראשון",
@@ -5800,6 +5830,7 @@ var FIELDS = {
 		from: "anchor?",
 		to: "anchor?",
 		was: "anchor?",
+		into: "flag?",
 		tone: "tone?",
 		ms: "ms?"
 	},
@@ -5831,7 +5862,8 @@ var RULE_CHECKS = {
 	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
 	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
 	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
-	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
+	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px",
+	flag: (value) => typeof value === "boolean" ? null : "not true or false"
 };
 var TIMING_FIELDS = {
 	delay: "delay?",
@@ -6245,6 +6277,9 @@ var MotionPlayer = class {
 };
 // src/shared/motion/geometry.ts
 var ARROW_GAP_PX = 3;
+function tipGap(isInto) {
+	return isInto ? -7 : ARROW_GAP_PX;
+}
 function stageBoxOf(probe, probeSize) {
 	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
 	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
@@ -6276,8 +6311,8 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 	const centre = centreOf(rect);
 	const dx = toward.x - centre.x;
 	const dy = toward.y - centre.y;
-	const halfWidth = rect.width / 2 + gap;
-	const halfHeight = rect.height / 2 + gap;
+	const halfWidth = Math.max(0, rect.width / 2 + gap);
+	const halfHeight = Math.max(0, rect.height / 2 + gap);
 	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
 	if (!Number.isFinite(reach) || reach >= 1) return centre;
 	return {
@@ -6285,9 +6320,9 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 		y: centre.y + dy * reach
 	};
 }
-function arrowBetween(from, to) {
+function arrowBetween(from, to, isInto = false) {
 	const tail = edgeToward(from, centreOf(to));
-	const tip = edgeToward(to, centreOf(from));
+	const tip = edgeToward(to, centreOf(from), tipGap(isInto));
 	return {
 		tail,
 		tip,
@@ -6684,9 +6719,10 @@ function playDraw(scene, track, motion) {
 	const from = scene.anchors.get(motion.from);
 	const to = scene.anchors.get(motion.to);
 	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
-	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const isInto = motion.into === true;
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to), isInto);
 	const was = motion.was ? scene.placeOf(motion.was) : null;
-	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const start = was ? edgeToward(was, arrow.tail, tipGap(isInto)) : arrow.tail;
 	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
 	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
 	swingArrow(scene, track, motion, {
@@ -6700,7 +6736,7 @@ function retractArrow(scene, track, motion, fromName, wasName) {
 	const from = scene.anchors.get(fromName);
 	const was = scene.placeOf(wasName);
 	if (!from || !was) return "no end " + (from ? wasName : fromName);
-	const arrow = arrowBetween(scene.rect(from), was);
+	const arrow = arrowBetween(scene.rect(from), was, motion.into === true);
 	swingArrow(scene, track, motion, {
 		angle: arrow.angle,
 		startLength: arrow.length
@@ -7064,18 +7100,225 @@ function useMotion(stepKey, transition, motion) {
 }
 // src/engines/net/view/arrival.ts
 var EVENT_DOT = "timeline.event.dot";
-var EVENT_LABEL = "timeline.event.label";
+var EVENT_RING = "timeline.event.ring";
 var ARRIVAL = together([appear({
 	anchor: EVENT_DOT,
 	style: "fade",
 	ms: 160
 }), appear({
-	anchor: EVENT_LABEL,
-	style: "fade",
-	ms: 160
+	anchor: EVENT_RING,
+	style: "grow",
+	scale: .4,
+	ms: 240,
+	ease: "out"
 })]);
-var OUTSIDE_PX = 2e3;
+// src/engines/net/view/step-focus.ts
+var PACKET_COLOURS = 4;
+var NO_FOCUS = {
+	packet: -1,
+	bit: null
+};
+function bitEventOf(step) {
+	const { fact, event } = step;
+	if (!fact || !event) return null;
+	switch (fact.kind) {
+		case "firstBitLeaves": return {
+			packet: fact.packet - 1,
+			link: event.node,
+			bit: "first",
+			edge: "leaves"
+		};
+		case "firstBitArrives": return {
+			packet: fact.packet - 1,
+			link: fact.link.number - 1,
+			bit: "first",
+			edge: "reaches"
+		};
+		case "lastBitLeaves": return {
+			packet: fact.packet - 1,
+			link: fact.link.number - 1,
+			bit: "last",
+			edge: "leaves"
+		};
+		case "lastBitArrives": return {
+			packet: fact.packet - 1,
+			link: event.node - 1,
+			bit: "last",
+			edge: "reaches"
+		};
+		default: return null;
+	}
+}
+function focusOf(step) {
+	const bitEvent = bitEventOf(step);
+	if (bitEvent) return {
+		packet: bitEvent.packet,
+		bit: bitEvent.bit
+	};
+	const fact = step.fact;
+	return fact && fact.kind === "processed" ? {
+		packet: fact.packet - 1,
+		bit: null
+	} : NO_FOCUS;
+}
+function isSameBitEvent(a, b) {
+	return a.packet === b.packet && a.link === b.link && a.bit === b.bit && a.edge === b.edge;
+}
+function contextAt(steps, time, doneThrough) {
+	const pending = [];
+	steps.forEach((step, index) => {
+		const bitEvent = bitEventOf(step);
+		if (index > doneThrough && bitEvent && step.event && sameMoment(step.event.time, time)) pending.push(bitEvent);
+	});
+	const current = steps[doneThrough];
+	return {
+		time,
+		pending,
+		own: current && current.event && sameMoment(current.event.time, time) ? bitEventOf(current) : null
+	};
+}
+function isMuted(packet, focus) {
+	return focus >= 0 && packet !== focus;
+}
+function packetClass(packet, focus) {
+	const colour = "nt-p" + packet % PACKET_COLOURS;
+	return isMuted(packet, focus) ? colour + " nt-muted" : colour;
+}
+// src/engines/net/view/bit-marks.ts
 var SAME_FRACTION$2 = 1e-9;
+function slackOf(scenario) {
+	return (scenario.total || 1) * SAME_FRACTION$2;
+}
+function segmentOn(scenario, packet, t, eps, pending) {
+	const on = scenario.segments.filter((segment) => segment.packet === packet && segment.start <= t + eps && t <= segment.end + segment.prop + eps && !isListed(pending, segment, "first", "leaves"));
+	return on[on.length - 1];
+}
+function placeBit(segment, leaves, t, eps, geometry) {
+	const sender = geometry.x(segment.link);
+	const receiver = geometry.x(segment.link + 1);
+	if (t < leaves - eps) return {
+		place: "sender",
+		x: sender
+	};
+	if (segment.prop <= eps || t >= leaves + segment.prop - eps) return {
+		place: "receiver",
+		x: receiver
+	};
+	const top = geometry.y(leaves);
+	const bottom = geometry.y(leaves + segment.prop);
+	const part = bottom > top ? (geometry.y(t) - top) / (bottom - top) : 0;
+	const along = Number.isFinite(part) ? Math.min(1, Math.max(0, part)) : 0;
+	return {
+		place: along > 0 ? "wire" : "sender",
+		x: sender + along * (receiver - sender)
+	};
+}
+function isListed(events, segment, bit, edge) {
+	const wanted = {
+		packet: segment.packet,
+		link: segment.link,
+		bit,
+		edge
+	};
+	return events.some((event) => isSameBitEvent(event, wanted));
+}
+function placeBits(segment, t, eps, geometry, context) {
+	const pending = context ? context.pending : [];
+	const sender = {
+		place: "sender",
+		x: geometry.x(segment.link)
+	};
+	return {
+		first: isListed(context && context.own ? [context.own] : [], segment, "first", "leaves") ? sender : placeBit(segment, segment.start, t, eps, geometry),
+		last: isListed(pending, segment, "last", "leaves") ? sender : placeBit(segment, segment.end, t, eps, geometry)
+	};
+}
+function bitMarks(scenario, t, geometry, context = null) {
+	const eps = slackOf(scenario);
+	const y = geometry.y(t);
+	const here = context && Math.abs(context.time - t) <= eps ? context : null;
+	const marks = [];
+	for (let packet = 0; packet < scenario.packets && Number.isFinite(y); packet++) {
+		const segment = segmentOn(scenario, packet, t, eps, here ? here.pending : []);
+		if (!segment) continue;
+		const { first, last } = placeBits(segment, t, eps, geometry, here);
+		if (!Number.isFinite(first.x) || !Number.isFinite(last.x)) continue;
+		marks.push({
+			packet,
+			bit: "first",
+			link: segment.link,
+			y,
+			...first
+		});
+		marks.push({
+			packet,
+			bit: "last",
+			link: segment.link,
+			y,
+			...last
+		});
+	}
+	return marks;
+}
+function wireRank(mark) {
+	return -mark.packet * 2 + (mark.bit === "first" ? 1 : 0);
+}
+function wireOrder(a, b) {
+	const dx = a.x - b.x;
+	return Math.abs(dx) >= .5 ? dx : wireRank(a) - wireRank(b);
+}
+function spreadMarks(marks) {
+	const sorted = marks.map((mark) => ({ ...mark })).sort(wireOrder);
+	let first = 0;
+	while (first < sorted.length) {
+		let last = first;
+		while (last + 1 < sorted.length && sorted[last + 1].x - sorted[last].x < 14) last++;
+		const group = sorted.slice(first, last + 1);
+		const middle = group.reduce((sum, mark) => sum + mark.x, 0) / group.length;
+		group.forEach((mark, i) => {
+			mark.x = middle + (i - (group.length - 1) / 2) * 14;
+		});
+		first = last + 1;
+	}
+	return sorted;
+}
+function markKey(mark) {
+	return mark.packet + ":" + mark.bit;
+}
+function mixMarks(from, to, mix) {
+	if (mix >= 1) return to;
+	if (mix <= 0) return from;
+	const before = new Map(from.map((mark) => [markKey(mark), mark]));
+	const mixed = to.map((mark) => {
+		const start = before.get(markKey(mark));
+		if (!start) return {
+			...mark,
+			opacity: mix
+		};
+		const x = start.x + (mark.x - start.x) * mix;
+		return {
+			...mark,
+			x,
+			y: start.y + (mark.y - start.y) * mix
+		};
+	});
+	const after = new Set(to.map(markKey));
+	const leaving = from.filter((mark) => !after.has(markKey(mark)));
+	return mixed.concat(leaving.map((mark) => ({
+		...mark,
+		opacity: 1 - mix
+	})));
+}
+function marksDiffer(a, b) {
+	if (a.length !== b.length) return true;
+	const others = new Map(b.map((mark) => [markKey(mark), mark]));
+	return a.some((mark) => {
+		const other = others.get(markKey(mark));
+		return !other || Math.abs(other.x - mark.x) > .5 || Math.abs(other.y - mark.y) > .5;
+	});
+}
+var OUTSIDE_PX = 2e3;
+var SAME_FRACTION$1 = 1e-9;
 var MAX_KEYS = 2e3;
 function isDrawable(scenario) {
 	return [scenario.total, ...scenario.segments.flatMap((s) => [
@@ -7089,7 +7332,7 @@ function keyTimes(scenario) {
 	scenario.segments.forEach((s) => all.push(s.start, s.end, s.start + s.prop, s.end + s.prop));
 	scenario.waits.forEach((interval) => all.push(interval.from, interval.to));
 	scenario.procs.forEach((interval) => all.push(interval.from, interval.to));
-	const eps = scenario.total * SAME_FRACTION$2;
+	const eps = scenario.total * SAME_FRACTION$1;
 	const keys = [];
 	all.filter((time) => Number.isFinite(time)).sort((a, b) => a - b).forEach((time) => {
 		if (!keys.length || time - keys[keys.length - 1] > eps) keys.push(time);
@@ -7190,6 +7433,8 @@ function timeMap(scenario, spacing, choice, now, plot) {
 }
 // src/engines/net/view/now-glide.ts
 var MIN_GLIDE_PX = 1;
+var HOP_SHARE = .35;
+var TWO_HOPS_SHARE = .3;
 function isDrawn(map, y) {
 	return y >= -.5 && y <= map.height + .5;
 }
@@ -7209,6 +7454,76 @@ function glideTime(map, span, progress) {
 	if (progress >= 1) return span.to;
 	const time = timeAt(map, span.fromY + (span.toY - span.fromY) * progress);
 	return Number.isFinite(time) ? Math.min(span.to, Math.max(span.from, time)) : span.to;
+}
+function glideStates(steps, index) {
+	const time = steps[index]?.event?.time ?? 0;
+	const earlier = steps[index - 1]?.event;
+	return {
+		previous: earlier ? contextAt(steps, earlier.time, index - 1) : null,
+		before: contextAt(steps, time, index - 1),
+		step: contextAt(steps, time, index)
+	};
+}
+function glidePlan(scenario, map, geometry, states, from) {
+	const to = states.step.time;
+	const moves = (t, a, b) => marksDiffer(bitMarks(scenario, t, geometry, a), bitMarks(scenario, t, geometry, b));
+	if (sameMoment(from, to)) return isDrawn(map, map.y(to)) && moves(to, states.previous, states.step) ? {
+		span: null,
+		from,
+		to,
+		startHop: false,
+		endHop: false
+	} : null;
+	const span = glideSpan(map, from, to);
+	if (!span) return null;
+	return {
+		span,
+		from,
+		to,
+		startHop: moves(from, states.previous, null),
+		endHop: moves(to, states.before, states.step)
+	};
+}
+function glideFrame(map, plan, states, progress) {
+	const { span, to, startHop, endHop } = plan;
+	if (!span) return {
+		now: plan.from + (to - plan.from) * progress,
+		from: states.previous,
+		to: states.step,
+		mix: progress
+	};
+	const share = startHop && endHop ? TWO_HOPS_SHARE : HOP_SHARE;
+	const first = startHop ? share : 0;
+	const last = endHop ? 1 - share : 1;
+	if (progress < first) return {
+		now: span.from,
+		from: states.previous,
+		to: null,
+		mix: progress / share
+	};
+	if (progress > last) return {
+		now: to,
+		from: states.before,
+		to: states.step,
+		mix: (progress - last) / share
+	};
+	return {
+		now: glideTime(map, span, (progress - first) / (last - first)),
+		from: states.before,
+		to: states.before,
+		mix: 1
+	};
+}
+function frameContext(frame) {
+	return frame.mix < .5 ? frame.from : frame.to;
+}
+function settledFrame(states) {
+	return {
+		now: states.step.time,
+		from: states.step,
+		to: states.step,
+		mix: 1
+	};
 }
 function sourceWaits(scenario) {
 	return scenario.segments.filter((segment) => segment.link === 0 && segment.start - scenario.proc > timeSlack(segment.start)).map((segment) => ({
@@ -7258,7 +7573,7 @@ function laneLeft(nodeX, node) {
 	return node === 0 ? nodeX + 3 : nodeX - 3 - 22;
 }
 // src/engines/net/view/now-status.ts
-var SAME_FRACTION$1 = 1e-9;
+var SAME_FRACTION = 1e-9;
 function packetsOf(segments) {
 	return segments.map((segment) => segment.packet + 1);
 }
@@ -7289,7 +7604,7 @@ var Moment = class {
 	eps;
 	constructor(scenario, t) {
 		this.t = t;
-		this.eps = (scenario.total || 1) * SAME_FRACTION$1;
+		this.eps = (scenario.total || 1) * SAME_FRACTION;
 	}
 	is(time) {
 		return Math.abs(time - this.t) <= this.eps;
@@ -7327,12 +7642,15 @@ function processingItems(scenario, node, now) {
 		packet: interval.packet + 1
 	});
 }
-function itemsOf(scenario, node, now) {
+function isNotLeft(segment, context, now) {
+	return context !== null && now.is(context.time) && context.pending.some((event) => event.packet === segment.packet && event.link === segment.link && event.bit === "first" && event.edge === "leaves");
+}
+function itemsOf(scenario, node, now, context) {
 	const last = scenario.nodes.length - 1;
 	const out = scenario.segments.filter((segment) => segment.link === node);
 	const incoming = scenario.segments.filter((segment) => segment.link === node - 1);
 	const items = processingItems(scenario, node, now);
-	const receiving = incoming.filter((segment) => now.within(segment.start + segment.prop, segment.end + segment.prop));
+	const receiving = incoming.filter((segment) => now.within(segment.start + segment.prop, segment.end + segment.prop) && !isNotLeft(segment, context, now));
 	if (receiving.length) items.push({
 		kind: "receiving",
 		packets: packetsOf(receiving)
@@ -7359,20 +7677,39 @@ function queueItem(waits, node, now) {
 		packets: waits.filter((wait) => wait.node === node && now.within(wait.from, wait.to)).map((wait) => wait.packet + 1)
 	};
 }
-function nodeStatuses(scenario, t) {
+function nodeStatuses(scenario, t, context = null) {
 	const now = new Moment(scenario, t);
 	const waits = queueWaits(scenario);
 	return scenario.nodes.map((name, node) => ({
 		node,
 		name,
-		items: [...itemsOf(scenario, node, now), queueItem(waits, node, now)]
+		items: [...itemsOf(scenario, node, now, context), queueItem(waits, node, now)]
 	}));
 }
 // src/engines/net/view/NowStatus.tsx
-function NowStatus({ scenario, event, now, index, count }) {
+function NowHeader(props) {
+	const { scenario, fact, now, index, count } = props;
+	const happens = fact ? say$2(TEXTS.events, fact) : "";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "net-now-h",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
+				dir: "ltr",
+				className: "net-now-t",
+				children: "t = " + timeText(scenario, now)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: " · צעד " + (index + 1) + (count ? " מתוך " + count : "") }),
+			happens ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "net-now-ev",
+				children: happens
+			}) : null
+		]
+	});
+}
+function NowStatus(props) {
+	const { scenario, event, now, context } = props;
 	const listRef = (0, import_react.useRef)(null);
-	const t = now;
-	const rows = nodeStatuses(scenario, t);
+	const rows = nodeStatuses(scenario, now, context);
 	(0, import_react.useLayoutEffect)(() => {
 		const list = listRef.current;
 		const row = list ? list.querySelector(".here") : null;
@@ -7383,14 +7720,7 @@ function NowStatus({ scenario, event, now, index, count }) {
 		dir: "rtl",
 		lang: "he",
 		"aria-label": "מה כל צומת עושה עכשיו",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "net-now-h",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
-				dir: "ltr",
-				className: "net-now-t",
-				children: "t = " + timeText(scenario, t)
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: " · צעד " + (index + 1) + (count ? " מתוך " + count : "") })]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowHeader, { ...props }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
 			className: "net-now-list",
 			ref: listRef,
 			children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
@@ -7776,88 +8106,10 @@ function placeBitLabels(marks, area, blocked, focus, measure = estimateText) {
 	}
 	return placed;
 }
-// src/engines/net/view/bit-marks.ts
-var SAME_FRACTION = 1e-9;
-function slackOf(scenario) {
-	return (scenario.total || 1) * SAME_FRACTION;
-}
-function segmentAt(scenario, packet, t) {
-	const eps = slackOf(scenario);
-	return scenario.segments.find((segment) => segment.packet === packet && segment.start <= t + eps && t <= segment.end + segment.prop + eps);
-}
-function placeBit(segment, leaves, t, eps, geometry) {
-	const sender = geometry.x(segment.link);
-	const receiver = geometry.x(segment.link + 1);
-	if (t < leaves - eps) return {
-		place: "sender",
-		x: sender
-	};
-	if (segment.prop <= eps || t >= leaves + segment.prop - eps) return {
-		place: "receiver",
-		x: receiver
-	};
-	const top = geometry.y(leaves);
-	const bottom = geometry.y(leaves + segment.prop);
-	const part = bottom > top ? (geometry.y(t) - top) / (bottom - top) : 0;
-	const along = Number.isFinite(part) ? Math.min(1, Math.max(0, part)) : 0;
-	return {
-		place: along > 0 ? "wire" : "sender",
-		x: sender + along * (receiver - sender)
-	};
-}
-function bitMarks(scenario, t, geometry) {
-	const eps = slackOf(scenario);
-	const y = geometry.y(t);
-	const marks = [];
-	for (let packet = 0; packet < scenario.packets && Number.isFinite(y); packet++) {
-		const segment = segmentAt(scenario, packet, t);
-		if (!segment) continue;
-		const first = placeBit(segment, segment.start, t, eps, geometry);
-		const last = placeBit(segment, segment.end, t, eps, geometry);
-		if (!Number.isFinite(first.x) || !Number.isFinite(last.x)) continue;
-		marks.push({
-			packet,
-			bit: "first",
-			link: segment.link,
-			y,
-			...first
-		});
-		marks.push({
-			packet,
-			bit: "last",
-			link: segment.link,
-			y,
-			...last
-		});
-	}
-	return marks;
-}
-function wireRank(mark) {
-	return -mark.packet * 2 + (mark.bit === "first" ? 1 : 0);
-}
-function wireOrder(a, b) {
-	const dx = a.x - b.x;
-	return Math.abs(dx) >= .5 ? dx : wireRank(a) - wireRank(b);
-}
-function spreadMarks(marks) {
-	const sorted = marks.map((mark) => ({ ...mark })).sort(wireOrder);
-	let first = 0;
-	while (first < sorted.length) {
-		let last = first;
-		while (last + 1 < sorted.length && sorted[last + 1].x - sorted[last].x < 14) last++;
-		const group = sorted.slice(first, last + 1);
-		const middle = group.reduce((sum, mark) => sum + mark.x, 0) / group.length;
-		group.forEach((mark, i) => {
-			mark.x = middle + (i - (group.length - 1) / 2) * 14;
-		});
-		first = last + 1;
-	}
-	return sorted;
-}
 // src/engines/net/view/TimelineBits.tsx
-var PACKET_COLOURS$2 = 4;
 var MARK_HALF_PX = 6.5;
 var LEADER_GAP_PX = 8;
+var RING_PX = 10.5;
 var LABEL_BASELINE_PX = 11;
 var NAME_FONT = "700 11px ";
 var ENGLISH_FONT = "600 11px ";
@@ -7894,9 +8146,6 @@ function measureInPage(text) {
 	}
 	if (document.fonts.status === "loaded") measuredWidths.set(key, width);
 	return width;
-}
-function packetIndexOf(fact) {
-	return fact && "packet" in fact ? fact.packet - 1 : -1;
 }
 function BitShape({ mark }) {
 	const { x, y } = mark;
@@ -7935,11 +8184,11 @@ function Leader({ label }) {
 		y2: toY
 	});
 }
-function BitLabelPill({ label }) {
+function BitLabelPill({ label, isStep }) {
 	const { box, text } = label;
 	const [name, ...rest] = text.english.split(" ");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-		className: "nt-bitpill",
+		className: "nt-bitpill" + (isStep ? " nt-step" : ""),
 		x: box.left,
 		y: box.top,
 		width: box.width,
@@ -7963,63 +8212,111 @@ function BitLabelPill({ label }) {
 		]
 	})] });
 }
-function bitLayout(scenario, scales, now, height, focus, avoid) {
-	const y = scales.y(now);
+function frameMarks(scenario, scales, frame) {
+	const from = spreadMarks(bitMarks(scenario, frame.now, scales, frame.from));
+	if (frame.to === frame.from) return from;
+	return mixMarks(from, spreadMarks(bitMarks(scenario, frame.now, scales, frame.to)), frame.mix);
+}
+function bitLayout(scenario, scales, frame, height, focus, isSettled) {
+	const y = scales.y(frame.now);
 	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return {
 		marks: [],
-		labels: []
+		labels: [],
+		ringed: null,
+		focus: focus.packet
 	};
-	const marks = spreadMarks(bitMarks(scenario, now, scales));
+	const marks = frameMarks(scenario, scales, frame);
+	const area = {
+		left: scales.left + 2,
+		right: scales.width - 2,
+		top: scales.top,
+		bottom: height - 1
+	};
 	return {
 		marks,
-		labels: placeBitLabels(marks, {
-			left: scales.left + 2,
-			right: scales.width - 2,
-			top: scales.top,
-			bottom: height - 1
-		}, avoid ? [avoid] : [], focus, measureInPage)
+		labels: placeBitLabels(marks.filter((mark) => focus.packet < 0 || mark.packet === focus.packet), area, [], focus.packet, measureInPage),
+		ringed: isSettled ? marks.find((mark) => isStepBit(mark, focus)) ?? null : null,
+		focus: focus.packet
 	};
 }
-function colourOf(mark) {
-	return "nt-p" + mark.packet % PACKET_COLOURS$2;
+function isStepBit(mark, focus) {
+	return focus.bit !== null && mark.packet === focus.packet && mark.bit === focus.bit;
+}
+function fadeOf(mark) {
+	return mark.opacity === void 0 || mark.opacity >= 1 ? void 0 : { opacity: mark.opacity };
+}
+function markAnchor(mark) {
+	return "timeline.P" + (mark.packet + 1) + "." + mark.bit;
+}
+function StepRing({ mark }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		className: "nt-ring",
+		...anchor(EVENT_RING),
+		cx: mark.x,
+		cy: mark.y,
+		r: RING_PX
+	});
+}
+function InPacket(props) {
+	const { mark, focus, name } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+		className: packetClass(mark.packet, focus),
+		style: fadeOf(mark),
+		...name ? anchor(name) : {},
+		children: props.children
+	});
 }
 function BitMarks({ layout }) {
-	const { marks, labels } = layout;
+	const { marks, labels, ringed, focus } = layout;
 	if (!marks.length) return null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
 		className: "nt-bits",
 		"aria-hidden": "true",
 		children: [
-			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-				className: colourOf(label.mark),
+			ringed ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepRing, { mark: ringed }) : null,
+			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InPacket, {
+				mark: label.mark,
+				focus,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Leader, { label })
-			}, "r" + label.mark.packet + label.mark.bit)),
-			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-				className: colourOf(label.mark),
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitLabelPill, { label })
-			}, "l" + label.mark.packet + label.mark.bit)),
-			marks.map((mark) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-				className: colourOf(mark),
+			}, "r" + markAnchor(label.mark))),
+			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InPacket, {
+				mark: label.mark,
+				focus,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitLabelPill, {
+					label,
+					isStep: label.mark === ringed
+				})
+			}, "l" + markAnchor(label.mark))),
+			marks.map((mark) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InPacket, {
+				mark,
+				focus,
+				name: markAnchor(mark),
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitShape, { mark })
-			}, "m" + mark.packet + mark.bit))
+			}, markAnchor(mark)))
 		]
 	});
 }
-function BitChip({ bit }) {
-	const size = 17;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+function BitChip({ bit, isRinged }) {
+	const size = isRinged ? 25 : 17;
+	const mark = {
+		packet: 0,
+		bit,
+		link: 0,
+		place: "wire",
+		x: size / 2,
+		y: size / 2
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 		className: "nt-chip-bit nt-p0",
 		width: size,
 		height: size,
 		"aria-hidden": "true",
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitShape, { mark: {
-			packet: 0,
-			bit,
-			link: 0,
-			place: "wire",
-			x: size / 2,
-			y: size / 2
-		} })
+		children: [isRinged ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			className: "nt-ring",
+			cx: mark.x,
+			cy: mark.y,
+			r: RING_PX
+		}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitShape, { mark })]
 	});
 }
 var MIN_COL_PX = 96;
@@ -8222,16 +8519,10 @@ var LABEL_MIN_PX = 14;
 var TWO_LINES_PX = 30;
 var LABEL_EDGE_PX = 10;
 var CHAR_PX = 6.9;
-var EV_HEIGHT = 19;
-var EV_CHAR_PX = 7.3;
 var P_LABEL_HALF = 10;
 var STRETCH_FACTOR = 1.5;
 function later(time, now) {
 	return time > now ? " nt-later" : "";
-}
-function isUnder(x, y, avoid) {
-	if (!avoid) return false;
-	return x + P_LABEL_HALF > avoid.left && x - P_LABEL_HALF < avoid.left + avoid.width && y + P_LABEL_HALF > avoid.top && y - P_LABEL_HALF < avoid.top + EV_HEIGHT;
 }
 function isInWindow(segment, scales) {
 	const top = scales.y(segment.start);
@@ -8274,7 +8565,7 @@ function bandTextRect(text) {
 }
 function BandLabel(props) {
 	const { x, middleY, lines } = props.text;
-	const className = "nt-plabel" + later(props.time, props.now);
+	const className = "nt-plabel" + later(props.time, props.now) + (props.muted ? " nt-muted" : "");
 	if (lines.length > 1) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
 		className,
 		x,
@@ -8311,15 +8602,14 @@ function Jag(props) {
 		points: points.map((p) => p.join(",")).join(" ")
 	});
 }
-function isClear(text, scales, clear) {
-	const { x, middleY: y } = text;
+function isClear(text, scales, hides) {
+	const y = text.middleY;
 	const isInPlot = y > scales.top + LABEL_EDGE_PX && y < scales.top + scales.plot - 4;
 	const rect = bandTextRect(text);
-	const isHidden = clear.hides.some((box) => overlaps$1(box, rect));
-	return isInPlot && !isUnder(x, y, clear.avoid) && !isHidden;
+	return isInPlot && !hides.some((box) => overlaps$1(box, rect));
 }
 function BandMarks(props) {
-	const { scenario, scales, now } = props;
+	const { scenario, scales, now, hides, focus } = props;
 	const shown = scenario.segments.filter((segment) => isInWindow(segment, scales));
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [shown.filter((segment) => isStretched(segment, scales)).map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Jag, {
 		segment,
@@ -8328,13 +8618,14 @@ function BandMarks(props) {
 	}, segment.packet + ":" + segment.link)), shown.filter((segment) => scales.y(segment.end) - scales.y(segment.start) >= LABEL_MIN_PX).map((segment) => ({
 		segment,
 		text: bandText(segment, scales)
-	})).filter(({ text }) => isClear(text, scales, props)).map(({ segment, text }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandLabel, {
+	})).filter(({ text }) => isClear(text, scales, hides)).map(({ segment, text }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandLabel, {
 		text,
 		time: (segment.start + segment.end) / 2,
-		now
+		now,
+		muted: isMuted(segment.packet, focus)
 	}, segment.packet + ":" + segment.link))] });
 }
-function coveredBy(avoid, hides) {
+function coveredBy(hides) {
 	return (x, y) => {
 		const around = {
 			left: x - P_LABEL_HALF,
@@ -8342,71 +8633,28 @@ function coveredBy(avoid, hides) {
 			width: 20,
 			height: 12
 		};
-		return isUnder(x, y, avoid) || hides.some((box) => overlaps$1(box, around));
-	};
-}
-function labelBoxOf(scenario, scales, event, fact) {
-	const text = fact ? say$2(TEXTS.events, fact) : "";
-	if (!event || !text) return null;
-	const y = scales.y(event.time);
-	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return null;
-	const x = scales.x(event.node);
-	const width = Math.round(text.length * EV_CHAR_PX) + 12;
-	const isLast = event.node === scenario.nodes.length - 1;
-	const top = y - EV_HEIGHT - 6 < scales.top ? y + 8 : y - EV_HEIGHT - 6;
-	return {
-		left: !isLast && x + 10 + width <= scales.width - 2 ? x + 10 : Math.max(2, x - 10 - width),
-		top,
-		width,
-		text
-	};
-}
-function eventPillRect(box) {
-	return {
-		left: box.left,
-		top: box.top,
-		width: box.width,
-		height: EV_HEIGHT
+		return hides.some((box) => overlaps$1(box, around));
 	};
 }
 function NowMark(props) {
-	const { scales, now, event, box } = props;
+	const { scales, now, dotNode } = props;
 	const y = scales.y(now);
 	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
 		className: "nt-nowg",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-				className: "nt-now",
-				x1: scales.left - 8,
-				x2: scales.width - 12,
-				y1: y,
-				y2: y
-			}),
-			event ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				className: "nt-dot",
-				...anchor(EVENT_DOT),
-				cx: scales.x(event.node),
-				cy: y,
-				r: 6
-			}) : null,
-			box ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
-				...anchor(EVENT_LABEL),
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-					className: "nt-evpill",
-					x: box.left,
-					y: box.top,
-					width: box.width,
-					height: EV_HEIGHT,
-					rx: 4
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-					className: "nt-evlabel",
-					x: box.left + box.width / 2,
-					y: box.top + 14,
-					children: box.text
-				})]
-			}) : null
-		]
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			className: "nt-now",
+			x1: scales.left - 8,
+			x2: scales.width - 12,
+			y1: y,
+			y2: y
+		}), dotNode >= 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			className: "nt-dot",
+			...anchor(EVENT_DOT),
+			cx: scales.x(dotNode),
+			cy: y,
+			r: 6
+		}) : null]
 	});
 }
 function ScaleNote({ scenario, scales }) {
@@ -8433,7 +8681,6 @@ function ScaleNote({ scenario, scales }) {
 	});
 }
 // src/engines/net/view/TimelineQueues.tsx
-var PACKET_COLOURS$1 = 4;
 var LABEL_GAP_PX = 12;
 var MIN_BOX_PX = 2;
 function QueueLanes(props) {
@@ -8451,12 +8698,12 @@ function QueueLanes(props) {
 	});
 }
 function QueueBox(props) {
-	const { wait, scales } = props;
+	const { wait, scales, focus } = props;
 	const slotWidth = 22 / wait.slots;
 	const top = scales.y(wait.from);
 	const height = Math.max(MIN_BOX_PX, scales.y(wait.to) - top);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-		className: "nt-qbox nt-p" + wait.packet % PACKET_COLOURS$1,
+		className: "nt-qbox " + packetClass(wait.packet, focus),
 		x: laneLeft(scales.x(wait.node), wait.node) + wait.slot * slotWidth + .5,
 		y: top,
 		width: Math.max(1, slotWidth - 1),
@@ -8464,10 +8711,11 @@ function QueueBox(props) {
 	});
 }
 function QueueBoxes(props) {
-	const { scenario, scales } = props;
+	const { scenario, scales, focus } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", { children: queueWaits(scenario).map((wait) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueBox, {
 		wait,
-		scales
+		scales,
+		focus
 	}, wait.packet + ":" + wait.node)) });
 }
 function namedWaits(scenario, scales, isCovered) {
@@ -8484,12 +8732,12 @@ function namedWaits(scenario, scales, isCovered) {
 	});
 }
 function QueueLabels(props) {
-	const { scenario, scales, now, isCovered } = props;
+	const { scenario, scales, now, isCovered, focus } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", { children: namedWaits(scenario, scales, isCovered).map(({ wait, y }) => {
 		const left = laneLeft(scales.x(wait.node), wait.node);
 		const isSource = wait.node === 0;
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-			className: "nt-qlabel" + (wait.from > now ? " nt-later" : ""),
+			className: "nt-qlabel" + (wait.from > now ? " nt-later" : "") + (isMuted(wait.packet, focus) ? " nt-muted" : ""),
 			x: isSource ? left + 22 + 3 : left - 3,
 			y,
 			textAnchor: isSource ? "start" : "end",
@@ -8499,7 +8747,6 @@ function QueueLabels(props) {
 }
 // src/engines/net/view/Timeline.tsx
 var BOTTOM = 16;
-var PACKET_COLOURS = 4;
 var SCROLL_MARGIN = 10;
 var SCROLL_MARGIN_RIGHT = 200;
 var lastWidth = 560;
@@ -8580,9 +8827,10 @@ function Stretch(props) {
 		y2: scales.y(interval.to)
 	});
 }
-function Happenings({ scenario, scales }) {
+function Happenings(props) {
+	const { scenario, scales, focus } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [scenario.segments.map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
-		className: "nt-band nt-p" + segment.packet % PACKET_COLOURS,
+		className: "nt-band " + packetClass(segment.packet, focus),
 		points: bandPoints(segment, scales)
 	}, segment.packet + ":" + segment.link)), scenario.procs.map((interval) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stretch, {
 		interval,
@@ -8636,21 +8884,17 @@ function heightOf(scales) {
 	return scales.top + scales.plot + BOTTOM;
 }
 function Diagram(props) {
-	const { scenario, event, step, now, isSettled, scales } = props;
+	const { scenario, event, tag, focus, frame, scales } = props;
 	const id = (0, import_react.useId)().replace(/[^A-Za-z0-9]/g, "");
-	const nowY = Math.max(scales.top, Math.min(scales.top + scales.plot, scales.y(now)));
+	const nowY = Math.max(scales.top, Math.min(scales.top + scales.plot, scales.y(frame.now)));
 	const height = heightOf(scales);
-	const box = isSettled ? labelBoxOf(scenario, scales, event, step.fact) : null;
-	const pill = box ? eventPillRect(box) : null;
-	const bits = bitLayout(scenario, scales, now, height, packetIndexOf(step.fact), pill);
-	const hides = bits.labels.map((label) => label.box);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 		className: "nt-svg",
 		width: scales.width,
 		height,
 		viewBox: "0 0 " + scales.width + " " + height,
 		role: "img",
-		"aria-label": describe(scenario, event, step.tag),
+		"aria-label": describe(scenario, event, tag),
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipDefs, {
 				id,
@@ -8666,7 +8910,8 @@ function Diagram(props) {
 				id,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticHappenings, {
 					scenario,
-					scales
+					scales,
+					focus: focus.packet
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticLanes, {
@@ -8677,31 +8922,45 @@ function Diagram(props) {
 				id,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticQueueBoxes, {
 					scenario,
-					scales
+					scales,
+					focus: focus.packet
 				})
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandMarks, {
-				scenario,
-				scales,
-				now,
-				avoid: box,
-				hides
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLabels, {
-				scenario,
-				scales,
-				now,
-				isCovered: coveredBy(box, hides)
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowMark, {
-				scales,
-				now,
-				event: isSettled ? event : void 0,
-				box
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitMarks, { layout: bits })
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowLayers, {
+				...props,
+				height
+			})
 		]
 	});
+}
+function NowLayers(props) {
+	const { scenario, event, focus, frame, isSettled, scales, height } = props;
+	const now = frame.now;
+	const bits = bitLayout(scenario, scales, frame, height, focus, isSettled);
+	const hides = bits.labels.map((label) => label.box);
+	const dotNode = isSettled && event && !bits.ringed ? event.node : -1;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandMarks, {
+			scenario,
+			scales,
+			now,
+			hides,
+			focus: focus.packet
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLabels, {
+			scenario,
+			scales,
+			now,
+			isCovered: coveredBy(hides),
+			focus: focus.packet
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowMark, {
+			scales,
+			now,
+			dotNode
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitMarks, { layout: bits })
+	] });
 }
 function NotDrawable({ ref }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -8716,7 +8975,7 @@ function NotDrawable({ ref }) {
 	});
 }
 function Timeline(props) {
-	const { scenario, event, layout, now, step, isSettled, stageRef } = props;
+	const { scenario, event, layout, frame, stageRef } = props;
 	const { boxRef, width, prefs, change, map, scales } = layout;
 	const eventX = scales && event ? scales.x(event.node) : -1;
 	const gutter = scales ? scales.left : 0;
@@ -8731,7 +8990,7 @@ function Timeline(props) {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimelineControls, {
 			scenario,
 			map,
-			now,
+			now: frame.now,
 			width,
 			prefs,
 			onChange: change
@@ -8743,17 +9002,13 @@ function Timeline(props) {
 				className: "nt-box",
 				ref: boxRef,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Diagram, {
-					scenario,
-					event,
-					step,
-					now,
-					isSettled,
+					...props,
 					scales
 				})
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AxisPin, {
 				scenario,
 				scales,
-				now,
+				now: frame.now,
 				height: heightOf(scales)
 			})]
 		}),
@@ -8775,66 +9030,109 @@ function layoutKey(layout) {
 	].join("|");
 }
 function TimelineLegend(props) {
-	const { scenario } = props;
 	const words = TEXTS.words;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "nt-legend",
 		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0" }),
 				english: "done",
 				hebrew: words.done
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0 nt-chip-later" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0 nt-chip-later" }),
 				english: "to come",
 				hebrew: words.toCome
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-now" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-now" }),
 				english: "now",
 				hebrew: words.now
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "first" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, {
+					bit: "first",
+					isRinged: true
+				}),
+				english: "this step",
+				hebrew: words.thisStep
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "first" }),
 				english: "first bit",
 				hebrew: words.firstBit
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "last" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "last" }),
 				english: "last bit",
 				hebrew: words.lastBit
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }),
 				english: "queue",
 				hebrew: words.queue
-			})] }),
-			scenario.procs.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-proc" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+			}),
+			props.scenario.procs.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendItem, {
+				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-proc" }),
 				english: "processing",
 				hebrew: words.processing
-			})] }) : null
+			}) : null
 		]
 	});
 }
-function useArrival(isGliding) {
-	const [hasGlide] = (0, import_react.useState)(isGliding);
-	const { stage } = useMotion(isGliding ? "gliding" : "arrived", hasGlide ? "next" : "jump", isGliding ? null : ARRIVAL);
+function LegendItem(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [props.chip, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+		english: props.english,
+		hebrew: props.hebrew
+	})] });
+}
+function useArrival(isGliding, transition) {
+	const { stage } = useMotion(isGliding ? "gliding" : "arrived", transition, isGliding ? null : ARRIVAL);
 	return stage;
 }
-function ScenarioView(props) {
-	const { scenario, step, index, count, transition, previous } = props;
-	const event = step.event;
-	const stepTime = event ? event.time : 0;
-	const layout = useTimelineLayout(scenario, stepTime);
-	const span = layout.map && previous ? glideSpan(layout.map, previous.time, stepTime) : null;
-	const { progress, isGliding, finish } = useStepTransition(index, span ? transition : "jump");
+function usePlan(props, layout, states) {
+	const { scenario, previous } = props;
+	const { map, scales } = layout;
+	return (0, import_react.useMemo)(() => map && scales && previous ? glidePlan(scenario, map, scales, states, previous.time) : null, [
+		scenario,
+		map,
+		scales,
+		states,
+		previous
+	]);
+}
+function useGlide(props, layout) {
+	const { steps, index, transition } = props;
+	const states = (0, import_react.useMemo)(() => glideStates(steps, index), [steps, index]);
+	const plan = usePlan(props, layout, states);
+	const { progress, isGliding, finish } = useStepTransition(index, plan ? transition : "jump");
 	const [firstLayout] = (0, import_react.useState)(() => layoutKey(layout));
 	const isMoved = layoutKey(layout) !== firstLayout;
 	(0, import_react.useEffect)(() => {
 		if (isMoved) finish();
 	}, [isMoved, finish]);
-	const glide = isGliding && !isMoved ? span : null;
-	const now = glide && layout.map ? glideTime(layout.map, glide, progress) : stepTime;
-	const stageRef = useArrival(glide !== null);
+	const glide = isGliding && !isMoved ? plan : null;
+	if (!glide || !layout.map) return {
+		frame: settledFrame(states),
+		isSettled: true
+	};
+	return {
+		frame: glideFrame(layout.map, glide, states, progress),
+		isSettled: false
+	};
+}
+function ScenarioView(props) {
+	const { scenario, step, index, count, transition } = props;
+	const event = step.event;
+	const layout = useTimelineLayout(scenario, event ? event.time : 0);
+	const { frame, isSettled } = useGlide(props, layout);
+	const stageRef = useArrival(!isSettled, transition);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowStatus, {
 		scenario,
 		event,
-		now,
+		fact: step.fact,
+		now: frame.now,
+		context: frameContext(frame),
 		index,
 		count
 	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", {
@@ -8842,9 +9140,10 @@ function ScenarioView(props) {
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Timeline, {
 			scenario,
 			event,
-			step,
-			now,
-			isSettled: glide === null,
+			tag: step.tag,
+			focus: focusOf(step),
+			frame,
+			isSettled,
 			layout,
 			stageRef
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimelineLegend, { scenario })]
@@ -9205,6 +9504,7 @@ function drawStep(context) {
 	const islands = netIslands({
 		drawKey: context.viewKey,
 		step,
+		steps: state.steps,
 		index: state.idx,
 		count: state.steps.length,
 		scenario: state.scenario,
@@ -9515,13 +9815,13 @@ var NET_STEPS = [
 	onScenario({
 		id: "n-now",
 		title: "מה כל צומת עושה עכשיו",
-		text: say$1("שורה לכל צומת, ברגע הנוכחי t: שולח, מקבל, מחכה בתור או פנוי.", "הצומת שבו קרה האירוע של הצעד הזה מסומן."),
+		text: say$1("שורה לכל צומת, ברגע הנוכחי t: שולח, מקבל, מחכה בתור או פנוי.", "הצומת שבו קרה האירוע של הצעד הזה מסומן, ובכותרת כתוב מה קורה בצעד."),
 		target: ".net-now"
 	}),
 	onScenario({
 		id: "n-timeline",
 		title: "תרשים ציר הזמן",
-		text: say$1("כל צומת הוא קו אנכי, והזמן יורד למטה. כל חבילה (P1, P2, ...) היא רצועה מצומת", "לצומת: הגובה שלה הוא זמן השידור, והשיפוע הוא זמן ההתפשטות. מה שכבר קרה מלא, מה", "שעוד יקרה חיוור ומקווקו, והנקודה מסמנת את האירוע."),
+		text: say$1("כל צומת הוא קו אנכי, והזמן יורד למטה. כל חבילה (P1, P2, ...) היא רצועה מצומת", "לצומת: הגובה שלה הוא זמן השידור, והשיפוע הוא זמן ההתפשטות. מה שכבר קרה מלא, מה", "שעוד יקרה חיוור ומקווקו. הביט של הצעד מוקף בטבעת צהובה, במקום שבו הוא", "נמצא; החבילה של הצעד בצבע מלא, והשאר חיוורות."),
 		target: ".net-timeline"
 	}),
 	onScenario({
@@ -18101,6 +18401,10 @@ function textDirection(text) {
 	const match = FIRST_STRONG.exec(text);
 	return match && /[^A-Za-zÀ-ɏ]/.test(match[0]) ? "rtl" : "ltr";
 }
+function svgAnchor(anchor, direction) {
+	if (direction === "ltr" || anchor === "middle") return anchor;
+	return anchor === "start" ? "end" : "start";
+}
 function edgePoint(box, towardX, towardY, gap) {
 	const dx = towardX - box.cx;
 	const dy = towardY - box.cy;
@@ -19442,12 +19746,13 @@ function NameLines(props) {
 	}) : null] });
 }
 function SvgText(props) {
+	const direction = textDirection(props.text);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 		className: props.className,
 		x: props.x,
 		y: props.y,
-		textAnchor: props.anchor || "middle",
-		direction: textDirection(props.text),
+		textAnchor: svgAnchor(props.anchor || "middle", direction),
+		direction,
 		fontSize: props.size,
 		...props.name,
 		children: props.text
@@ -28939,7 +29244,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e7fd351 מ-2026-11-09 16:22"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e7fd351</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit a40b5ae מ-2026-11-09 21:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · a40b5ae</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

@@ -1757,9 +1757,14 @@ body .tour-roomy .wb-grid {
   stroke-width: 2;
 }
 
+/* the label in the text's own colour, with a halo, so it reads beside its coloured bracket */
 .sd-span text {
-  fill: var(--sd-c);
+  fill: var(--ink);
   font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 
 .sd-note rect {
@@ -12262,6 +12267,7 @@ var FIELDS = {
 		from: "anchor?",
 		to: "anchor?",
 		was: "anchor?",
+		into: "flag?",
 		tone: "tone?",
 		ms: "ms?"
 	},
@@ -12293,7 +12299,8 @@ var RULE_CHECKS = {
 	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
 	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
 	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
-	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
+	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px",
+	flag: (value) => typeof value === "boolean" ? null : "not true or false"
 };
 var TIMING_FIELDS = {
 	delay: "delay?",
@@ -12635,6 +12642,9 @@ var MotionPlayer = class {
 };
 // src/shared/motion/geometry.ts
 var ARROW_GAP_PX = 3;
+function tipGap(isInto) {
+	return isInto ? -7 : ARROW_GAP_PX;
+}
 function stageBoxOf(probe, probeSize) {
 	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
 	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
@@ -12666,8 +12676,8 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 	const centre = centreOf(rect);
 	const dx = toward.x - centre.x;
 	const dy = toward.y - centre.y;
-	const halfWidth = rect.width / 2 + gap;
-	const halfHeight = rect.height / 2 + gap;
+	const halfWidth = Math.max(0, rect.width / 2 + gap);
+	const halfHeight = Math.max(0, rect.height / 2 + gap);
 	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
 	if (!Number.isFinite(reach) || reach >= 1) return centre;
 	return {
@@ -12675,9 +12685,9 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 		y: centre.y + dy * reach
 	};
 }
-function arrowBetween(from, to) {
+function arrowBetween(from, to, isInto = false) {
 	const tail = edgeToward(from, centreOf(to));
-	const tip = edgeToward(to, centreOf(from));
+	const tip = edgeToward(to, centreOf(from), tipGap(isInto));
 	return {
 		tail,
 		tip,
@@ -13074,9 +13084,10 @@ function playDraw(scene, track, motion) {
 	const from = scene.anchors.get(motion.from);
 	const to = scene.anchors.get(motion.to);
 	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
-	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const isInto = motion.into === true;
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to), isInto);
 	const was = motion.was ? scene.placeOf(motion.was) : null;
-	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const start = was ? edgeToward(was, arrow.tail, tipGap(isInto)) : arrow.tail;
 	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
 	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
 	swingArrow(scene, track, motion, {
@@ -13090,7 +13101,7 @@ function retractArrow(scene, track, motion, fromName, wasName) {
 	const from = scene.anchors.get(fromName);
 	const was = scene.placeOf(wasName);
 	if (!from || !was) return "no end " + (from ? wasName : fromName);
-	const arrow = arrowBetween(scene.rect(from), was);
+	const arrow = arrowBetween(scene.rect(from), was, motion.into === true);
 	swingArrow(scene, track, motion, {
 		angle: arrow.angle,
 		startLength: arrow.length
@@ -18598,6 +18609,10 @@ function textDirection(text) {
 	const match = FIRST_STRONG.exec(text);
 	return match && /[^A-Za-zÀ-ɏ]/.test(match[0]) ? "rtl" : "ltr";
 }
+function svgAnchor(anchor, direction) {
+	if (direction === "ltr" || anchor === "middle") return anchor;
+	return anchor === "start" ? "end" : "start";
+}
 function edgePoint(box, towardX, towardY, gap) {
 	const dx = towardX - box.cx;
 	const dy = towardY - box.cy;
@@ -19939,12 +19954,13 @@ function NameLines(props) {
 	}) : null] });
 }
 function SvgText(props) {
+	const direction = textDirection(props.text);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 		className: props.className,
 		x: props.x,
 		y: props.y,
-		textAnchor: props.anchor || "middle",
-		direction: textDirection(props.text),
+		textAnchor: svgAnchor(props.anchor || "middle", direction),
+		direction,
 		fontSize: props.size,
 		...props.name,
 		children: props.text
@@ -29436,7 +29452,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e7fd351 מ-2026-11-09 16:22"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e7fd351</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit a40b5ae מ-2026-11-09 21:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · a40b5ae</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

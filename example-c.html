@@ -1757,9 +1757,14 @@ body .tour-roomy .wb-grid {
   stroke-width: 2;
 }
 
+/* the label in the text's own colour, with a halo, so it reads beside its coloured bracket */
 .sd-span text {
-  fill: var(--sd-c);
+  fill: var(--ink);
   font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 
 .sd-note rect {
@@ -2709,6 +2714,66 @@ body.debugging .tour-roomy .wb-grid {
 .stk-stage{position:relative}
 .v > [data-anchor]{display:inline-block}
 .stk-stage.still .vrow.fresh > span{animation:none}
+
+/* Index markers (view/index-markers.ts, IndexMarks.tsx, docs/VITE.md 36): the running
+   function's i, lo, mid, hi under the array cell each marks. A row of cells with markers is a grid
+   of two rows, the cells and a lane of slots, so each slot stands under its cell; a slot is 0 wide,
+   so its names never widen the cell's column, and markers of one cell stand one above the other
+   (the lane grows: view/stack-motion.ts slides the stack). A 2-D array's row markers stand in a
+   room beside each row. Each marker is its own box (inline-block), so it can slide and grow. */
+.acells .arow.ix-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  column-gap: 3px;
+  row-gap: 2px;
+  justify-content: start;
+}
+
+.ix-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-height: 18px;
+  width: 0;
+  min-width: 0;
+  justify-self: center;
+  white-space: nowrap;
+}
+
+.ix {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 9px;
+  font: 700 12px/18px var(--f-mono);
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent-text) 16%, transparent);
+}
+
+.ix::before {
+  content: "\25B2";
+  margin-inline-end: 1px;
+  font-size: 8px;
+  vertical-align: 1px;
+}
+
+.ix-gut {
+  align-self: center;
+  padding-inline-start: 4px;
+  white-space: nowrap;
+}
+
+.arow.ix-grid > .ix-gut {
+  grid-row: 1;
+}
+
+.ix.ix-r::before {
+  content: "\25C2";
+  margin-inline-end: 3px;
+  font-size: 10px;
+  vertical-align: 0;
+}
 </style>
   <script type="module" crossorigin>// \0rolldown/runtime.js
 var __defProp = Object.defineProperty;
@@ -4134,7 +4199,7 @@ function initialiserCallsFunction(tokens, variable) {
 }
 // src/engines/c/stepping/instrumenter.js
 var NO_FUNCTION = -1;
-var MAIN_FILE$5 = "main.c";
+var MAIN_FILE$6 = "main.c";
 var Instrumentation = class {
 	constructor(source, options) {
 		this.source = source;
@@ -4150,7 +4215,7 @@ var Instrumentation = class {
 		this.globalIds = [];
 		this.functionId = NO_FUNCTION;
 		this.returnType = null;
-		this.file = options.file || MAIN_FILE$5;
+		this.file = options.file || MAIN_FILE$6;
 		const base = options.base || {};
 		this.pointBase = base.point || 0;
 		this.variableBase = base.var || 0;
@@ -4340,7 +4405,7 @@ function parseParameters(run, parenOpen, parenClose) {
 	return parameters;
 }
 // src/engines/c/stepping/multi-file.js
-var MAIN_FILE$4 = "main.c";
+var MAIN_FILE$5 = "main.c";
 var GLOBALS_FUNCTION_PREFIX = "__lab_globals_";
 function steppedFileNames(userFiles) {
 	return Object.keys(userFiles || {}).filter((name) => name.endsWith(".c") && name !== "main.c").sort();
@@ -4419,7 +4484,7 @@ function instrumentProgram(mainCode, userFiles, keepPlain) {
 		files[file.name] = file.code;
 	});
 	const metas = [main.meta].concat(others.instrumented.map((file) => file.meta));
-	const names = [MAIN_FILE$4].concat(others.instrumented.map((file) => file.name));
+	const names = [MAIN_FILE$5].concat(others.instrumented.map((file) => file.name));
 	return {
 		main: main.code,
 		files,
@@ -4466,9 +4531,9 @@ function friendlyErrors(errors) {
 }
 // src/engines/c/stepping/tracker.js
 var assignmentPatterns = /* @__PURE__ */ new Map();
-var MAIN_FILE$3 = "main.c";
+var MAIN_FILE$4 = "main.c";
 function sourceLinesByFile(options) {
-	const sources = options.sources || { [MAIN_FILE$3]: options.source || "" };
+	const sources = options.sources || { [MAIN_FILE$4]: options.source || "" };
 	return new Map(Object.entries(sources).map(([name, text]) => [name, String(text).split("\n")]));
 }
 function assignmentPattern(name) {
@@ -4554,7 +4619,7 @@ var StepTracker = class {
 		if (!this.isRecording) return;
 		const frames = this.stack.map((frame) => this.snapshotFrame(frame, bytesOf));
 		const globals = [...this.globals.entries()].map(([id, address]) => this.snapshotVariable(null, id, address, bytesOf));
-		const file = point.file || MAIN_FILE$3;
+		const file = point.file || MAIN_FILE$4;
 		this.steps.push({
 			p: pointIndex,
 			line: point.line,
@@ -4565,7 +4630,7 @@ var StepTracker = class {
 		});
 	}
 	lineTextOf(point) {
-		return (this.sourceLines.get(point.file || MAIN_FILE$3) || [])[point.line - 1] || "";
+		return (this.sourceLines.get(point.file || MAIN_FILE$4) || [])[point.line - 1] || "";
 	}
 	markAssignedVariables(pointIndex, point) {
 		const lineTexts = [];
@@ -5659,6 +5724,7 @@ var FIELDS = {
 		from: "anchor?",
 		to: "anchor?",
 		was: "anchor?",
+		into: "flag?",
 		tone: "tone?",
 		ms: "ms?"
 	},
@@ -5690,7 +5756,8 @@ var RULE_CHECKS = {
 	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
 	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
 	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
-	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
+	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px",
+	flag: (value) => typeof value === "boolean" ? null : "not true or false"
 };
 var TIMING_FIELDS = {
 	delay: "delay?",
@@ -6048,6 +6115,9 @@ var MotionPlayer = class {
 };
 // src/shared/motion/geometry.ts
 var ARROW_GAP_PX = 3;
+function tipGap(isInto) {
+	return isInto ? -7 : ARROW_GAP_PX;
+}
 function stageBoxOf(probe, probeSize) {
 	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
 	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
@@ -6079,8 +6149,8 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 	const centre = centreOf(rect);
 	const dx = toward.x - centre.x;
 	const dy = toward.y - centre.y;
-	const halfWidth = rect.width / 2 + gap;
-	const halfHeight = rect.height / 2 + gap;
+	const halfWidth = Math.max(0, rect.width / 2 + gap);
+	const halfHeight = Math.max(0, rect.height / 2 + gap);
 	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
 	if (!Number.isFinite(reach) || reach >= 1) return centre;
 	return {
@@ -6088,9 +6158,9 @@ function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
 		y: centre.y + dy * reach
 	};
 }
-function arrowBetween(from, to) {
+function arrowBetween(from, to, isInto = false) {
 	const tail = edgeToward(from, centreOf(to));
-	const tip = edgeToward(to, centreOf(from));
+	const tip = edgeToward(to, centreOf(from), tipGap(isInto));
 	return {
 		tail,
 		tip,
@@ -6487,9 +6557,10 @@ function playDraw(scene, track, motion) {
 	const from = scene.anchors.get(motion.from);
 	const to = scene.anchors.get(motion.to);
 	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
-	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const isInto = motion.into === true;
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to), isInto);
 	const was = motion.was ? scene.placeOf(motion.was) : null;
-	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const start = was ? edgeToward(was, arrow.tail, tipGap(isInto)) : arrow.tail;
 	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
 	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
 	swingArrow(scene, track, motion, {
@@ -6503,7 +6574,7 @@ function retractArrow(scene, track, motion, fromName, wasName) {
 	const from = scene.anchors.get(fromName);
 	const was = scene.placeOf(wasName);
 	if (!from || !was) return "no end " + (from ? wasName : fromName);
-	const arrow = arrowBetween(scene.rect(from), was);
+	const arrow = arrowBetween(scene.rect(from), was, motion.into === true);
 	swingArrow(scene, track, motion, {
 		angle: arrow.angle,
 		startLength: arrow.length
@@ -7749,7 +7820,7 @@ function prepare(code, userFiles, keepPlain) {
 		files[name] = name.endsWith(".c") ? "#include \"labrt.h\"\n#line 1 \"" + name + "\"\n" + text : text;
 	});
 	program.meta.psz = 8;
-	const sources = Object.assign({ [MAIN_FILE$4]: code }, otherFiles);
+	const sources = Object.assign({ [MAIN_FILE$5]: code }, otherFiles);
 	return {
 		src: NATIVE_PREFIX + program.main,
 		files,
@@ -7995,7 +8066,7 @@ function stackSummary(meta, step) {
 	return (count === 1 ? "1 frame" : count + " frames") + (name ? " · " + name + "()" : "");
 }
 // src/engines/c/view/call-text.ts
-var KEYWORDS$1 = /* @__PURE__ */ new Set([
+var KEYWORDS$2 = /* @__PURE__ */ new Set([
 	"return",
 	"sizeof",
 	"int",
@@ -8084,13 +8155,13 @@ function namesIn(text) {
 	const names = [];
 	for (const match of code.matchAll(/(^|[^\w.>])([A-Za-z_]\w*)(\s*\()?/g)) {
 		const name = match[2];
-		if (!match[3] && !KEYWORDS$1.has(name) && !names.includes(name)) names.push(name);
+		if (!match[3] && !KEYWORDS$2.has(name) && !names.includes(name)) names.push(name);
 	}
 	return names;
 }
 function plainName(argument) {
 	const match = /^\s*([A-Za-z_]\w*)\s*$/.exec(argument);
-	return match && !KEYWORDS$1.has(match[1]) ? match[1] : null;
+	return match && !KEYWORDS$2.has(match[1]) ? match[1] : null;
 }
 function elementOf(argument) {
 	const match = /^\s*([A-Za-z_]\w*)\s*\[\s*([A-Za-z_]\w*|\d+)\s*\]\s*$/.exec(argument);
@@ -8105,12 +8176,12 @@ function returnedIn(line) {
 	return match ? match[2].trim() : null;
 }
 // src/engines/c/view/call-motion.ts
-var MAIN_FILE$2 = "main.c";
+var MAIN_FILE$3 = "main.c";
 function lineOf(meta, frame, code) {
 	const points = meta.points;
 	const point = points && frame.point >= 0 ? points[frame.point] : void 0;
 	if (!point || !code.lineText) return "";
-	return String(code.lineText(point.file || MAIN_FILE$2, point.line) || "");
+	return String(code.lineText(point.file || MAIN_FILE$3, point.line) || "");
 }
 function isPlainValue$1(row) {
 	return row.cells.length === 1 && row.cells[0].value.t !== "ptr";
@@ -8207,6 +8278,335 @@ function returnFlight(before, after, common, meta, code) {
 		to: receiver.cell.anchor,
 		value
 	};
+}
+// src/shared/index-names.ts
+var INDEX_NAME = /* @__PURE__ */ new RegExp("^(?:[ijklmpqr]\\d?|lo|hi|mid|low|high|left|right|start|end|begin|from|to|idx|index|pos|cur|top|front|rear|head|tail|min|max|minIdx|maxIdx|first|last|slow|fast|w|write|read)$");
+function isIndexName(name) {
+	return INDEX_NAME.test(name);
+}
+// src/engines/c/view/index-uses.ts
+var KEYWORDS$1 = /* @__PURE__ */ new Set([
+	"return",
+	"sizeof",
+	"int",
+	"char",
+	"long",
+	"short",
+	"float",
+	"double",
+	"unsigned",
+	"signed",
+	"const",
+	"struct",
+	"union",
+	"enum",
+	"void",
+	"if",
+	"else",
+	"while",
+	"for",
+	"do",
+	"switch",
+	"case",
+	"NULL",
+	"size_t"
+]);
+var MAX_TEXT = 4e4;
+var INDEXED = /(?<![\w.>])([A-Za-z_]\w*)\s*\[/g;
+var ASSIGNED = /(?<![\w.>])([A-Za-z_]\w*)\s*[-+*/%]?=(?!=)/g;
+var NAME = /(?<![\w.>])([A-Za-z_]\w*)(\s*[([])?/g;
+function closingBracket(code, open) {
+	let depth = 0;
+	for (let index = open; index < code.length; index++) if (code[index] === "[") depth++;
+	else if (code[index] === "]") {
+		depth--;
+		if (depth === 0) return index;
+	}
+	return -1;
+}
+function blankBrackets(text) {
+	let depth = 0;
+	let out = "";
+	for (const char of text) {
+		if (char === "]") depth = Math.max(0, depth - 1);
+		out += depth > 0 ? " " : char;
+		if (char === "[") depth++;
+	}
+	return out;
+}
+function plainNamesIn(text) {
+	const names = [];
+	for (const match of blankBrackets(text).matchAll(NAME)) {
+		const name = match[1];
+		if (!match[2] && !KEYWORDS$1.has(name) && !names.includes(name)) names.push(name);
+	}
+	return names;
+}
+function entryOf(uses, name) {
+	let entry = uses.get(name);
+	if (!entry) {
+		entry = {
+			first: /* @__PURE__ */ new Set(),
+			second: /* @__PURE__ */ new Set(),
+			pairs: []
+		};
+		uses.set(name, entry);
+	}
+	return entry;
+}
+function readIndexes(code, uses) {
+	for (const match of code.matchAll(INDEXED)) {
+		const name = match[1];
+		const open = (match.index ?? 0) + match[0].length - 1;
+		const close = closingBracket(code, open);
+		if (KEYWORDS$1.has(name) || close < 0) continue;
+		const entry = entryOf(uses, name);
+		const firstNames = plainNamesIn(code.slice(open + 1, close));
+		firstNames.forEach((index) => entry.first.add(index));
+		const next = /^\s*\[/.exec(code.slice(close + 1));
+		const secondOpen = next ? close + next[0].length : -1;
+		const secondClose = next ? closingBracket(code, secondOpen) : -1;
+		if (secondClose < 0) continue;
+		const secondNames = plainNamesIn(code.slice(secondOpen + 1, secondClose));
+		secondNames.forEach((index) => entry.second.add(index));
+		for (const row of firstNames) secondNames.forEach((column) => entry.pairs.push([row, column]));
+	}
+}
+function readLinks(code) {
+	const links = /* @__PURE__ */ new Map();
+	const link = (one, other) => {
+		for (const [from, to] of [[one, other], [other, one]]) {
+			const set = links.get(from) ?? /* @__PURE__ */ new Set();
+			set.add(to);
+			links.set(from, set);
+		}
+	};
+	for (const piece of statementPieces(code)) for (const match of piece.matchAll(ASSIGNED)) {
+		const target = match[1];
+		const value = untilComma(piece.slice((match.index ?? 0) + match[0].length));
+		for (const name of plainNamesIn(value)) if (name !== target && !KEYWORDS$1.has(target)) link(target, name);
+	}
+	return links;
+}
+function untilComma(text) {
+	let depth = 0;
+	for (let index = 0; index < text.length; index++) {
+		const char = text[index];
+		if (char === "(" || char === "[") depth++;
+		else if (char === ")" || char === "]") depth--;
+		else if (char === "," && depth <= 0) return text.slice(0, index);
+	}
+	return text;
+}
+function statementPieces(code) {
+	const pieces = [];
+	let depth = 0;
+	let start = 0;
+	for (let index = 0; index < code.length; index++) {
+		const char = code[index];
+		if (char === "(" || char === "[") depth++;
+		else if (char === ")" || char === "]") depth = Math.max(0, depth - 1);
+		if (char === ";" || char === "{" || char === "}" || char === "," && depth === 0) {
+			pieces.push(code.slice(start, index));
+			start = index + 1;
+			depth = char === "," ? depth : 0;
+		}
+	}
+	pieces.push(code.slice(start));
+	return pieces;
+}
+function withNeighbours(names, links) {
+	const all = new Set(names);
+	for (const name of names) links.get(name)?.forEach((neighbour) => all.add(neighbour));
+	return all;
+}
+function indexUsesIn(lines) {
+	const uses = /* @__PURE__ */ new Map();
+	const code = lines.map((line) => codeOnly(line)).join("\n");
+	if (code.length > MAX_TEXT) return uses;
+	readIndexes(code, uses);
+	const links = readLinks(code);
+	for (const entry of uses.values()) {
+		entry.first = withNeighbours(entry.first, links);
+		entry.second = withNeighbours(entry.second, links);
+	}
+	return uses;
+}
+// src/engines/c/view/index-markers.ts
+var MAIN_FILE$2 = "main.c";
+var MAX_FUNCTION_LINES = 400;
+var GUTTER_EXTRA = 2;
+var usesCache = /* @__PURE__ */ new WeakMap();
+function functionLines(meta, fid, code) {
+	const points = (meta.points ?? []).filter((point) => point.fid === fid);
+	if (!points.length || !code.lineText) return [];
+	const lines = points.map((point) => point.line);
+	const first = Math.min(...lines);
+	const last = Math.min(Math.max(...lines), first + MAX_FUNCTION_LINES);
+	const file = points[0].file || MAIN_FILE$2;
+	const text = [];
+	for (let line = first; line <= last; line++) text.push(String(code.lineText(file, line) || ""));
+	return text;
+}
+function usesOf(meta, fid, code) {
+	if (!code.lineText) return /* @__PURE__ */ new Map();
+	const known = usesCache.get(meta) ?? /* @__PURE__ */ new Map();
+	usesCache.set(meta, known);
+	const found = known.get(fid);
+	if (found) return found;
+	const lines = functionLines(meta, fid, code);
+	const uses = indexUsesIn(lines);
+	if (lines.length) known.set(fid, uses);
+	return uses;
+}
+function integerOf(row) {
+	const declaration = row.declaration;
+	const cell = row.cells[0];
+	if (!(!declaration.ptr && !declaration.arr && !declaration.members) || row.cells.length !== 1 || !cell.isSet || cell.value.t !== "num") return null;
+	const value = Number(cell.value.v);
+	return Number.isInteger(value) ? value : null;
+}
+function isIndexVariable(row) {
+	const declaration = row.declaration;
+	return !declaration.ptr && !declaration.arr && !declaration.members && row.cells.length === 1 && isIndexName(declaration.name);
+}
+function declaredIndexes(meta, fid) {
+	const names = /* @__PURE__ */ new Set();
+	for (const declaration of meta.vars) {
+		const isPlain = !declaration.ptr && !declaration.arr && !declaration.members;
+		if (declaration.fid === fid && !declaration.member && isPlain && isIndexName(declaration.name)) names.add(declaration.name);
+	}
+	return names;
+}
+function variableNamed(frame, globals, name) {
+	const own = frame.rows.filter((row) => row.declaration.name === name);
+	return own.length ? own[own.length - 1] : globals.find((row) => row.declaration.name === name);
+}
+function reachOf(indexed, index) {
+	const declaration = indexed.declaration;
+	if (declaration.members) return null;
+	if (declaration.arr === 1 || declaration.arr === 2) return {
+		array: indexed,
+		start: 0,
+		isGrid: declaration.arr === 2
+	};
+	const pointer = indexed.cells[0];
+	if (declaration.ptr !== 1 || declaration.arr || !pointer || !pointer.isLive) return null;
+	const address = Number(pointer.value.v);
+	for (const row of index.rows.values()) {
+		const isArrayOfValues = row.declaration.arr > 0 && !row.declaration.members;
+		const start = row.cells.findIndex((cell) => cell.addr === address);
+		if (isArrayOfValues && start >= 0 && row.declaration.base === declaration.base) return {
+			array: row,
+			start,
+			isGrid: false
+		};
+	}
+	return null;
+}
+function marksOf(marks, array) {
+	let found = marks.get(array.base);
+	if (!found) {
+		found = {
+			hasLanes: false,
+			gutter: 0,
+			markers: []
+		};
+		marks.set(array.base, found);
+	}
+	return found;
+}
+function addMarker(marks, marker) {
+	if (!marks.markers.some((other) => other.anchor === marker.anchor)) marks.markers.push(marker);
+}
+function markerAnchor(variable, array, kind) {
+	return "ix:" + variable.base + ">" + array.base + (kind === "row" ? ":row" : "");
+}
+function markerAt(variable, array, cell, kind) {
+	return {
+		anchor: markerAnchor(variable, array, kind),
+		name: variable.declaration.name,
+		kind,
+		row: cell.row,
+		col: kind === "row" ? -1 : cell.col,
+		box: cell.box
+	};
+}
+function makeRoom(marks, reach, uses, declared) {
+	const first = [...uses.first].filter((name) => declared.has(name));
+	const second = [...uses.second].filter((name) => declared.has(name));
+	if (!reach.isGrid) {
+		marks.hasLanes ||= first.length > 0;
+		return;
+	}
+	marks.hasLanes ||= second.length > 0;
+	for (const name of first) marks.gutter = Math.max(marks.gutter, name.length + GUTTER_EXTRA);
+}
+function addFirstMarkers(marks, reach, variables) {
+	const cells = reach.array.cells;
+	for (const variable of variables) {
+		const value = integerOf(variable);
+		if (reach.isGrid) {
+			const first = cells.find((cell) => cell.row === value);
+			if (first) addMarker(marks, markerAt(variable, reach.array, first, "row"));
+			continue;
+		}
+		const cell = value === null ? void 0 : cells[reach.start + value];
+		if (cell && value !== null && reach.start + value >= 0) addMarker(marks, markerAt(variable, reach.array, cell, "cell"));
+	}
+}
+function addColumnMarkers(marks, reach, uses, inScope) {
+	const cells = reach.array.cells;
+	for (const name of uses.second) {
+		const variable = inScope.get(name);
+		if (!variable) continue;
+		const column = integerOf(variable);
+		const values = uses.pairs.filter((pair) => pair[1] === name).map((pair) => pair[0]).map((row) => inScope.has(row) ? integerOf(inScope.get(row)) : null);
+		const cell = cells.find((one) => values.includes(one.row) && one.col === column);
+		if (cell) addMarker(marks, markerAt(variable, reach.array, cell, "cell"));
+	}
+}
+function indexMarks(index, meta, code) {
+	const marks = /* @__PURE__ */ new Map();
+	const frame = index.frames[index.frames.length - 1];
+	if (!frame || !meta) return marks;
+	try {
+		const uses = usesOf(meta, frame.fid, code);
+		const declared = declaredIndexes(meta, frame.fid);
+		const inScope = new Map(frame.rows.filter(isIndexVariable).map((row) => [row.declaration.name, row]));
+		for (const [name, arrayUses] of uses) {
+			const indexed = variableNamed(frame, index.globals, name);
+			const reach = indexed ? reachOf(indexed, index) : null;
+			if (!reach) continue;
+			const arrayMarks = marksOf(marks, reach.array);
+			makeRoom(arrayMarks, reach, arrayUses, declared);
+			addFirstMarkers(arrayMarks, reach, [...arrayUses.first].flatMap((one) => inScope.get(one) ?? []).sort((one, other) => frame.rows.indexOf(one) - frame.rows.indexOf(other)));
+			if (reach.isGrid) addColumnMarkers(arrayMarks, reach, arrayUses, inScope);
+		}
+		for (const [base, arrayMarks] of marks) if (!arrayMarks.hasLanes && !arrayMarks.gutter) marks.delete(base);
+	} catch {
+		return /* @__PURE__ */ new Map();
+	}
+	return marks;
+}
+function laneDepths(arrayMarks) {
+	const perCell = /* @__PURE__ */ new Map();
+	for (const marker of arrayMarks.markers) if (marker.kind === "cell") {
+		const key = marker.row + "," + marker.col;
+		perCell.set(key, (perCell.get(key) ?? 0) + 1);
+	}
+	const perRow = /* @__PURE__ */ new Map();
+	for (const [key, count] of perCell) {
+		const row = Number(key.split(",")[0]);
+		perRow.set(row, Math.max(perRow.get(row) ?? 0, count));
+	}
+	return [...perRow].filter(([, count]) => count > 1).map(([row, count]) => row + ":" + count).sort().join(",");
+}
+function marksLayout(marks) {
+	return [...marks].map(([base, arrayMarks]) => {
+		const room = arrayMarks.hasLanes + ":" + arrayMarks.gutter;
+		return base + ":" + room + ":" + laneDepths(arrayMarks);
+	}).sort().join("|");
 }
 // src/engines/c/view/values.js
 var BASE_SIZES = {
@@ -8571,8 +8971,12 @@ function headAnchor(prefix) {
 function rowAnchor(base) {
 	return "row:" + base;
 }
+var BOX_PREFIX = "cell:";
 function boxAnchor(cellName) {
-	return "cell:" + cellName;
+	return BOX_PREFIX + cellName;
+}
+function isBoxAnchor(name) {
+	return typeof name === "string" && name.startsWith(BOX_PREFIX);
 }
 function arrowAnchor(cellName) {
 	return "arrow:" + cellName;
@@ -8655,7 +9059,7 @@ function anchorAt(exact, places, address) {
 }
 function cellsOfRow(base, declaration, cells, isSet) {
 	const hasBoxes = declaration.arr > 0 || !!declaration.members;
-	return cells.map((cell) => {
+	return cells.map((cell, index) => {
 		const name = cellAnchor(base, declaration, cell);
 		return {
 			anchor: name,
@@ -8666,7 +9070,9 @@ function cellsOfRow(base, declaration, cells, isSet) {
 			isLive: isSet && isLivePointer(cell),
 			target: null,
 			addr: cell.addr,
-			size: cell.size
+			size: cell.size,
+			row: cell.row ?? 0,
+			col: cell.col ?? index
 		};
 	});
 }
@@ -8745,7 +9151,10 @@ var TIMES = {
 	edge: 240,
 	count: 480,
 	flash: 320,
-	draw: 520
+	draw: 520,
+	marker: 480,
+	markerIn: 300,
+	markerOut: 220
 };
 var VALUE_SCALE = .6;
 function decimalsIn(text) {
@@ -8773,32 +9182,39 @@ function valueMotion(before, after, canCount, delay) {
 		delay
 	});
 }
-function arrowMotion(before, after, delay) {
-	const was = before && before.isLive ? before.target : null;
-	const to = after.isLive ? after.target : null;
-	const timing = {
+function arrowFields(target, delay) {
+	return isBoxAnchor(target) ? {
+		ms: TIMES.draw,
+		delay,
+		into: true
+	} : {
 		ms: TIMES.draw,
 		delay
 	};
+}
+function arrowMotion(before, after, delay) {
+	const was = before && before.isLive ? before.target : null;
+	const to = after.isLive ? after.target : null;
 	if (to && to !== was) {
 		const path = arrowAnchor(after.anchor);
+		const fields = arrowFields(to, delay);
 		return was ? draw({
 			from: after.box,
 			to,
 			was,
 			path,
-			...timing
+			...fields
 		}) : draw({
 			from: after.box,
 			to,
 			path,
-			...timing
+			...fields
 		});
 	}
 	if (!to && was) return draw({
 		from: after.box,
 		was,
-		...timing
+		...arrowFields(was, delay)
 	});
 	return null;
 }
@@ -8840,7 +9256,7 @@ var RING_MS$1 = 600;
 var RING_EARLY_MS = 120;
 function ringsForArrows(draws) {
 	const rings = [];
-	for (const motion of draws) if (motion.kind === "draw" && motion.to && motion.to.startsWith("cell:")) {
+	for (const motion of draws) if (motion.kind === "draw" && motion.to && isBoxAnchor(motion.to)) {
 		const lands = (motion.delay ?? 0) + (motion.ms ?? TIMES.draw);
 		const delay = Math.max(0, lands - RING_EARLY_MS);
 		rings.push(highlight$1({
@@ -8851,6 +9267,66 @@ function ringsForArrows(draws) {
 		}));
 	}
 	return rings;
+}
+// src/engines/c/view/marker-motion.ts
+var MARKER_SCALE = .5;
+var MARKER_RISE_PX = 6;
+function markerPlaces(marks) {
+	const places = /* @__PURE__ */ new Map();
+	for (const arrayMarks of marks.values()) for (const marker of arrayMarks.markers) places.set(marker.anchor, marker.row + "," + marker.col);
+	return places;
+}
+function addMarkerMotions(parts, marks, times) {
+	const before = markerPlaces(marks[0]);
+	const after = markerPlaces(marks[1]);
+	const delay = times.moved;
+	for (const [anchor, place] of after) {
+		const was = before.get(anchor);
+		if (was === void 0) {
+			const motion = {
+				anchor,
+				scale: MARKER_SCALE,
+				dy: MARKER_RISE_PX,
+				ms: TIMES.markerIn
+			};
+			parts.markers.push(appear({
+				...motion,
+				delay
+			}));
+		} else if (was !== place) parts.markers.push(slide({
+			anchor,
+			ms: TIMES.marker,
+			delay
+		}));
+	}
+	for (const anchor of before.keys()) if (!after.has(anchor)) {
+		const motion = {
+			anchor,
+			style: "fade",
+			ms: TIMES.markerOut
+		};
+		parts.markers.push(leave({
+			...motion,
+			delay: times.gone
+		}));
+	}
+}
+function markerCells(motion, marks) {
+	const leaves = motion && motion.kind === "together" ? motion.motions : [];
+	const boxes = /* @__PURE__ */ new Map();
+	for (const arrayMarks of marks.values()) arrayMarks.markers.forEach((marker) => boxes.set(marker.anchor, marker.box));
+	return leaves.flatMap((leaf) => {
+		const box = leaf.kind === "slide" || leaf.kind === "appear" ? boxes.get(leaf.anchor) : null;
+		return box ? [box] : [];
+	});
+}
+function stepMarks(step, meta, code) {
+	if (!step || !step.frames || !meta || !meta.vars) return /* @__PURE__ */ new Map();
+	try {
+		return indexMarks(indexStep(step, meta), meta, code);
+	} catch {
+		return /* @__PURE__ */ new Map();
+	}
 }
 // src/engines/c/view/stack-motion.ts
 var FRAME_SCALE = .85;
@@ -8875,7 +9351,7 @@ function changeOf(before, after) {
 function staysPut(change, before) {
 	return !change.added.length && !change.removed.length && change.kept.length === before.length;
 }
-function pairOf(previous, step, meta) {
+function pairOf(previous, step, meta, code) {
 	const before = indexStep(previous, meta);
 	const after = indexStep(step, meta);
 	let common = 0;
@@ -8883,24 +9359,25 @@ function pairOf(previous, step, meta) {
 	while (common < shortest && before.frames[common].prefix === after.frames[common].prefix) common++;
 	const scopes = [];
 	for (let index = 0; index < common; index++) scopes.push(changeOf(before.frames[index].rows, after.frames[index].rows));
-	const globals = changeOf(before.globals, after.globals);
-	const edge = [before.frames.length > 1, after.frames.length > 1];
-	const globalsGroup = [before.globals.length > 0, after.globals.length > 0];
-	const popped = before.frames.slice(common);
-	const pushed = after.frames.slice(common);
-	const isStructural = popped.length > 0 || pushed.length > 0 || edge[0] !== edge[1] || globalsGroup[0] !== globalsGroup[1] || !staysPut(globals, before.globals) || scopes.some((change, index) => !staysPut(change, before.frames[index].rows));
-	return {
+	const pair = {
 		before,
 		after,
+		marks: [indexMarks(before, meta, code), indexMarks(after, meta, code)],
 		common,
-		popped,
-		pushed,
+		popped: before.frames.slice(common),
+		pushed: after.frames.slice(common),
 		scopes,
-		globals,
-		edge,
-		globalsGroup,
-		isStructural
+		globals: changeOf(before.globals, after.globals),
+		edge: [before.frames.length > 1, after.frames.length > 1],
+		globalsGroup: [before.globals.length > 0, after.globals.length > 0],
+		isStructural: false
 	};
+	pair.isStructural = movesLayout(pair);
+	return pair;
+}
+function movesLayout(pair) {
+	const { before, scopes, globals, edge, globalsGroup, marks } = pair;
+	return pair.popped.length > 0 || pair.pushed.length > 0 || edge[0] !== edge[1] || globalsGroup[0] !== globalsGroup[1] || !staysPut(globals, before.globals) || scopes.some((change, index) => !staysPut(change, before.frames[index].rows)) || marksLayout(marks[0]) !== marksLayout(marks[1]);
 }
 function addLeaves(parts, pair, times) {
 	const before = parts.leaves.length;
@@ -9025,16 +9502,13 @@ function buildStructural(parts, pair, meta, code) {
 		parts.gives.push(...movesOf([home], TIMES.give, time));
 		time += TIMES.give;
 	}
+	const leavesAt = time;
 	if (addLeaves(parts, pair, {
 		upper,
 		rest: time
 	})) time += TIMES.leaveFrame;
 	addLayout(parts, pair, time);
-	if (home) {
-		const receiver = pair.scopes[pair.common - 1]?.added.find((row) => row.cells.some((cell) => cell.anchor === home.to));
-		const appearing = parts.appears.find((motion) => motion.kind === "appear" && !!receiver && motion.anchor === receiver.anchor);
-		if (appearing) appearing.delay = homeStart;
-	}
+	if (home) receiveAtOnce(parts, pair, home.to, homeStart);
 	if (pair.pushed.length) {
 		const flights = argumentFlights(pair.before, pair.after, pair.common, meta, code);
 		parts.copies.push(...movesOf(flights, TIMES.copy, time));
@@ -9049,6 +9523,15 @@ function buildStructural(parts, pair, meta, code) {
 	addValues(parts, pair.globals, settings);
 	const added = [...pair.scopes.flatMap((change) => change.added), ...pair.globals.added];
 	addNewArrows(parts, [...pair.pushed.flatMap((frame) => frame.rows), ...added], settled);
+	addMarkerMotions(parts, pair.marks, {
+		gone: leavesAt,
+		moved: settled
+	});
+}
+function receiveAtOnce(parts, pair, cell, start) {
+	const receiver = pair.scopes[pair.common - 1]?.added.find((row) => row.cells.some((one) => one.anchor === cell));
+	const appearing = parts.appears.find((motion) => motion.kind === "appear" && !!receiver && motion.anchor === receiver.anchor);
+	if (appearing) appearing.delay = start;
 }
 function ordered(parts) {
 	const values = parts.values.slice(0, 160);
@@ -9061,13 +9544,14 @@ function ordered(parts) {
 		...parts.gives,
 		...parts.leaves,
 		...parts.appears,
+		...parts.markers,
 		...values
 	].filter((motion) => validateMotion(motion).length === 0);
 }
 function stackMotion(previous, step, meta, code = {}) {
 	if (!previous || !step || !previous.frames || !step.frames || !meta || !meta.vars) return null;
 	try {
-		const pair = pairOf(previous, step, meta);
+		const pair = pairOf(previous, step, meta, code);
 		const parts = {
 			draws: [],
 			copies: [],
@@ -9075,6 +9559,7 @@ function stackMotion(previous, step, meta, code = {}) {
 			gives: [],
 			leaves: [],
 			appears: [],
+			markers: [],
 			values: []
 		};
 		if (pair.isStructural) buildStructural(parts, pair, meta, code);
@@ -9086,6 +9571,10 @@ function stackMotion(previous, step, meta, code = {}) {
 			};
 			pair.scopes.forEach((change) => addValues(parts, change, settings));
 			addValues(parts, pair.globals, settings);
+			addMarkerMotions(parts, pair.marks, {
+				gone: 0,
+				moved: 0
+			});
 		}
 		staggerArrows(parts.draws);
 		const motions = ordered(parts);
@@ -9094,8 +9583,8 @@ function stackMotion(previous, step, meta, code = {}) {
 		return null;
 	}
 }
-function cellsToReveal(motion) {
-	return (motion && motion.kind === "together" ? motion.motions : []).flatMap((leaf) => leaf.kind === "draw" && leaf.to && leaf.to.startsWith("cell:") ? [leaf.to] : []);
+function cellsToReveal(motion, marks = /* @__PURE__ */ new Map()) {
+	return [...(motion && motion.kind === "together" ? motion.motions : []).flatMap((leaf) => leaf.kind === "draw" && leaf.to && isBoxAnchor(leaf.to) ? [leaf.to] : []), ...markerCells(motion, marks)];
 }
 // node_modules/react/cjs/react-jsx-runtime.production.js
 /**
@@ -9227,6 +9716,40 @@ function useTargetHover(anchorRef) {
 	}, [anchorRef, hover]);
 	return hover;
 }
+// src/engines/c/view/IndexMarks.tsx
+function cellMarkers(marks, row, col) {
+	return (marks ? marks.markers : []).filter((one) => one.kind === "cell" && one.row === row && one.col === col);
+}
+function Marker({ marker }) {
+	const classes = "ix" + (marker.kind === "row" ? " ix-r" : "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: classes,
+		...anchor(marker.anchor),
+		children: marker.name
+	});
+}
+function MarkerSlot({ markers }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "ix-slot",
+		"aria-hidden": "true",
+		children: markers.map((marker) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Marker, { marker }, marker.anchor))
+	});
+}
+function RowGutter(props) {
+	const markers = props.marks.markers.filter((one) => one.kind === "row" && one.row === props.row);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "ix-gut",
+		"aria-hidden": "true",
+		style: { minWidth: props.marks.gutter + "ch" },
+		children: markers.map((marker) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Marker, { marker }, marker.anchor))
+	});
+}
+function MarkedBy({ names }) {
+	return names.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "sr",
+		children: ", marked by " + names.join(", ")
+	}) : null;
+}
 // src/engines/c/view/VariableRow.tsx
 var NOT_SET_TITLE = "not initialized: whatever was left in memory";
 function focusAttributes(model, cell, isPointer) {
@@ -9319,7 +9842,8 @@ function ArrayCell(props) {
 				name
 			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: label }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: hex(cell.addr) })
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: hex(cell.addr) }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkedBy, { names: props.markedBy })
 		]
 	});
 }
@@ -9339,8 +9863,37 @@ function useStripReveal(strip, name) {
 		}
 	}, [strip, name]);
 }
+function CellRow(props) {
+	const { model, row, marks, base, indexMarks, rowIndex } = props;
+	const parts = {
+		model,
+		row,
+		marks,
+		base
+	};
+	const hasLanes = !!indexMarks && indexMarks.hasLanes;
+	const rowMarkedBy = (indexMarks ? indexMarks.markers.filter((one) => one.kind === "row") : []).filter((one) => one.row === rowIndex).map((one) => one.name);
+	const cells = props.indexes.map((index, position) => {
+		const cell = row.cells[index];
+		const under = cellMarkers(indexMarks, cell.row ?? 0, cell.col ?? index);
+		const markedBy = [...under.map((one) => one.name), ...position ? [] : rowMarkedBy];
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_react.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrayCell, {
+			...parts,
+			index,
+			markedBy
+		}), hasLanes ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkerSlot, { markers: under }) : null] }, index);
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "arow" + (hasLanes ? " ix-grid" : ""),
+		role: "presentation",
+		children: [cells, indexMarks && indexMarks.gutter ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowGutter, {
+			marks: indexMarks,
+			row: rowIndex
+		}) : null]
+	});
+}
 function ArrayCells(props) {
-	const { model, row, marks, base } = props;
+	const { row, base } = props;
 	const strip = (0, import_react.useRef)(null);
 	useStripReveal(strip, row.cells.map((cell) => boxAnchor(cellAnchor(base, row.declaration, cell))).find((name) => props.reveal.includes(name)));
 	const cellRows = [];
@@ -9350,22 +9903,24 @@ function ArrayCells(props) {
 		cellRows[rowIndex].push(index);
 	});
 	const classes = "acells" + (row.declaration.arr >= 2 || !!row.declaration.members && cellRows.length > 1 ? " mat" : "");
+	const parts = {
+		model: props.model,
+		row,
+		marks: props.marks,
+		base
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: classes,
 		role: "list",
 		"aria-label": row.declaration.name,
 		ref: strip,
-		children: cellRows.map((indexes, rowIndex) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "arow",
-			role: "presentation",
-			children: indexes.map((index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrayCell, {
-				model,
-				row,
-				marks,
-				base,
-				index
-			}, index))
-		}, rowIndex))
+		children: cellRows.map((indexes, rowIndex) => /* @__PURE__ */ (0, import_react.createElement)(CellRow, {
+			...parts,
+			indexes,
+			rowIndex,
+			indexMarks: props.indexMarks,
+			key: rowIndex
+		}))
 	});
 }
 function VariableRow(props) {
@@ -9376,6 +9931,12 @@ function VariableRow(props) {
 	const hasCells = declaration.arr > 0 || !!declaration.members;
 	const arrayClass = hasCells ? " has-arr" : "";
 	const classes = "vrow" + freshClass + arrayClass + markClass(marks, markKey(row));
+	const parts = {
+		model,
+		row,
+		marks,
+		base
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: classes,
 		role: "row",
@@ -9401,17 +9962,10 @@ function VariableRow(props) {
 				className: "vv",
 				role: "cell",
 				children: hasCells ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrayCells, {
-					model,
-					row,
-					marks,
-					base,
-					reveal: props.reveal
-				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScalarCell, {
-					model,
-					row,
-					marks,
-					base
-				})
+					...parts,
+					reveal: props.reveal,
+					indexMarks: props.indexMarks.get(base)
+				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScalarCell, { ...parts })
 			})
 		]
 	});
@@ -9536,7 +10090,8 @@ function FrameHeader(props) {
 		}), state]
 	});
 }
-function Frame$1({ model, frameEntry, marks, endLabel, bases, reveal }) {
+function Frame$1(props) {
+	const { model, frameEntry, marks, endLabel, bases, reveal } = props;
 	const scope = frameScope(frameEntry.index);
 	const isTop = frameEntry.index === model.frames.length - 1;
 	const variables = frameEntry.frame.vars;
@@ -9546,7 +10101,8 @@ function Frame$1({ model, frameEntry, marks, endLabel, bases, reveal }) {
 		scope,
 		marks,
 		base: bases.get(variableKey(scope, variable)) ?? "",
-		reveal
+		reveal,
+		indexMarks: props.indexMarks
 	}, index)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "novars",
 		role: "row",
@@ -9602,7 +10158,8 @@ function Globals(props) {
 			scope: "g",
 			marks,
 			base: bases.get(variableKey("g", variable)) ?? "",
-			reveal
+			reveal,
+			indexMarks: props.indexMarks
 		}, index))]
 	});
 }
@@ -9629,8 +10186,13 @@ function StepStack(props) {
 	const hover = useTargetHover(stage);
 	useFinishOnResize(stage, motion);
 	const model = buildModel(step, props.previousStep, props.meta);
-	const marks = computeTargetMarks(model, step, hover);
-	const bases = variableBases(model, step);
+	const rows = {
+		model,
+		marks: computeTargetMarks(model, step, hover),
+		bases: variableBases(model, step),
+		reveal: props.reveal,
+		indexMarks: props.indexMarks
+	};
 	const newestFirst = model.frames.slice().reverse();
 	const tableClass = "stk-tbl" + (model.pointerSize === POINTER_SIZE_64$1 ? " p8" : "");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -9644,20 +10206,15 @@ function StepStack(props) {
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColumnsRow, {}),
 				model.frames.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NewestOnTop, {}) : null,
-				newestFirst.map((frameEntry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame$1, {
-					model,
+				newestFirst.map((frameEntry) => /* @__PURE__ */ (0, import_react.createElement)(Frame$1, {
+					...rows,
 					frameEntry,
-					marks,
 					endLabel,
-					bases,
-					reveal: props.reveal
-				}, frameEntry.index)),
+					key: frameEntry.index
+				})),
 				step.globals.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Globals, {
-					model,
-					step,
-					marks,
-					bases,
-					reveal: props.reveal
+					...rows,
+					step
 				}) : null
 			]
 		})]
@@ -9676,7 +10233,8 @@ function StackView(props) {
 		motion: props.motion,
 		stepKey: props.stepKey,
 		isStill: props.isStill,
-		reveal: props.reveal
+		reveal: props.reveal,
+		indexMarks: props.indexMarks
 	});
 }
 // src/engines/c/box/step-view.js
@@ -9709,6 +10267,7 @@ function memoryView(context, step, endLabel) {
 	const previousStep = step ? state.steps[state.idx - 1] : void 0;
 	const transition = ui.stepTransition();
 	const motion = motionOf(context, previousStep, step, transition);
+	const indexMarks = step ? stepMarks(step, state.meta, codeLines(state)) : /* @__PURE__ */ new Map();
 	context.motion.cue(key, motion, transition);
 	globalThis.__cStepMotion = {
 		motion,
@@ -9723,7 +10282,8 @@ function memoryView(context, step, endLabel) {
 		motion: context.motion,
 		stepKey: key,
 		isStill: transition !== "next",
-		reveal: cellsToReveal(motion)
+		reveal: cellsToReveal(motion, indexMarks),
+		indexMarks
 	});
 }
 // src/engines/c/box/stepping.js
@@ -19241,6 +19801,10 @@ function textDirection(text) {
 	const match = FIRST_STRONG.exec(text);
 	return match && /[^A-Za-zÀ-ɏ]/.test(match[0]) ? "rtl" : "ltr";
 }
+function svgAnchor(anchor, direction) {
+	if (direction === "ltr" || anchor === "middle") return anchor;
+	return anchor === "start" ? "end" : "start";
+}
 function edgePoint(box, towardX, towardY, gap) {
 	const dx = towardX - box.cx;
 	const dy = towardY - box.cy;
@@ -20582,12 +21146,13 @@ function NameLines(props) {
 	}) : null] });
 }
 function SvgText(props) {
+	const direction = textDirection(props.text);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 		className: props.className,
 		x: props.x,
 		y: props.y,
-		textAnchor: props.anchor || "middle",
-		direction: textDirection(props.text),
+		textAnchor: svgAnchor(props.anchor || "middle", direction),
+		direction,
 		fontSize: props.size,
 		...props.name,
 		children: props.text
@@ -30079,7 +30644,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e7fd351 מ-2026-11-09 16:22"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e7fd351</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit a40b5ae מ-2026-11-09 21:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · a40b5ae</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
