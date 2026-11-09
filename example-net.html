@@ -10036,8 +10036,9 @@ link G -> SRV: R = 2 Mbps, d = 500 km`,
 		title: "למורים: כתיבת קופסה",
 		body: body([
 			R`<p>קורס הוא תיקייה <code>src/courses/&lt;id&gt;/</code> ובה <code>course.js</code> (השם, המנוע, דף
-הפתיחה) ו-<code>content.js</code> (היחידות). בקורס תקשורת כותבים <code>engine:'net'</code>. כל קופסה
-היא אובייקט בתוך <code>body</code> של יחידה. הקופסה ליד כתובה כך:</p>` + snippet(`{id:'xn-teach-scenario', title:'...',
+הפתיחה), <code>order.json</code> (סדר היחידות) ותיקיית <code>lessons</code> עם קובץ לכל יחידה. בקורס
+תקשורת כותבים <code>engine:'net'</code>. כל קופסה היא אובייקט בתוך <code>body</code> של יחידה. הקופסה
+ליד כתובה כך:</p>` + snippet(`{id:'xn-teach-scenario', title:'...',
  code:R\`L = 9000 bit
 N = 2
 s = 200000 km/s
@@ -10068,7 +10069,7 @@ link G -> SRV: R = 9 Mbps, d = 200 km`,
 			},
 			R`<h3>תרגיל ובדיקות</h3>
 <p>תרגיל הוא קופסה עם <code>task</code> (המשימה) ו-<code>solution</code> (פתרון שעובר את כל
-הבדיקות). הבדיקות הן אובייקטים קטנים; כדאי להגדיר אותם פעם אחת בראש <code>content.js</code>:</p>` + snippet(`const reads = {type:'steps', name:'every line can be read'};
+הבדיקות). הבדיקות הן אובייקטים קטנים; כדאי להגדיר אותם פעם אחת ב-<code>lessons/_shared.js</code>:</p>` + snippet(`const reads = {type:'steps', name:'every line can be read'};
 const runs = {type:'steps', name:'the scenario runs to the end'};
 const isTime = {type:'unit', name:'the answer is a time', kind:'time'};
 const total = (x) => ({type:'total', name:'the total delay is ' + x, expect:x});
@@ -28916,7 +28917,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 4b816a1 מ-2026-11-09 08:37"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 4b816a1</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit f1c2c66 מ-2026-11-09 10:08"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · f1c2c66</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
