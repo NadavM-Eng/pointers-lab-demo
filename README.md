@@ -16,7 +16,7 @@ The start page lists the courses of this demo. Each course is its own offline pa
 | `math-sequences.html` | A proof of concept for math: proofs about bounded sequences (a Calculus 1 question), stepped line by line like code. A panel shows the bounds known so far (M₁, m₁, K₁, …) the way the C courses show the call stack |
 | `example-net.html` | A networking example course: packet timing stepped event by event, with a live timeline, a panel of values with units, and answers checked with units, plus a step diagram (a request and its answer, drawn message by message from a small data file) |
 | `example-c.html` | A small C course: loops, a sum, input, arrays and 2D arrays with pointers into them, a quiz and one lab exercise |
-| `example-java.html` | A small Java course: input and output, recursion with a live recursion tree (Hanoi, digit sum), a slow and a fast solution checked by step counts, objects and references in a heap view, and a quiz |
+| `example-java.html` | A small Java course: input and output, recursion with a live recursion tree that unwinds (each result rises into its caller, Hanoi, digit sum), merge sort with every number flying to its place, a slow and a fast solution checked by step counts, objects and references in a heap view, and a quiz |
 | `example.html` | A tiny course in an example language, which shows how the lab supports more than one language |
 
 ## What runs where
@@ -31,6 +31,10 @@ Everything runs in your browser:
   [TeaVM](https://teavm.org). In the sidebar you can switch to a JDK on Compiler Explorer instead.
 - Line by line also steps into functions in your other `.c` files, and you can edit the code while
   stepping. Press ⏯ again to run the new code.
+- Stepping forward is animated: pointer arrows swing to their new target, changed values count,
+  a call's frame grows in with its arguments, and a return value flies back to its caller.
+- The panels beside the code are islands: fold them, drag a title bar to move one, drag the
+  borders to resize, and ↺ puts the layout back.
 - Your code and progress are saved only in your own browser (localStorage).
 - **סיור מודרך** (guided tour) at the bottom of the sidebar shows how everything works. It starts
   by itself on your first visit.

@@ -5865,15 +5865,17 @@ function checkFields$1(motion, path, problems) {
 }
 function checkDraw(motion, path, problems) {
 	const hasEnds = motion.from !== void 0 && motion.to !== void 0;
-	if (motion.from === void 0 !== (motion.to === void 0)) problems.push({
+	const hasOneEnd = motion.from === void 0 !== (motion.to === void 0);
+	const retracts = motion.from !== void 0 && motion.to === void 0 && motion.was !== void 0;
+	if (hasOneEnd && !retracts) problems.push({
 		path,
 		message: "a draw needs both from and to, or neither"
 	});
-	else if (!hasEnds && motion.path === void 0) problems.push({
+	else if (!hasEnds && !retracts && motion.path === void 0) problems.push({
 		path,
 		message: "a draw needs a path, or from and to"
 	});
-	if (motion.was !== void 0 && !hasEnds) problems.push({
+	if (motion.was !== void 0 && motion.from === void 0) problems.push({
 		path: path + ".was",
 		message: "was needs from and to"
 	});
@@ -6673,6 +6675,7 @@ function tracePath(scene, track, path, head) {
 function playDraw(scene, track, motion) {
 	const path = motion.path ? scene.anchors.get(motion.path) : void 0;
 	const head = motion.head ? scene.anchors.get(motion.head) : void 0;
+	if (motion.from && !motion.to && motion.was) return retractArrow(scene, track, motion, motion.from, motion.was);
 	if (!motion.from || !motion.to) {
 		if (!path) return "no path " + motion.path;
 		tracePath(scene, track, path, head);
@@ -6693,7 +6696,21 @@ function playDraw(scene, track, motion) {
 	for (const own of [path, head]) if (own) hideUntil(scene, own, track.start + track.duration);
 	return null;
 }
-function swingArrow(scene, track, motion, start, arrow) {
+function retractArrow(scene, track, motion, fromName, wasName) {
+	const from = scene.anchors.get(fromName);
+	const was = scene.placeOf(wasName);
+	if (!from || !was) return "no end " + (from ? wasName : fromName);
+	const arrow = arrowBetween(scene.rect(from), was);
+	swingArrow(scene, track, motion, {
+		angle: arrow.angle,
+		startLength: arrow.length
+	}, {
+		...arrow,
+		length: 0
+	}, true);
+	return null;
+}
+function swingArrow(scene, track, motion, start, arrow, fadesOut = false) {
 	const ghost = arrowGhost(arrow.tail, TONE_COLOURS[motion.tone ?? "pointer"], HEAD_PX);
 	scene.addGhost(ghost.root);
 	const timing = timingOf(track, "none");
@@ -6705,6 +6722,17 @@ function swingArrow(scene, track, motion, start, arrow) {
 		opacity: 1,
 		transform: "rotate(" + angle + "deg)"
 	}];
+	if (fadesOut) {
+		turn.splice(1, 0, {
+			opacity: 1,
+			offset: .8,
+			transform: "rotate(" + angle + "deg)"
+		});
+		turn[2] = {
+			...turn[2],
+			opacity: 0
+		};
+	}
 	scene.animate(ghost.root, turn, timing);
 	const shaft = [start.startLength, arrow.length].map((length) => ({ transform: "scaleX(" + Math.max(0, length - HEAD_PX) + ")" }));
 	scene.animate(ghost.shaft, shaft, timing);
@@ -28888,7 +28916,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e8db79d מ-2026-11-09 04:32"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e8db79d</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 4b816a1 מ-2026-11-09 08:37"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 4b816a1</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

@@ -2703,6 +2703,12 @@ body.debugging .tour-roomy .wb-grid {
 .stk-tbl.p8 .stk-cols,.stk-tbl.p8 .vrow{grid-template-columns:minmax(70px,1fr) minmax(70px,1fr) minmax(132px,1fr) minmax(80px,2fr)}
 .stk-tbl.p8 .va{font-size:12.5px}
 .vrow > .va{overflow-wrap:anywhere;line-height:1.3}
+/* Line by line's motions (view/stack-motion.ts, docs/MOTION.md): the view is the motion player's stage; a scalar's text is
+   its own box, so it can grow into its chip (an inline span can only fade); a step not reached by one step forward shows
+   at once, so a new variable's glow does not play then either. */
+.stk-stage{position:relative}
+.v > [data-anchor]{display:inline-block}
+.stk-stage.still .vrow.fresh > span{animation:none}
 </style>
   <script type="module" crossorigin>// \0rolldown/runtime.js
 var __defProp = Object.defineProperty;
@@ -3579,7 +3585,7 @@ function resolveSpec(spec, types, baseOf) {
 }
 function recordLeaves(record, types, baseOf) {
 	const leaves = [];
-	addLeaves(leaves, record, "", 0, {
+	addLeaves$1(leaves, record, "", 0, {
 		types,
 		baseOf
 	});
@@ -3587,14 +3593,14 @@ function recordLeaves(record, types, baseOf) {
 }
 function addNestedLeaves(leaves, record, path, depth, context) {
 	const first = leaves.length;
-	addLeaves(leaves, record, path, depth, context);
+	addLeaves$1(leaves, record, path, depth, context);
 	if (leaves[first]) leaves[first].opens = [path].concat(leaves[first].opens || []);
 }
 function openedElements(member, type, ptr, arr) {
 	const size = member.dims && member.dims.length === 1 ? member.dims[0] : null;
 	return type.isRecord && type.record && !ptr && arr === 1 && member.arr === 1 && size && size <= MAX_OPENED_ELEMENTS ? size : 0;
 }
-function addLeaves(leaves, record, prefix, depth, context) {
+function addLeaves$1(leaves, record, prefix, depth, context) {
 	if (!record || depth >= MAX_TYPE_DEPTH) return;
 	for (const member of record.members) {
 		if (leaves.length >= MAX_MEMBERS || member.isBitfield || member.isFnptr) continue;
@@ -3603,7 +3609,7 @@ function addLeaves(leaves, record, prefix, depth, context) {
 		const ptr = member.ptr + type.ptr;
 		const arr = member.arr + type.arr;
 		if (member.name === null) {
-			addLeaves(leaves, type.record, prefix, depth + 1, context);
+			addLeaves$1(leaves, type.record, prefix, depth + 1, context);
 			continue;
 		}
 		const path = prefix + "." + member.name;
@@ -4128,7 +4134,7 @@ function initialiserCallsFunction(tokens, variable) {
 }
 // src/engines/c/stepping/instrumenter.js
 var NO_FUNCTION = -1;
-var MAIN_FILE$3 = "main.c";
+var MAIN_FILE$5 = "main.c";
 var Instrumentation = class {
 	constructor(source, options) {
 		this.source = source;
@@ -4144,7 +4150,7 @@ var Instrumentation = class {
 		this.globalIds = [];
 		this.functionId = NO_FUNCTION;
 		this.returnType = null;
-		this.file = options.file || MAIN_FILE$3;
+		this.file = options.file || MAIN_FILE$5;
 		const base = options.base || {};
 		this.pointBase = base.point || 0;
 		this.variableBase = base.var || 0;
@@ -4334,7 +4340,7 @@ function parseParameters(run, parenOpen, parenClose) {
 	return parameters;
 }
 // src/engines/c/stepping/multi-file.js
-var MAIN_FILE$2 = "main.c";
+var MAIN_FILE$4 = "main.c";
 var GLOBALS_FUNCTION_PREFIX = "__lab_globals_";
 function steppedFileNames(userFiles) {
 	return Object.keys(userFiles || {}).filter((name) => name.endsWith(".c") && name !== "main.c").sort();
@@ -4413,7 +4419,7 @@ function instrumentProgram(mainCode, userFiles, keepPlain) {
 		files[file.name] = file.code;
 	});
 	const metas = [main.meta].concat(others.instrumented.map((file) => file.meta));
-	const names = [MAIN_FILE$2].concat(others.instrumented.map((file) => file.name));
+	const names = [MAIN_FILE$4].concat(others.instrumented.map((file) => file.name));
 	return {
 		main: main.code,
 		files,
@@ -4460,9 +4466,9 @@ function friendlyErrors(errors) {
 }
 // src/engines/c/stepping/tracker.js
 var assignmentPatterns = /* @__PURE__ */ new Map();
-var MAIN_FILE$1 = "main.c";
+var MAIN_FILE$3 = "main.c";
 function sourceLinesByFile(options) {
-	const sources = options.sources || { [MAIN_FILE$1]: options.source || "" };
+	const sources = options.sources || { [MAIN_FILE$3]: options.source || "" };
 	return new Map(Object.entries(sources).map(([name, text]) => [name, String(text).split("\n")]));
 }
 function assignmentPattern(name) {
@@ -4548,7 +4554,7 @@ var StepTracker = class {
 		if (!this.isRecording) return;
 		const frames = this.stack.map((frame) => this.snapshotFrame(frame, bytesOf));
 		const globals = [...this.globals.entries()].map(([id, address]) => this.snapshotVariable(null, id, address, bytesOf));
-		const file = point.file || MAIN_FILE$1;
+		const file = point.file || MAIN_FILE$3;
 		this.steps.push({
 			p: pointIndex,
 			line: point.line,
@@ -4559,7 +4565,7 @@ var StepTracker = class {
 		});
 	}
 	lineTextOf(point) {
-		return (this.sourceLines.get(point.file || MAIN_FILE$1) || [])[point.line - 1] || "";
+		return (this.sourceLines.get(point.file || MAIN_FILE$3) || [])[point.line - 1] || "";
 	}
 	markAssignedVariables(pointIndex, point) {
 		const lineTexts = [];
@@ -4818,7 +4824,7 @@ function isStatementUnit(node) {
 	const isFunctionBody = node.type === "compound_statement" && node.parent && node.parent.type === "function_definition";
 	return STATEMENT_TYPES.has(node.type) && isInsideFunction(node) && !isFunctionBody;
 }
-function lineOf(text, offset) {
+function lineOf$1(text, offset) {
 	let line = 1;
 	for (let i = 0; i < offset; i++) if (text.charCodeAt(i) === NEWLINE_CODE$1) line++;
 	return line;
@@ -4863,7 +4869,7 @@ function nodesOnLine(tree, source, error) {
 }
 function collectUnitsOnLine(parent, source, line, lineStart, lineLength, found) {
 	for (const child of parent.children) if (child.endIndex > lineStart && child.startIndex <= lineStart + lineLength) {
-		if (isStatementUnit(child) && lineOf(source, child.startIndex) === line) found.push(child);
+		if (isStatementUnit(child) && lineOf$1(source, child.startIndex) === line) found.push(child);
 		collectUnitsOnLine(child, source, line, lineStart, lineLength, found);
 	}
 }
@@ -4877,7 +4883,7 @@ function unitsForError(tree, source, error) {
 function unitForNode(node, source, error) {
 	if (isBlockClosingBrace(node)) {
 		const at = node.startIndex;
-		const line = lineOf(source, at);
+		const line = lineOf$1(source, at);
 		return {
 			kind: "point",
 			node: node.parent,
@@ -4936,7 +4942,7 @@ function looseRun(node, source, error) {
 		node: firstNode,
 		start: firstNode.startIndex,
 		end: Math.max(lastNode.endIndex, firstNode.startIndex),
-		line: lineOf(source, firstNode.startIndex),
+		line: lineOf$1(source, firstNode.startIndex),
 		...messageOf(error)
 	};
 }
@@ -4946,7 +4952,7 @@ function makeUnit(statement, source, error, errorNode) {
 		node: statement,
 		start: statement.startIndex,
 		end: statement.endIndex,
-		line: lineOf(source, statement.startIndex),
+		line: lineOf$1(source, statement.startIndex),
 		...messageOf(error)
 	};
 	if (!CONTROL_TYPES.has(statement.type)) return unit;
@@ -4992,7 +4998,7 @@ function bodyUnit(definition, source, error) {
 		node: body,
 		start: body.startIndex,
 		end: body.endIndex,
-		line: lineOf(source, body.startIndex),
+		line: lineOf$1(source, body.startIndex),
 		...messageOf(error)
 	};
 }
@@ -5306,8 +5312,8 @@ function initialUnits(tree, code, errors) {
 function braceUnits(tree, code, errors) {
 	return braceSuspects(tree, code).map((suspect) => {
 		const closeAt = suspect.close.startIndex;
-		const line = lineOf(code, suspect.kind === "unclosed" ? suspect.owner.startIndex : closeAt);
-		const msg = messageNear(errors, lineOf(code, closeAt)) || messageNear(errors, line);
+		const line = lineOf$1(code, suspect.kind === "unclosed" ? suspect.owner.startIndex : closeAt);
+		const msg = messageNear(errors, lineOf$1(code, closeAt)) || messageNear(errors, line);
 		if (suspect.kind === "unclosed") {
 			const unit = makeUnit(suspect.owner, code, {
 				line,
@@ -5438,8 +5444,8 @@ function changeStopsForErrors(recovery, remaining) {
 	return isChanged;
 }
 function isUnitOnLine(code, unit, line) {
-	if (unit.kind === "point") return lineOf(code, unit.at) === line;
-	return lineOf(code, unit.start) <= line && lineOf(code, unit.end) >= line;
+	if (unit.kind === "point") return lineOf$1(code, unit.at) === line;
+	return lineOf$1(code, unit.start) <= line && lineOf$1(code, unit.end) >= line;
 }
 function widenStops(recovery, hits, moved) {
 	const inPlace = hits.filter((unit) => !moved.has(unit) && (unit.kind === "cond" || unit.node.type === "declaration" && !unit.plain && unit.kind === "stmt"));
@@ -5464,7 +5470,7 @@ async function locateByTrial(recovery, errorText) {
 	const live = effectiveUnits(units);
 	const candidates = innermostStatements(tree).filter((node) => !live.some((unit) => unit.kind !== "point" && node.startIndex >= unit.start && node.endIndex <= unit.end)).map((node) => {
 		const unit = makeUnit(node, code, {
-			line: lineOf(code, node.startIndex),
+			line: lineOf$1(code, node.startIndex),
 			msg
 		}, null);
 		return Object.assign(unit, {
@@ -5496,7 +5502,7 @@ function finish(recovery, finalBuild, source) {
 	const ranges = live.filter((unit) => unit.kind !== "point");
 	const unitStops = live.map((unit) => ({
 		line: unit.line,
-		end: unit.kind === "point" ? unit.line : lineOf(code, unit.end),
+		end: unit.kind === "point" ? unit.line : lineOf$1(code, unit.end),
 		msg: unit.msg
 	}));
 	const insertStops = inserts.filter((insert) => insert.stop && !ranges.some((unit) => insert.at > unit.start && insert.at < unit.end)).map((insert) => ({
@@ -5537,6 +5543,1312 @@ var StepRunner = {
 	PREFIX: XCC_PREFIX,
 	makeTracker
 };
+// src/shared/motion/motions.ts
+var ANCHOR_ATTRIBUTE = "data-anchor";
+var TONES = [
+	"focus",
+	"compare",
+	"good",
+	"bad",
+	"pointer"
+];
+var EASINGS = [
+	"glide",
+	"out",
+	"in",
+	"linear",
+	"settle"
+];
+function move$1(spec) {
+	return {
+		kind: "move",
+		...spec
+	};
+}
+function appear(spec) {
+	return {
+		kind: "appear",
+		...spec
+	};
+}
+function leave(spec) {
+	return {
+		kind: "leave",
+		...spec
+	};
+}
+function slide(spec) {
+	return {
+		kind: "slide",
+		...spec
+	};
+}
+function highlight$1(spec) {
+	return {
+		kind: "highlight",
+		...spec
+	};
+}
+function draw(spec) {
+	return {
+		kind: "draw",
+		...spec
+	};
+}
+function count(spec) {
+	return {
+		kind: "count",
+		...spec
+	};
+}
+function together(motions) {
+	return {
+		kind: "together",
+		motions
+	};
+}
+function anchor(name) {
+	return { "data-anchor": name };
+}
+function leavesOf$1(motion) {
+	if (!motion) return [];
+	if (motion.kind === "together" || motion.kind === "inOrder") return motion.motions.flatMap((inner) => leavesOf$1(inner));
+	return [motion];
+}
+var MAX_DELAY_MS = 2e4;
+var ANCHOR_RE = /^[!#-&(-[\]-~]{1,80}$/;
+var FIELDS = {
+	move: {
+		from: "anchor",
+		to: "anchor",
+		value: "text?",
+		ms: "ms?"
+	},
+	rise: {
+		from: "anchor",
+		to: "anchor",
+		value: "text?",
+		along: "anchor?",
+		ms: "ms?"
+	},
+	appear: {
+		anchor: "anchor",
+		style: "grow?",
+		scale: "scale?",
+		dx: "offset?",
+		dy: "offset?",
+		ms: "ms?"
+	},
+	leave: {
+		anchor: "anchor",
+		style: "shrink?",
+		ms: "ms?"
+	},
+	slide: {
+		anchor: "anchor",
+		ms: "ms?"
+	},
+	highlight: {
+		anchor: "anchor",
+		tone: "tone?",
+		ms: "ms?"
+	},
+	draw: {
+		path: "anchor?",
+		head: "anchor?",
+		from: "anchor?",
+		to: "anchor?",
+		was: "anchor?",
+		tone: "tone?",
+		ms: "ms?"
+	},
+	count: {
+		anchor: "anchor",
+		from: "number",
+		to: "number",
+		decimals: "decimals?",
+		prefix: "text?",
+		suffix: "text?",
+		ms: "ms?"
+	}
+};
+function isAnchorName(name) {
+	return typeof name === "string" && ANCHOR_RE.test(name);
+}
+function isWithin(value, low, high) {
+	return typeof value === "number" && Number.isFinite(value) && value >= low && value <= high;
+}
+var RULE_CHECKS = {
+	anchor: (value) => isAnchorName(value) ? null : "not an anchor name",
+	text: (value) => typeof value === "string" && value.length <= 40 ? null : "not a text of at most 40 characters",
+	number: (value) => isWithin(value, -0x38d7ea4c68000, 0x38d7ea4c68000) ? null : "not a finite number",
+	decimals: (value) => isWithin(value, 0, 6) && Number.isInteger(value) ? null : "not a whole number from 0 to 6",
+	tone: (value) => TONES.includes(value) ? null : "not one of " + TONES.join(", "),
+	grow: (value) => value === "grow" || value === "fade" ? null : "not 'grow' or 'fade'",
+	shrink: (value) => value === "shrink" || value === "fade" ? null : "not 'shrink' or 'fade'",
+	ms: (value) => isWithin(value, 0, 2e3) ? null : "not 0 to 2000 ms",
+	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
+	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
+	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
+	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
+};
+var TIMING_FIELDS = {
+	delay: "delay?",
+	ease: "ease?"
+};
+function checkFields$1(motion, path, problems) {
+	const rules = {
+		...FIELDS[motion.kind],
+		...TIMING_FIELDS
+	};
+	for (const field of Object.keys(motion)) if (field !== "kind" && !(field in rules)) problems.push({
+		path: path + "." + field,
+		message: "unknown field of " + motion.kind
+	});
+	for (const [field, rule] of Object.entries(rules)) {
+		const value = motion[field];
+		const isOptional = rule.endsWith("?");
+		if (value === void 0) {
+			if (!isOptional) problems.push({
+				path: path + "." + field,
+				message: "missing"
+			});
+			continue;
+		}
+		const problem = RULE_CHECKS[rule.replace("?", "")](value);
+		if (problem) problems.push({
+			path: path + "." + field,
+			message: problem
+		});
+	}
+}
+function checkDraw(motion, path, problems) {
+	const hasEnds = motion.from !== void 0 && motion.to !== void 0;
+	const hasOneEnd = motion.from === void 0 !== (motion.to === void 0);
+	const retracts = motion.from !== void 0 && motion.to === void 0 && motion.was !== void 0;
+	if (hasOneEnd && !retracts) problems.push({
+		path,
+		message: "a draw needs both from and to, or neither"
+	});
+	else if (!hasEnds && !retracts && motion.path === void 0) problems.push({
+		path,
+		message: "a draw needs a path, or from and to"
+	});
+	if (motion.was !== void 0 && motion.from === void 0) problems.push({
+		path: path + ".was",
+		message: "was needs from and to"
+	});
+}
+function checkAppear(motion, path, problems) {
+	if (motion.scale !== void 0 && motion.style === "fade") problems.push({
+		path: path + ".scale",
+		message: "scale needs the style 'grow'"
+	});
+}
+function checkSequence(motion, path, depth, walk) {
+	const extra = Object.keys(motion).filter((field) => ![
+		"kind",
+		"motions",
+		"gap"
+	].includes(field));
+	const isTogether = motion.kind === "together";
+	for (const field of extra.concat(isTogether && "gap" in motion ? ["gap"] : [])) walk.problems.push({
+		path: path + "." + field,
+		message: "unknown field of " + motion.kind
+	});
+	if (!isTogether && motion.gap !== void 0 && !isWithin(motion.gap, 0, 1e3)) walk.problems.push({
+		path: path + ".gap",
+		message: "not 0 to 1000 ms"
+	});
+	if (!Array.isArray(motion.motions)) {
+		walk.problems.push({
+			path: path + ".motions",
+			message: "not a list"
+		});
+		return;
+	}
+	if (depth >= 8) {
+		walk.problems.push({
+			path,
+			message: "sequences nested deeper than 8"
+		});
+		return;
+	}
+	motion.motions.forEach((inner, index) => {
+		checkAny(inner, path + ".motions[" + index + "]", depth + 1, walk);
+	});
+}
+function checkAny(value, path, depth, walk) {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		walk.problems.push({
+			path,
+			message: "not a motion"
+		});
+		return;
+	}
+	const motion = value;
+	if (motion.kind === "together" || motion.kind === "inOrder") {
+		checkSequence(motion, path, depth, walk);
+		return;
+	}
+	if (typeof motion.kind !== "string" || !Object.hasOwn(FIELDS, motion.kind)) {
+		walk.problems.push({
+			path: path + ".kind",
+			message: "unknown kind " + String(motion.kind)
+		});
+		return;
+	}
+	walk.leaves += 1;
+	checkFields$1(motion, path, walk.problems);
+	if (motion.kind === "draw") checkDraw(motion, path, walk.problems);
+	else if (motion.kind === "appear") checkAppear(motion, path, walk.problems);
+}
+function validateMotion(value) {
+	const walk = {
+		problems: [],
+		leaves: 0
+	};
+	checkAny(value, "motion", 0, walk);
+	if (walk.leaves > 400) walk.problems.push({
+		path: "motion",
+		message: "more than 400 motions"
+	});
+	return walk.problems;
+}
+// node_modules/react/cjs/react.production.js
+/**
+* @license React
+* react.production.js
+*
+* Copyright (c) Meta Platforms, Inc. and affiliates.
+*
+* This source code is licensed under the MIT license found in the
+* LICENSE file in the root directory of this source tree.
+*/
+var require_react_production=__commonJSMin((exports=>{var e=Symbol.for(`react.transitional.element`);var t=Symbol.for(`react.portal`);var n=Symbol.for(`react.fragment`);var r=Symbol.for(`react.strict_mode`);var i=Symbol.for(`react.profiler`);var a=Symbol.for(`react.consumer`);var o=Symbol.for(`react.context`);var s=Symbol.for(`react.forward_ref`);var c=Symbol.for(`react.suspense`);var l=Symbol.for(`react.memo`);var u=Symbol.for(`react.lazy`);var d=Symbol.for(`react.activity`);var f=Symbol.for(`react.view_transition`);var p=Symbol.iterator;function m(e){return typeof e!=`object`||!e?null:(e=p&&e[p]||e[`@@iterator`],typeof e==`function`?e:null)}var h={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}};var g=Object.assign;var _={};function v(e,t,n){this.props=e,this.context=t,this.refs=_,this.updater=n||h}v.prototype.isReactComponent={},v.prototype.setState=function(e,t){if(typeof e!=`object`&&typeof e!=`function`&&e!=null)throw Error(`takes an object of state variables to update or a function which returns an object of state variables.`);this.updater.enqueueSetState(this,e,t,`setState`)},v.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,`forceUpdate`)};function y(){}y.prototype=v.prototype;function b(e,t,n){this.props=e,this.context=t,this.refs=_,this.updater=n||h}var x=b.prototype=new y;x.constructor=b,g(x,v.prototype),x.isPureReactComponent=!0;var S=Array.isArray;function C(){}var w={H:null,A:null,T:null,S:null};var T=Object.prototype.hasOwnProperty;function E(t,n,r){var i=r.ref;return{$$typeof:e,type:t,key:n,ref:i===void 0?null:i,props:r}}function D(e,t){return E(e.type,t,e.props)}function O(t){return typeof t==`object`&&!!t&&t.$$typeof===e}function k(e){var t={"=":`=0`,":":`=2`};return`$`+e.replace(/[=:]/g,function(e){return t[e]})}var A=/\/+/g;function j(e,t){return typeof e==`object`&&e&&e.key!=null?k(``+e.key):t.toString(36)}function M(e){switch(e.status){case`fulfilled`:return e.value;case`rejected`:throw e.reason;default:switch(typeof e.status==`string`?e.then(C,C):(e.status=`pending`,e.then(function(t){e.status===`pending`&&(e.status=`fulfilled`,e.value=t)},function(t){e.status===`pending`&&(e.status=`rejected`,e.reason=t)})),e.status){case`fulfilled`:return e.value;case`rejected`:throw e.reason}}throw e}function N(n,r,i,a,o){var s=typeof n;(s===`undefined`||s===`boolean`)&&(n=null);var c=!1;if(n===null)c=!0;else switch(s){case`bigint`:case`string`:case`number`:c=!0;break;case`object`:switch(n.$$typeof){case e:case t:c=!0;break;case u:return c=n._init,N(c(n._payload),r,i,a,o)}}if(c)return o=o(n),c=a===``?`.`+j(n,0):a,S(o)?(i=``,c!=null&&(i=c.replace(A,`$&/`)+`/`),N(o,r,i,``,function(e){return e})):o!=null&&(O(o)&&(o=D(o,i+(o.key==null||n&&n.key===o.key?``:(``+o.key).replace(A,`$&/`)+`/`)+c)),r.push(o)),1;c=0;var l=a===``?`.`:a+`:`;if(S(n))for(var d=0;d<n.length;d++)a=n[d],s=l+j(a,d),c+=N(a,r,i,s,o);else if(d=m(n),typeof d==`function`)for(n=d.call(n),d=0;!(a=n.next()).done;)a=a.value,s=l+j(a,d++),c+=N(a,r,i,s,o);else if(s===`object`){if(typeof n.then==`function`)return N(M(n),r,i,a,o);throw r=String(n),Error(`Objects are not valid as a React child (found: `+(r===`[object Object]`?`object with keys {`+Object.keys(n).join(`, `)+`}`:r)+`). If you meant to render a collection of children, use an array instead.`)}return c}function P(e,t,n){if(e==null)return e;var r=[],i=0;return N(e,r,``,``,function(e){return t.call(n,e,i++)}),r}function F(e){if(e._status===-1){var t=e._result,n=t();n.then(function(t){(e._status===0||e._status===-1)&&(e._status=1,e._result=t,n.status===void 0&&(n.status=`fulfilled`,n.value=t))},function(t){(e._status===0||e._status===-1)&&(e._status=2,e._result=t,n.status===void 0&&(n.status=`rejected`,n.reason=t))}),e._status===-1&&(e._status=0,e._result=n)}if(e._status===1)return e._result.default;throw e._result}var I=typeof reportError==`function`?reportError:function(e){if(typeof window==`object`&&typeof window.ErrorEvent==`function`){var t=new window.ErrorEvent(`error`,{bubbles:!0,cancelable:!0,message:typeof e==`object`&&e&&typeof e.message==`string`?String(e.message):String(e),error:e});if(!window.dispatchEvent(t))return}else if(typeof process==`object`&&typeof process.emit==`function`){process.emit(`uncaughtException`,e);return}console.error(e)};function L(e){var t=w.T,n={};n.types=t===null?null:t.types,w.T=n;try{var r=e(),i=w.S;i!==null&&i(n,r),typeof r==`object`&&r&&typeof r.then==`function`&&r.then(C,I)}catch(e){I(e)}finally{t!==null&&n.types!==null&&(t.types=n.types),w.T=t}}function R(e){var t=w.T;if(t!==null){var n=t.types;n===null?t.types=[e]:n.indexOf(e)===-1&&n.push(e)}else L(R.bind(null,e))}var z={map:P,forEach:function(e,t,n){P(e,function(){t.apply(this,arguments)},n)},count:function(e){var t=0;return P(e,function(){t++}),t},toArray:function(e){return P(e,function(e){return e})||[]},only:function(e){if(!O(e))throw Error(`React.Children.only expected to receive a single React element child.`);return e}};exports.Activity=d,exports.Children=z,exports.Component=v,exports.Fragment=n,exports.Profiler=i,exports.PureComponent=b,exports.StrictMode=r,exports.Suspense=c,exports.ViewTransition=f,exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=w,exports.__COMPILER_RUNTIME={__proto__:null,c:function(e){return w.H.useMemoCache(e)}},exports.addTransitionType=R,exports.cache=function(e){return function(){return e.apply(null,arguments)}},exports.cacheSignal=function(){return null},exports.cloneElement=function(e,t,n){if(e==null)throw Error(`The argument must be a React element, but you passed `+e+`.`);var r=g({},e.props),i=e.key;if(t!=null)for(a in t.key!==void 0&&(i=``+t.key),t)!T.call(t,a)||a===`key`||a===`__self`||a===`__source`||a===`ref`&&t.ref===void 0||(r[a]=t[a]);var a=arguments.length-2;if(a===1)r.children=n;else if(1<a){for(var o=Array(a),s=0;s<a;s++)o[s]=arguments[s+2];r.children=o}return E(e.type,i,r)},exports.createContext=function(e){return e={$$typeof:o,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null},e.Provider=e,e.Consumer={$$typeof:a,_context:e},e},exports.createElement=function(e,t,n){var r,i={},a=null;if(t!=null)for(r in t.key!==void 0&&(a=``+t.key),t)T.call(t,r)&&r!==`key`&&r!==`__self`&&r!==`__source`&&(i[r]=t[r]);var o=arguments.length-2;if(o===1)i.children=n;else if(1<o){for(var s=Array(o),c=0;c<o;c++)s[c]=arguments[c+2];i.children=s}if(e&&e.defaultProps)for(r in o=e.defaultProps,o)i[r]===void 0&&(i[r]=o[r]);return E(e,a,i)},exports.createRef=function(){return{current:null}},exports.forwardRef=function(e){return{$$typeof:s,render:e}},exports.isValidElement=O,exports.lazy=function(e){return{$$typeof:u,_payload:{_status:-1,_result:e},_init:F}},exports.memo=function(e,t){return{$$typeof:l,type:e,compare:t===void 0?null:t}},exports.startTransition=L,exports.unstable_useCacheRefresh=function(){return w.H.useCacheRefresh()},exports.use=function(e){return w.H.use(e)},exports.useActionState=function(e,t,n){return w.H.useActionState(e,t,n)},exports.useCallback=function(e,t){return w.H.useCallback(e,t)},exports.useContext=function(e){return w.H.useContext(e)},exports.useDebugValue=function(){},exports.useDeferredValue=function(e,t){return w.H.useDeferredValue(e,t)},exports.useEffect=function(e,t){return w.H.useEffect(e,t)},exports.useEffectEvent=function(e){return w.H.useEffectEvent(e)},exports.useId=function(){return w.H.useId()},exports.useImperativeHandle=function(e,t,n){return w.H.useImperativeHandle(e,t,n)},exports.useInsertionEffect=function(e,t){return w.H.useInsertionEffect(e,t)},exports.useLayoutEffect=function(e,t){return w.H.useLayoutEffect(e,t)},exports.useMemo=function(e,t){return w.H.useMemo(e,t)},exports.useOptimistic=function(e,t){return w.H.useOptimistic(e,t)},exports.useReducer=function(e,t,n){return w.H.useReducer(e,t,n)},exports.useRef=function(e){return w.H.useRef(e)},exports.useState=function(e){return w.H.useState(e)},exports.useSyncExternalStore=function(e,t,n){return w.H.useSyncExternalStore(e,t,n)},exports.useTransition=function(){return w.H.useTransition()},exports.version=`19.3.1`}));
+
+// node_modules/react/index.js
+var require_react=__commonJSMin(((exports,module)=>{module.exports=require_react_production()}));
+
+// src/shared/step-transition.ts
+var import_react = require_react();
+function easeInOut(fraction) {
+	return (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, fraction)))) / 2;
+}
+function glides(transition, reducesMotion) {
+	return transition === "next" && !reducesMotion;
+}
+function prefersReducedMotion() {
+	if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function mix(from, to, progress) {
+	return from + (to - from) * progress;
+}
+// src/shared/motion/schedule.ts
+function settle(fraction) {
+	return 1 - Math.pow(1 - Math.min(1, Math.max(0, fraction)), 3);
+}
+var MAX_PLAY_MS = 2e3;
+var DEFAULT_MS = {
+	move: 560,
+	rise: 560,
+	draw: 560,
+	count: 560,
+	appear: 320,
+	leave: 280,
+	slide: 560,
+	highlight: 700
+};
+var EASING = {
+	move: "glide",
+	rise: "glide",
+	draw: "glide",
+	count: "glide",
+	appear: "out",
+	leave: "in",
+	slide: "glide",
+	highlight: "linear"
+};
+var EMPTY$1 = {
+	tracks: [],
+	total: 0,
+	isCompressed: false
+};
+function layOut(motion, start, tracks) {
+	if (motion.kind === "together") return motion.motions.reduce((end, inner) => Math.max(end, layOut(inner, start, tracks)), start);
+	if (motion.kind === "inOrder") {
+		const gap = motion.gap ?? 0;
+		let end = start;
+		motion.motions.forEach((inner, position) => {
+			end = layOut(inner, position === 0 ? end : end + gap, tracks);
+		});
+		return end;
+	}
+	const duration = motion.ms ?? DEFAULT_MS[motion.kind];
+	const begins = start + (motion.delay ?? 0);
+	const easing = motion.ease ?? EASING[motion.kind];
+	tracks.push({
+		motion,
+		index: tracks.length,
+		start: begins,
+		duration,
+		easing
+	});
+	return begins + duration;
+}
+function compress(tracks, total) {
+	const factor = MAX_PLAY_MS / total;
+	const shrunk = tracks.map((track) => ({
+		...track,
+		duration: Math.max(Math.min(track.duration, 120), track.duration * factor)
+	}));
+	let fit = 1;
+	for (const track of shrunk) {
+		const natural = tracks[track.index].start;
+		if (natural > 0) fit = Math.min(fit, (MAX_PLAY_MS - track.duration) / natural);
+	}
+	return shrunk.map((track) => ({
+		...track,
+		start: tracks[track.index].start * fit
+	}));
+}
+function scheduleOf(motion) {
+	if (!motion) return EMPTY$1;
+	const tracks = [];
+	const total = layOut(motion, 0, tracks);
+	if (total <= 2e3) return {
+		tracks,
+		total,
+		isCompressed: false
+	};
+	const fitted = compress(tracks, total);
+	return {
+		tracks: fitted,
+		total: fitted.reduce((last, track) => Math.max(last, track.start + track.duration), 0),
+		isCompressed: true
+	};
+}
+function trackFraction(track, time) {
+	if (track.duration <= 0) return time >= track.start ? 1 : 0;
+	return Math.min(1, Math.max(0, (time - track.start) / track.duration));
+}
+// src/shared/motion/player.ts
+function firstNeedsOf(schedule) {
+	const places = /* @__PURE__ */ new Set();
+	const copies = /* @__PURE__ */ new Set();
+	for (const { motion } of schedule.tracks) if (motion.kind === "move" || motion.kind === "rise") places.add(motion.from);
+	else if (motion.kind === "draw" && motion.was) places.add(motion.was);
+	else if (motion.kind === "slide") places.add(motion.anchor);
+	else if (motion.kind === "leave") {
+		places.add(motion.anchor);
+		copies.add(motion.anchor);
+	}
+	return {
+		places: [...places],
+		copies: [...copies]
+	};
+}
+function problemsOf(motion) {
+	return validateMotion(motion).map((problem) => problem.path + ": " + problem.message).join("; ");
+}
+var MotionPlayer = class {
+	renderer;
+	reducesMotion;
+	warn;
+	warned = /* @__PURE__ */ new Set();
+	stage = null;
+	cued = null;
+	playing = null;
+	report = null;
+	constructor(renderer, options = {}) {
+		this.renderer = renderer;
+		this.reducesMotion = options.reducesMotion ?? prefersReducedMotion;
+		this.warn = options.warn ?? ((message) => console.warn(message));
+	}
+	cue(key, motion, transition) {
+		this.stopPlaying();
+		this.cued = null;
+		const single = Array.isArray(motion) ? {
+			kind: "together",
+			motions: motion
+		} : motion;
+		if (!single || !leavesOf$1(single).length || !glides(transition, this.reducesMotion())) return;
+		const problems = problemsOf(single);
+		if (problems) {
+			this.warnOnce("motion not played (" + problems + ")");
+			return;
+		}
+		const schedule = scheduleOf(single);
+		const firsts = this.safely(() => this.stage ? this.renderer.measure(this.stage, firstNeedsOf(schedule)) : null, "measuring");
+		this.cued = {
+			key,
+			schedule,
+			firsts: firsts ?? /* @__PURE__ */ new Map()
+		};
+	}
+	show(stage, key) {
+		if (this.stage !== stage) {
+			if (this.stage) this.release(this.stage);
+			this.stage = stage;
+		}
+		const cue = this.cued;
+		if (!cue || cue.key !== key) return;
+		this.cued = null;
+		this.stopPlaying();
+		let current = null;
+		let isDone = false;
+		current = this.safely(() => this.renderer.play(stage, cue.schedule, cue.firsts, (report) => {
+			isDone = true;
+			this.report = report;
+			if (current && this.playing === current) this.playing = null;
+		}), "playing");
+		this.playing = isDone ? null : current;
+	}
+	finish() {
+		const playing = this.playing;
+		this.playing = null;
+		this.safely(() => playing?.finish(), "finishing");
+	}
+	release(stage) {
+		if (this.stage !== stage) return;
+		this.stopPlaying();
+		this.stage = null;
+		this.safely(() => this.renderer.release(stage), "releasing");
+	}
+	dispose() {
+		this.cued = null;
+		if (this.stage) this.release(this.stage);
+	}
+	isPlaying() {
+		return this.playing !== null;
+	}
+	lastReport() {
+		return this.report;
+	}
+	stopPlaying() {
+		const playing = this.playing;
+		this.playing = null;
+		this.safely(() => playing?.stop(), "stopping");
+	}
+	safely(work, what) {
+		try {
+			return work();
+		} catch (error) {
+			this.warnOnce("motion: " + what + " failed (" + String(error) + ")");
+			return null;
+		}
+	}
+	warnOnce(message) {
+		if (!this.warned.has(message)) {
+			this.warned.add(message);
+			this.warn(message);
+		}
+	}
+};
+// src/shared/motion/geometry.ts
+var ARROW_GAP_PX = 3;
+function stageBoxOf(probe, probeSize) {
+	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
+	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
+	return {
+		originX: probe.left,
+		originY: probe.top,
+		scaleX,
+		scaleY
+	};
+}
+function toStage(box, rect) {
+	return {
+		x: (rect.left - box.originX) / box.scaleX,
+		y: (rect.top - box.originY) / box.scaleY,
+		width: rect.width / box.scaleX,
+		height: rect.height / box.scaleY
+	};
+}
+function centreOf(rect) {
+	return {
+		x: rect.x + rect.width / 2,
+		y: rect.y + rect.height / 2
+	};
+}
+function distance(from, to) {
+	return Math.hypot(to.x - from.x, to.y - from.y);
+}
+function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
+	const centre = centreOf(rect);
+	const dx = toward.x - centre.x;
+	const dy = toward.y - centre.y;
+	const halfWidth = rect.width / 2 + gap;
+	const halfHeight = rect.height / 2 + gap;
+	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
+	if (!Number.isFinite(reach) || reach >= 1) return centre;
+	return {
+		x: centre.x + dx * reach,
+		y: centre.y + dy * reach
+	};
+}
+function arrowBetween(from, to) {
+	const tail = edgeToward(from, centreOf(to));
+	const tip = edgeToward(to, centreOf(from));
+	return {
+		tail,
+		tip,
+		angle: Math.atan2(tip.y - tail.y, tip.x - tail.x) * 180 / Math.PI,
+		length: distance(tail, tip)
+	};
+}
+function nearestTurn(from, to) {
+	let turn = to;
+	while (turn - from > 180) turn -= 360;
+	while (turn - from < -180) turn += 360;
+	return turn;
+}
+function routeOffsets(points) {
+	const lengths = points.map((point, index) => index === 0 ? 0 : distance(points[index - 1], point));
+	const total = lengths.reduce((sum, length) => sum + length, 0);
+	let travelled = 0;
+	return points.map((point, index) => {
+		travelled += lengths[index];
+		const offset = total > 0 ? travelled / total : index / Math.max(1, points.length - 1);
+		return {
+			x: point.x,
+			y: point.y,
+			offset: index === points.length - 1 ? 1 : offset
+		};
+	});
+}
+function riseRoute(from, to) {
+	const target = centreOf(to);
+	const top = {
+		x: from.x + from.width / 2,
+		y: from.y
+	};
+	return [
+		centreOf(from),
+		top,
+		target
+	];
+}
+function routeAlong(edge, start, end) {
+	if (!edge.length) return [start, end];
+	return [
+		start,
+		...distance(edge[edge.length - 1], start) < distance(edge[0], start) ? [...edge].reverse() : edge,
+		end
+	];
+}
+function formatCount(value, decimals) {
+	const text = value.toFixed(decimals);
+	return Number(text) === 0 ? 0 .toFixed(decimals) : text;
+}
+function decimalsOf(value) {
+	for (let digits = 0; digits < 6; digits++) if (Math.abs(Number(value.toFixed(digits)) - value) < 1e-9) return digits;
+	return 6;
+}
+// src/shared/motion/dom-stage.ts
+var LAYER_CLASS = "motion-layer";
+var GHOST_CLASS = "motion-ghost";
+var PROBE_PX = 100;
+var MAX_COPY_NODES = 400;
+var COPIED_STYLES = [
+	"display",
+	"box-sizing",
+	"width",
+	"height",
+	"padding",
+	"border",
+	"border-radius",
+	"background-color",
+	"color",
+	"font-family",
+	"font-size",
+	"font-weight",
+	"font-style",
+	"line-height",
+	"letter-spacing",
+	"text-align",
+	"white-space",
+	"direction",
+	"vertical-align",
+	"opacity",
+	"box-shadow",
+	"fill",
+	"stroke",
+	"stroke-width",
+	"stroke-dasharray",
+	"font-variant-numeric",
+	"grid-template-columns",
+	"gap",
+	"align-items",
+	"justify-content"
+];
+function findAnchors(stage) {
+	const anchors = /* @__PURE__ */ new Map();
+	for (const element of stage.querySelectorAll("[" + ANCHOR_ATTRIBUTE + "]")) {
+		const name = element.getAttribute("data-anchor") ?? "";
+		if (name && !anchors.has(name) && !element.closest(".motion-layer")) anchors.set(name, element);
+	}
+	return anchors;
+}
+function layerOf(stage) {
+	const found = stage.querySelector(":scope > .motion-layer");
+	if (found instanceof HTMLElement) return found;
+	if (getComputedStyle(stage).position === "static") stage.style.position = "relative";
+	const layer = document.createElement("div");
+	layer.className = LAYER_CLASS;
+	layer.setAttribute("aria-hidden", "true");
+	layer.style.cssText = "position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:50;contain:style";
+	const probe = document.createElement("div");
+	probe.className = "motion-probe";
+	probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;width:100px;height:100px";
+	layer.append(probe);
+	stage.append(layer);
+	return layer;
+}
+function removeLayer(stage) {
+	stage.querySelector(":scope > .motion-layer")?.remove();
+}
+function clearGhosts(stage) {
+	for (const ghost of stage.querySelectorAll(":scope > .motion-layer > .motion-ghost")) ghost.remove();
+}
+var EMPTY = {
+	left: 0,
+	top: 0,
+	width: 0,
+	height: 0
+};
+function measureBox(stage) {
+	const probe = layerOf(stage).querySelector(".motion-probe");
+	return probe ? stageBoxOf(probe.getBoundingClientRect(), PROBE_PX) : stageBoxOf(EMPTY, 1);
+}
+function rectIn(box, element) {
+	return toStage(box, element.getBoundingClientRect());
+}
+function copyStyle(from, to) {
+	if (!(to instanceof HTMLElement || to instanceof SVGElement)) return;
+	const style = getComputedStyle(from);
+	for (const property of COPIED_STYLES) to.style.setProperty(property, style.getPropertyValue(property));
+	to.removeAttribute("id");
+	to.removeAttribute(ANCHOR_ATTRIBUTE);
+}
+function inOwnSvg(element, copy, size) {
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("width", String(size.width));
+	svg.setAttribute("height", String(size.height));
+	svg.style.overflow = "visible";
+	const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	const parent = element.parentNode;
+	const matrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
+	if (matrix) {
+		const values = [
+			matrix.a,
+			matrix.b,
+			matrix.c,
+			matrix.d,
+			matrix.e,
+			matrix.f
+		];
+		group.setAttribute("transform", "matrix(" + values.join(" ") + ")");
+	}
+	group.append(copy);
+	svg.append(group);
+	return svg;
+}
+function copyOf$1(element, box) {
+	const copy = element.cloneNode(true);
+	const originals = [element, ...element.querySelectorAll("*")];
+	const copies = [copy, ...copy.querySelectorAll("*")];
+	const count = originals.length > MAX_COPY_NODES ? 1 : originals.length;
+	if (count === 1) copy.replaceChildren();
+	for (let index = 0; index < count; index++) copyStyle(originals[index], copies[index]);
+	if (element instanceof SVGGraphicsElement && !(element instanceof SVGSVGElement)) {
+		const rect = rectIn(box, element.ownerSVGElement ?? element);
+		return {
+			copy: inOwnSvg(element, copy, rect),
+			rect
+		};
+	}
+	return {
+		copy,
+		rect: rectIn(box, element)
+	};
+}
+function measureFirsts(stage, needs) {
+	const firsts = /* @__PURE__ */ new Map();
+	if (!needs.places.length) return firsts;
+	const anchors = findAnchors(stage);
+	const box = measureBox(stage);
+	for (const name of needs.places) {
+		const element = anchors.get(name);
+		const rect = element?.getBoundingClientRect();
+		if (!element || !rect || rect.width === 0 && rect.height === 0) continue;
+		const text = (element.textContent ?? "").trim();
+		if (needs.copies.includes(name)) {
+			const { copy, rect } = copyOf$1(element, box);
+			firsts.set(name, {
+				rect: rectIn(box, element),
+				text,
+				copy: {
+					element: copy,
+					rect
+				}
+			});
+		} else firsts.set(name, {
+			rect: rectIn(box, element),
+			text
+		});
+	}
+	return firsts;
+}
+// src/shared/motion/ghosts.ts
+var RING_GAP_PX = 4;
+var FONT_PROPERTIES = [
+	"font-family",
+	"font-size",
+	"font-weight",
+	"font-style"
+];
+function ghostOf(extraClass) {
+	const ghost = document.createElement("div");
+	ghost.className = GHOST_CLASS + " " + extraClass;
+	ghost.style.cssText = "position:absolute;left:0;top:0;opacity:0;margin:0;";
+	return ghost;
+}
+function inkOf(style, element) {
+	const fill = style.getPropertyValue("fill");
+	const isPaint = fill && fill !== "none" && !fill.startsWith("url(");
+	return element instanceof SVGElement && isPaint ? fill : style.color;
+}
+function takeFont(ghost, like) {
+	const style = getComputedStyle(like);
+	for (const property of FONT_PROPERTIES) ghost.style.setProperty(property, style.getPropertyValue(property));
+}
+function valueGhost(text, like, end) {
+	const ghost = ghostOf("motion-value");
+	ghost.dir = "auto";
+	ghost.textContent = text;
+	takeFont(ghost, like);
+	ghost.style.left = end.x + "px";
+	ghost.style.top = end.y + "px";
+	ghost.style.cssText += "white-space:nowrap;line-height:1.5;padding:0 5px;border-radius:4px;border:1px solid var(--accent);background:var(--raised);color:var(--ink);box-shadow:0 2px 6px var(--shadow);transform:translate(-50%, -50%);will-change:transform";
+	return ghost;
+}
+function ringGhost(rect, colour) {
+	const ring = ghostOf("motion-ring");
+	const height = rect.height + 8;
+	const width = Math.max(rect.width + 8, height);
+	ring.style.left = rect.x + rect.width / 2 - width / 2 + "px";
+	ring.style.top = rect.y - RING_GAP_PX + "px";
+	ring.style.width = width + "px";
+	ring.style.height = height + "px";
+	ring.style.cssText += "box-sizing:border-box;border:2px solid " + colour + ";border-radius:6px;box-shadow:0 0 0 3px color-mix(in srgb, " + colour + " 25%, transparent)";
+	return ring;
+}
+function arrowGhost(tail, colour, headPx) {
+	const root = ghostOf("motion-arrow");
+	root.style.left = tail.x + "px";
+	root.style.top = tail.y + "px";
+	root.style.cssText += "width:0;height:0;transform-origin:0 0;will-change:transform";
+	const shaft = document.createElement("div");
+	shaft.style.cssText = "position:absolute;left:0;top:-1px;width:1px;height:2px;transform-origin:0 50%;transform:scaleX(0);background:" + colour;
+	const head = document.createElement("div");
+	head.style.cssText = "position:absolute;left:0;width:" + headPx + "px;height:" + headPx + "px;top:" + -headPx / 2 + "px;clip-path:polygon(0 0, 100% 50%, 0 100%);background:" + colour;
+	root.append(shaft, head);
+	return {
+		root,
+		shaft,
+		head
+	};
+}
+function textGhost(text, like, rect) {
+	const ghost = ghostOf("motion-count");
+	ghost.dir = "ltr";
+	ghost.textContent = text;
+	takeFont(ghost, like);
+	const style = getComputedStyle(like);
+	const align = style.textAlign === "center" || style.textAnchor === "middle";
+	const end = style.textAlign === "right" || style.textAlign === "end";
+	ghost.style.left = rect.x + "px";
+	ghost.style.top = rect.y + "px";
+	ghost.style.minWidth = rect.width + "px";
+	ghost.style.height = rect.height + "px";
+	ghost.style.color = inkOf(style, like);
+	ghost.style.cssText += "display:flex;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums;justify-content:" + (align ? "center" : end ? "flex-end" : "flex-start");
+	return ghost;
+}
+function copyGhost(copy) {
+	const ghost = ghostOf("motion-copy");
+	ghost.style.left = copy.rect.x + "px";
+	ghost.style.top = copy.rect.y + "px";
+	ghost.style.width = copy.rect.width + "px";
+	ghost.style.height = copy.rect.height + "px";
+	ghost.style.opacity = "1";
+	ghost.append(copy.element);
+	return ghost;
+}
+var TONE_COLOURS = {
+	focus: "var(--accent)",
+	compare: "var(--orange)",
+	good: "var(--ok)",
+	bad: "var(--err)",
+	pointer: "var(--ptr)"
+};
+// src/shared/motion/scene.ts
+var SETTLE_PIECES = 50;
+function settleCss() {
+	const points = [];
+	for (let piece = 0; piece <= SETTLE_PIECES; piece++) points.push(Number(settle(piece / SETTLE_PIECES).toFixed(5)));
+	const sampled = "linear(" + points.join(", ") + ")";
+	return typeof CSS !== "undefined" && CSS.supports("transition-timing-function", sampled) ? sampled : "cubic-bezier(0.33, 1, 0.68, 1)";
+}
+var CSS_EASING = {
+	glide: "cubic-bezier(0.37, 0, 0.63, 1)",
+	out: "ease-out",
+	in: "ease-in",
+	linear: "linear",
+	settle: settleCss()
+};
+function timingOf(track, fill) {
+	return {
+		delay: track.start,
+		duration: track.duration,
+		easing: CSS_EASING[track.easing],
+		fill
+	};
+}
+function hideUntil(scene, element, until) {
+	scene.animate(element, [{ opacity: 0 }, { opacity: 0 }], {
+		duration: until,
+		fill: "none"
+	});
+}
+// src/shared/motion/waapi-draw.ts
+var HEAD_PX = 9;
+function rideHead(scene, track, line, head) {
+	const parent = head.parentNode;
+	const lineMatrix = line.getScreenCTM();
+	const parentMatrix = parent instanceof SVGGraphicsElement ? parent.getScreenCTM() : null;
+	if (!(head instanceof SVGGraphicsElement) || !lineMatrix || !parentMatrix) return;
+	const toParent = parentMatrix.inverse().multiply(lineMatrix);
+	const start = line.getPointAtLength(0).matrixTransform(toParent);
+	const end = line.getPointAtLength(line.getTotalLength()).matrixTransform(toParent);
+	const from = { translate: start.x - end.x + "px " + (start.y - end.y) + "px" };
+	scene.animate(head, [{
+		...from,
+		visibility: "hidden"
+	}, {}], timingOf(track, "backwards"));
+}
+function tracePath(scene, track, path, head) {
+	if (!(path instanceof SVGGeometryElement)) {
+		scene.animate(path, [{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)" }], timingOf(track, "backwards"));
+		return;
+	}
+	const length = Math.max(1, path.getTotalLength());
+	const dashes = length + " " + length;
+	const style = getComputedStyle(path);
+	const keyframes = [{
+		strokeDasharray: dashes,
+		strokeDashoffset: String(length),
+		visibility: "hidden"
+	}, {
+		strokeDasharray: dashes,
+		strokeDashoffset: "0"
+	}];
+	if (head) rideHead(scene, track, path, head);
+	if (style.markerEnd !== "none" || style.markerStart !== "none") {
+		keyframes[0] = {
+			...keyframes[0],
+			markerEnd: "none",
+			markerStart: "none"
+		};
+		keyframes.splice(1, 0, {
+			offset: .98,
+			markerEnd: "none",
+			markerStart: "none"
+		});
+		keyframes[2] = {
+			...keyframes[2],
+			markerEnd: style.markerEnd,
+			markerStart: style.markerStart
+		};
+	}
+	scene.animate(path, keyframes, timingOf(track, "backwards"));
+}
+function playDraw(scene, track, motion) {
+	const path = motion.path ? scene.anchors.get(motion.path) : void 0;
+	const head = motion.head ? scene.anchors.get(motion.head) : void 0;
+	if (motion.from && !motion.to && motion.was) return retractArrow(scene, track, motion, motion.from, motion.was);
+	if (!motion.from || !motion.to) {
+		if (!path) return "no path " + motion.path;
+		tracePath(scene, track, path, head);
+		return null;
+	}
+	const from = scene.anchors.get(motion.from);
+	const to = scene.anchors.get(motion.to);
+	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const was = motion.was ? scene.placeOf(motion.was) : null;
+	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
+	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
+	swingArrow(scene, track, motion, {
+		angle: was ? startAngle : arrow.angle,
+		startLength
+	}, arrow);
+	for (const own of [path, head]) if (own) hideUntil(scene, own, track.start + track.duration);
+	return null;
+}
+function retractArrow(scene, track, motion, fromName, wasName) {
+	const from = scene.anchors.get(fromName);
+	const was = scene.placeOf(wasName);
+	if (!from || !was) return "no end " + (from ? wasName : fromName);
+	const arrow = arrowBetween(scene.rect(from), was);
+	swingArrow(scene, track, motion, {
+		angle: arrow.angle,
+		startLength: arrow.length
+	}, {
+		...arrow,
+		length: 0
+	}, true);
+	return null;
+}
+function swingArrow(scene, track, motion, start, arrow, fadesOut = false) {
+	const ghost = arrowGhost(arrow.tail, TONE_COLOURS[motion.tone ?? "pointer"], HEAD_PX);
+	scene.addGhost(ghost.root);
+	const timing = timingOf(track, "none");
+	const angle = nearestTurn(start.angle, arrow.angle);
+	const turn = [{
+		opacity: 1,
+		transform: "rotate(" + start.angle + "deg)"
+	}, {
+		opacity: 1,
+		transform: "rotate(" + angle + "deg)"
+	}];
+	if (fadesOut) {
+		turn.splice(1, 0, {
+			opacity: 1,
+			offset: .8,
+			transform: "rotate(" + angle + "deg)"
+		});
+		turn[2] = {
+			...turn[2],
+			opacity: 0
+		};
+	}
+	scene.animate(ghost.root, turn, timing);
+	const shaft = [start.startLength, arrow.length].map((length) => ({ transform: "scaleX(" + Math.max(0, length - HEAD_PX) + ")" }));
+	scene.animate(ghost.shaft, shaft, timing);
+	const head = [start.startLength, arrow.length].map((length) => ({ transform: "translateX(" + Math.max(0, length - HEAD_PX) + "px)" }));
+	scene.animate(ghost.head, head, timing);
+}
+// src/shared/motion/waapi-kinds.ts
+var EDGE_SAMPLES = 16;
+var SMALL_SCALE = .6;
+var SAME_PLACE_PX = .5;
+function easedCount(easing, fraction) {
+	if (easing === "linear") return fraction;
+	return easing === "settle" ? settle(fraction) : easeInOut(fraction);
+}
+function fly(scene, track, text, route, target) {
+	const end = route[route.length - 1];
+	const ghost = valueGhost(text, target, end);
+	scene.addGhost(ghost);
+	const keyframes = routeOffsets(route).map((point) => ({
+		offset: point.offset,
+		opacity: 1,
+		transform: "translate(-50%, -50%) translate(" + (point.x - end.x) + "px, " + (point.y - end.y) + "px)"
+	}));
+	scene.animate(ghost, keyframes, timingOf(track, "none"));
+	hideUntil(scene, target, track.start + track.duration);
+}
+function valueText(scene, motion) {
+	if (motion.value !== void 0) return motion.value;
+	return scene.firsts.get(motion.from)?.text ?? (scene.anchors.get(motion.from)?.textContent ?? "").trim();
+}
+function playMove(scene, track, motion) {
+	const target = scene.anchors.get(motion.to);
+	const first = scene.placeOf(motion.from);
+	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
+	const route = [centreOf(first), centreOf(scene.rect(target))];
+	fly(scene, track, valueText(scene, motion), route, target);
+	return null;
+}
+function edgePoints(scene, edge) {
+	if (!(edge instanceof SVGGeometryElement)) return [];
+	const matrix = edge.getScreenCTM();
+	const length = edge.getTotalLength();
+	if (!matrix || !Number.isFinite(length)) return [];
+	const box = scene.box();
+	const points = [];
+	for (let sample = 0; sample <= EDGE_SAMPLES; sample++) {
+		const point = edge.getPointAtLength(length * sample / EDGE_SAMPLES).matrixTransform(matrix);
+		points.push({
+			x: (point.x - box.originX) / box.scaleX,
+			y: (point.y - box.originY) / box.scaleY
+		});
+	}
+	return points;
+}
+function playRise(scene, track, motion) {
+	const target = scene.anchors.get(motion.to);
+	const first = scene.placeOf(motion.from);
+	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
+	const last = scene.rect(target);
+	const edge = motion.along ? edgePoints(scene, scene.anchors.get(motion.along)) : [];
+	const route = edge.length ? routeAlong(edge, centreOf(first), centreOf(last)) : riseRoute(first, last);
+	fly(scene, track, valueText(scene, motion), route, target);
+	return null;
+}
+function aboutCentre(element) {
+	return element instanceof SVGElement ? {
+		transformOrigin: "center",
+		transformBox: "fill-box"
+	} : { transformOrigin: "center" };
+}
+function playAppear(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const isGrowing = (motion.style ?? "grow") === "grow";
+	const centre = isGrowing ? aboutCentre(element) : {};
+	const from = isGrowing ? {
+		opacity: 0,
+		scale: String(motion.scale ?? SMALL_SCALE),
+		...centre
+	} : { opacity: 0 };
+	if (motion.dx || motion.dy) {
+		const own = ownScale(scene, element);
+		from.translate = (motion.dx ?? 0) * own.x + "px " + (motion.dy ?? 0) * own.y + "px";
+	}
+	scene.animate(element, [from, centre], timingOf(track, "backwards"));
+	return null;
+}
+function playLeave(scene, track, motion) {
+	const isShrinking = (motion.style ?? "shrink") === "shrink";
+	const element = scene.anchors.get(motion.anchor);
+	const copy = element ? null : scene.firsts.get(motion.anchor)?.copy;
+	const target = element ?? (copy ? copyGhost(copy) : null);
+	if (!target) return "not on screen " + motion.anchor;
+	if (!element) scene.addGhost(target);
+	const centre = isShrinking ? aboutCentre(target) : {};
+	const to = isShrinking ? {
+		opacity: 0,
+		scale: String(SMALL_SCALE),
+		...centre
+	} : { opacity: 0 };
+	const animation = scene.animate(target, [centre, to], timingOf(track, "forwards"));
+	if (element) scene.hold(animation);
+	return null;
+}
+function ownScale(scene, element) {
+	const matrix = element instanceof SVGGraphicsElement ? element.getScreenCTM() : null;
+	const box = scene.box();
+	if (!matrix || !matrix.a || !matrix.d) return {
+		x: 1,
+		y: 1
+	};
+	return {
+		x: box.scaleX / matrix.a,
+		y: box.scaleY / matrix.d
+	};
+}
+function playSlide(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	const first = scene.firsts.get(motion.anchor)?.rect;
+	if (!element || !first) return (element ? "no place before the step: " : "no element ") + motion.anchor;
+	const last = scene.rect(element);
+	const scale = ownScale(scene, element);
+	const dx = (first.x - last.x) * scale.x;
+	const dy = (first.y - last.y) * scale.y;
+	if (Math.abs(dx) < SAME_PLACE_PX && Math.abs(dy) < SAME_PLACE_PX) return null;
+	const from = { translate: dx + "px " + dy + "px" };
+	scene.animate(element, [from, {}], timingOf(track, "backwards"));
+	return null;
+}
+function playHighlight(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const ring = ringGhost(scene.rect(element), TONE_COLOURS[motion.tone ?? "focus"]);
+	scene.addGhost(ring);
+	scene.animate(ring, [
+		{
+			opacity: 0,
+			transform: "scale(1.25)"
+		},
+		{
+			opacity: 1,
+			transform: "scale(1)",
+			offset: .25
+		},
+		{
+			opacity: 1,
+			transform: "scale(1)",
+			offset: .75
+		},
+		{
+			opacity: 0,
+			transform: "scale(1)"
+		}
+	], timingOf(track, "none"));
+	return null;
+}
+function playCount(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const decimals = motion.decimals ?? Math.max(decimalsOf(motion.from), decimalsOf(motion.to));
+	const textAt = (fraction) => (motion.prefix ?? "") + formatCount(mix(motion.from, motion.to, fraction), decimals) + (motion.suffix ?? "");
+	const ghost = textGhost(textAt(0), element, scene.rect(element));
+	scene.addGhost(ghost);
+	const until = track.start + track.duration;
+	const clock = scene.animate(ghost, [{ opacity: 1 }, { opacity: 1 }], { duration: until });
+	hideUntil(scene, element, until);
+	scene.everyFrame(() => {
+		const fraction = trackFraction(track, Number(clock.currentTime ?? 0));
+		const text = textAt(easedCount(track.easing, fraction));
+		if (ghost.textContent !== text) ghost.textContent = text;
+	});
+	return null;
+}
+function renderTrack(scene, track) {
+	const motion = track.motion;
+	switch (motion.kind) {
+		case "move": return playMove(scene, track, motion);
+		case "rise": return playRise(scene, track, motion);
+		case "appear": return playAppear(scene, track, motion);
+		case "leave": return playLeave(scene, track, motion);
+		case "slide": return playSlide(scene, track, motion);
+		case "highlight": return playHighlight(scene, track, motion);
+		case "draw": return playDraw(scene, track, motion);
+		case "count": return playCount(scene, track, motion);
+	}
+}
+// src/shared/motion/waapi.ts
+function hasWebAnimations(element) {
+	return typeof element.animate === "function";
+}
+var Run = class {
+	stage;
+	anchors;
+	firsts;
+	done;
+	animations = [];
+	held = [];
+	frames = /* @__PURE__ */ new Set();
+	measured = null;
+	hasEnded = false;
+	played = 0;
+	skipped = [];
+	constructor(stage, firsts, done) {
+		this.stage = stage;
+		this.anchors = findAnchors(stage);
+		this.firsts = firsts;
+		this.done = done;
+	}
+	start(schedule) {
+		const canAnimate = hasWebAnimations(this.stage);
+		for (const track of schedule.tracks) {
+			const reason = canAnimate ? renderTrack(this, track) : "no Web Animations in this browser";
+			if (reason) this.skipped.push({
+				index: track.index,
+				kind: track.motion.kind,
+				reason
+			});
+			else this.played += 1;
+		}
+		if (!this.animations.length) {
+			this.end();
+			return;
+		}
+		const ends = this.animations.map((animation) => animation.finished);
+		Promise.allSettled(ends).then(() => this.end());
+	}
+	finish() {
+		for (const animation of this.animations) if (animation.playState !== "finished" && animation.playState !== "idle") animation.finish();
+		this.end();
+	}
+	stop() {
+		this.finish();
+		for (const animation of this.held) animation.cancel();
+	}
+	box() {
+		this.measured ??= measureBox(this.stage);
+		return this.measured;
+	}
+	rect(element) {
+		return toStage(this.box(), element.getBoundingClientRect());
+	}
+	placeOf(name) {
+		const first = this.firsts.get(name);
+		if (first) return first.rect;
+		const element = this.anchors.get(name);
+		return element ? this.rect(element) : null;
+	}
+	animate(element, keyframes, timing) {
+		const animation = element.animate(keyframes, timing);
+		this.animations.push(animation);
+		return animation;
+	}
+	hold(animation) {
+		this.held.push(animation);
+	}
+	addGhost(ghost) {
+		layerOf(this.stage).append(ghost);
+	}
+	everyFrame(draw) {
+		let handle = 0;
+		const frame = () => {
+			this.frames.delete(handle);
+			if (this.hasEnded) return;
+			draw();
+			handle = requestAnimationFrame(frame);
+			this.frames.add(handle);
+		};
+		draw();
+		handle = requestAnimationFrame(frame);
+		this.frames.add(handle);
+	}
+	end() {
+		if (this.hasEnded) return;
+		this.hasEnded = true;
+		for (const frame of this.frames) cancelAnimationFrame(frame);
+		this.frames.clear();
+		clearGhosts(this.stage);
+		this.done({
+			played: this.played,
+			skipped: this.skipped
+		});
+	}
+};
+var webAnimationsRenderer = {
+	measure(stage, needs) {
+		return measureFirsts(stage, needs);
+	},
+	play(stage, schedule, firsts, done) {
+		const run = new Run(stage, firsts, done);
+		run.start(schedule);
+		return run;
+	},
+	release(stage) {
+		removeLayer(stage);
+	}
+};
+// src/shared/motion/react.ts
+function createMotionPlayer(options) {
+	return new MotionPlayer(webAnimationsRenderer, options);
+}
+function useMotionStage(player, stepKey) {
+	const stage = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		if (stage.current) player.show(stage.current, stepKey);
+	}, [player, stepKey]);
+	(0, import_react.useLayoutEffect)(() => {
+		const element = stage.current;
+		return () => {
+			if (element) player.release(element);
+		};
+	}, [player]);
+	return stage;
+}
 // src/engines/c/box/context.js
 function createBoxContext$1(ui) {
 	return {
@@ -5547,7 +6859,8 @@ function createBoxContext$1(ui) {
 			run: null,
 			html: ""
 		},
-		memoryViewKey: 0
+		memoryViewKey: 0,
+		motion: createMotionPlayer()
 	};
 }
 function yieldToBrowser() {
@@ -6288,7 +7601,7 @@ function outputRecordBytes(recordText) {
 	} else bytes.push(recordText.charCodeAt(i));
 	return new Uint8Array(bytes);
 }
-function variableKey(id, address) {
+function variableKey$1(id, address) {
 	return id + "@" + address;
 }
 function applyVariableRecord(replayState, recordText) {
@@ -6301,13 +7614,13 @@ function applyVariableRecord(replayState, recordText) {
 		size0: +fields[3]
 	};
 	const bytes = hexToBytes(fields[4] || "");
-	replayState.latestBytes.set(variableKey(id, address.addr), bytes);
+	replayState.latestBytes.set(variableKey$1(id, address.addr), bytes);
 	if (replayState.meta.vars[id]) replayState.tracker.reg(id, address, bytes);
 }
 function applyChangeRecord(replayState, recordText) {
 	const fields = recordText.split(" ");
 	if (fields.length < 4) return;
-	const key = variableKey(fields[0], parseInt(fields[1], HEX));
+	const key = variableKey$1(fields[0], parseInt(fields[1], HEX));
 	const oldBytes = replayState.latestBytes.get(key);
 	if (!oldBytes) return;
 	const newBytes = oldBytes.slice();
@@ -6322,7 +7635,7 @@ function applyPointRecord(replayState, recordText) {
 	}
 	const latestBytes = replayState.latestBytes;
 	replayState.tracker.point(+recordText, replayState.out.length, (id, address) => {
-		return latestBytes.get(variableKey(id, address.addr)) || new Uint8Array(Math.min(address.size, MAX_VARIABLE_BYTES));
+		return latestBytes.get(variableKey$1(id, address.addr)) || new Uint8Array(Math.min(address.size, MAX_VARIABLE_BYTES));
 	});
 	return true;
 }
@@ -6436,7 +7749,7 @@ function prepare(code, userFiles, keepPlain) {
 		files[name] = name.endsWith(".c") ? "#include \"labrt.h\"\n#line 1 \"" + name + "\"\n" + text : text;
 	});
 	program.meta.psz = 8;
-	const sources = Object.assign({ [MAIN_FILE$2]: code }, otherFiles);
+	const sources = Object.assign({ [MAIN_FILE$4]: code }, otherFiles);
 	return {
 		src: NATIVE_PREFIX + program.main,
 		files,
@@ -6652,23 +7965,7 @@ function finishStatus(context, run, shouldFocus) {
 	const [text, statusClass] = endStatus(run, context.state);
 	ui.setStatus(text, statusClass);
 }
-// node_modules/react/cjs/react.production.js
-/**
-* @license React
-* react.production.js
-*
-* Copyright (c) Meta Platforms, Inc. and affiliates.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-var require_react_production=__commonJSMin((exports=>{var e=Symbol.for(`react.transitional.element`);var t=Symbol.for(`react.portal`);var n=Symbol.for(`react.fragment`);var r=Symbol.for(`react.strict_mode`);var i=Symbol.for(`react.profiler`);var a=Symbol.for(`react.consumer`);var o=Symbol.for(`react.context`);var s=Symbol.for(`react.forward_ref`);var c=Symbol.for(`react.suspense`);var l=Symbol.for(`react.memo`);var u=Symbol.for(`react.lazy`);var d=Symbol.for(`react.activity`);var f=Symbol.for(`react.view_transition`);var p=Symbol.iterator;function m(e){return typeof e!=`object`||!e?null:(e=p&&e[p]||e[`@@iterator`],typeof e==`function`?e:null)}var h={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}};var g=Object.assign;var _={};function v(e,t,n){this.props=e,this.context=t,this.refs=_,this.updater=n||h}v.prototype.isReactComponent={},v.prototype.setState=function(e,t){if(typeof e!=`object`&&typeof e!=`function`&&e!=null)throw Error(`takes an object of state variables to update or a function which returns an object of state variables.`);this.updater.enqueueSetState(this,e,t,`setState`)},v.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,`forceUpdate`)};function y(){}y.prototype=v.prototype;function b(e,t,n){this.props=e,this.context=t,this.refs=_,this.updater=n||h}var x=b.prototype=new y;x.constructor=b,g(x,v.prototype),x.isPureReactComponent=!0;var S=Array.isArray;function C(){}var w={H:null,A:null,T:null,S:null};var T=Object.prototype.hasOwnProperty;function E(t,n,r){var i=r.ref;return{$$typeof:e,type:t,key:n,ref:i===void 0?null:i,props:r}}function D(e,t){return E(e.type,t,e.props)}function O(t){return typeof t==`object`&&!!t&&t.$$typeof===e}function k(e){var t={"=":`=0`,":":`=2`};return`$`+e.replace(/[=:]/g,function(e){return t[e]})}var A=/\/+/g;function j(e,t){return typeof e==`object`&&e&&e.key!=null?k(``+e.key):t.toString(36)}function M(e){switch(e.status){case`fulfilled`:return e.value;case`rejected`:throw e.reason;default:switch(typeof e.status==`string`?e.then(C,C):(e.status=`pending`,e.then(function(t){e.status===`pending`&&(e.status=`fulfilled`,e.value=t)},function(t){e.status===`pending`&&(e.status=`rejected`,e.reason=t)})),e.status){case`fulfilled`:return e.value;case`rejected`:throw e.reason}}throw e}function N(n,r,i,a,o){var s=typeof n;(s===`undefined`||s===`boolean`)&&(n=null);var c=!1;if(n===null)c=!0;else switch(s){case`bigint`:case`string`:case`number`:c=!0;break;case`object`:switch(n.$$typeof){case e:case t:c=!0;break;case u:return c=n._init,N(c(n._payload),r,i,a,o)}}if(c)return o=o(n),c=a===``?`.`+j(n,0):a,S(o)?(i=``,c!=null&&(i=c.replace(A,`$&/`)+`/`),N(o,r,i,``,function(e){return e})):o!=null&&(O(o)&&(o=D(o,i+(o.key==null||n&&n.key===o.key?``:(``+o.key).replace(A,`$&/`)+`/`)+c)),r.push(o)),1;c=0;var l=a===``?`.`:a+`:`;if(S(n))for(var d=0;d<n.length;d++)a=n[d],s=l+j(a,d),c+=N(a,r,i,s,o);else if(d=m(n),typeof d==`function`)for(n=d.call(n),d=0;!(a=n.next()).done;)a=a.value,s=l+j(a,d++),c+=N(a,r,i,s,o);else if(s===`object`){if(typeof n.then==`function`)return N(M(n),r,i,a,o);throw r=String(n),Error(`Objects are not valid as a React child (found: `+(r===`[object Object]`?`object with keys {`+Object.keys(n).join(`, `)+`}`:r)+`). If you meant to render a collection of children, use an array instead.`)}return c}function P(e,t,n){if(e==null)return e;var r=[],i=0;return N(e,r,``,``,function(e){return t.call(n,e,i++)}),r}function F(e){if(e._status===-1){var t=e._result,n=t();n.then(function(t){(e._status===0||e._status===-1)&&(e._status=1,e._result=t,n.status===void 0&&(n.status=`fulfilled`,n.value=t))},function(t){(e._status===0||e._status===-1)&&(e._status=2,e._result=t,n.status===void 0&&(n.status=`rejected`,n.reason=t))}),e._status===-1&&(e._status=0,e._result=n)}if(e._status===1)return e._result.default;throw e._result}var I=typeof reportError==`function`?reportError:function(e){if(typeof window==`object`&&typeof window.ErrorEvent==`function`){var t=new window.ErrorEvent(`error`,{bubbles:!0,cancelable:!0,message:typeof e==`object`&&e&&typeof e.message==`string`?String(e.message):String(e),error:e});if(!window.dispatchEvent(t))return}else if(typeof process==`object`&&typeof process.emit==`function`){process.emit(`uncaughtException`,e);return}console.error(e)};function L(e){var t=w.T,n={};n.types=t===null?null:t.types,w.T=n;try{var r=e(),i=w.S;i!==null&&i(n,r),typeof r==`object`&&r&&typeof r.then==`function`&&r.then(C,I)}catch(e){I(e)}finally{t!==null&&n.types!==null&&(t.types=n.types),w.T=t}}function R(e){var t=w.T;if(t!==null){var n=t.types;n===null?t.types=[e]:n.indexOf(e)===-1&&n.push(e)}else L(R.bind(null,e))}var z={map:P,forEach:function(e,t,n){P(e,function(){t.apply(this,arguments)},n)},count:function(e){var t=0;return P(e,function(){t++}),t},toArray:function(e){return P(e,function(e){return e})||[]},only:function(e){if(!O(e))throw Error(`React.Children.only expected to receive a single React element child.`);return e}};exports.Activity=d,exports.Children=z,exports.Component=v,exports.Fragment=n,exports.Profiler=i,exports.PureComponent=b,exports.StrictMode=r,exports.Suspense=c,exports.ViewTransition=f,exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=w,exports.__COMPILER_RUNTIME={__proto__:null,c:function(e){return w.H.useMemoCache(e)}},exports.addTransitionType=R,exports.cache=function(e){return function(){return e.apply(null,arguments)}},exports.cacheSignal=function(){return null},exports.cloneElement=function(e,t,n){if(e==null)throw Error(`The argument must be a React element, but you passed `+e+`.`);var r=g({},e.props),i=e.key;if(t!=null)for(a in t.key!==void 0&&(i=``+t.key),t)!T.call(t,a)||a===`key`||a===`__self`||a===`__source`||a===`ref`&&t.ref===void 0||(r[a]=t[a]);var a=arguments.length-2;if(a===1)r.children=n;else if(1<a){for(var o=Array(a),s=0;s<a;s++)o[s]=arguments[s+2];r.children=o}return E(e.type,i,r)},exports.createContext=function(e){return e={$$typeof:o,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null},e.Provider=e,e.Consumer={$$typeof:a,_context:e},e},exports.createElement=function(e,t,n){var r,i={},a=null;if(t!=null)for(r in t.key!==void 0&&(a=``+t.key),t)T.call(t,r)&&r!==`key`&&r!==`__self`&&r!==`__source`&&(i[r]=t[r]);var o=arguments.length-2;if(o===1)i.children=n;else if(1<o){for(var s=Array(o),c=0;c<o;c++)s[c]=arguments[c+2];i.children=s}if(e&&e.defaultProps)for(r in o=e.defaultProps,o)i[r]===void 0&&(i[r]=o[r]);return E(e,a,i)},exports.createRef=function(){return{current:null}},exports.forwardRef=function(e){return{$$typeof:s,render:e}},exports.isValidElement=O,exports.lazy=function(e){return{$$typeof:u,_payload:{_status:-1,_result:e},_init:F}},exports.memo=function(e,t){return{$$typeof:l,type:e,compare:t===void 0?null:t}},exports.startTransition=L,exports.unstable_useCacheRefresh=function(){return w.H.useCacheRefresh()},exports.use=function(e){return w.H.use(e)},exports.useActionState=function(e,t,n){return w.H.useActionState(e,t,n)},exports.useCallback=function(e,t){return w.H.useCallback(e,t)},exports.useContext=function(e){return w.H.useContext(e)},exports.useDebugValue=function(){},exports.useDeferredValue=function(e,t){return w.H.useDeferredValue(e,t)},exports.useEffect=function(e,t){return w.H.useEffect(e,t)},exports.useEffectEvent=function(e){return w.H.useEffectEvent(e)},exports.useId=function(){return w.H.useId()},exports.useImperativeHandle=function(e,t,n){return w.H.useImperativeHandle(e,t,n)},exports.useInsertionEffect=function(e,t){return w.H.useInsertionEffect(e,t)},exports.useLayoutEffect=function(e,t){return w.H.useLayoutEffect(e,t)},exports.useMemo=function(e,t){return w.H.useMemo(e,t)},exports.useOptimistic=function(e,t){return w.H.useOptimistic(e,t)},exports.useReducer=function(e,t,n){return w.H.useReducer(e,t,n)},exports.useRef=function(e){return w.H.useRef(e)},exports.useState=function(e){return w.H.useState(e)},exports.useSyncExternalStore=function(e,t,n){return w.H.useSyncExternalStore(e,t,n)},exports.useTransition=function(){return w.H.useTransition()},exports.version=`19.3.1`}));
-
-// node_modules/react/index.js
-var require_react=__commonJSMin(((exports,module)=>{module.exports=require_react_production()}));
-
 // src/engines/c/view/islands.js
-var import_react = require_react();
 var C_ISLANDS = {
 	list: [{
 		id: "stack",
@@ -6697,45 +7994,221 @@ function stackSummary(meta, step) {
 	const name = top && meta && meta.funcs ? meta.funcs[top.fid] : "";
 	return (count === 1 ? "1 frame" : count + " frames") + (name ? " · " + name + "()" : "");
 }
-// node_modules/react/cjs/react-jsx-runtime.production.js
-/**
-* @license React
-* react-jsx-runtime.production.js
-*
-* Copyright (c) Meta Platforms, Inc. and affiliates.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-var require_react_jsx_runtime_production=__commonJSMin((exports=>{var e=Symbol.for(`react.transitional.element`);var t=Symbol.for(`react.fragment`);function n(t,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:e,type:t,key:i,ref:n===void 0?null:n,props:r}}exports.Fragment=t,exports.jsx=n,exports.jsxs=n}));
-
-// src/engines/c/view/Bilingual.tsx
-var import_jsx_runtime = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
-	module.exports = require_react_jsx_runtime_production();
-})))();
-function Bilingual({ english, hebrew, prefix = "" }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [prefix + english + " ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
-		lang: "he",
-		children: "/ " + hebrew
-	})] });
+// src/engines/c/view/call-text.ts
+var KEYWORDS$1 = /* @__PURE__ */ new Set([
+	"return",
+	"sizeof",
+	"int",
+	"char",
+	"long",
+	"short",
+	"float",
+	"double",
+	"unsigned",
+	"signed",
+	"const",
+	"struct",
+	"union",
+	"enum",
+	"void",
+	"if",
+	"else",
+	"while",
+	"for",
+	"do",
+	"switch",
+	"case",
+	"NULL"
+]);
+var MAX_LINE = 2e3;
+function codeOnly(line) {
+	let out = "";
+	let quote = "";
+	for (let index = 0; index < line.length; index++) {
+		const char = line[index];
+		if (quote) {
+			if (char === "\\") {
+				out += "  ";
+				index++;
+				continue;
+			}
+			if (char === quote) quote = "";
+			out += " ";
+		} else if (char === "\"" || char === "'") {
+			quote = char;
+			out += " ";
+		} else if (char === "/" && line[index + 1] === "/") return out + " ".repeat(line.length - index);
+		else if (char === "/" && line[index + 1] === "*") {
+			const end = line.indexOf("*/", index + 2);
+			const stop = end < 0 ? line.length : end + 2;
+			out += " ".repeat(stop - index);
+			index = stop - 1;
+		} else out += char;
+	}
+	return out;
 }
-// node_modules/react-dom/cjs/react-dom.production.js
-/**
-* @license React
-* react-dom.production.js
-*
-* Copyright (c) Meta Platforms, Inc. and affiliates.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-var require_react_dom_production=__commonJSMin((exports=>{var e=require_react();function t(e){var t=`https://react.dev/errors/`+e;if(1<arguments.length){t+=`?args[]=`+encodeURIComponent(arguments[1]);for(var n=2;n<arguments.length;n++)t+=`&args[]=`+encodeURIComponent(arguments[n])}return`Minified React error #`+e+`; visit `+t+` for the full message or use the non-minified dev environment for full errors and additional helpful warnings.`}function n(){}var r={d:{f:n,r:function(){throw Error(t(522))},D:n,C:n,L:n,m:n,X:n,S:n,M:n},p:0,findDOMNode:null};var i=Symbol.for(`react.portal`);var a=Symbol.for(`react.recoverable`);var o=Symbol.for(`react.optimistic_key`);function s(e,t,n){var r=3<arguments.length&&arguments[3]!==void 0?arguments[3]:null;return{$$typeof:i,key:r==null?null:r===o?o:``+r,children:e,containerInfo:t,implementation:n}}var c=e.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;function l(e,t){if(e===`font`)return``;if(typeof t==`string`)return t===`use-credentials`?t:``}exports.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=r,exports.browser=function(e){return{$$typeof:a,_reason:e}},exports.createPortal=function(e,n){var r=2<arguments.length&&arguments[2]!==void 0?arguments[2]:null;if(!n||n.nodeType!==1&&n.nodeType!==9&&n.nodeType!==11)throw Error(t(299));return s(e,n,null,r)},exports.flushSync=function(e){var t=c.T,n=r.p;try{if(c.T=null,r.p=2,e)return e()}finally{c.T=t,r.p=n,r.d.f()}},exports.preconnect=function(e,t){typeof e==`string`&&(t?(t=t.crossOrigin,t=typeof t==`string`?t===`use-credentials`?t:``:void 0):t=null,r.d.C(e,t))},exports.prefetchDNS=function(e){typeof e==`string`&&r.d.D(e)},exports.preinit=function(e,t){if(typeof e==`string`&&t&&typeof t.as==`string`){var n=t.as,i=l(n,t.crossOrigin),a=typeof t.integrity==`string`?t.integrity:void 0,o=typeof t.fetchPriority==`string`?t.fetchPriority:void 0;n===`style`?r.d.S(e,typeof t.precedence==`string`?t.precedence:void 0,{crossOrigin:i,integrity:a,fetchPriority:o}):n===`script`&&r.d.X(e,{crossOrigin:i,integrity:a,fetchPriority:o,nonce:typeof t.nonce==`string`?t.nonce:void 0})}},exports.preinitModule=function(e,t){if(typeof e==`string`){if(typeof t==`object`&&t){if(t.as==null||t.as===`script`){var n=l(t.as,t.crossOrigin);r.d.M(e,{crossOrigin:n,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0})}}else t??r.d.M(e)}},exports.preload=function(e,t){if(typeof e==`string`&&typeof t==`object`&&t&&typeof t.as==`string`){var n=t.as,i=l(n,t.crossOrigin);r.d.L(e,n,{crossOrigin:i,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,type:typeof t.type==`string`?t.type:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0,referrerPolicy:typeof t.referrerPolicy==`string`?t.referrerPolicy:void 0,imageSrcSet:typeof t.imageSrcSet==`string`?t.imageSrcSet:void 0,imageSizes:typeof t.imageSizes==`string`?t.imageSizes:void 0,media:typeof t.media==`string`?t.media:void 0})}},exports.preloadModule=function(e,t){if(typeof e==`string`){if(t){var n=l(t.as,t.crossOrigin);r.d.m(e,{as:typeof t.as==`string`&&t.as!==`script`?t.as:void 0,crossOrigin:n,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0})}else r.d.m(e)}},exports.requestFormReset=function(e){r.d.r(e)},exports.unstable_batchedUpdates=function(e,t){return e(t)},exports.useFormState=function(e,t,n){return c.H.useFormState(e,t,n)},exports.useFormStatus=function(){return c.H.useHostTransitionStatus()},exports.version=`19.3.1`}));
-
-// node_modules/react-dom/index.js
-var require_react_dom=__commonJSMin(((exports,module)=>{function e(){if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__<`u`&&typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE==`function`)try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(e)}catch(e){console.error(e)}}e(),module.exports=require_react_dom_production()}));
-
+function argumentsFrom(code, open) {
+	const parts = [];
+	let depth = 0;
+	let start = open + 1;
+	for (let index = open; index < code.length; index++) {
+		const char = code[index];
+		if (char === "(" || char === "[" || char === "{") depth++;
+		else if (char === ")" || char === "]" || char === "}") {
+			depth--;
+			if (depth === 0) {
+				parts.push(code.slice(start, index).trim());
+				return parts.length === 1 && parts[0] === "" ? [] : parts;
+			}
+		} else if (char === "," && depth === 1) {
+			parts.push(code.slice(start, index).trim());
+			start = index + 1;
+		}
+	}
+	return null;
+}
+function callsIn(line, name) {
+	if (line.length > MAX_LINE || !/^[A-Za-z_]\w*$/.test(name)) return [];
+	const code = codeOnly(line);
+	const pattern = new RegExp("(^|[^\\w.>])" + name + "\\s*\\(", "g");
+	const calls = [];
+	for (const match of code.matchAll(pattern)) {
+		const parts = argumentsFrom(code, (match.index ?? 0) + match[0].length - 1);
+		if (parts) calls.push(parts);
+	}
+	return calls;
+}
+function namesIn(text) {
+	if (text.length > MAX_LINE) return [];
+	const code = codeOnly(text);
+	const names = [];
+	for (const match of code.matchAll(/(^|[^\w.>])([A-Za-z_]\w*)(\s*\()?/g)) {
+		const name = match[2];
+		if (!match[3] && !KEYWORDS$1.has(name) && !names.includes(name)) names.push(name);
+	}
+	return names;
+}
+function plainName(argument) {
+	const match = /^\s*([A-Za-z_]\w*)\s*$/.exec(argument);
+	return match && !KEYWORDS$1.has(match[1]) ? match[1] : null;
+}
+function elementOf(argument) {
+	const match = /^\s*([A-Za-z_]\w*)\s*\[\s*([A-Za-z_]\w*|\d+)\s*\]\s*$/.exec(argument);
+	return match ? {
+		array: match[1],
+		index: match[2]
+	} : null;
+}
+function returnedIn(line) {
+	if (line.length > MAX_LINE) return null;
+	const match = /(^|[^\w])return\b([^;]*)/.exec(codeOnly(line));
+	return match ? match[2].trim() : null;
+}
+// src/engines/c/view/call-motion.ts
+var MAIN_FILE$2 = "main.c";
+function lineOf(meta, frame, code) {
+	const points = meta.points;
+	const point = points && frame.point >= 0 ? points[frame.point] : void 0;
+	if (!point || !code.lineText) return "";
+	return String(code.lineText(point.file || MAIN_FILE$2, point.line) || "");
+}
+function isPlainValue$1(row) {
+	return row.cells.length === 1 && row.cells[0].value.t !== "ptr";
+}
+function rowNamed(rows, name) {
+	return rows.find((row) => row.declaration.name === name);
+}
+function sourcesOf(rows, argument, parameter) {
+	const name = plainName(argument);
+	const named = name ? rowNamed(rows, name) : void 0;
+	if (named) return named.cells.length === parameter.cells.length ? named.cells : [];
+	const element = elementOf(argument);
+	if (element && parameter.cells.length === 1) {
+		const array = rowNamed(rows, element.array);
+		const indexRow = /^\d+$/.test(element.index) ? null : rowNamed(rows, element.index);
+		const index = indexRow ? indexRow.cells[0]?.text : element.index;
+		const cell = array?.cells.find((candidate) => candidate.anchor === array.base + "[" + index + "]");
+		return cell ? [cell] : [];
+	}
+	if (parameter.cells.length !== 1) return [];
+	for (const used of namesIn(argument)) {
+		const row = rowNamed(rows, used);
+		if (row && isPlainValue$1(row)) return [row.cells[0]];
+	}
+	return [];
+}
+function fitOf(rows, parts, parameters) {
+	let fit = 0;
+	parts.forEach((part, index) => {
+		const name = plainName(part);
+		const row = name ? rowNamed(rows, name) : void 0;
+		const parameter = parameters[index];
+		if (row && parameter && row.cells[0]?.text === parameter.cells[0]?.text) fit++;
+	});
+	return fit;
+}
+function parametersOf(meta, callee) {
+	return meta.vars.filter((declaration) => declaration.fid === callee.fid && declaration.param).filter((declaration) => !declaration.member).map((declaration) => callee.rows.find((row) => row.declaration === declaration));
+}
+function argumentFlights(before, after, common, meta, code) {
+	const callee = after.frames[common];
+	const caller = before.frames[common - 1];
+	if (!callee || !caller) return [];
+	const parameters = parametersOf(meta, callee);
+	const rows = [...caller.rows, ...before.globals];
+	const calls = callsIn(lineOf(meta, caller, code), callee.name).filter((parts) => parts.length === parameters.length);
+	if (!calls.length) return [];
+	const best = calls.reduce((chosen, parts) => fitOf(rows, parts, parameters) > fitOf(rows, chosen, parameters) ? parts : chosen);
+	const flights = [];
+	best.forEach((argument, index) => {
+		const parameter = parameters[index];
+		if (!parameter || !parameter.cells.length || parameter.cells[0].value.t === "ptr") return;
+		sourcesOf(rows, argument, parameter).forEach((source, cellIndex) => {
+			const target = parameter.cells[cellIndex];
+			if (target && target.isSet) flights.push({
+				from: source.anchor,
+				to: target.anchor,
+				value: target.text
+			});
+		});
+	});
+	return flights;
+}
+function receivers(rowsBefore, rowsAfter) {
+	const old = new Map(rowsBefore.map((row) => [row.identity, row]));
+	const found = [];
+	for (const row of rowsAfter) {
+		const was = old.get(row.identity);
+		row.cells.forEach((cell, index) => {
+			if ((!was || was.cells[index]?.text !== cell.text) && cell.isSet && cell.value.t !== "ptr") found.push({
+				cell,
+				name: row.declaration.name
+			});
+		});
+	}
+	return found;
+}
+function returnFlight(before, after, common, meta, code) {
+	const returning = before.frames[common];
+	const callerBefore = before.frames[common - 1];
+	const callerAfter = after.frames[common - 1];
+	if (!returning || !callerBefore || !callerAfter) return null;
+	const candidates = [...receivers(callerBefore.rows, callerAfter.rows), ...receivers(before.globals, after.globals)];
+	const line = lineOf(meta, callerBefore, code);
+	const onLine = namesIn(line);
+	const receiver = line ? candidates.find((candidate) => onLine.includes(candidate.name)) : receivers(callerBefore.rows, callerAfter.rows)[0];
+	if (!receiver) return null;
+	const value = receiver.cell.text;
+	const expression = returnedIn(lineOf(meta, returning, code));
+	const returned = expression ? namesIn(expression) : [];
+	const source = returning.rows.find((row) => returned.includes(row.declaration.name) && isPlainValue$1(row) && row.cells[0].text === value);
+	return {
+		from: source ? source.cells[0].anchor : returning.head,
+		to: receiver.cell.anchor,
+		value
+	};
+}
 // src/engines/c/view/values.js
-var import_react_dom = require_react_dom();
 var BASE_SIZES = {
 	char: 1,
 	uchar: 1,
@@ -7082,6 +8555,55 @@ function scopeName(model, scope) {
 	if (scope === "g") return "global";
 	return (model.frames[Number(scope.slice(1))] || {}).name;
 }
+// src/engines/c/view/stack-anchors.ts
+var GLOBALS_ANCHOR = "frame:globals";
+var EDGE_ANCHOR = "stack:edge";
+var GLOBALS_PREFIX = "globals";
+function framePrefix(name, call) {
+	return name + "#" + String(call ?? 0);
+}
+function frameAnchor(prefix) {
+	return "frame:" + prefix;
+}
+function headAnchor(prefix) {
+	return "frame:" + prefix + ".head";
+}
+function rowAnchor(base) {
+	return "row:" + base;
+}
+function boxAnchor(cellName) {
+	return "cell:" + cellName;
+}
+function arrowAnchor(cellName) {
+	return "arrow:" + cellName;
+}
+function variableKey(scope, variable) {
+	return scope + ":" + variable.id + "@" + variable.addr;
+}
+function scopePrefix(model, scope) {
+	if (scope === "g") return GLOBALS_PREFIX;
+	const entry = model.frames[Number(scope.slice(1))];
+	return entry ? framePrefix(entry.name, entry.frame.call) : scope;
+}
+function variableBases(model, step) {
+	const bases = /* @__PURE__ */ new Map();
+	const name = (scope, variables) => {
+		const prefix = scopePrefix(model, scope);
+		const taken = /* @__PURE__ */ new Set();
+		for (const variable of variables) {
+			const declaration = model.meta.vars[variable.id];
+			const own = declaration ? declaration.name : "?";
+			bases.set(variableKey(scope, variable), prefix + "." + (taken.has(own) ? own + "~" + variable.id : own));
+			taken.add(own);
+		}
+	};
+	name("g", step.globals);
+	for (const entry of model.frames) name(frameScope(entry.index), entry.frame.vars);
+	return bases;
+}
+function cellAnchor(base, declaration, cell) {
+	return base + (cell.name.startsWith(declaration.name) ? cell.name.slice(declaration.name.length) : "");
+}
 // src/engines/c/view/stack-data.ts
 function buildModel(step, previousStep, meta) {
 	return buildStackModel(step, previousStep, meta);
@@ -7119,7 +8641,501 @@ function markKey(row, cellIndex) {
 	const rowKey = row.scope + ":" + row.variable.id + "@" + row.variable.addr;
 	return cellIndex === void 0 ? rowKey : rowKey + ":" + cellIndex;
 }
+// src/engines/c/view/stack-index.ts
+function addressOf(value) {
+	if (typeof value === "number") return value;
+	if (typeof value === "bigint" && value <= BigInt(Number.MAX_SAFE_INTEGER)) return Number(value);
+	return null;
+}
+function anchorAt(exact, places, address) {
+	const found = exact.get(address);
+	if (found) return found;
+	const inside = places.find((place) => address > place.addr && address < place.addr + place.size);
+	return inside ? inside.anchor : null;
+}
+function cellsOfRow(base, declaration, cells, isSet) {
+	const hasBoxes = declaration.arr > 0 || !!declaration.members;
+	return cells.map((cell) => {
+		const name = cellAnchor(base, declaration, cell);
+		return {
+			anchor: name,
+			box: hasBoxes ? boxAnchor(name) : name,
+			text: isSet ? scalarText(cell.s) : "?",
+			isSet,
+			value: cell.s,
+			isLive: isSet && isLivePointer(cell),
+			target: null,
+			addr: cell.addr,
+			size: cell.size
+		};
+	});
+}
+function indexStep(step, meta) {
+	const model = buildModel(step, void 0, meta);
+	const bases = variableBases(model, step);
+	const drafts = [];
+	const rowsOf = (scope, variables) => variables.map((variable) => {
+		const data = prepareRow(model, variable, scope);
+		const base = bases.get(variableKey(scope, variable)) ?? scope + ".?";
+		const cells = cellsOfRow(base, data.declaration, data.cells, !!variable.init);
+		const row = {
+			base,
+			identity: base + "|" + variable.id + "@" + variable.addr,
+			anchor: rowAnchor(base),
+			declaration: data.declaration,
+			cells
+		};
+		drafts.push(row);
+		return row;
+	});
+	const globals = rowsOf("g", step.globals);
+	return finishIndex(model.frames.map((entry) => {
+		const prefix = framePrefix(entry.name, entry.frame.call);
+		const point = entry.frame.point ?? -1;
+		return {
+			prefix,
+			anchor: frameAnchor(prefix),
+			head: headAnchor(prefix),
+			name: entry.name,
+			fid: entry.frame.fid,
+			point,
+			rows: rowsOf(frameScope(entry.index), entry.frame.vars)
+		};
+	}), globals, drafts);
+}
+function finishIndex(frames, globals, drafts) {
+	const exact = /* @__PURE__ */ new Map();
+	const places = [];
+	const cells = /* @__PURE__ */ new Map();
+	const rows = /* @__PURE__ */ new Map();
+	for (const row of drafts) {
+		rows.set(row.base, row);
+		for (const cell of row.cells) {
+			cells.set(cell.anchor, cell);
+			places.push({
+				addr: cell.addr,
+				size: cell.size,
+				anchor: cell.box
+			});
+			if (!exact.has(cell.addr)) exact.set(cell.addr, cell.box);
+		}
+	}
+	for (const row of drafts) for (const cell of row.cells) {
+		const address = cell.isLive ? addressOf(cell.value.v) : null;
+		const target = address === null ? null : anchorAt(exact, places, address);
+		cell.target = target === cell.box ? null : target;
+	}
+	return {
+		frames,
+		globals,
+		cells,
+		rows
+	};
+}
+// src/engines/c/view/value-motion.ts
+var TIMES = {
+	leaveUpper: 200,
+	give: 520,
+	copy: 640,
+	leaveFrame: 260,
+	leaveRow: 200,
+	slide: 420,
+	appearFrame: 360,
+	appearRow: 260,
+	edge: 240,
+	count: 480,
+	flash: 320,
+	draw: 520
+};
+var VALUE_SCALE = .6;
+function decimalsIn(text) {
+	const match = /^-?\d{1,15}(?:\.(\d{1,6}))?$/.exec(text);
+	return match ? (match[1] ?? "").length : -1;
+}
+function valueMotion(before, after, canCount, delay) {
+	const decimals = decimalsIn(before.text);
+	if (canCount && before.isSet && decimals >= 0 && decimals === decimalsIn(after.text)) {
+		const from = Number(before.text);
+		const to = Number(after.text);
+		return count({
+			anchor: after.anchor,
+			from,
+			to,
+			decimals,
+			ms: TIMES.count,
+			delay
+		});
+	}
+	return appear({
+		anchor: after.anchor,
+		scale: VALUE_SCALE,
+		ms: TIMES.flash,
+		delay
+	});
+}
+function arrowMotion(before, after, delay) {
+	const was = before && before.isLive ? before.target : null;
+	const to = after.isLive ? after.target : null;
+	const timing = {
+		ms: TIMES.draw,
+		delay
+	};
+	if (to && to !== was) {
+		const path = arrowAnchor(after.anchor);
+		return was ? draw({
+			from: after.box,
+			to,
+			was,
+			path,
+			...timing
+		}) : draw({
+			from: after.box,
+			to,
+			path,
+			...timing
+		});
+	}
+	if (!to && was) return draw({
+		from: after.box,
+		was,
+		...timing
+	});
+	return null;
+}
+function addValues(parts, change, settings) {
+	for (const [old, now] of change.kept) now.cells.forEach((cell, index) => {
+		const was = old.cells[index];
+		if (!was || cell.anchor === settings.skip) return;
+		const isPointer = cell.value.t === "ptr" || was.value.t === "ptr";
+		const arrow = isPointer ? arrowMotion(was, cell, settings.delay) : null;
+		if (arrow) parts.draws.push(arrow);
+		else if (was.text !== cell.text) parts.values.push(valueMotion(was, cell, settings.canCount && !isPointer, settings.delay));
+	});
+}
+function addNewArrows(parts, rows, delay) {
+	for (const row of rows) for (const cell of row.cells) {
+		const arrow = arrowMotion(null, cell, delay);
+		if (arrow) parts.draws.push(arrow);
+	}
+}
+function movesOf(flights, ms, delay) {
+	return flights.map((flight) => move$1({
+		...flight,
+		ms,
+		delay
+	}));
+}
+var ARROW_GAP_MS = 120;
+var MAX_ARROW_TURNS = 4;
+function staggerArrows(draws) {
+	const turns = /* @__PURE__ */ new Map();
+	for (const motion of draws) {
+		const delay = motion.delay ?? 0;
+		const turn = turns.get(delay) ?? 0;
+		turns.set(delay, turn + 1);
+		motion.delay = delay + Math.min(turn, MAX_ARROW_TURNS) * ARROW_GAP_MS;
+	}
+}
+var RING_MS$1 = 600;
+var RING_EARLY_MS = 120;
+function ringsForArrows(draws) {
+	const rings = [];
+	for (const motion of draws) if (motion.kind === "draw" && motion.to && motion.to.startsWith("cell:")) {
+		const lands = (motion.delay ?? 0) + (motion.ms ?? TIMES.draw);
+		const delay = Math.max(0, lands - RING_EARLY_MS);
+		rings.push(highlight$1({
+			anchor: motion.to,
+			tone: "pointer",
+			ms: RING_MS$1,
+			delay
+		}));
+	}
+	return rings;
+}
+// src/engines/c/view/stack-motion.ts
+var FRAME_SCALE = .85;
+var ROOM_MADE_MS = 300;
+var MAX_ROW_SLIDES = 120;
+function changeOf(before, after) {
+	const old = new Map(before.map((row) => [row.identity, row]));
+	const drawn = new Set(after.map((row) => row.base));
+	const kept = [];
+	const added = [];
+	for (const row of after) {
+		const was = old.get(row.identity);
+		if (was) kept.push([was, row]);
+		else added.push(row);
+	}
+	return {
+		kept,
+		added,
+		removed: before.filter((row) => !drawn.has(row.base))
+	};
+}
+function staysPut(change, before) {
+	return !change.added.length && !change.removed.length && change.kept.length === before.length;
+}
+function pairOf(previous, step, meta) {
+	const before = indexStep(previous, meta);
+	const after = indexStep(step, meta);
+	let common = 0;
+	const shortest = Math.min(before.frames.length, after.frames.length);
+	while (common < shortest && before.frames[common].prefix === after.frames[common].prefix) common++;
+	const scopes = [];
+	for (let index = 0; index < common; index++) scopes.push(changeOf(before.frames[index].rows, after.frames[index].rows));
+	const globals = changeOf(before.globals, after.globals);
+	const edge = [before.frames.length > 1, after.frames.length > 1];
+	const globalsGroup = [before.globals.length > 0, after.globals.length > 0];
+	const popped = before.frames.slice(common);
+	const pushed = after.frames.slice(common);
+	const isStructural = popped.length > 0 || pushed.length > 0 || edge[0] !== edge[1] || globalsGroup[0] !== globalsGroup[1] || !staysPut(globals, before.globals) || scopes.some((change, index) => !staysPut(change, before.frames[index].rows));
+	return {
+		before,
+		after,
+		common,
+		popped,
+		pushed,
+		scopes,
+		globals,
+		edge,
+		globalsGroup,
+		isStructural
+	};
+}
+function addLeaves(parts, pair, times) {
+	const before = parts.leaves.length;
+	pair.popped.forEach((frame, index) => {
+		const isUpper = index > 0;
+		parts.leaves.push(leave({
+			anchor: frame.anchor,
+			style: isUpper ? "fade" : "shrink",
+			ms: isUpper ? TIMES.leaveUpper : TIMES.leaveFrame,
+			delay: isUpper ? times.upper : times.rest
+		}));
+	});
+	const rows = [...pair.scopes.flatMap((change) => change.removed), ...pair.globals.removed];
+	for (const row of rows) {
+		const motion = {
+			anchor: row.anchor,
+			style: "fade",
+			ms: TIMES.leaveRow
+		};
+		parts.leaves.push(leave({
+			...motion,
+			delay: times.rest
+		}));
+	}
+	if (pair.edge[0] && !pair.edge[1]) parts.leaves.push(leave({
+		anchor: EDGE_ANCHOR,
+		style: "fade",
+		ms: TIMES.edge,
+		delay: times.rest
+	}));
+	if (pair.globalsGroup[0] && !pair.globalsGroup[1]) {
+		const motion = {
+			anchor: GLOBALS_ANCHOR,
+			style: "fade",
+			ms: TIMES.leaveRow
+		};
+		parts.leaves.push(leave({
+			...motion,
+			delay: times.rest
+		}));
+	}
+	return parts.leaves.length - before > Math.max(0, pair.popped.length - 1);
+}
+function addLayout(parts, pair, delay) {
+	const timing = {
+		ms: TIMES.slide,
+		delay
+	};
+	for (let index = 0; index < pair.common; index++) parts.slides.push(slide({
+		anchor: pair.after.frames[index].anchor,
+		...timing
+	}));
+	if (pair.globalsGroup[0] && pair.globalsGroup[1]) parts.slides.push(slide({
+		anchor: GLOBALS_ANCHOR,
+		...timing
+	}));
+	const kept = [...pair.scopes.flatMap((change) => change.kept), ...pair.globals.kept];
+	for (const [, row] of kept.slice(0, MAX_ROW_SLIDES)) parts.slides.push(slide({
+		anchor: row.anchor,
+		...timing
+	}));
+	const roomMade = delay + ROOM_MADE_MS;
+	for (const frame of pair.pushed) {
+		const motion = {
+			anchor: frame.anchor,
+			scale: FRAME_SCALE,
+			ms: TIMES.appearFrame
+		};
+		parts.appears.push(appear({
+			...motion,
+			delay: roomMade
+		}));
+	}
+	const rows = [...pair.scopes.flatMap((change) => change.added), ...pair.globals.added];
+	for (const row of rows) {
+		const motion = {
+			anchor: row.anchor,
+			style: "fade",
+			ms: TIMES.appearRow
+		};
+		parts.appears.push(appear({
+			...motion,
+			delay
+		}));
+	}
+	if (!pair.edge[0] && pair.edge[1]) {
+		const motion = {
+			anchor: EDGE_ANCHOR,
+			style: "fade",
+			ms: TIMES.edge
+		};
+		parts.appears.push(appear({
+			...motion,
+			delay: roomMade
+		}));
+	}
+	if (!pair.globalsGroup[0] && pair.globalsGroup[1]) {
+		const motion = {
+			anchor: GLOBALS_ANCHOR,
+			style: "fade",
+			ms: TIMES.appearRow
+		};
+		parts.appears.push(appear({
+			...motion,
+			delay
+		}));
+	}
+}
+function layoutLength(pair) {
+	let length = TIMES.slide;
+	if (pair.pushed.length) length = Math.max(length, ROOM_MADE_MS + TIMES.appearFrame);
+	return length;
+}
+function buildStructural(parts, pair, meta, code) {
+	let time = 0;
+	const hasUpper = pair.popped.length > 1;
+	const upper = time;
+	time += hasUpper ? TIMES.leaveUpper : 0;
+	const home = pair.popped.length ? returnFlight(pair.before, pair.after, pair.common, meta, code) : null;
+	const homeStart = time;
+	if (home) {
+		parts.gives.push(...movesOf([home], TIMES.give, time));
+		time += TIMES.give;
+	}
+	if (addLeaves(parts, pair, {
+		upper,
+		rest: time
+	})) time += TIMES.leaveFrame;
+	addLayout(parts, pair, time);
+	if (home) {
+		const receiver = pair.scopes[pair.common - 1]?.added.find((row) => row.cells.some((cell) => cell.anchor === home.to));
+		const appearing = parts.appears.find((motion) => motion.kind === "appear" && !!receiver && motion.anchor === receiver.anchor);
+		if (appearing) appearing.delay = homeStart;
+	}
+	if (pair.pushed.length) {
+		const flights = argumentFlights(pair.before, pair.after, pair.common, meta, code);
+		parts.copies.push(...movesOf(flights, TIMES.copy, time));
+	}
+	const settled = time + layoutLength(pair);
+	const settings = {
+		delay: settled,
+		canCount: false,
+		skip: home ? home.to : ""
+	};
+	pair.scopes.forEach((change) => addValues(parts, change, settings));
+	addValues(parts, pair.globals, settings);
+	const added = [...pair.scopes.flatMap((change) => change.added), ...pair.globals.added];
+	addNewArrows(parts, [...pair.pushed.flatMap((frame) => frame.rows), ...added], settled);
+}
+function ordered(parts) {
+	const values = parts.values.slice(0, 160);
+	const draws = parts.draws.slice(0, 160);
+	return [
+		...draws,
+		...ringsForArrows(draws),
+		...parts.copies,
+		...parts.slides,
+		...parts.gives,
+		...parts.leaves,
+		...parts.appears,
+		...values
+	].filter((motion) => validateMotion(motion).length === 0);
+}
+function stackMotion(previous, step, meta, code = {}) {
+	if (!previous || !step || !previous.frames || !step.frames || !meta || !meta.vars) return null;
+	try {
+		const pair = pairOf(previous, step, meta);
+		const parts = {
+			draws: [],
+			copies: [],
+			slides: [],
+			gives: [],
+			leaves: [],
+			appears: [],
+			values: []
+		};
+		if (pair.isStructural) buildStructural(parts, pair, meta, code);
+		else {
+			const settings = {
+				delay: 0,
+				canCount: true,
+				skip: ""
+			};
+			pair.scopes.forEach((change) => addValues(parts, change, settings));
+			addValues(parts, pair.globals, settings);
+		}
+		staggerArrows(parts.draws);
+		const motions = ordered(parts);
+		return motions.length ? together(motions) : null;
+	} catch {
+		return null;
+	}
+}
+function cellsToReveal(motion) {
+	return (motion && motion.kind === "together" ? motion.motions : []).flatMap((leaf) => leaf.kind === "draw" && leaf.to && leaf.to.startsWith("cell:") ? [leaf.to] : []);
+}
+// node_modules/react/cjs/react-jsx-runtime.production.js
+/**
+* @license React
+* react-jsx-runtime.production.js
+*
+* Copyright (c) Meta Platforms, Inc. and affiliates.
+*
+* This source code is licensed under the MIT license found in the
+* LICENSE file in the root directory of this source tree.
+*/
+var require_react_jsx_runtime_production=__commonJSMin((exports=>{var e=Symbol.for(`react.transitional.element`);var t=Symbol.for(`react.fragment`);function n(t,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:e,type:t,key:i,ref:n===void 0?null:n,props:r}}exports.Fragment=t,exports.jsx=n,exports.jsxs=n}));
+
+// src/engines/c/view/Bilingual.tsx
+var import_jsx_runtime = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
+	module.exports = require_react_jsx_runtime_production();
+})))();
+function Bilingual({ english, hebrew, prefix = "" }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [prefix + english + " ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+		lang: "he",
+		children: "/ " + hebrew
+	})] });
+}
+// node_modules/react-dom/cjs/react-dom.production.js
+/**
+* @license React
+* react-dom.production.js
+*
+* Copyright (c) Meta Platforms, Inc. and affiliates.
+*
+* This source code is licensed under the MIT license found in the
+* LICENSE file in the root directory of this source tree.
+*/
+var require_react_dom_production=__commonJSMin((exports=>{var e=require_react();function t(e){var t=`https://react.dev/errors/`+e;if(1<arguments.length){t+=`?args[]=`+encodeURIComponent(arguments[1]);for(var n=2;n<arguments.length;n++)t+=`&args[]=`+encodeURIComponent(arguments[n])}return`Minified React error #`+e+`; visit `+t+` for the full message or use the non-minified dev environment for full errors and additional helpful warnings.`}function n(){}var r={d:{f:n,r:function(){throw Error(t(522))},D:n,C:n,L:n,m:n,X:n,S:n,M:n},p:0,findDOMNode:null};var i=Symbol.for(`react.portal`);var a=Symbol.for(`react.recoverable`);var o=Symbol.for(`react.optimistic_key`);function s(e,t,n){var r=3<arguments.length&&arguments[3]!==void 0?arguments[3]:null;return{$$typeof:i,key:r==null?null:r===o?o:``+r,children:e,containerInfo:t,implementation:n}}var c=e.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;function l(e,t){if(e===`font`)return``;if(typeof t==`string`)return t===`use-credentials`?t:``}exports.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=r,exports.browser=function(e){return{$$typeof:a,_reason:e}},exports.createPortal=function(e,n){var r=2<arguments.length&&arguments[2]!==void 0?arguments[2]:null;if(!n||n.nodeType!==1&&n.nodeType!==9&&n.nodeType!==11)throw Error(t(299));return s(e,n,null,r)},exports.flushSync=function(e){var t=c.T,n=r.p;try{if(c.T=null,r.p=2,e)return e()}finally{c.T=t,r.p=n,r.d.f()}},exports.preconnect=function(e,t){typeof e==`string`&&(t?(t=t.crossOrigin,t=typeof t==`string`?t===`use-credentials`?t:``:void 0):t=null,r.d.C(e,t))},exports.prefetchDNS=function(e){typeof e==`string`&&r.d.D(e)},exports.preinit=function(e,t){if(typeof e==`string`&&t&&typeof t.as==`string`){var n=t.as,i=l(n,t.crossOrigin),a=typeof t.integrity==`string`?t.integrity:void 0,o=typeof t.fetchPriority==`string`?t.fetchPriority:void 0;n===`style`?r.d.S(e,typeof t.precedence==`string`?t.precedence:void 0,{crossOrigin:i,integrity:a,fetchPriority:o}):n===`script`&&r.d.X(e,{crossOrigin:i,integrity:a,fetchPriority:o,nonce:typeof t.nonce==`string`?t.nonce:void 0})}},exports.preinitModule=function(e,t){if(typeof e==`string`){if(typeof t==`object`&&t){if(t.as==null||t.as===`script`){var n=l(t.as,t.crossOrigin);r.d.M(e,{crossOrigin:n,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0})}}else t??r.d.M(e)}},exports.preload=function(e,t){if(typeof e==`string`&&typeof t==`object`&&t&&typeof t.as==`string`){var n=t.as,i=l(n,t.crossOrigin);r.d.L(e,n,{crossOrigin:i,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,type:typeof t.type==`string`?t.type:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0,referrerPolicy:typeof t.referrerPolicy==`string`?t.referrerPolicy:void 0,imageSrcSet:typeof t.imageSrcSet==`string`?t.imageSrcSet:void 0,imageSizes:typeof t.imageSizes==`string`?t.imageSizes:void 0,media:typeof t.media==`string`?t.media:void 0})}},exports.preloadModule=function(e,t){if(typeof e==`string`){if(t){var n=l(t.as,t.crossOrigin);r.d.m(e,{as:typeof t.as==`string`&&t.as!==`script`?t.as:void 0,crossOrigin:n,integrity:typeof t.integrity==`string`?t.integrity:void 0,nonce:typeof t.nonce==`string`?t.nonce:void 0,fetchPriority:typeof t.fetchPriority==`string`?t.fetchPriority:void 0})}else r.d.m(e)}},exports.requestFormReset=function(e){r.d.r(e)},exports.unstable_batchedUpdates=function(e,t){return e(t)},exports.useFormState=function(e,t,n){return c.H.useFormState(e,t,n)},exports.useFormStatus=function(){return c.H.useHostTransitionStatus()},exports.version=`19.3.1`}));
+
+// node_modules/react-dom/index.js
+var require_react_dom=__commonJSMin(((exports,module)=>{function e(){if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__<`u`&&typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE==`function`)try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(e)}catch(e){console.error(e)}}e(),module.exports=require_react_dom_production()}));
+
 // src/engines/c/view/pointer-target.ts
+var import_react_dom = require_react_dom();
 var NO_MARKS = /* @__PURE__ */ new Map();
 function markClass(marks, key) {
 	const mark = marks.get(key);
@@ -7224,8 +9240,7 @@ function focusAttributes(model, cell, isPointer) {
 		"aria-label": label
 	};
 }
-function Arrow$1(props) {
-	const { model, cell, scope } = props;
+function Arrow$1({ model, cell, scope, name }) {
 	if (!isLivePointer(cell)) return null;
 	const address = String(cell.s.v);
 	const target = targetOf$1(model, cell);
@@ -7238,17 +9253,22 @@ function Arrow$1(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 		className: "arrow",
 		"data-to": address,
+		...anchor(arrowAnchor(name)),
 		children: ["→ " + target.name + (isElsewhere ? " " : ""), isElsewhere ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "(" + nameOfScope(model, target.scope) + ")" }) : null]
 	});
 }
-function ScalarCell({ model, row, marks }) {
+function ScalarCell({ model, row, marks, base }) {
 	const cell = row.cells[0];
 	const mark = markClass(marks, markKey(row, 0));
+	const name = cellAnchor(base, row.declaration, cell);
 	if (!row.variable.init) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 		className: "v garb" + mark,
 		"data-addr": String(cell.addr),
 		title: NOT_SET_TITLE,
-		children: "?"
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			...anchor(name),
+			children: "?"
+		})
 	});
 	const classes = "v " + cell.s.t + (isCellChanged(row, 0) ? " chg" : "") + mark;
 	const focus = focusAttributes(model, cell, isLivePointer(cell));
@@ -7258,17 +9278,22 @@ function ScalarCell({ model, row, marks }) {
 			className: classes,
 			"data-addr": String(cell.addr),
 			...focus,
-			children: scalarText(cell.s)
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				...anchor(name),
+				children: scalarText(cell.s)
+			})
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow$1, {
 			model,
 			cell,
-			scope: row.scope
+			scope: row.scope,
+			name
 		})]
 	});
 }
 function ArrayCell(props) {
 	const { model, row, marks, index } = props;
 	const cell = row.cells[index];
+	const name = cellAnchor(props.base, row.declaration, cell);
 	const isSet = !!row.variable.init;
 	const changedClass = isCellChanged(row, index) ? " chg" : "";
 	const pointerClass = cell.s.t === "ptr" ? " ptr" : "";
@@ -7281,19 +9306,43 @@ function ArrayCell(props) {
 		role: "listitem",
 		"data-addr": String(cell.addr),
 		...focus,
+		...anchor(boxAnchor(name)),
 		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: isSet ? scalarText(cell.s) : "?" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", {
+				...anchor(name),
+				children: isSet ? scalarText(cell.s) : "?"
+			}),
 			isSet ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow$1, {
 				model,
 				cell,
-				scope: row.scope
+				scope: row.scope,
+				name
 			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: label }),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("em", { children: hex(cell.addr) })
 		]
 	});
 }
-function ArrayCells({ model, row, marks }) {
+function useStripReveal(strip, name) {
+	(0, import_react.useLayoutEffect)(() => {
+		const element = strip.current;
+		const cell = name ? element?.querySelector("[data-anchor=\"" + CSS.escape(name) + "\"]") : null;
+		if (!element || !cell) return;
+		const box = element.getBoundingClientRect();
+		const rect = cell.getBoundingClientRect();
+		if (rect.left < box.left || rect.right > box.right) {
+			const shift = rect.left + rect.width / 2 - (box.left + box.width / 2);
+			element.scrollBy({
+				left: shift,
+				behavior: "instant"
+			});
+		}
+	}, [strip, name]);
+}
+function ArrayCells(props) {
+	const { model, row, marks, base } = props;
+	const strip = (0, import_react.useRef)(null);
+	useStripReveal(strip, row.cells.map((cell) => boxAnchor(cellAnchor(base, row.declaration, cell))).find((name) => props.reveal.includes(name)));
 	const cellRows = [];
 	row.cells.forEach((cell, index) => {
 		const rowIndex = cell.row ?? 0;
@@ -7305,6 +9354,7 @@ function ArrayCells({ model, row, marks }) {
 		className: classes,
 		role: "list",
 		"aria-label": row.declaration.name,
+		ref: strip,
 		children: cellRows.map((indexes, rowIndex) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 			className: "arow",
 			role: "presentation",
@@ -7312,12 +9362,14 @@ function ArrayCells({ model, row, marks }) {
 				model,
 				row,
 				marks,
+				base,
 				index
 			}, index))
 		}, rowIndex))
 	});
 }
-function VariableRow({ model, variable, scope, marks }) {
+function VariableRow(props) {
+	const { model, variable, scope, marks, base } = props;
 	const row = prepareRow(model, variable, scope);
 	const { declaration } = row;
 	const freshClass = row.isFresh ? " fresh" : "";
@@ -7328,6 +9380,7 @@ function VariableRow({ model, variable, scope, marks }) {
 		className: classes,
 		role: "row",
 		"data-addr": String(variable.addr),
+		...anchor(rowAnchor(base)),
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: "vn",
@@ -7350,11 +9403,14 @@ function VariableRow({ model, variable, scope, marks }) {
 				children: hasCells ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrayCells, {
 					model,
 					row,
-					marks
+					marks,
+					base,
+					reveal: props.reveal
 				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScalarCell, {
 					model,
 					row,
-					marks
+					marks,
+					base
 				})
 			})
 		]
@@ -7374,10 +9430,9 @@ function LegendEntry(props) {
 	})] });
 }
 function Legend(props) {
-	const { pointerSize, ref } = props;
+	const address = props.pointerSize === POINTER_SIZE_64$1 ? LEGEND_ADDRESS_64 : LEGEND_ADDRESS_32;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "stk-legend",
-		ref,
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendEntry, {
 				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
@@ -7390,7 +9445,7 @@ function Legend(props) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LegendEntry, {
 				chip: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 					className: "v ptr",
-					children: pointerSize === POINTER_SIZE_64$1 ? LEGEND_ADDRESS_64 : LEGEND_ADDRESS_32
+					children: address
 				}),
 				english: "pointer",
 				hebrew: "מצביע"
@@ -7436,6 +9491,7 @@ function NewestOnTop() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "stk-edge",
 		role: "row",
+		...anchor(EDGE_ANCHOR),
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 			role: "cell",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
@@ -7446,7 +9502,8 @@ function NewestOnTop() {
 		})
 	});
 }
-function FrameHeader({ model, frameEntry, endLabel }) {
+function FrameHeader(props) {
+	const { model, frameEntry, endLabel } = props;
 	const parameters = model.meta.vars.filter((declaration) => declaration.fid === frameEntry.frame.fid && declaration.param).filter((declaration) => !declaration.member).map((declaration) => declaration.name).join(", ");
 	const isTop = frameEntry.index === model.frames.length - 1;
 	const callee = model.frames[frameEntry.index + 1];
@@ -7467,17 +9524,19 @@ function FrameHeader({ model, frameEntry, endLabel }) {
 			hebrew: "ממתינה"
 		})
 	});
+	const prefix = framePrefix(frameEntry.name, frameEntry.frame.call);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "fh",
 		role: "row",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 			className: "fn",
 			role: "cell",
+			...anchor(headAnchor(prefix)),
 			children: frameEntry.name + "(" + parameters + ")"
 		}), state]
 	});
 }
-function Frame$1({ model, frameEntry, marks, endLabel }) {
+function Frame$1({ model, frameEntry, marks, endLabel, bases, reveal }) {
 	const scope = frameScope(frameEntry.index);
 	const isTop = frameEntry.index === model.frames.length - 1;
 	const variables = frameEntry.frame.vars;
@@ -7485,7 +9544,9 @@ function Frame$1({ model, frameEntry, marks, endLabel }) {
 		model,
 		variable,
 		scope,
-		marks
+		marks,
+		base: bases.get(variableKey(scope, variable)) ?? "",
+		reveal
 	}, index)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "novars",
 		role: "row",
@@ -7497,10 +9558,12 @@ function Frame$1({ model, frameEntry, marks, endLabel }) {
 			})
 		})
 	});
+	const name = frameAnchor(framePrefix(frameEntry.name, frameEntry.frame.call));
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "frame" + (isTop ? " cur" : ""),
 		role: "rowgroup",
 		"aria-label": frameEntry.name + "()",
+		...anchor(name),
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FrameHeader, {
 			model,
 			frameEntry,
@@ -7509,11 +9572,12 @@ function Frame$1({ model, frameEntry, marks, endLabel }) {
 	});
 }
 function Globals(props) {
-	const { model, step, marks } = props;
+	const { model, step, marks, bases, reveal } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "frame glob",
 		role: "rowgroup",
 		"aria-label": "globals",
+		...anchor(GLOBALS_ANCHOR),
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "fh",
 			role: "row",
@@ -7536,52 +9600,130 @@ function Globals(props) {
 			model,
 			variable,
 			scope: "g",
-			marks
+			marks,
+			base: bases.get(variableKey("g", variable)) ?? "",
+			reveal
 		}, index))]
 	});
 }
+function useFinishOnResize(stage, player) {
+	(0, import_react.useLayoutEffect)(() => {
+		const element = stage.current;
+		if (!element || typeof ResizeObserver !== "function") return;
+		let width = element.offsetWidth;
+		let height = element.offsetHeight;
+		const observer = new ResizeObserver(() => {
+			if (element.offsetWidth !== width || element.offsetHeight !== height) {
+				width = element.offsetWidth;
+				height = element.offsetHeight;
+				player.finish();
+			}
+		});
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, [stage, player]);
+}
 function StepStack(props) {
-	const { step, endLabel } = props;
-	const anchorRef = (0, import_react.useRef)(null);
-	const hover = useTargetHover(anchorRef);
+	const { step, endLabel, motion } = props;
+	const stage = useMotionStage(motion, props.stepKey);
+	const hover = useTargetHover(stage);
+	useFinishOnResize(stage, motion);
 	const model = buildModel(step, props.previousStep, props.meta);
 	const marks = computeTargetMarks(model, step, hover);
+	const bases = variableBases(model, step);
 	const newestFirst = model.frames.slice().reverse();
 	const tableClass = "stk-tbl" + (model.pointerSize === POINTER_SIZE_64$1 ? " p8" : "");
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend, {
-		pointerSize: model.pointerSize,
-		ref: anchorRef
-	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: tableClass,
-		role: "table",
-		"aria-label": "call stack",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColumnsRow, {}),
-			model.frames.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NewestOnTop, {}) : null,
-			newestFirst.map((frameEntry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame$1, {
-				model,
-				frameEntry,
-				marks,
-				endLabel
-			}, frameEntry.index)),
-			step.globals.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Globals, {
-				model,
-				step,
-				marks
-			}) : null
-		]
-	})] });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "stk-stage" + (props.isStill ? " still" : ""),
+		ref: stage,
+		onPointerDown: () => motion.finish(),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend, { pointerSize: model.pointerSize }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: tableClass,
+			role: "table",
+			"aria-label": "call stack",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColumnsRow, {}),
+				model.frames.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NewestOnTop, {}) : null,
+				newestFirst.map((frameEntry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame$1, {
+					model,
+					frameEntry,
+					marks,
+					endLabel,
+					bases,
+					reveal: props.reveal
+				}, frameEntry.index)),
+				step.globals.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Globals, {
+					model,
+					step,
+					marks,
+					bases,
+					reveal: props.reveal
+				}) : null
+			]
+		})]
+	});
 }
-function StackView({ step, previousStep, meta, endLabel }) {
-	if (!step) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+function StackView(props) {
+	if (!props.step) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "mem-empty",
 		children: "The program did not reach any line."
 	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepStack, {
+		step: props.step,
+		previousStep: props.previousStep,
+		meta: props.meta,
+		endLabel: props.endLabel,
+		motion: props.motion,
+		stepKey: props.stepKey,
+		isStill: props.isStill,
+		reveal: props.reveal
+	});
+}
+// src/engines/c/box/step-view.js
+var MAIN_FILE$1 = "main.c";
+function codeLines(state) {
+	const sources = new Map(Object.entries(state.lastFiles || {}));
+	sources.set(MAIN_FILE$1, state.lastCode || "");
+	const split = /* @__PURE__ */ new Map();
+	return { lineText(file, line) {
+		const text = sources.get(file);
+		if (typeof text !== "string") return "";
+		if (!split.has(file)) split.set(file, text.split("\n"));
+		return split.get(file)[line - 1] || "";
+	} };
+}
+function motionOf(context, previous, step, transition) {
+	const { state } = context;
+	if (transition !== "next" || !previous || !step) return null;
+	try {
+		return stackMotion(previous, step, state.meta, codeLines(state));
+	} catch (error) {
+		console.warn("line by line: no motion for this step (" + String(error) + ")");
+		return null;
+	}
+}
+function memoryView(context, step, endLabel) {
+	const { state, ui } = context;
+	context.memoryViewKey += 1;
+	const key = context.memoryViewKey;
+	const previousStep = step ? state.steps[state.idx - 1] : void 0;
+	const transition = ui.stepTransition();
+	const motion = motionOf(context, previousStep, step, transition);
+	context.motion.cue(key, motion, transition);
+	globalThis.__cStepMotion = {
+		motion,
+		player: context.motion
+	};
+	return (0, import_react.createElement)(StackView, {
+		key,
 		step,
 		previousStep,
-		meta,
-		endLabel
+		meta: state.meta,
+		endLabel,
+		motion: context.motion,
+		stepKey: key,
+		isStill: transition !== "next",
+		reveal: cellsToReveal(motion)
 	});
 }
 // src/engines/c/box/stepping.js
@@ -7701,17 +9843,6 @@ function whereText(state, step) {
 	const fileText = fileOf(step) === MAIN_FILE ? "" : fileOf(step) + " · ";
 	const notes = (state.gccNote || "") + (state.plainNote || "");
 	return fileText + "line " + step.line + functionText + notes;
-}
-function memoryView(context, step, endLabel) {
-	const { state } = context;
-	context.memoryViewKey += 1;
-	return (0, import_react.createElement)(StackView, {
-		key: context.memoryViewKey,
-		step,
-		previousStep: step ? state.steps[state.idx - 1] : void 0,
-		meta: state.meta,
-		endLabel
-	});
 }
 function hideInputRow(context) {
 	const { ui } = context;
@@ -8857,7 +10988,7 @@ function tokenHtml(match) {
 	if (match[5]) return nameHtml(token, null);
 	return html`<i class="n">${token}</i>`.text;
 }
-function highlight$1(line) {
+function highlight(line) {
 	const pattern = new RegExp(TOKEN_PATTERN);
 	let output = "";
 	let lastEnd = 0;
@@ -8873,7 +11004,7 @@ function highlight$1(line) {
 window.LabEngine = {
 	id: "c",
 	name: "C",
-	highlight: highlight$1,
+	highlight,
 	tour,
 	files: {
 		main: "main.c",
@@ -11947,1256 +14078,6 @@ function createBoxStore(initial) {
 }
 function useBoxView(store, select) {
 	return (0, import_react.useSyncExternalStore)(store.subscribe, () => select(store.get()));
-}
-// src/shared/motion/motions.ts
-var ANCHOR_ATTRIBUTE = "data-anchor";
-var TONES = [
-	"focus",
-	"compare",
-	"good",
-	"bad",
-	"pointer"
-];
-var EASINGS = [
-	"glide",
-	"out",
-	"in",
-	"linear",
-	"settle"
-];
-function appear(spec) {
-	return {
-		kind: "appear",
-		...spec
-	};
-}
-function leave(spec) {
-	return {
-		kind: "leave",
-		...spec
-	};
-}
-function slide(spec) {
-	return {
-		kind: "slide",
-		...spec
-	};
-}
-function highlight(spec) {
-	return {
-		kind: "highlight",
-		...spec
-	};
-}
-function draw(spec) {
-	return {
-		kind: "draw",
-		...spec
-	};
-}
-function together(motions) {
-	return {
-		kind: "together",
-		motions
-	};
-}
-function anchor(name) {
-	return { "data-anchor": name };
-}
-function leavesOf$1(motion) {
-	if (!motion) return [];
-	if (motion.kind === "together" || motion.kind === "inOrder") return motion.motions.flatMap((inner) => leavesOf$1(inner));
-	return [motion];
-}
-var MAX_DELAY_MS = 2e4;
-var ANCHOR_RE = /^[!#-&(-[\]-~]{1,80}$/;
-var FIELDS = {
-	move: {
-		from: "anchor",
-		to: "anchor",
-		value: "text?",
-		ms: "ms?"
-	},
-	rise: {
-		from: "anchor",
-		to: "anchor",
-		value: "text?",
-		along: "anchor?",
-		ms: "ms?"
-	},
-	appear: {
-		anchor: "anchor",
-		style: "grow?",
-		scale: "scale?",
-		dx: "offset?",
-		dy: "offset?",
-		ms: "ms?"
-	},
-	leave: {
-		anchor: "anchor",
-		style: "shrink?",
-		ms: "ms?"
-	},
-	slide: {
-		anchor: "anchor",
-		ms: "ms?"
-	},
-	highlight: {
-		anchor: "anchor",
-		tone: "tone?",
-		ms: "ms?"
-	},
-	draw: {
-		path: "anchor?",
-		head: "anchor?",
-		from: "anchor?",
-		to: "anchor?",
-		was: "anchor?",
-		tone: "tone?",
-		ms: "ms?"
-	},
-	count: {
-		anchor: "anchor",
-		from: "number",
-		to: "number",
-		decimals: "decimals?",
-		prefix: "text?",
-		suffix: "text?",
-		ms: "ms?"
-	}
-};
-function isAnchorName(name) {
-	return typeof name === "string" && ANCHOR_RE.test(name);
-}
-function isWithin(value, low, high) {
-	return typeof value === "number" && Number.isFinite(value) && value >= low && value <= high;
-}
-var RULE_CHECKS = {
-	anchor: (value) => isAnchorName(value) ? null : "not an anchor name",
-	text: (value) => typeof value === "string" && value.length <= 40 ? null : "not a text of at most 40 characters",
-	number: (value) => isWithin(value, -0x38d7ea4c68000, 0x38d7ea4c68000) ? null : "not a finite number",
-	decimals: (value) => isWithin(value, 0, 6) && Number.isInteger(value) ? null : "not a whole number from 0 to 6",
-	tone: (value) => TONES.includes(value) ? null : "not one of " + TONES.join(", "),
-	grow: (value) => value === "grow" || value === "fade" ? null : "not 'grow' or 'fade'",
-	shrink: (value) => value === "shrink" || value === "fade" ? null : "not 'shrink' or 'fade'",
-	ms: (value) => isWithin(value, 0, 2e3) ? null : "not 0 to 2000 ms",
-	delay: (value) => isWithin(value, 0, 2e4) ? null : "not 0 to 20000 ms",
-	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
-	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
-	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px"
-};
-var TIMING_FIELDS = {
-	delay: "delay?",
-	ease: "ease?"
-};
-function checkFields$1(motion, path, problems) {
-	const rules = {
-		...FIELDS[motion.kind],
-		...TIMING_FIELDS
-	};
-	for (const field of Object.keys(motion)) if (field !== "kind" && !(field in rules)) problems.push({
-		path: path + "." + field,
-		message: "unknown field of " + motion.kind
-	});
-	for (const [field, rule] of Object.entries(rules)) {
-		const value = motion[field];
-		const isOptional = rule.endsWith("?");
-		if (value === void 0) {
-			if (!isOptional) problems.push({
-				path: path + "." + field,
-				message: "missing"
-			});
-			continue;
-		}
-		const problem = RULE_CHECKS[rule.replace("?", "")](value);
-		if (problem) problems.push({
-			path: path + "." + field,
-			message: problem
-		});
-	}
-}
-function checkDraw(motion, path, problems) {
-	const hasEnds = motion.from !== void 0 && motion.to !== void 0;
-	if (motion.from === void 0 !== (motion.to === void 0)) problems.push({
-		path,
-		message: "a draw needs both from and to, or neither"
-	});
-	else if (!hasEnds && motion.path === void 0) problems.push({
-		path,
-		message: "a draw needs a path, or from and to"
-	});
-	if (motion.was !== void 0 && !hasEnds) problems.push({
-		path: path + ".was",
-		message: "was needs from and to"
-	});
-}
-function checkAppear(motion, path, problems) {
-	if (motion.scale !== void 0 && motion.style === "fade") problems.push({
-		path: path + ".scale",
-		message: "scale needs the style 'grow'"
-	});
-}
-function checkSequence(motion, path, depth, walk) {
-	const extra = Object.keys(motion).filter((field) => ![
-		"kind",
-		"motions",
-		"gap"
-	].includes(field));
-	const isTogether = motion.kind === "together";
-	for (const field of extra.concat(isTogether && "gap" in motion ? ["gap"] : [])) walk.problems.push({
-		path: path + "." + field,
-		message: "unknown field of " + motion.kind
-	});
-	if (!isTogether && motion.gap !== void 0 && !isWithin(motion.gap, 0, 1e3)) walk.problems.push({
-		path: path + ".gap",
-		message: "not 0 to 1000 ms"
-	});
-	if (!Array.isArray(motion.motions)) {
-		walk.problems.push({
-			path: path + ".motions",
-			message: "not a list"
-		});
-		return;
-	}
-	if (depth >= 8) {
-		walk.problems.push({
-			path,
-			message: "sequences nested deeper than 8"
-		});
-		return;
-	}
-	motion.motions.forEach((inner, index) => {
-		checkAny(inner, path + ".motions[" + index + "]", depth + 1, walk);
-	});
-}
-function checkAny(value, path, depth, walk) {
-	if (typeof value !== "object" || value === null || Array.isArray(value)) {
-		walk.problems.push({
-			path,
-			message: "not a motion"
-		});
-		return;
-	}
-	const motion = value;
-	if (motion.kind === "together" || motion.kind === "inOrder") {
-		checkSequence(motion, path, depth, walk);
-		return;
-	}
-	if (typeof motion.kind !== "string" || !Object.hasOwn(FIELDS, motion.kind)) {
-		walk.problems.push({
-			path: path + ".kind",
-			message: "unknown kind " + String(motion.kind)
-		});
-		return;
-	}
-	walk.leaves += 1;
-	checkFields$1(motion, path, walk.problems);
-	if (motion.kind === "draw") checkDraw(motion, path, walk.problems);
-	else if (motion.kind === "appear") checkAppear(motion, path, walk.problems);
-}
-function validateMotion(value) {
-	const walk = {
-		problems: [],
-		leaves: 0
-	};
-	checkAny(value, "motion", 0, walk);
-	if (walk.leaves > 400) walk.problems.push({
-		path: "motion",
-		message: "more than 400 motions"
-	});
-	return walk.problems;
-}
-// src/shared/step-transition.ts
-function easeInOut(fraction) {
-	return (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, fraction)))) / 2;
-}
-function glides(transition, reducesMotion) {
-	return transition === "next" && !reducesMotion;
-}
-function prefersReducedMotion() {
-	if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-function mix(from, to, progress) {
-	return from + (to - from) * progress;
-}
-// src/shared/motion/schedule.ts
-function settle(fraction) {
-	return 1 - Math.pow(1 - Math.min(1, Math.max(0, fraction)), 3);
-}
-var MAX_PLAY_MS = 2e3;
-var DEFAULT_MS = {
-	move: 560,
-	rise: 560,
-	draw: 560,
-	count: 560,
-	appear: 320,
-	leave: 280,
-	slide: 560,
-	highlight: 700
-};
-var EASING = {
-	move: "glide",
-	rise: "glide",
-	draw: "glide",
-	count: "glide",
-	appear: "out",
-	leave: "in",
-	slide: "glide",
-	highlight: "linear"
-};
-var EMPTY$1 = {
-	tracks: [],
-	total: 0,
-	isCompressed: false
-};
-function layOut(motion, start, tracks) {
-	if (motion.kind === "together") return motion.motions.reduce((end, inner) => Math.max(end, layOut(inner, start, tracks)), start);
-	if (motion.kind === "inOrder") {
-		const gap = motion.gap ?? 0;
-		let end = start;
-		motion.motions.forEach((inner, position) => {
-			end = layOut(inner, position === 0 ? end : end + gap, tracks);
-		});
-		return end;
-	}
-	const duration = motion.ms ?? DEFAULT_MS[motion.kind];
-	const begins = start + (motion.delay ?? 0);
-	const easing = motion.ease ?? EASING[motion.kind];
-	tracks.push({
-		motion,
-		index: tracks.length,
-		start: begins,
-		duration,
-		easing
-	});
-	return begins + duration;
-}
-function compress(tracks, total) {
-	const factor = MAX_PLAY_MS / total;
-	const shrunk = tracks.map((track) => ({
-		...track,
-		duration: Math.max(Math.min(track.duration, 120), track.duration * factor)
-	}));
-	let fit = 1;
-	for (const track of shrunk) {
-		const natural = tracks[track.index].start;
-		if (natural > 0) fit = Math.min(fit, (MAX_PLAY_MS - track.duration) / natural);
-	}
-	return shrunk.map((track) => ({
-		...track,
-		start: tracks[track.index].start * fit
-	}));
-}
-function scheduleOf(motion) {
-	if (!motion) return EMPTY$1;
-	const tracks = [];
-	const total = layOut(motion, 0, tracks);
-	if (total <= 2e3) return {
-		tracks,
-		total,
-		isCompressed: false
-	};
-	const fitted = compress(tracks, total);
-	return {
-		tracks: fitted,
-		total: fitted.reduce((last, track) => Math.max(last, track.start + track.duration), 0),
-		isCompressed: true
-	};
-}
-function trackFraction(track, time) {
-	if (track.duration <= 0) return time >= track.start ? 1 : 0;
-	return Math.min(1, Math.max(0, (time - track.start) / track.duration));
-}
-// src/shared/motion/player.ts
-function firstNeedsOf(schedule) {
-	const places = /* @__PURE__ */ new Set();
-	const copies = /* @__PURE__ */ new Set();
-	for (const { motion } of schedule.tracks) if (motion.kind === "move" || motion.kind === "rise") places.add(motion.from);
-	else if (motion.kind === "draw" && motion.was) places.add(motion.was);
-	else if (motion.kind === "slide") places.add(motion.anchor);
-	else if (motion.kind === "leave") {
-		places.add(motion.anchor);
-		copies.add(motion.anchor);
-	}
-	return {
-		places: [...places],
-		copies: [...copies]
-	};
-}
-function problemsOf(motion) {
-	return validateMotion(motion).map((problem) => problem.path + ": " + problem.message).join("; ");
-}
-var MotionPlayer = class {
-	renderer;
-	reducesMotion;
-	warn;
-	warned = /* @__PURE__ */ new Set();
-	stage = null;
-	cued = null;
-	playing = null;
-	report = null;
-	constructor(renderer, options = {}) {
-		this.renderer = renderer;
-		this.reducesMotion = options.reducesMotion ?? prefersReducedMotion;
-		this.warn = options.warn ?? ((message) => console.warn(message));
-	}
-	cue(key, motion, transition) {
-		this.stopPlaying();
-		this.cued = null;
-		const single = Array.isArray(motion) ? {
-			kind: "together",
-			motions: motion
-		} : motion;
-		if (!single || !leavesOf$1(single).length || !glides(transition, this.reducesMotion())) return;
-		const problems = problemsOf(single);
-		if (problems) {
-			this.warnOnce("motion not played (" + problems + ")");
-			return;
-		}
-		const schedule = scheduleOf(single);
-		const firsts = this.safely(() => this.stage ? this.renderer.measure(this.stage, firstNeedsOf(schedule)) : null, "measuring");
-		this.cued = {
-			key,
-			schedule,
-			firsts: firsts ?? /* @__PURE__ */ new Map()
-		};
-	}
-	show(stage, key) {
-		if (this.stage !== stage) {
-			if (this.stage) this.release(this.stage);
-			this.stage = stage;
-		}
-		const cue = this.cued;
-		if (!cue || cue.key !== key) return;
-		this.cued = null;
-		this.stopPlaying();
-		let current = null;
-		let isDone = false;
-		current = this.safely(() => this.renderer.play(stage, cue.schedule, cue.firsts, (report) => {
-			isDone = true;
-			this.report = report;
-			if (current && this.playing === current) this.playing = null;
-		}), "playing");
-		this.playing = isDone ? null : current;
-	}
-	finish() {
-		const playing = this.playing;
-		this.playing = null;
-		this.safely(() => playing?.finish(), "finishing");
-	}
-	release(stage) {
-		if (this.stage !== stage) return;
-		this.stopPlaying();
-		this.stage = null;
-		this.safely(() => this.renderer.release(stage), "releasing");
-	}
-	dispose() {
-		this.cued = null;
-		if (this.stage) this.release(this.stage);
-	}
-	isPlaying() {
-		return this.playing !== null;
-	}
-	lastReport() {
-		return this.report;
-	}
-	stopPlaying() {
-		const playing = this.playing;
-		this.playing = null;
-		this.safely(() => playing?.stop(), "stopping");
-	}
-	safely(work, what) {
-		try {
-			return work();
-		} catch (error) {
-			this.warnOnce("motion: " + what + " failed (" + String(error) + ")");
-			return null;
-		}
-	}
-	warnOnce(message) {
-		if (!this.warned.has(message)) {
-			this.warned.add(message);
-			this.warn(message);
-		}
-	}
-};
-// src/shared/motion/geometry.ts
-var ARROW_GAP_PX = 3;
-function stageBoxOf(probe, probeSize) {
-	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
-	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
-	return {
-		originX: probe.left,
-		originY: probe.top,
-		scaleX,
-		scaleY
-	};
-}
-function toStage(box, rect) {
-	return {
-		x: (rect.left - box.originX) / box.scaleX,
-		y: (rect.top - box.originY) / box.scaleY,
-		width: rect.width / box.scaleX,
-		height: rect.height / box.scaleY
-	};
-}
-function centreOf(rect) {
-	return {
-		x: rect.x + rect.width / 2,
-		y: rect.y + rect.height / 2
-	};
-}
-function distance(from, to) {
-	return Math.hypot(to.x - from.x, to.y - from.y);
-}
-function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
-	const centre = centreOf(rect);
-	const dx = toward.x - centre.x;
-	const dy = toward.y - centre.y;
-	const halfWidth = rect.width / 2 + gap;
-	const halfHeight = rect.height / 2 + gap;
-	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
-	if (!Number.isFinite(reach) || reach >= 1) return centre;
-	return {
-		x: centre.x + dx * reach,
-		y: centre.y + dy * reach
-	};
-}
-function arrowBetween(from, to) {
-	const tail = edgeToward(from, centreOf(to));
-	const tip = edgeToward(to, centreOf(from));
-	return {
-		tail,
-		tip,
-		angle: Math.atan2(tip.y - tail.y, tip.x - tail.x) * 180 / Math.PI,
-		length: distance(tail, tip)
-	};
-}
-function nearestTurn(from, to) {
-	let turn = to;
-	while (turn - from > 180) turn -= 360;
-	while (turn - from < -180) turn += 360;
-	return turn;
-}
-function routeOffsets(points) {
-	const lengths = points.map((point, index) => index === 0 ? 0 : distance(points[index - 1], point));
-	const total = lengths.reduce((sum, length) => sum + length, 0);
-	let travelled = 0;
-	return points.map((point, index) => {
-		travelled += lengths[index];
-		const offset = total > 0 ? travelled / total : index / Math.max(1, points.length - 1);
-		return {
-			x: point.x,
-			y: point.y,
-			offset: index === points.length - 1 ? 1 : offset
-		};
-	});
-}
-function riseRoute(from, to) {
-	const target = centreOf(to);
-	const top = {
-		x: from.x + from.width / 2,
-		y: from.y
-	};
-	return [
-		centreOf(from),
-		top,
-		target
-	];
-}
-function routeAlong(edge, start, end) {
-	if (!edge.length) return [start, end];
-	return [
-		start,
-		...distance(edge[edge.length - 1], start) < distance(edge[0], start) ? [...edge].reverse() : edge,
-		end
-	];
-}
-function formatCount(value, decimals) {
-	const text = value.toFixed(decimals);
-	return Number(text) === 0 ? 0 .toFixed(decimals) : text;
-}
-function decimalsOf(value) {
-	for (let digits = 0; digits < 6; digits++) if (Math.abs(Number(value.toFixed(digits)) - value) < 1e-9) return digits;
-	return 6;
-}
-// src/shared/motion/dom-stage.ts
-var LAYER_CLASS = "motion-layer";
-var GHOST_CLASS = "motion-ghost";
-var PROBE_PX = 100;
-var MAX_COPY_NODES = 400;
-var COPIED_STYLES = [
-	"display",
-	"box-sizing",
-	"width",
-	"height",
-	"padding",
-	"border",
-	"border-radius",
-	"background-color",
-	"color",
-	"font-family",
-	"font-size",
-	"font-weight",
-	"font-style",
-	"line-height",
-	"letter-spacing",
-	"text-align",
-	"white-space",
-	"direction",
-	"vertical-align",
-	"opacity",
-	"box-shadow",
-	"fill",
-	"stroke",
-	"stroke-width",
-	"stroke-dasharray",
-	"font-variant-numeric",
-	"grid-template-columns",
-	"gap",
-	"align-items",
-	"justify-content"
-];
-function findAnchors(stage) {
-	const anchors = /* @__PURE__ */ new Map();
-	for (const element of stage.querySelectorAll("[" + ANCHOR_ATTRIBUTE + "]")) {
-		const name = element.getAttribute("data-anchor") ?? "";
-		if (name && !anchors.has(name) && !element.closest(".motion-layer")) anchors.set(name, element);
-	}
-	return anchors;
-}
-function layerOf(stage) {
-	const found = stage.querySelector(":scope > .motion-layer");
-	if (found instanceof HTMLElement) return found;
-	if (getComputedStyle(stage).position === "static") stage.style.position = "relative";
-	const layer = document.createElement("div");
-	layer.className = LAYER_CLASS;
-	layer.setAttribute("aria-hidden", "true");
-	layer.style.cssText = "position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:50;contain:style";
-	const probe = document.createElement("div");
-	probe.className = "motion-probe";
-	probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;width:100px;height:100px";
-	layer.append(probe);
-	stage.append(layer);
-	return layer;
-}
-function removeLayer(stage) {
-	stage.querySelector(":scope > .motion-layer")?.remove();
-}
-function clearGhosts(stage) {
-	for (const ghost of stage.querySelectorAll(":scope > .motion-layer > .motion-ghost")) ghost.remove();
-}
-var EMPTY = {
-	left: 0,
-	top: 0,
-	width: 0,
-	height: 0
-};
-function measureBox(stage) {
-	const probe = layerOf(stage).querySelector(".motion-probe");
-	return probe ? stageBoxOf(probe.getBoundingClientRect(), PROBE_PX) : stageBoxOf(EMPTY, 1);
-}
-function rectIn(box, element) {
-	return toStage(box, element.getBoundingClientRect());
-}
-function copyStyle(from, to) {
-	if (!(to instanceof HTMLElement || to instanceof SVGElement)) return;
-	const style = getComputedStyle(from);
-	for (const property of COPIED_STYLES) to.style.setProperty(property, style.getPropertyValue(property));
-	to.removeAttribute("id");
-	to.removeAttribute(ANCHOR_ATTRIBUTE);
-}
-function inOwnSvg(element, copy, size) {
-	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	svg.setAttribute("width", String(size.width));
-	svg.setAttribute("height", String(size.height));
-	svg.style.overflow = "visible";
-	const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-	const parent = element.parentNode;
-	const matrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
-	if (matrix) {
-		const values = [
-			matrix.a,
-			matrix.b,
-			matrix.c,
-			matrix.d,
-			matrix.e,
-			matrix.f
-		];
-		group.setAttribute("transform", "matrix(" + values.join(" ") + ")");
-	}
-	group.append(copy);
-	svg.append(group);
-	return svg;
-}
-function copyOf$1(element, box) {
-	const copy = element.cloneNode(true);
-	const originals = [element, ...element.querySelectorAll("*")];
-	const copies = [copy, ...copy.querySelectorAll("*")];
-	const count = originals.length > MAX_COPY_NODES ? 1 : originals.length;
-	if (count === 1) copy.replaceChildren();
-	for (let index = 0; index < count; index++) copyStyle(originals[index], copies[index]);
-	if (element instanceof SVGGraphicsElement && !(element instanceof SVGSVGElement)) {
-		const rect = rectIn(box, element.ownerSVGElement ?? element);
-		return {
-			copy: inOwnSvg(element, copy, rect),
-			rect
-		};
-	}
-	return {
-		copy,
-		rect: rectIn(box, element)
-	};
-}
-function measureFirsts(stage, needs) {
-	const firsts = /* @__PURE__ */ new Map();
-	if (!needs.places.length) return firsts;
-	const anchors = findAnchors(stage);
-	const box = measureBox(stage);
-	for (const name of needs.places) {
-		const element = anchors.get(name);
-		const rect = element?.getBoundingClientRect();
-		if (!element || !rect || rect.width === 0 && rect.height === 0) continue;
-		const text = (element.textContent ?? "").trim();
-		if (needs.copies.includes(name)) {
-			const { copy, rect } = copyOf$1(element, box);
-			firsts.set(name, {
-				rect: rectIn(box, element),
-				text,
-				copy: {
-					element: copy,
-					rect
-				}
-			});
-		} else firsts.set(name, {
-			rect: rectIn(box, element),
-			text
-		});
-	}
-	return firsts;
-}
-// src/shared/motion/ghosts.ts
-var RING_GAP_PX = 4;
-var FONT_PROPERTIES = [
-	"font-family",
-	"font-size",
-	"font-weight",
-	"font-style"
-];
-function ghostOf(extraClass) {
-	const ghost = document.createElement("div");
-	ghost.className = GHOST_CLASS + " " + extraClass;
-	ghost.style.cssText = "position:absolute;left:0;top:0;opacity:0;margin:0;";
-	return ghost;
-}
-function inkOf(style, element) {
-	const fill = style.getPropertyValue("fill");
-	const isPaint = fill && fill !== "none" && !fill.startsWith("url(");
-	return element instanceof SVGElement && isPaint ? fill : style.color;
-}
-function takeFont(ghost, like) {
-	const style = getComputedStyle(like);
-	for (const property of FONT_PROPERTIES) ghost.style.setProperty(property, style.getPropertyValue(property));
-}
-function valueGhost(text, like, end) {
-	const ghost = ghostOf("motion-value");
-	ghost.dir = "auto";
-	ghost.textContent = text;
-	takeFont(ghost, like);
-	ghost.style.left = end.x + "px";
-	ghost.style.top = end.y + "px";
-	ghost.style.cssText += "white-space:nowrap;line-height:1.5;padding:0 5px;border-radius:4px;border:1px solid var(--accent);background:var(--raised);color:var(--ink);box-shadow:0 2px 6px var(--shadow);transform:translate(-50%, -50%);will-change:transform";
-	return ghost;
-}
-function ringGhost(rect, colour) {
-	const ring = ghostOf("motion-ring");
-	const height = rect.height + 8;
-	const width = Math.max(rect.width + 8, height);
-	ring.style.left = rect.x + rect.width / 2 - width / 2 + "px";
-	ring.style.top = rect.y - RING_GAP_PX + "px";
-	ring.style.width = width + "px";
-	ring.style.height = height + "px";
-	ring.style.cssText += "box-sizing:border-box;border:2px solid " + colour + ";border-radius:6px;box-shadow:0 0 0 3px color-mix(in srgb, " + colour + " 25%, transparent)";
-	return ring;
-}
-function arrowGhost(tail, colour, headPx) {
-	const root = ghostOf("motion-arrow");
-	root.style.left = tail.x + "px";
-	root.style.top = tail.y + "px";
-	root.style.cssText += "width:0;height:0;transform-origin:0 0;will-change:transform";
-	const shaft = document.createElement("div");
-	shaft.style.cssText = "position:absolute;left:0;top:-1px;width:1px;height:2px;transform-origin:0 50%;transform:scaleX(0);background:" + colour;
-	const head = document.createElement("div");
-	head.style.cssText = "position:absolute;left:0;width:" + headPx + "px;height:" + headPx + "px;top:" + -headPx / 2 + "px;clip-path:polygon(0 0, 100% 50%, 0 100%);background:" + colour;
-	root.append(shaft, head);
-	return {
-		root,
-		shaft,
-		head
-	};
-}
-function textGhost(text, like, rect) {
-	const ghost = ghostOf("motion-count");
-	ghost.dir = "ltr";
-	ghost.textContent = text;
-	takeFont(ghost, like);
-	const style = getComputedStyle(like);
-	const align = style.textAlign === "center" || style.textAnchor === "middle";
-	const end = style.textAlign === "right" || style.textAlign === "end";
-	ghost.style.left = rect.x + "px";
-	ghost.style.top = rect.y + "px";
-	ghost.style.minWidth = rect.width + "px";
-	ghost.style.height = rect.height + "px";
-	ghost.style.color = inkOf(style, like);
-	ghost.style.cssText += "display:flex;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums;justify-content:" + (align ? "center" : end ? "flex-end" : "flex-start");
-	return ghost;
-}
-function copyGhost(copy) {
-	const ghost = ghostOf("motion-copy");
-	ghost.style.left = copy.rect.x + "px";
-	ghost.style.top = copy.rect.y + "px";
-	ghost.style.width = copy.rect.width + "px";
-	ghost.style.height = copy.rect.height + "px";
-	ghost.style.opacity = "1";
-	ghost.append(copy.element);
-	return ghost;
-}
-var TONE_COLOURS = {
-	focus: "var(--accent)",
-	compare: "var(--orange)",
-	good: "var(--ok)",
-	bad: "var(--err)",
-	pointer: "var(--ptr)"
-};
-// src/shared/motion/scene.ts
-var SETTLE_PIECES = 50;
-function settleCss() {
-	const points = [];
-	for (let piece = 0; piece <= SETTLE_PIECES; piece++) points.push(Number(settle(piece / SETTLE_PIECES).toFixed(5)));
-	const sampled = "linear(" + points.join(", ") + ")";
-	return typeof CSS !== "undefined" && CSS.supports("transition-timing-function", sampled) ? sampled : "cubic-bezier(0.33, 1, 0.68, 1)";
-}
-var CSS_EASING = {
-	glide: "cubic-bezier(0.37, 0, 0.63, 1)",
-	out: "ease-out",
-	in: "ease-in",
-	linear: "linear",
-	settle: settleCss()
-};
-function timingOf(track, fill) {
-	return {
-		delay: track.start,
-		duration: track.duration,
-		easing: CSS_EASING[track.easing],
-		fill
-	};
-}
-function hideUntil(scene, element, until) {
-	scene.animate(element, [{ opacity: 0 }, { opacity: 0 }], {
-		duration: until,
-		fill: "none"
-	});
-}
-// src/shared/motion/waapi-draw.ts
-var HEAD_PX = 9;
-function rideHead(scene, track, line, head) {
-	const parent = head.parentNode;
-	const lineMatrix = line.getScreenCTM();
-	const parentMatrix = parent instanceof SVGGraphicsElement ? parent.getScreenCTM() : null;
-	if (!(head instanceof SVGGraphicsElement) || !lineMatrix || !parentMatrix) return;
-	const toParent = parentMatrix.inverse().multiply(lineMatrix);
-	const start = line.getPointAtLength(0).matrixTransform(toParent);
-	const end = line.getPointAtLength(line.getTotalLength()).matrixTransform(toParent);
-	const from = { translate: start.x - end.x + "px " + (start.y - end.y) + "px" };
-	scene.animate(head, [{
-		...from,
-		visibility: "hidden"
-	}, {}], timingOf(track, "backwards"));
-}
-function tracePath(scene, track, path, head) {
-	if (!(path instanceof SVGGeometryElement)) {
-		scene.animate(path, [{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)" }], timingOf(track, "backwards"));
-		return;
-	}
-	const length = Math.max(1, path.getTotalLength());
-	const dashes = length + " " + length;
-	const style = getComputedStyle(path);
-	const keyframes = [{
-		strokeDasharray: dashes,
-		strokeDashoffset: String(length),
-		visibility: "hidden"
-	}, {
-		strokeDasharray: dashes,
-		strokeDashoffset: "0"
-	}];
-	if (head) rideHead(scene, track, path, head);
-	if (style.markerEnd !== "none" || style.markerStart !== "none") {
-		keyframes[0] = {
-			...keyframes[0],
-			markerEnd: "none",
-			markerStart: "none"
-		};
-		keyframes.splice(1, 0, {
-			offset: .98,
-			markerEnd: "none",
-			markerStart: "none"
-		});
-		keyframes[2] = {
-			...keyframes[2],
-			markerEnd: style.markerEnd,
-			markerStart: style.markerStart
-		};
-	}
-	scene.animate(path, keyframes, timingOf(track, "backwards"));
-}
-function playDraw(scene, track, motion) {
-	const path = motion.path ? scene.anchors.get(motion.path) : void 0;
-	const head = motion.head ? scene.anchors.get(motion.head) : void 0;
-	if (!motion.from || !motion.to) {
-		if (!path) return "no path " + motion.path;
-		tracePath(scene, track, path, head);
-		return null;
-	}
-	const from = scene.anchors.get(motion.from);
-	const to = scene.anchors.get(motion.to);
-	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
-	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
-	const was = motion.was ? scene.placeOf(motion.was) : null;
-	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
-	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
-	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
-	swingArrow(scene, track, motion, {
-		angle: was ? startAngle : arrow.angle,
-		startLength
-	}, arrow);
-	for (const own of [path, head]) if (own) hideUntil(scene, own, track.start + track.duration);
-	return null;
-}
-function swingArrow(scene, track, motion, start, arrow) {
-	const ghost = arrowGhost(arrow.tail, TONE_COLOURS[motion.tone ?? "pointer"], HEAD_PX);
-	scene.addGhost(ghost.root);
-	const timing = timingOf(track, "none");
-	const angle = nearestTurn(start.angle, arrow.angle);
-	const turn = [{
-		opacity: 1,
-		transform: "rotate(" + start.angle + "deg)"
-	}, {
-		opacity: 1,
-		transform: "rotate(" + angle + "deg)"
-	}];
-	scene.animate(ghost.root, turn, timing);
-	const shaft = [start.startLength, arrow.length].map((length) => ({ transform: "scaleX(" + Math.max(0, length - HEAD_PX) + ")" }));
-	scene.animate(ghost.shaft, shaft, timing);
-	const head = [start.startLength, arrow.length].map((length) => ({ transform: "translateX(" + Math.max(0, length - HEAD_PX) + "px)" }));
-	scene.animate(ghost.head, head, timing);
-}
-// src/shared/motion/waapi-kinds.ts
-var EDGE_SAMPLES = 16;
-var SMALL_SCALE = .6;
-var SAME_PLACE_PX = .5;
-function easedCount(easing, fraction) {
-	if (easing === "linear") return fraction;
-	return easing === "settle" ? settle(fraction) : easeInOut(fraction);
-}
-function fly(scene, track, text, route, target) {
-	const end = route[route.length - 1];
-	const ghost = valueGhost(text, target, end);
-	scene.addGhost(ghost);
-	const keyframes = routeOffsets(route).map((point) => ({
-		offset: point.offset,
-		opacity: 1,
-		transform: "translate(-50%, -50%) translate(" + (point.x - end.x) + "px, " + (point.y - end.y) + "px)"
-	}));
-	scene.animate(ghost, keyframes, timingOf(track, "none"));
-	hideUntil(scene, target, track.start + track.duration);
-}
-function valueText(scene, motion) {
-	if (motion.value !== void 0) return motion.value;
-	return scene.firsts.get(motion.from)?.text ?? (scene.anchors.get(motion.from)?.textContent ?? "").trim();
-}
-function playMove(scene, track, motion) {
-	const target = scene.anchors.get(motion.to);
-	const first = scene.placeOf(motion.from);
-	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
-	const route = [centreOf(first), centreOf(scene.rect(target))];
-	fly(scene, track, valueText(scene, motion), route, target);
-	return null;
-}
-function edgePoints(scene, edge) {
-	if (!(edge instanceof SVGGeometryElement)) return [];
-	const matrix = edge.getScreenCTM();
-	const length = edge.getTotalLength();
-	if (!matrix || !Number.isFinite(length)) return [];
-	const box = scene.box();
-	const points = [];
-	for (let sample = 0; sample <= EDGE_SAMPLES; sample++) {
-		const point = edge.getPointAtLength(length * sample / EDGE_SAMPLES).matrixTransform(matrix);
-		points.push({
-			x: (point.x - box.originX) / box.scaleX,
-			y: (point.y - box.originY) / box.scaleY
-		});
-	}
-	return points;
-}
-function playRise(scene, track, motion) {
-	const target = scene.anchors.get(motion.to);
-	const first = scene.placeOf(motion.from);
-	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
-	const last = scene.rect(target);
-	const edge = motion.along ? edgePoints(scene, scene.anchors.get(motion.along)) : [];
-	const route = edge.length ? routeAlong(edge, centreOf(first), centreOf(last)) : riseRoute(first, last);
-	fly(scene, track, valueText(scene, motion), route, target);
-	return null;
-}
-function aboutCentre(element) {
-	return element instanceof SVGElement ? {
-		transformOrigin: "center",
-		transformBox: "fill-box"
-	} : { transformOrigin: "center" };
-}
-function playAppear(scene, track, motion) {
-	const element = scene.anchors.get(motion.anchor);
-	if (!element) return "no element " + motion.anchor;
-	const isGrowing = (motion.style ?? "grow") === "grow";
-	const centre = isGrowing ? aboutCentre(element) : {};
-	const from = isGrowing ? {
-		opacity: 0,
-		scale: String(motion.scale ?? SMALL_SCALE),
-		...centre
-	} : { opacity: 0 };
-	if (motion.dx || motion.dy) {
-		const own = ownScale(scene, element);
-		from.translate = (motion.dx ?? 0) * own.x + "px " + (motion.dy ?? 0) * own.y + "px";
-	}
-	scene.animate(element, [from, centre], timingOf(track, "backwards"));
-	return null;
-}
-function playLeave(scene, track, motion) {
-	const isShrinking = (motion.style ?? "shrink") === "shrink";
-	const element = scene.anchors.get(motion.anchor);
-	const copy = element ? null : scene.firsts.get(motion.anchor)?.copy;
-	const target = element ?? (copy ? copyGhost(copy) : null);
-	if (!target) return "not on screen " + motion.anchor;
-	if (!element) scene.addGhost(target);
-	const centre = isShrinking ? aboutCentre(target) : {};
-	const to = isShrinking ? {
-		opacity: 0,
-		scale: String(SMALL_SCALE),
-		...centre
-	} : { opacity: 0 };
-	const animation = scene.animate(target, [centre, to], timingOf(track, "forwards"));
-	if (element) scene.hold(animation);
-	return null;
-}
-function ownScale(scene, element) {
-	const matrix = element instanceof SVGGraphicsElement ? element.getScreenCTM() : null;
-	const box = scene.box();
-	if (!matrix || !matrix.a || !matrix.d) return {
-		x: 1,
-		y: 1
-	};
-	return {
-		x: box.scaleX / matrix.a,
-		y: box.scaleY / matrix.d
-	};
-}
-function playSlide(scene, track, motion) {
-	const element = scene.anchors.get(motion.anchor);
-	const first = scene.firsts.get(motion.anchor)?.rect;
-	if (!element || !first) return (element ? "no place before the step: " : "no element ") + motion.anchor;
-	const last = scene.rect(element);
-	const scale = ownScale(scene, element);
-	const dx = (first.x - last.x) * scale.x;
-	const dy = (first.y - last.y) * scale.y;
-	if (Math.abs(dx) < SAME_PLACE_PX && Math.abs(dy) < SAME_PLACE_PX) return null;
-	const from = { translate: dx + "px " + dy + "px" };
-	scene.animate(element, [from, {}], timingOf(track, "backwards"));
-	return null;
-}
-function playHighlight(scene, track, motion) {
-	const element = scene.anchors.get(motion.anchor);
-	if (!element) return "no element " + motion.anchor;
-	const ring = ringGhost(scene.rect(element), TONE_COLOURS[motion.tone ?? "focus"]);
-	scene.addGhost(ring);
-	scene.animate(ring, [
-		{
-			opacity: 0,
-			transform: "scale(1.25)"
-		},
-		{
-			opacity: 1,
-			transform: "scale(1)",
-			offset: .25
-		},
-		{
-			opacity: 1,
-			transform: "scale(1)",
-			offset: .75
-		},
-		{
-			opacity: 0,
-			transform: "scale(1)"
-		}
-	], timingOf(track, "none"));
-	return null;
-}
-function playCount(scene, track, motion) {
-	const element = scene.anchors.get(motion.anchor);
-	if (!element) return "no element " + motion.anchor;
-	const decimals = motion.decimals ?? Math.max(decimalsOf(motion.from), decimalsOf(motion.to));
-	const textAt = (fraction) => (motion.prefix ?? "") + formatCount(mix(motion.from, motion.to, fraction), decimals) + (motion.suffix ?? "");
-	const ghost = textGhost(textAt(0), element, scene.rect(element));
-	scene.addGhost(ghost);
-	const until = track.start + track.duration;
-	const clock = scene.animate(ghost, [{ opacity: 1 }, { opacity: 1 }], { duration: until });
-	hideUntil(scene, element, until);
-	scene.everyFrame(() => {
-		const fraction = trackFraction(track, Number(clock.currentTime ?? 0));
-		const text = textAt(easedCount(track.easing, fraction));
-		if (ghost.textContent !== text) ghost.textContent = text;
-	});
-	return null;
-}
-function renderTrack(scene, track) {
-	const motion = track.motion;
-	switch (motion.kind) {
-		case "move": return playMove(scene, track, motion);
-		case "rise": return playRise(scene, track, motion);
-		case "appear": return playAppear(scene, track, motion);
-		case "leave": return playLeave(scene, track, motion);
-		case "slide": return playSlide(scene, track, motion);
-		case "highlight": return playHighlight(scene, track, motion);
-		case "draw": return playDraw(scene, track, motion);
-		case "count": return playCount(scene, track, motion);
-	}
-}
-// src/shared/motion/waapi.ts
-function hasWebAnimations(element) {
-	return typeof element.animate === "function";
-}
-var Run = class {
-	stage;
-	anchors;
-	firsts;
-	done;
-	animations = [];
-	held = [];
-	frames = /* @__PURE__ */ new Set();
-	measured = null;
-	hasEnded = false;
-	played = 0;
-	skipped = [];
-	constructor(stage, firsts, done) {
-		this.stage = stage;
-		this.anchors = findAnchors(stage);
-		this.firsts = firsts;
-		this.done = done;
-	}
-	start(schedule) {
-		const canAnimate = hasWebAnimations(this.stage);
-		for (const track of schedule.tracks) {
-			const reason = canAnimate ? renderTrack(this, track) : "no Web Animations in this browser";
-			if (reason) this.skipped.push({
-				index: track.index,
-				kind: track.motion.kind,
-				reason
-			});
-			else this.played += 1;
-		}
-		if (!this.animations.length) {
-			this.end();
-			return;
-		}
-		const ends = this.animations.map((animation) => animation.finished);
-		Promise.allSettled(ends).then(() => this.end());
-	}
-	finish() {
-		for (const animation of this.animations) if (animation.playState !== "finished" && animation.playState !== "idle") animation.finish();
-		this.end();
-	}
-	stop() {
-		this.finish();
-		for (const animation of this.held) animation.cancel();
-	}
-	box() {
-		this.measured ??= measureBox(this.stage);
-		return this.measured;
-	}
-	rect(element) {
-		return toStage(this.box(), element.getBoundingClientRect());
-	}
-	placeOf(name) {
-		const first = this.firsts.get(name);
-		if (first) return first.rect;
-		const element = this.anchors.get(name);
-		return element ? this.rect(element) : null;
-	}
-	animate(element, keyframes, timing) {
-		const animation = element.animate(keyframes, timing);
-		this.animations.push(animation);
-		return animation;
-	}
-	hold(animation) {
-		this.held.push(animation);
-	}
-	addGhost(ghost) {
-		layerOf(this.stage).append(ghost);
-	}
-	everyFrame(draw) {
-		let handle = 0;
-		const frame = () => {
-			this.frames.delete(handle);
-			if (this.hasEnded) return;
-			draw();
-			handle = requestAnimationFrame(frame);
-			this.frames.add(handle);
-		};
-		draw();
-		handle = requestAnimationFrame(frame);
-		this.frames.add(handle);
-	}
-	end() {
-		if (this.hasEnded) return;
-		this.hasEnded = true;
-		for (const frame of this.frames) cancelAnimationFrame(frame);
-		this.frames.clear();
-		clearGhosts(this.stage);
-		this.done({
-			played: this.played,
-			skipped: this.skipped
-		});
-	}
-};
-var webAnimationsRenderer = {
-	measure(stage, needs) {
-		return measureFirsts(stage, needs);
-	},
-	play(stage, schedule, firsts, done) {
-		const run = new Run(stage, firsts, done);
-		run.start(schedule);
-		return run;
-	},
-	release(stage) {
-		removeLayer(stage);
-	}
-};
-// src/shared/motion/react.ts
-function createMotionPlayer(options) {
-	return new MotionPlayer(webAnimationsRenderer, options);
-}
-function useMotionStage(player, stepKey) {
-	const stage = (0, import_react.useRef)(null);
-	(0, import_react.useLayoutEffect)(() => {
-		if (stage.current) player.show(stage.current, stepKey);
-	}, [player, stepKey]);
-	(0, import_react.useLayoutEffect)(() => {
-		const element = stage.current;
-		return () => {
-			if (element) player.release(element);
-		};
-	}, [player]);
-	return stage;
 }
 // src/core/islands/dock-types.ts
 var TERMINAL_ID = "terminal";
@@ -19596,7 +20477,7 @@ function ringTarget(diagram, scene, id, numbers) {
 }
 function ringMotions(diagram, scene, drawn, numbers) {
 	const delay = Math.max(0, Math.min(drawn, MAX_PLAY_MS - RING_MS));
-	return Array.from(scene.highlight).map((id) => ringTarget(diagram, scene, id, numbers)).filter((name) => name !== null).map((name) => highlight({
+	return Array.from(scene.highlight).map((id) => ringTarget(diagram, scene, id, numbers)).filter((name) => name !== null).map((name) => highlight$1({
 		anchor: name,
 		tone: "focus",
 		delay,
@@ -29176,7 +30057,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit e8db79d מ-2026-11-09 04:32"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · e8db79d</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 4b816a1 מ-2026-11-09 08:37"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 4b816a1</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
