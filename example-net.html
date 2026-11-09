@@ -2561,24 +2561,68 @@ code.math-bad {
   font: 700 12px var(--f-mono);
 }
 
+/* a packet's colour: its band's tint and outline; --nt-pk is the solid colour (its outline),
+   which its bit markers and their labels use */
 .nt-p0 {
+  --nt-pk: var(--accent-text);
   fill: color-mix(in srgb, var(--accent) 34%, transparent);
   stroke: var(--accent-text);
 }
 
 .nt-p1 {
+  --nt-pk: var(--ok);
   fill: color-mix(in srgb, var(--ok) 34%, transparent);
   stroke: var(--ok);
 }
 
 .nt-p2 {
+  --nt-pk: var(--orange);
   fill: color-mix(in srgb, var(--orange) 34%, transparent);
   stroke: var(--orange);
 }
 
 .nt-p3 {
+  --nt-pk: var(--ptr);
   fill: color-mix(in srgb, var(--ptr) 34%, transparent);
   stroke: var(--ptr);
+}
+
+/* a packet's first bit (a triangle) and last bit (a square) on the now line (TimelineBits.tsx),
+   with a rim of the page colour so they stand out on their own band */
+.nt-bit {
+  fill: var(--nt-pk);
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.nt-bitpill {
+  fill: var(--bg);
+  fill-opacity: 0.94;
+  stroke: var(--nt-pk);
+  stroke-width: 1;
+}
+
+.nt-bitlabel {
+  fill: var(--ink);
+  stroke: none;
+  font: 600 11px var(--f-body);
+  text-anchor: middle;
+}
+
+.nt-bitname {
+  fill: var(--nt-pk);
+  font-weight: 700;
+}
+
+.nt-bithe {
+  fill: var(--muted);
+  font-weight: 400;
+}
+
+.nt-bitlead {
+  stroke: var(--nt-pk);
+  stroke-width: 1;
 }
 
 /* every node's queue (buffer): a faint lane beside its line, a box per waiting packet */
@@ -2701,6 +2745,12 @@ code.math-bad {
   height: 14px;
   border: 0;
   background: var(--muted);
+}
+
+/* the bit markers' shapes in the legend (an inline svg) */
+.nt-chip-bit {
+  display: inline-block;
+  flex: none;
 }
 
 /* a narrow panel (a phone): the step, the timeline and the variables first; the legend's
@@ -3747,6 +3797,195 @@ function bracketed(node, needed, style) {
 	const tex = exprTex(node, style);
 	return own < needed ? "\\left(" + tex + "\\right)" : tex;
 }
+// src/engines/net/texts/markup.ts
+function nodeHtml(node) {
+	const match = /^([A-Za-z]+?)(\d+)$/.exec(node.name);
+	return "<bdi dir=\"ltr\">" + (match ? match[1] + "<sub>" + match[2] + "</sub>" : node.name) + "</bdi>";
+}
+function linkHtml(link) {
+	return "<bdi dir=\"ltr\">" + nodeHtml(link.from) + " → " + nodeHtml(link.to) + "</bdi>";
+}
+function timeTex$1(time) {
+	return quantityTex({
+		value: time.seconds,
+		dims: KIND_DIMS.time
+	}, time.unit);
+}
+function timeText$1(time) {
+	return formatNumber(time.seconds / time.unit.factor) + " " + time.unit.text;
+}
+function packetMark(packet) {
+	return "P" + packet;
+}
+function transmissionTex(link) {
+	const k = link.number;
+	return "d_{\\text{trans}," + k + "} = \\frac{L}{R_{" + k + "}}";
+}
+function propagationTex(link, hasOwnSpeed) {
+	const k = link.number;
+	const speed = hasOwnSpeed ? nameTex("s_" + k) : "s";
+	return "d_{\\text{prop}," + k + "} = \\frac{d_{" + k + "}}{" + speed + "}";
+}
+// src/engines/net/texts/he.ts
+function packetName(packet) {
+	return "חבילה " + packet;
+}
+function packetList(packets) {
+	return (packets.length === 1 ? "חבילה " : "חבילות ") + packets.join(", ");
+}
+function packetCount(count) {
+	return count === 1 ? "חבילה אחת" : count + " חבילות";
+}
+function hebrewList(items) {
+	if (items.length <= 1) return items.join("");
+	if (items.length === 2) return items[0] + " ו" + items[1];
+	return items.slice(0, -1).join(", ") + ", ו" + items[items.length - 1];
+}
+function forwardNote(node) {
+	if (node.role === "destination") return "";
+	return ` עכשיו ${nodeHtml(node)} יכול לשלוח אותה הלאה (store-and-forward).`;
+}
+var PROCESSING_DELAY = ` עיכוב העיבוד ${math("d_{\\text{proc}}")} (processing delay).`;
+function start(fact) {
+	const processing = fact.hasProcessing ? ", עיכוב העיבוד בכל צומת" : "";
+	const links = fact.hasLengths ? ", ולכל קו קצב השידור, האורך ומהירות ההתפשטות" : " וקצב השידור של כל קו";
+	const message = fact.packets > 1 ? ` ההודעה מחולקת ל-${packetCount(fact.packets)}, כל אחת בגודל ${math("L")}.` : "";
+	const givens = `גודל החבילה${processing}${links}`;
+	return `ההתחלה, ${math("t = 0")}. בחלונית כל הנתונים: ${givens}.${message}`;
+}
+function firstBitLeaves(fact) {
+	const { packet, node, afterWait } = fact;
+	if (afterWait) return `${packetName(packet)} הייתה מוכנה ב-${nodeHtml(node)} כבר ב-${math("t = " + timeTex$1(afterWait.readyAt))}, אבל הקו היוצא עוד שידר את החבילה הקודמת. היא חיכתה בתור ${math(timeTex$1(afterWait.waited))}: עיכוב תור (queueing delay). עכשיו היא יוצאת.`;
+	const atRouter = node.role === "router" ? " החבילה כולה כבר בנתב, והקו פנוי." : "";
+	return `הביט הראשון של ${packetName(packet)} יוצא מ-${nodeHtml(node)}.${atRouter}`;
+}
+function lastBitLeaves(fact) {
+	const { packet, link } = fact;
+	const atOnce = fact.arrivesAtOnce ? ` הקו קצר מאוד (${math("d_{" + link.number + "} \\approx 0")}), ולכן הביט מגיע ל-${nodeHtml(link.to)} באותו רגע.${forwardNote(link.to)}` : "";
+	return `הביט האחרון של ${packetName(packet)} יוצא מ-${nodeHtml(link.from)}. השידור לקח את זמן השידור ${math(transmissionTex(link))}.${atOnce}`;
+}
+function arrived(fact, isOnePacket) {
+	return `הביט האחרון ${isOnePacket ? "" : "של החבילה האחרונה "}הגיע ל-${nodeHtml(fact.destination)}. העיכוב הכולל: ${math("T = " + timeTex$1(fact.total))}.`;
+}
+function endOnePacket(fact) {
+	const hasRouters = fact.links > 1;
+	const others = [...fact.hasPropagation ? ["זמן התפשטות"] : [], ...fact.hasProcessing ? ["עיבוד"] : []];
+	if (!others.length) {
+		const onlyTransmission = hasRouters ? "זה סכום זמני השידור בכל הקווים: כל נתב משדר את החבילה מחדש." : "כל העיכוב הוא זמן השידור.";
+		return arrived(fact, true) + " " + onlyTransmission;
+	}
+	const transmission = hasRouters ? "בכל קו זמן שידור (כל נתב משדר את החבילה מחדש)" : "זמן שידור";
+	return `${arrived(fact, true)} זה סכום העיכובים בדרך: ${hebrewList([transmission, ...others])}.`;
+}
+function endPipeline(fact) {
+	const flow = fact.links > 1 ? "החבילות עוברות כמו בצינור: בזמן שנתב משדר חבילה אחת, הצומת שלפניו כבר משדר את הבאה." : "החבילות יוצאות זו אחרי זו, בלי הפסקה ביניהן.";
+	const after = fact.hasProcessing ? " לכל חבילה נוסף עיכוב העיבוד בכל צומת." : ` ${math("K")} הוא מספר הקווים.`;
+	return `${arrived(fact, false)} ${flow}${after}`;
+}
+function endBottleneck(fact) {
+	const queued = fact.queued ? " לפני הקו האיטי החבילות חיכו בתור." : "";
+	return `${arrived(fact, false)} הקו ${linkHtml(fact.slowest)} הוא האיטי ביותר: צוואר הבקבוק (bottleneck) שקובע את הקצב.${queued}`;
+}
+var STEPS = {
+	start,
+	prepared: (fact) => `${nodeHtml(fact.node)} מעבד את הנתונים (למשל מכין את החבילה) לפני השידור.${PROCESSING_DELAY}`,
+	processed: (fact) => `${nodeHtml(fact.node)} סיים לעבד את ${packetName(fact.packet)}.${PROCESSING_DELAY}`,
+	firstBitLeaves,
+	firstBitArrives: (fact) => {
+		const { link } = fact;
+		const waits = link.to.role === "router" ? " הנתב עוד לא שולח אותו: הוא מחכה שכל החבילה תגיע." : "";
+		return `הביט הראשון מגיע ל-${nodeHtml(link.to)} אחרי זמן ההתפשטות ${math(propagationTex(link, fact.hasOwnSpeed))}.${waits}`;
+	},
+	lastBitLeaves,
+	lastBitArrives: (fact) => `הביט האחרון של ${packetName(fact.packet)} מגיע ל-${nodeHtml(fact.node)}: החבילה כולה שם.${forwardNote(fact.node)}`,
+	endOnePacket,
+	endPipeline,
+	endBottleneck
+};
+var ALL_ARRIVED = "הכול הגיע";
+// src/engines/net/texts/language.ts
+var TEXTS = {
+	steps: STEPS,
+	events: {
+		start: "התחלה",
+		prepared: "סוף עיבוד",
+		processed: (fact) => packetMark(fact.packet) + " · סוף עיבוד",
+		firstBitLeaves: (fact) => packetMark(fact.packet) + " · ביט ראשון יוצא",
+		firstBitArrives: (fact) => packetMark(fact.packet) + " · ביט ראשון מגיע",
+		lastBitLeaves: (fact) => packetMark(fact.packet) + (fact.arrivesAtOnce ? " · ביט אחרון יוצא ומגיע" : " · ביט אחרון יוצא"),
+		lastBitArrives: (fact) => packetMark(fact.packet) + " · ביט אחרון מגיע",
+		endOnePacket: ALL_ARRIVED,
+		endPipeline: ALL_ARRIVED,
+		endBottleneck: ALL_ARRIVED
+	},
+	rows: {
+		packetSize: "גודל חבילה",
+		packetCount: "מספר החבילות",
+		speed: "מהירות ההתפשטות",
+		processing: "עיבוד בכל צומת",
+		given: "נתון",
+		computed: "חושב מהנתונים",
+		computedOnLine: (fact) => "חושב בשורה " + fact.line,
+		rate: (fact) => "קצב השידור בקו " + linkHtml(fact.link),
+		length: (fact) => "אורך הקו " + linkHtml(fact.link),
+		linkSpeed: (fact) => "מהירות ההתפשטות בקו " + linkHtml(fact.link),
+		transmission: (fact) => "זמן שידור בקו " + linkHtml(fact.link),
+		propagation: (fact) => "זמן התפשטות בקו " + linkHtml(fact.link) + (fact.withoutSpeed ? " (באורך 0)" : ""),
+		now: "הזמן עכשיו"
+	},
+	activities: {
+		startsSending: (fact) => `שולח את ${packetName(fact.packet)} (מתחיל עכשיו)`,
+		sending: (fact) => `שולח את ${packetName(fact.packet)} (נשארו ${timeText$1(fact.left)})`,
+		sent: (fact) => `סיים לשלוח את ${packetName(fact.packet)}`,
+		preparing: "מכין את הנתונים",
+		processing: (fact) => `מעבד את ${packetName(fact.packet)}`,
+		receiving: (fact) => `מקבל את ${packetList(fact.packets)}`,
+		onWire: (fact) => `${packetList(fact.packets)} בדרך אל ${fact.to.name}`,
+		received: (fact) => `קיבל: ${packetList(fact.packets)}`,
+		sentAll: "שלח את כל החבילות",
+		idle: "פנוי",
+		nothingYet: "עוד לא קיבל חבילה",
+		queue: (fact) => fact.packets.length ? "תור: " + fact.packets.map(packetMark).join(", ") : "תור ריק"
+	},
+	words: {
+		done: "כבר קרה",
+		toCome: "עוד יקרה",
+		now: "עכשיו",
+		firstBit: "ביט ראשון",
+		lastBit: "ביט אחרון",
+		firstShort: "ראשון",
+		lastShort: "אחרון",
+		queue: "תור",
+		processing: "עיבוד"
+	}
+};
+// src/engines/net/texts/catalog.ts
+function say$2(templates, fact) {
+	const template = templates[fact.kind];
+	return typeof template === "string" ? template : template(fact);
+}
+// src/engines/net/texts/speak.ts
+function speak(steps, texts) {
+	const said = /* @__PURE__ */ new Map();
+	const sayRow = (row) => {
+		let shown = said.get(row);
+		if (!shown) {
+			const { meaning, ...rest } = row;
+			const mean = meaning.kind === "authored" ? meaning.html : say$2(texts.rows, meaning);
+			shown = {
+				...rest,
+				mean
+			};
+			said.set(row, shown);
+		}
+		return shown;
+	};
+	return steps.map(({ vars, ...step }) => ({
+		...step,
+		why: step.fact ? say$2(texts.steps, step.fact) : "",
+		vars: vars.map(sayRow)
+	}));
+}
 // src/engines/net/model/calc.ts
 function valueTex(assignment, env) {
 	return literalOrComputedTex(assignment.expr, assignment.value, assignment.uses, env);
@@ -3773,8 +4012,14 @@ function literalOrComputedTex(expr, value, uses, env) {
 }
 function meaningOf(assignment, source) {
 	const written = source.means && source.means[assignment.name];
-	if (written) return richTex(written);
-	return assignment.uses.length ? "חושב בשורה " + assignment.line : "נתון";
+	if (written) return {
+		kind: "authored",
+		html: richTex(written)
+	};
+	return assignment.uses.length ? {
+		kind: "computedOnLine",
+		line: assignment.line
+	} : { kind: "given" };
 }
 function calcSteps(script, source) {
 	const env = /* @__PURE__ */ new Map();
@@ -3783,7 +4028,7 @@ function calcSteps(script, source) {
 		const row = {
 			key: assignment.name,
 			nameTex: nameTex(assignment.name),
-			mean: meaningOf(assignment, source),
+			meaning: meaningOf(assignment, source),
 			valueTex: valueTex(assignment, env),
 			from: assignment.uses
 		};
@@ -3795,7 +4040,6 @@ function calcSteps(script, source) {
 			line: assignment.line,
 			tag: assignment.name + " = " + assignment.source,
 			statementTex: row.nameTex + " = " + row.valueTex,
-			why: "",
 			vars: rows.slice(),
 			fresh: [assignment.name],
 			end: i === script.assignments.length - 1
@@ -4112,21 +4356,35 @@ function tryBuildScenario(script) {
 		throw error instanceof InternalError ? error : new InternalError(0, error);
 	}
 }
+// src/engines/net/model/facts.ts
+function nodeFact(scenario, index) {
+	const last = scenario.nodes.length - 1;
+	const role = index === 0 ? "source" : index === last ? "destination" : "router";
+	return {
+		name: scenario.nodes[index],
+		role
+	};
+}
+function linkFact(scenario, index) {
+	return {
+		number: index + 1,
+		from: nodeFact(scenario, index),
+		to: nodeFact(scenario, index + 1)
+	};
+}
+function timeFact(scenario, seconds) {
+	return {
+		seconds,
+		unit: scenario.timeUnit
+	};
+}
 // src/engines/net/model/scenario-rows.ts
 var OWN_MEANINGS = {
-	L: "גודל חבילה",
-	N: "מספר החבילות",
-	s: "מהירות ההתפשטות",
-	proc: "עיבוד בכל צומת"
+	L: { kind: "packetSize" },
+	N: { kind: "packetCount" },
+	s: { kind: "speed" },
+	proc: { kind: "processing" }
 };
-function nodeHtml(name) {
-	const match = /^([A-Za-z]+?)(\d+)$/.exec(name);
-	return "<bdi dir=\"ltr\">" + (match ? match[1] + "<sub>" + match[2] + "</sub>" : name) + "</bdi>";
-}
-function linkHtml(scenario, k) {
-	const link = scenario.links[k];
-	return "<bdi dir=\"ltr\">" + nodeHtml(link.from) + " → " + nodeHtml(link.to) + "</bdi>";
-}
 function fieldTex(scenario, k, field) {
 	const link = scenario.links[k];
 	const value = field === "R" ? link.rate : field === "d" ? link.length : link.speed;
@@ -4138,10 +4396,11 @@ function givenRows(scenario) {
 	const env = /* @__PURE__ */ new Map();
 	const rows = [];
 	scenario.script.assignments.forEach((assignment) => {
+		const helper = { kind: assignment.uses.length ? "computed" : "given" };
 		const row = {
 			key: assignment.name,
 			nameTex: nameTex(assignment.name),
-			mean: OWN_MEANINGS[assignment.name] || (assignment.uses.length ? "חושב מהנתונים" : "נתון"),
+			meaning: OWN_MEANINGS[assignment.name] || helper,
 			valueTex: valueTex(assignment, env),
 			from: assignment.uses
 		};
@@ -4152,18 +4411,27 @@ function givenRows(scenario) {
 	});
 	scenario.links.forEach((link, i) => {
 		const k = i + 1;
-		const where = linkHtml(scenario, i);
-		rows.push(givenRow("R_" + k, "קצב השידור בקו " + where, fieldTex(scenario, i, "R")));
-		rows.push(givenRow("d_" + k, "אורך הקו " + where, fieldTex(scenario, i, "d")));
-		if (link.hasOwnSpeed) rows.push(givenRow("s_" + k, "מהירות ההתפשטות בקו " + where, fieldTex(scenario, i, "s")));
+		const of = linkFact(scenario, i);
+		rows.push(givenRow("R_" + k, {
+			kind: "rate",
+			link: of
+		}, fieldTex(scenario, i, "R")));
+		rows.push(givenRow("d_" + k, {
+			kind: "length",
+			link: of
+		}, fieldTex(scenario, i, "d")));
+		if (link.hasOwnSpeed) rows.push(givenRow("s_" + k, {
+			kind: "linkSpeed",
+			link: of
+		}, fieldTex(scenario, i, "s")));
 	});
 	return rows;
 }
-function givenRow(key, mean, tex) {
+function givenRow(key, meaning, tex) {
 	return {
 		key,
 		nameTex: nameTex(key),
-		mean,
+		meaning,
 		valueTex: tex,
 		from: []
 	};
@@ -4171,11 +4439,7 @@ function givenRow(key, mean, tex) {
 function timeTex(scenario, seconds) {
 	return quantityTex({
 		value: seconds,
-		dims: [
-			0,
-			1,
-			0
-		]
+		dims: KIND_DIMS.time
 	}, scenario.timeUnit);
 }
 function transRow(scenario, i) {
@@ -4185,7 +4449,10 @@ function transRow(scenario, i) {
 	return {
 		key: "d_trans_" + k,
 		nameTex: nameTex("d_trans_" + k),
-		mean: "זמן שידור בקו " + linkHtml(scenario, i),
+		meaning: {
+			kind: "transmission",
+			link: linkFact(scenario, i)
+		},
 		valueTex: "\\frac{L}{R_{" + k + "}} = " + numbers + " = " + timeTex(scenario, link.trans),
 		from: ["L", "R_" + k]
 	};
@@ -4193,19 +4460,28 @@ function transRow(scenario, i) {
 function propRow(scenario, i) {
 	const k = i + 1;
 	const link = scenario.links[i];
-	if (!link.speed) return {
-		key: "d_prop_" + k,
-		nameTex: nameTex("d_prop_" + k),
-		mean: "זמן התפשטות בקו " + linkHtml(scenario, i) + " (באורך 0)",
-		valueTex: "d_{" + k + "} = 0 \\Rightarrow " + timeTex(scenario, 0),
-		from: ["d_" + k]
+	const key = "d_prop_" + k;
+	const meaning = {
+		kind: "propagation",
+		link: linkFact(scenario, i),
+		withoutSpeed: !link.speed
 	};
+	if (!link.speed) {
+		const valueTex = "d_{" + k + "} = 0 \\Rightarrow " + timeTex(scenario, 0);
+		return {
+			key,
+			nameTex: nameTex(key),
+			meaning,
+			valueTex,
+			from: ["d_" + k]
+		};
+	}
 	const speedKey = link.hasOwnSpeed ? "s_" + k : "s";
 	const numbers = "\\frac{" + quantityTex(link.length) + "}{" + quantityTex(link.speed) + "}";
 	return {
-		key: "d_prop_" + k,
-		nameTex: nameTex("d_prop_" + k),
-		mean: "זמן התפשטות בקו " + linkHtml(scenario, i),
+		key,
+		nameTex: nameTex(key),
+		meaning,
 		valueTex: "\\frac{d_{" + k + "}}{" + nameTex(speedKey) + "} = " + numbers + " = " + timeTex(scenario, link.prop),
 		from: ["d_" + k, speedKey]
 	};
@@ -4214,15 +4490,14 @@ function timeRow(scenario, seconds, from) {
 	return {
 		key: "t",
 		nameTex: "t",
-		mean: "הזמן עכשיו",
+		meaning: { kind: "now" },
 		valueTex: timeTex(scenario, seconds),
 		from
 	};
 }
 function endSummary(scenario) {
 	const total = timeTex(scenario, scenario.total);
-	const last = nodeHtml(scenario.nodes[scenario.nodes.length - 1]);
-	const arrived = "הביט האחרון " + (scenario.packets > 1 ? "של החבילה האחרונה " : "") + "הגיע ל-" + last + ". העיכוב הכולל: " + math("T = " + total) + ".";
+	const destination = nodeFact(scenario, scenario.nodes.length - 1);
 	const n = (seconds) => numberTex(seconds / scenario.timeUnit.factor);
 	if (scenario.packets === 1) {
 		const terms = scenario.proc > 0 ? [scenario.proc] : [];
@@ -4232,24 +4507,51 @@ function endSummary(scenario) {
 		});
 		return {
 			statementTex: "T = " + terms.map(n).join(" + ") + " = " + total,
-			why: arrived + " זה סכום העיכובים בדרך: בכל קו זמן שידור (כל נתב משדר את החבילה מחדש), זמן התפשטות, ועיבוד."
+			fact: {
+				kind: "endOnePacket",
+				destination,
+				total: timeFact(scenario, scenario.total),
+				links: scenario.links.length,
+				hasPropagation: scenario.links.some((link) => link.prop > 0),
+				hasProcessing: scenario.proc > 0
+			}
 		};
 	}
-	return pipelineSummary(scenario, arrived, total, n);
+	return pipelineSummary(scenario, total, n);
 }
-function pipelineSummary(scenario, arrived, total, n) {
+function pipelineSummary(scenario, total, n) {
 	const links = scenario.links;
 	const sameTrans = links.every((link) => nearlyEqual(link.trans, links[0].trans));
-	const props = links.filter((link) => link.prop > 0).map((link) => n(link.prop));
-	if (sameTrans && !scenario.waits.length && scenario.proc === 0) return {
-		statementTex: "T = (N + K - 1)\\cdot d_{\\text{trans}} + \\sum d_{\\text{prop}} = " + ("(" + scenario.packets + " + " + links.length + " - 1)\\cdot " + n(links[0].trans) + (props.length ? " + " + props.join(" + ") : "")) + " = " + total,
-		why: arrived + " החבילות עוברות כמו בצינור: בזמן שנתב משדר חבילה אחת, הצומת שלפניו כבר משדר את הבאה. " + math("K") + " הוא מספר הקווים."
+	const ending = {
+		destination: nodeFact(scenario, scenario.nodes.length - 1),
+		total: timeFact(scenario, scenario.total)
 	};
+	let statementTex = "T = " + total;
+	if (sameTrans && !scenario.waits.length && scenario.proc === 0) {
+		const props = links.filter((link) => link.prop > 0).map((link) => n(link.prop));
+		statementTex = "T = (N + K - 1)\\cdot d_{\\text{trans}} + \\sum d_{\\text{prop}} = " + ("(" + scenario.packets + " + " + links.length + " - 1)\\cdot " + n(links[0].trans) + (props.length ? " + " + props.join(" + ") : "")) + " = " + total;
+	}
+	if (sameTrans && !scenario.waits.length) {
+		const hasProcessing = scenario.proc > 0;
+		return {
+			statementTex,
+			fact: {
+				kind: "endPipeline",
+				...ending,
+				links: links.length,
+				hasProcessing
+			}
+		};
+	}
 	const slowest = links.reduce((best, link, i) => link.trans > links[best].trans ? i : best, 0);
-	const queued = scenario.waits.length ? " לפני הקו האיטי החבילות חיכו בתור." : "";
 	return {
-		statementTex: "T = " + total,
-		why: arrived + " הקו " + linkHtml(scenario, slowest) + " הוא האיטי ביותר: צוואר הבקבוק (bottleneck) שקובע את הקצב." + queued
+		statementTex,
+		fact: {
+			kind: "endBottleneck",
+			...ending,
+			slowest: linkFact(scenario, slowest),
+			queued: scenario.waits.length > 0
+		}
 	};
 }
 // src/engines/net/model/scenario-steps.ts
@@ -4266,9 +4568,6 @@ var StepBuilder = class {
 	time(seconds) {
 		return this.num(seconds) + "\\," + this.scenario.timeUnit.tex;
 	}
-	node(index) {
-		return nodeHtml(this.scenario.nodes[index]);
-	}
 	add(event) {
 		this.events.push({
 			...event,
@@ -4283,27 +4582,36 @@ var StepBuilder = class {
 	addSegment(segment) {
 		const link = this.scenario.links[segment.link];
 		const k = segment.link + 1;
-		const packetName = "חבילה " + (segment.packet + 1);
-		const tagPacket = "packet " + (segment.packet + 1) + " · ";
-		this.addStart(segment, packetName, tagPacket);
+		const packet = segment.packet + 1;
+		const tagPacket = "packet " + packet + " · ";
+		this.addStart(segment, tagPacket);
 		if (segment.prop > 1e-12) this.add({
 			time: segment.start + segment.prop,
 			line: link.line,
 			node: segment.link + 1,
 			tag: tagPacket + "first bit reaches " + link.to,
 			statementTex: this.sumTex(segment.start, "d_{\\text{prop}," + k + "}", segment.prop),
-			why: this.firstArrivalWhy(segment),
+			fact: {
+				kind: "firstBitArrives",
+				packet,
+				link: linkFact(this.scenario, segment.link),
+				hasOwnSpeed: link.hasOwnSpeed
+			},
 			adds: this.fresh([propRow(this.scenario, segment.link)]),
 			from: ["d_prop_" + k]
 		});
-		this.addEnd(segment, packetName, tagPacket);
+		this.addEnd(segment, tagPacket);
 		if (segment.prop > 1e-12) this.add({
 			time: segment.end + segment.prop,
 			line: link.line,
 			node: segment.link + 1,
 			tag: tagPacket + "last bit reaches " + link.to,
 			statementTex: this.sumTex(segment.end, "d_{\\text{prop}," + k + "}", segment.prop),
-			why: "הביט האחרון של " + packetName + " מגיע ל-" + this.node(segment.link + 1) + ": החבילה כולה שם." + this.forwardNote(segment.link + 1),
+			fact: {
+				kind: "lastBitArrives",
+				packet,
+				node: nodeFact(this.scenario, segment.link + 1)
+			},
 			adds: [],
 			from: ["d_prop_" + k]
 		});
@@ -4312,53 +4620,51 @@ var StepBuilder = class {
 		const sum = this.num(start) + " + " + this.num(delay);
 		return "t = " + (this.num(start) + " + " + delayTex) + " = " + sum + " = " + this.time(start + delay);
 	}
-	forwardNote(node) {
-		if (node >= this.scenario.nodes.length - 1) return "";
-		return " עכשיו " + this.node(node) + " יכול לשלוח אותה הלאה (store-and-forward).";
-	}
-	firstArrivalWhy(segment) {
-		const k = segment.link + 1;
-		const there = this.node(segment.link + 1);
-		const isRouter = segment.link + 1 < this.scenario.nodes.length - 1;
-		const formula = math("d_{\\text{prop}," + k + "} = \\frac{d_{" + k + "}}{s}");
-		return "הביט הראשון מגיע ל-" + there + " אחרי זמן ההתפשטות " + formula + "." + (isRouter ? " הנתב עוד לא שולח אותו: הוא מחכה שכל החבילה תגיע." : "");
-	}
-	addStart(segment, packetName, tagPacket) {
+	addStart(segment, tagPacket) {
 		const link = this.scenario.links[segment.link];
 		const wait = this.scenario.waits.find((entry) => entry.packet === segment.packet && entry.node === segment.link);
-		let why = "הביט הראשון של " + packetName + " יוצא מ-" + this.node(segment.link) + ".";
-		if (wait) why = packetName + " הייתה מוכנה ב-" + this.node(segment.link) + " כבר ב-" + math("t = " + this.time(wait.from)) + ", אבל הקו היוצא עוד שידר את החבילה הקודמת. היא חיכתה בתור " + math(this.time(wait.to - wait.from)) + ": עיכוב תור (queueing delay). עכשיו היא יוצאת.";
-		else if (segment.link > 0) why += " החבילה כולה כבר בנתב, והקו פנוי.";
+		const afterWait = wait && {
+			readyAt: timeFact(this.scenario, wait.from),
+			waited: timeFact(this.scenario, wait.to - wait.from)
+		};
 		this.add({
 			time: segment.start,
 			line: link.line,
 			node: segment.link,
 			tag: tagPacket + "first bit leaves " + link.from + (wait ? " (after a queue)" : ""),
 			statementTex: "t = " + this.time(segment.start),
-			why,
+			fact: {
+				kind: "firstBitLeaves",
+				packet: segment.packet + 1,
+				node: nodeFact(this.scenario, segment.link),
+				...afterWait ? { afterWait } : {}
+			},
 			adds: [],
 			from: []
 		});
 	}
-	addEnd(segment, packetName, tagPacket) {
+	addEnd(segment, tagPacket) {
 		const link = this.scenario.links[segment.link];
 		const k = segment.link + 1;
-		const transTex = math("d_{\\text{trans}," + k + "} = \\frac{L}{R_{" + k + "}}");
-		let why = "הביט האחרון של " + packetName + " יוצא מ-" + this.node(segment.link) + ". השידור לקח את זמן השידור " + transTex + ".";
+		const arrivesAtOnce = segment.prop <= SAME_TIME;
 		const rows = [transRow(this.scenario, segment.link)];
 		let tag = tagPacket + "last bit leaves " + link.from;
-		if (segment.prop <= 1e-12) {
+		if (arrivesAtOnce) {
 			rows.push(propRow(this.scenario, segment.link));
-			why += " הקו קצר מאוד (" + math("d_{" + k + "} \\approx 0") + "), ולכן הביט מגיע ל-" + this.node(segment.link + 1) + " באותו רגע." + this.forwardNote(segment.link + 1);
 			tag += " and reaches " + link.to;
 		}
 		this.add({
 			time: segment.end,
 			line: link.line,
-			node: segment.link + (segment.prop <= 1e-12 ? 1 : 0),
+			node: segment.link + (arrivesAtOnce ? 1 : 0),
 			tag,
 			statementTex: this.sumTex(segment.start, "d_{\\text{trans}," + k + "}", link.trans),
-			why,
+			fact: {
+				kind: "lastBitLeaves",
+				packet: segment.packet + 1,
+				link: linkFact(this.scenario, segment.link),
+				arrivesAtOnce
+			},
 			adds: this.fresh(rows),
 			from: ["d_trans_" + k]
 		});
@@ -4366,21 +4672,28 @@ var StepBuilder = class {
 	addProcessing() {
 		const procLine = this.scenario.script.assignments.find((assignment) => assignment.name === "proc")?.line || 1;
 		this.scenario.procs.forEach((interval) => {
-			const where = this.node(interval.node);
-			const what = interval.packet < 0 ? where + " מעבד את הנתונים (למשל מכין את החבילה) לפני השידור." : where + " סיים לעבד את חבילה " + (interval.packet + 1) + ".";
+			const node = nodeFact(this.scenario, interval.node);
+			const isPreparing = interval.packet < 0;
 			this.add({
 				time: interval.to,
 				line: procLine,
 				node: interval.node,
-				tag: (interval.packet < 0 ? "processing" : "packet " + (interval.packet + 1)) + " · " + this.scenario.nodes[interval.node] + " done processing",
+				tag: (isPreparing ? "processing" : "packet " + (interval.packet + 1)) + " · " + this.scenario.nodes[interval.node] + " done processing",
 				statementTex: this.sumTex(interval.from, "d_{\\text{proc}}", this.scenario.proc),
-				why: what + " עיכוב העיבוד " + math("d_{\\text{proc}}") + " (processing delay).",
+				fact: isPreparing ? {
+					kind: "prepared",
+					node
+				} : {
+					kind: "processed",
+					packet: interval.packet + 1,
+					node
+				},
 				adds: [],
 				from: ["proc"]
 			});
 		});
 	}
-	build(endWhy, endTex) {
+	build(summary) {
 		this.addProcessing();
 		this.scenario.segments.forEach((segment) => this.addSegment(segment));
 		const sorted = this.events.slice().sort((a, b) => sameMoment(a.time, b.time) ? a.order - b.order : a.time - b.time);
@@ -4394,8 +4707,8 @@ var StepBuilder = class {
 		steps.push({
 			line: last.line,
 			tag: "done · total " + this.scenario.nodes[0] + " -> " + last.to,
-			statementTex: endTex,
-			why: endWhy,
+			statementTex: summary.statementTex,
+			fact: summary.fact,
 			vars: [...rows, timeRow(this.scenario, this.scenario.total, [])],
 			fresh: [],
 			event: {
@@ -4407,13 +4720,17 @@ var StepBuilder = class {
 		return steps;
 	}
 	startStep(rows) {
-		const count = this.scenario.packets;
-		const many = count > 1 ? " ההודעה מחולקת ל-" + count + " חבילות, כל אחת בגודל " + math("L") + "." : "";
+		const { links, packets, proc } = this.scenario;
 		return {
-			line: this.scenario.script.assignments[0]?.line || this.scenario.links[0].line,
+			line: this.scenario.script.assignments[0]?.line || links[0].line,
 			tag: "start · the givens",
 			statementTex: "t = " + this.time(0),
-			why: "ההתחלה, " + math("t = 0") + ". בחלונית כל הנתונים: גודל החבילה, ולכל קו קצב השידור, האורך ומהירות ההתפשטות." + many,
+			fact: {
+				kind: "start",
+				packets,
+				hasLengths: links.some((link) => link.length.value > 0),
+				hasProcessing: proc > 0
+			},
 			vars: [...rows, timeRow(this.scenario, 0, [])],
 			fresh: rows.map((row) => row.key).concat("t"),
 			event: {
@@ -4427,7 +4744,7 @@ var StepBuilder = class {
 			line: event.line,
 			tag: event.tag,
 			statementTex: event.statementTex,
-			why: event.why,
+			fact: event.fact,
 			vars: [...rows, timeRow(this.scenario, event.time, event.from)],
 			fresh: event.adds.map((row) => row.key).concat("t"),
 			event: {
@@ -4438,18 +4755,17 @@ var StepBuilder = class {
 	}
 };
 function scenarioSteps(scenario) {
-	const summary = endSummary(scenario);
-	return new StepBuilder(scenario).build(summary.why, summary.statementTex);
+	return new StepBuilder(scenario).build(endSummary(scenario));
 }
 // src/engines/net/model/record.ts
-function record(text, source) {
+function record(text, source, texts = TEXTS) {
 	try {
-		return recordText(text, source);
+		return recordText(text, source, texts);
 	} catch (error) {
 		throw error instanceof InternalError ? error : new InternalError(0, error);
 	}
 }
-function recordText(text, source) {
+function recordText(text, source, texts) {
 	const read = tryReadScript(text);
 	if (!read.script) return {
 		script: null,
@@ -4471,7 +4787,7 @@ function recordText(text, source) {
 		return {
 			script,
 			scenario: null,
-			steps: calcSteps(script, source),
+			steps: speak(calcSteps(script, source), texts),
 			problem: null
 		};
 	}
@@ -4482,7 +4798,7 @@ function recordText(text, source) {
 		steps: [],
 		problem: built.problem
 	};
-	const steps = scenarioSteps(built.scenario);
+	const steps = speak(scenarioSteps(built.scenario), texts);
 	const last = steps[steps.length - 1];
 	if (source.endNote && last) last.why += " " + richTex(source.endNote);
 	return {
@@ -4779,144 +5095,6 @@ var require_react_production=__commonJSMin((exports=>{var e=Symbol.for(`react.tr
 // node_modules/react/index.js
 var require_react=__commonJSMin(((exports,module)=>{module.exports=require_react_production()}));
 
-// src/engines/net/view/queues.ts
-var import_react = require_react();
-function sourceWaits(scenario) {
-	return scenario.segments.filter((segment) => segment.link === 0 && segment.start - scenario.proc > timeSlack(segment.start)).map((segment) => ({
-		packet: segment.packet,
-		node: 0,
-		from: scenario.proc,
-		to: segment.start,
-		slot: 0,
-		slots: 1
-	}));
-}
-function assignSlots(waits) {
-	const slotEnds = [];
-	waits.sort((a, b) => a.from - b.from || a.packet - b.packet);
-	for (const wait of waits) {
-		let slot = slotEnds.findIndex((end) => end <= wait.from + timeSlack(wait.from));
-		if (slot < 0) slot = slotEnds.length;
-		slotEnds[slot] = wait.to;
-		wait.slot = slot;
-	}
-	waits.forEach((wait) => wait.slots = Math.max(1, slotEnds.length));
-}
-function queueWaits(scenario) {
-	const all = [...sourceWaits(scenario), ...scenario.waits.map((wait) => ({
-		...wait,
-		slot: 0,
-		slots: 1
-	}))];
-	const result = [];
-	scenario.nodes.forEach((_, node) => {
-		const here = all.filter((wait) => wait.node === node);
-		assignSlots(here);
-		result.push(...here);
-	});
-	return result;
-}
-function laneLeft(nodeX, node) {
-	return node === 0 ? nodeX + 3 : nodeX - 3 - 22;
-}
-// src/engines/net/view/now-status.ts
-var SAME_FRACTION$1 = 1e-9;
-function packetList(packets) {
-	const numbers = packets.map((packet) => String(packet + 1));
-	return (numbers.length === 1 ? "חבילה " : "חבילות ") + numbers.join(", ");
-}
-function fitTimeText(seconds) {
-	return quantityText({
-		value: seconds,
-		dims: KIND_DIMS.time
-	});
-}
-var LABEL_CHAR_PX = 7.4;
-var MIN_GUTTER_PX = 70;
-var GUTTER_PAD_PX = 14;
-function axisGutter(times) {
-	const longest = times.reduce((most, time) => Math.max(most, fitTimeText(time).length), 0);
-	return Math.max(MIN_GUTTER_PX, Math.ceil(longest * LABEL_CHAR_PX) + GUTTER_PAD_PX);
-}
-function timeText(scenario, seconds) {
-	return formatNumber(seconds / scenario.timeUnit.factor) + " " + scenario.timeUnit.text;
-}
-var Moment = class {
-	t;
-	eps;
-	constructor(scenario, t) {
-		this.t = t;
-		this.eps = (scenario.total || 1) * SAME_FRACTION$1;
-	}
-	is(time) {
-		return Math.abs(time - this.t) <= this.eps;
-	}
-	within(from, to) {
-		return from <= this.t + this.eps && this.t + this.eps < to;
-	}
-	reached(time) {
-		return time <= this.t + this.eps;
-	}
-};
-function sendingItems(scenario, out, now) {
-	const sending = out.find((segment) => now.within(segment.start, segment.end));
-	if (sending) {
-		const name = "שולח את " + packetList([sending.packet]);
-		if (now.is(sending.start)) return [name + " (מתחיל עכשיו)"];
-		return [name + " (נשארו " + timeText(scenario, sending.end - now.t) + ")"];
-	}
-	const finished = out.find((segment) => now.is(segment.end));
-	return finished ? ["סיים לשלוח את " + packetList([finished.packet])] : [];
-}
-function processingItems(scenario, node, now) {
-	return scenario.procs.filter((interval) => interval.node === node && now.within(interval.from, interval.to)).map((interval) => interval.packet < 0 ? "מכין את הנתונים" : "מעבד את " + packetList([interval.packet]));
-}
-function itemsOf(scenario, node, now) {
-	const last = scenario.nodes.length - 1;
-	const out = scenario.segments.filter((segment) => segment.link === node);
-	const incoming = scenario.segments.filter((segment) => segment.link === node - 1);
-	const items = processingItems(scenario, node, now);
-	const receiving = incoming.filter((segment) => now.within(segment.start + segment.prop, segment.end + segment.prop));
-	if (receiving.length) items.push("מקבל את " + packetList(receiving.map((segment) => segment.packet)));
-	items.push(...sendingItems(scenario, out, now));
-	const onWire = out.filter((segment) => segment.prop > 0 && now.within(segment.end, segment.end + segment.prop));
-	if (onWire.length) items.push(packetList(onWire.map((segment) => segment.packet)) + " בדרך אל " + scenario.nodes[node + 1]);
-	if (node === last) {
-		const got = incoming.filter((segment) => now.reached(segment.end + segment.prop));
-		items.push(got.length ? "קיבל: " + packetList(got.map((segment) => segment.packet)) : "");
-	} else if (node === 0 && out.every((segment) => now.reached(segment.end)) && !items.length) items.push("שלח את כל החבילות");
-	const shown = items.filter(Boolean);
-	return shown.length ? shown : [node === last ? "עוד לא קיבל חבילה" : "פנוי"];
-}
-function queueItem(waits, node, now) {
-	const waiting = waits.filter((wait) => wait.node === node && now.within(wait.from, wait.to)).map((wait) => "P" + (wait.packet + 1));
-	return waiting.length ? "תור: " + waiting.join(", ") : "תור ריק";
-}
-function nodeStatuses(scenario, t) {
-	const now = new Moment(scenario, t);
-	const waits = queueWaits(scenario);
-	return scenario.nodes.map((name, node) => ({
-		node,
-		name,
-		items: [...itemsOf(scenario, node, now), queueItem(waits, node, now)]
-	}));
-}
-var EVENT_WORDS = [
-	[/first bit leaves/, "ביט ראשון יוצא"],
-	[/first bit reaches/, "ביט ראשון מגיע"],
-	[/last bit leaves .* and reaches/, "ביט אחרון יוצא ומגיע"],
-	[/last bit leaves/, "ביט אחרון יוצא"],
-	[/last bit reaches/, "ביט אחרון מגיע"],
-	[/done processing/, "סוף עיבוד"],
-	[/^start/, "התחלה"],
-	[/^done/, "הכול הגיע"]
-];
-function eventLabel(tag) {
-	const found = EVENT_WORDS.find(([pattern]) => pattern.test(tag));
-	if (!found) return "";
-	const packet = /^packet (\d+)/.exec(tag);
-	return (packet ? "P" + packet[1] + " · " : "") + found[1];
-}
 // node_modules/react/cjs/react-jsx-runtime.production.js
 /**
 * @license React
@@ -4929,51 +5107,1265 @@ function eventLabel(tag) {
 */
 var require_react_jsx_runtime_production=__commonJSMin((exports=>{var e=Symbol.for(`react.transitional.element`);var t=Symbol.for(`react.fragment`);function n(t,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:e,type:t,key:i,ref:n===void 0?null:n,props:r}}exports.Fragment=t,exports.jsx=n,exports.jsxs=n}));
 
-// src/engines/net/view/NowStatus.tsx
-var import_jsx_runtime = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
-	module.exports = require_react_jsx_runtime_production();
-})))();
-function NowStatus({ scenario, event, index, count }) {
-	const listRef = (0, import_react.useRef)(null);
-	const t = event ? event.time : 0;
-	const rows = nodeStatuses(scenario, t);
-	(0, import_react.useLayoutEffect)(() => {
-		const list = listRef.current;
-		const row = list ? list.querySelector(".here") : null;
-		if (list && row && list.scrollHeight > list.clientHeight) list.scrollTop = row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2;
-	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-		className: "net-now",
-		dir: "rtl",
+// node_modules/react/jsx-runtime.js
+var require_jsx_runtime=__commonJSMin(((exports,module)=>{module.exports=require_react_jsx_runtime_production()}));
+
+// src/engines/net/view/Bilingual.tsx
+var import_react = require_react();
+var import_jsx_runtime = require_jsx_runtime();
+function Bilingual(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [props.english + " ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
 		lang: "he",
-		"aria-label": "מה כל צומת עושה עכשיו",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "net-now-h",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
-				dir: "ltr",
-				className: "net-now-t",
-				children: "t = " + timeText(scenario, t)
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: " · צעד " + (index + 1) + (count ? " מתוך " + count : "") })]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
-			className: "net-now-list",
-			ref: listRef,
-			children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
-				className: "net-now-row" + (event && event.node === row.node ? " here" : ""),
-				"aria-current": event && event.node === row.node ? "step" : void 0,
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
-					dir: "ltr",
-					className: "net-now-name",
-					children: row.name
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-					className: "net-now-what",
-					children: row.items.join(" · ")
-				})]
-			}, row.name))
-		})]
+		children: "/ " + props.hebrew
+	})] });
+}
+// src/shared/motion/motions.ts
+var ANCHOR_ATTRIBUTE = "data-anchor";
+var TONES = [
+	"focus",
+	"compare",
+	"good",
+	"bad",
+	"pointer"
+];
+function appear(spec) {
+	return {
+		kind: "appear",
+		...spec
+	};
+}
+function together(motions) {
+	return {
+		kind: "together",
+		motions
+	};
+}
+function anchor(name) {
+	return { "data-anchor": name };
+}
+function leavesOf(motion) {
+	if (!motion) return [];
+	if (motion.kind === "together" || motion.kind === "inOrder") return motion.motions.flatMap((inner) => leavesOf(inner));
+	return [motion];
+}
+var ANCHOR_RE = /^[!#-&(-[\]-~]{1,80}$/;
+var FIELDS = {
+	move: {
+		from: "anchor",
+		to: "anchor",
+		value: "text?",
+		ms: "ms?"
+	},
+	rise: {
+		from: "anchor",
+		to: "anchor",
+		value: "text?",
+		along: "anchor?",
+		ms: "ms?"
+	},
+	appear: {
+		anchor: "anchor",
+		style: "grow?",
+		ms: "ms?"
+	},
+	leave: {
+		anchor: "anchor",
+		style: "shrink?",
+		ms: "ms?"
+	},
+	slide: {
+		anchor: "anchor",
+		ms: "ms?"
+	},
+	highlight: {
+		anchor: "anchor",
+		tone: "tone?",
+		ms: "ms?"
+	},
+	draw: {
+		path: "anchor?",
+		from: "anchor?",
+		to: "anchor?",
+		was: "anchor?",
+		tone: "tone?",
+		ms: "ms?"
+	},
+	count: {
+		anchor: "anchor",
+		from: "number",
+		to: "number",
+		decimals: "decimals?",
+		prefix: "text?",
+		suffix: "text?",
+		ms: "ms?"
+	}
+};
+function isAnchorName(name) {
+	return typeof name === "string" && ANCHOR_RE.test(name);
+}
+function isWithin(value, low, high) {
+	return typeof value === "number" && Number.isFinite(value) && value >= low && value <= high;
+}
+var RULE_CHECKS = {
+	anchor: (value) => isAnchorName(value) ? null : "not an anchor name",
+	text: (value) => typeof value === "string" && value.length <= 40 ? null : "not a text of at most 40 characters",
+	number: (value) => isWithin(value, -0x38d7ea4c68000, 0x38d7ea4c68000) ? null : "not a finite number",
+	decimals: (value) => isWithin(value, 0, 6) && Number.isInteger(value) ? null : "not a whole number from 0 to 6",
+	tone: (value) => TONES.includes(value) ? null : "not one of " + TONES.join(", "),
+	grow: (value) => value === "grow" || value === "fade" ? null : "not 'grow' or 'fade'",
+	shrink: (value) => value === "shrink" || value === "fade" ? null : "not 'shrink' or 'fade'",
+	ms: (value) => isWithin(value, 0, 2e3) ? null : "not 0 to 2000 ms"
+};
+function checkFields$1(motion, path, problems) {
+	const rules = FIELDS[motion.kind];
+	for (const field of Object.keys(motion)) if (field !== "kind" && !(field in rules)) problems.push({
+		path: path + "." + field,
+		message: "unknown field of " + motion.kind
+	});
+	for (const [field, rule] of Object.entries(rules)) {
+		const value = motion[field];
+		const isOptional = rule.endsWith("?");
+		if (value === void 0) {
+			if (!isOptional) problems.push({
+				path: path + "." + field,
+				message: "missing"
+			});
+			continue;
+		}
+		const problem = RULE_CHECKS[rule.replace("?", "")](value);
+		if (problem) problems.push({
+			path: path + "." + field,
+			message: problem
+		});
+	}
+}
+function checkDraw(motion, path, problems) {
+	const hasEnds = motion.from !== void 0 && motion.to !== void 0;
+	if (motion.from === void 0 !== (motion.to === void 0)) problems.push({
+		path,
+		message: "a draw needs both from and to, or neither"
+	});
+	else if (!hasEnds && motion.path === void 0) problems.push({
+		path,
+		message: "a draw needs a path, or from and to"
+	});
+	if (motion.was !== void 0 && !hasEnds) problems.push({
+		path: path + ".was",
+		message: "was needs from and to"
 	});
 }
+function checkSequence(motion, path, depth, walk) {
+	const extra = Object.keys(motion).filter((field) => ![
+		"kind",
+		"motions",
+		"gap"
+	].includes(field));
+	const isTogether = motion.kind === "together";
+	for (const field of extra.concat(isTogether && "gap" in motion ? ["gap"] : [])) walk.problems.push({
+		path: path + "." + field,
+		message: "unknown field of " + motion.kind
+	});
+	if (!isTogether && motion.gap !== void 0 && !isWithin(motion.gap, 0, 1e3)) walk.problems.push({
+		path: path + ".gap",
+		message: "not 0 to 1000 ms"
+	});
+	if (!Array.isArray(motion.motions)) {
+		walk.problems.push({
+			path: path + ".motions",
+			message: "not a list"
+		});
+		return;
+	}
+	if (depth >= 8) {
+		walk.problems.push({
+			path,
+			message: "sequences nested deeper than 8"
+		});
+		return;
+	}
+	motion.motions.forEach((inner, index) => {
+		checkAny(inner, path + ".motions[" + index + "]", depth + 1, walk);
+	});
+}
+function checkAny(value, path, depth, walk) {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		walk.problems.push({
+			path,
+			message: "not a motion"
+		});
+		return;
+	}
+	const motion = value;
+	if (motion.kind === "together" || motion.kind === "inOrder") {
+		checkSequence(motion, path, depth, walk);
+		return;
+	}
+	if (typeof motion.kind !== "string" || !Object.hasOwn(FIELDS, motion.kind)) {
+		walk.problems.push({
+			path: path + ".kind",
+			message: "unknown kind " + String(motion.kind)
+		});
+		return;
+	}
+	walk.leaves += 1;
+	checkFields$1(motion, path, walk.problems);
+	if (motion.kind === "draw") checkDraw(motion, path, walk.problems);
+}
+function validateMotion(value) {
+	const walk = {
+		problems: [],
+		leaves: 0
+	};
+	checkAny(value, "motion", 0, walk);
+	if (walk.leaves > 400) walk.problems.push({
+		path: "motion",
+		message: "more than 400 motions"
+	});
+	return walk.problems;
+}
+function easeInOut(fraction) {
+	return (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, fraction)))) / 2;
+}
+function glides(transition, reducesMotion) {
+	return transition === "next" && !reducesMotion;
+}
+function prefersReducedMotion$1() {
+	if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function startStep(key, transition, reducesMotion) {
+	return {
+		key,
+		progress: glides(transition, reducesMotion) ? 0 : 1
+	};
+}
+function followStep(state, key, transition, reducesMotion) {
+	return state.key === key ? state : startStep(key, transition, reducesMotion());
+}
+function pageClock() {
+	return {
+		now: () => performance.now(),
+		request: (callback) => requestAnimationFrame(callback),
+		cancel: (handle) => {
+			cancelAnimationFrame(handle);
+		}
+	};
+}
+var StepGlide = class {
+	onProgress;
+	clock;
+	durationMs;
+	startMs = 0;
+	handle = 0;
+	constructor(onProgress, clock, durationMs = 560) {
+		this.onProgress = onProgress;
+		this.clock = clock;
+		this.durationMs = durationMs;
+	}
+	start() {
+		this.stop();
+		this.startMs = this.clock.now();
+		this.handle = this.clock.request(() => this.frame());
+	}
+	stop() {
+		if (this.handle) {
+			this.clock.cancel(this.handle);
+			this.handle = 0;
+		}
+	}
+	isRunning() {
+		return this.handle !== 0;
+	}
+	frame() {
+		const fraction = (this.clock.now() - this.startMs) / this.durationMs;
+		this.handle = fraction < 1 ? this.clock.request(() => this.frame()) : 0;
+		this.onProgress(fraction < 1 ? easeInOut(fraction) : 1);
+	}
+};
+function useStepTransition(stepKey, transition) {
+	const [state, setState] = (0, import_react.useState)(() => startStep(stepKey, transition, prefersReducedMotion$1()));
+	const shown = followStep(state, stepKey, transition, prefersReducedMotion$1);
+	if (shown !== state) setState(shown);
+	const isGliding = shown.progress < 1;
+	(0, import_react.useEffect)(() => {
+		if (!isGliding) return;
+		const glide = new StepGlide((progress) => setState((now) => now.key === stepKey && now.progress !== progress ? {
+			key: stepKey,
+			progress
+		} : now), pageClock());
+		glide.start();
+		return () => glide.stop();
+	}, [stepKey, isGliding]);
+	const finish = (0, import_react.useCallback)(() => setState((now) => now.progress < 1 ? {
+		key: now.key,
+		progress: 1
+	} : now), []);
+	return {
+		progress: shown.progress,
+		isGliding,
+		finish
+	};
+}
+function mix(from, to, progress) {
+	return from + (to - from) * progress;
+}
+// src/shared/motion/schedule.ts
+var MAX_PLAY_MS = 2e3;
+var DEFAULT_MS = {
+	move: 560,
+	rise: 560,
+	draw: 560,
+	count: 560,
+	appear: 320,
+	leave: 280,
+	slide: 560,
+	highlight: 700
+};
+var EASING = {
+	move: "glide",
+	rise: "glide",
+	draw: "glide",
+	count: "glide",
+	appear: "out",
+	leave: "in",
+	slide: "glide",
+	highlight: "linear"
+};
+var EMPTY$1 = {
+	tracks: [],
+	total: 0,
+	isCompressed: false
+};
+function layOut(motion, start, tracks) {
+	if (motion.kind === "together") return motion.motions.reduce((end, inner) => Math.max(end, layOut(inner, start, tracks)), start);
+	if (motion.kind === "inOrder") {
+		const gap = motion.gap ?? 0;
+		let end = start;
+		motion.motions.forEach((inner, position) => {
+			end = layOut(inner, position === 0 ? end : end + gap, tracks);
+		});
+		return end;
+	}
+	const duration = motion.ms ?? DEFAULT_MS[motion.kind];
+	tracks.push({
+		motion,
+		index: tracks.length,
+		start,
+		duration,
+		easing: EASING[motion.kind]
+	});
+	return start + duration;
+}
+function compress(tracks, total) {
+	const factor = MAX_PLAY_MS / total;
+	const shrunk = tracks.map((track) => ({
+		...track,
+		duration: Math.max(Math.min(track.duration, 120), track.duration * factor)
+	}));
+	let fit = 1;
+	for (const track of shrunk) {
+		const natural = tracks[track.index].start;
+		if (natural > 0) fit = Math.min(fit, (MAX_PLAY_MS - track.duration) / natural);
+	}
+	return shrunk.map((track) => ({
+		...track,
+		start: tracks[track.index].start * fit
+	}));
+}
+function scheduleOf(motion) {
+	if (!motion) return EMPTY$1;
+	const tracks = [];
+	const total = layOut(motion, 0, tracks);
+	if (total <= 2e3) return {
+		tracks,
+		total,
+		isCompressed: false
+	};
+	const fitted = compress(tracks, total);
+	return {
+		tracks: fitted,
+		total: fitted.reduce((last, track) => Math.max(last, track.start + track.duration), 0),
+		isCompressed: true
+	};
+}
+function trackFraction(track, time) {
+	if (track.duration <= 0) return time >= track.start ? 1 : 0;
+	return Math.min(1, Math.max(0, (time - track.start) / track.duration));
+}
+// src/shared/motion/player.ts
+function firstNeedsOf(schedule) {
+	const places = /* @__PURE__ */ new Set();
+	const copies = /* @__PURE__ */ new Set();
+	for (const { motion } of schedule.tracks) if (motion.kind === "move" || motion.kind === "rise") places.add(motion.from);
+	else if (motion.kind === "draw" && motion.was) places.add(motion.was);
+	else if (motion.kind === "slide") places.add(motion.anchor);
+	else if (motion.kind === "leave") {
+		places.add(motion.anchor);
+		copies.add(motion.anchor);
+	}
+	return {
+		places: [...places],
+		copies: [...copies]
+	};
+}
+function problemsOf(motion) {
+	return validateMotion(motion).map((problem) => problem.path + ": " + problem.message).join("; ");
+}
+var MotionPlayer = class {
+	renderer;
+	reducesMotion;
+	warn;
+	warned = /* @__PURE__ */ new Set();
+	stage = null;
+	cued = null;
+	playing = null;
+	report = null;
+	constructor(renderer, options = {}) {
+		this.renderer = renderer;
+		this.reducesMotion = options.reducesMotion ?? prefersReducedMotion$1;
+		this.warn = options.warn ?? ((message) => console.warn(message));
+	}
+	cue(key, motion, transition) {
+		this.stopPlaying();
+		this.cued = null;
+		const single = Array.isArray(motion) ? {
+			kind: "together",
+			motions: motion
+		} : motion;
+		if (!single || !leavesOf(single).length || !glides(transition, this.reducesMotion())) return;
+		const problems = problemsOf(single);
+		if (problems) {
+			this.warnOnce("motion not played (" + problems + ")");
+			return;
+		}
+		const schedule = scheduleOf(single);
+		const firsts = this.safely(() => this.stage ? this.renderer.measure(this.stage, firstNeedsOf(schedule)) : null, "measuring");
+		this.cued = {
+			key,
+			schedule,
+			firsts: firsts ?? /* @__PURE__ */ new Map()
+		};
+	}
+	show(stage, key) {
+		if (this.stage !== stage) {
+			if (this.stage) this.release(this.stage);
+			this.stage = stage;
+		}
+		const cue = this.cued;
+		if (!cue || cue.key !== key) return;
+		this.cued = null;
+		this.stopPlaying();
+		let current = null;
+		let isDone = false;
+		current = this.safely(() => this.renderer.play(stage, cue.schedule, cue.firsts, (report) => {
+			isDone = true;
+			this.report = report;
+			if (current && this.playing === current) this.playing = null;
+		}), "playing");
+		this.playing = isDone ? null : current;
+	}
+	finish() {
+		const playing = this.playing;
+		this.playing = null;
+		this.safely(() => playing?.finish(), "finishing");
+	}
+	release(stage) {
+		if (this.stage !== stage) return;
+		this.stopPlaying();
+		this.stage = null;
+		this.safely(() => this.renderer.release(stage), "releasing");
+	}
+	dispose() {
+		this.cued = null;
+		if (this.stage) this.release(this.stage);
+	}
+	isPlaying() {
+		return this.playing !== null;
+	}
+	lastReport() {
+		return this.report;
+	}
+	stopPlaying() {
+		const playing = this.playing;
+		this.playing = null;
+		this.safely(() => playing?.stop(), "stopping");
+	}
+	safely(work, what) {
+		try {
+			return work();
+		} catch (error) {
+			this.warnOnce("motion: " + what + " failed (" + String(error) + ")");
+			return null;
+		}
+	}
+	warnOnce(message) {
+		if (!this.warned.has(message)) {
+			this.warned.add(message);
+			this.warn(message);
+		}
+	}
+};
+// src/shared/motion/geometry.ts
+var ARROW_GAP_PX = 3;
+function stageBoxOf(probe, probeSize) {
+	const scaleX = probe.width > 0 ? probe.width / probeSize : 1;
+	const scaleY = probe.height > 0 ? probe.height / probeSize : 1;
+	return {
+		originX: probe.left,
+		originY: probe.top,
+		scaleX,
+		scaleY
+	};
+}
+function toStage(box, rect) {
+	return {
+		x: (rect.left - box.originX) / box.scaleX,
+		y: (rect.top - box.originY) / box.scaleY,
+		width: rect.width / box.scaleX,
+		height: rect.height / box.scaleY
+	};
+}
+function centreOf(rect) {
+	return {
+		x: rect.x + rect.width / 2,
+		y: rect.y + rect.height / 2
+	};
+}
+function distance(from, to) {
+	return Math.hypot(to.x - from.x, to.y - from.y);
+}
+function edgeToward(rect, toward, gap = ARROW_GAP_PX) {
+	const centre = centreOf(rect);
+	const dx = toward.x - centre.x;
+	const dy = toward.y - centre.y;
+	const halfWidth = rect.width / 2 + gap;
+	const halfHeight = rect.height / 2 + gap;
+	const reach = Math.min(dx === 0 ? Infinity : halfWidth / Math.abs(dx), dy === 0 ? Infinity : halfHeight / Math.abs(dy));
+	if (!Number.isFinite(reach) || reach >= 1) return centre;
+	return {
+		x: centre.x + dx * reach,
+		y: centre.y + dy * reach
+	};
+}
+function arrowBetween(from, to) {
+	const tail = edgeToward(from, centreOf(to));
+	const tip = edgeToward(to, centreOf(from));
+	return {
+		tail,
+		tip,
+		angle: Math.atan2(tip.y - tail.y, tip.x - tail.x) * 180 / Math.PI,
+		length: distance(tail, tip)
+	};
+}
+function nearestTurn(from, to) {
+	let turn = to;
+	while (turn - from > 180) turn -= 360;
+	while (turn - from < -180) turn += 360;
+	return turn;
+}
+function routeOffsets(points) {
+	const lengths = points.map((point, index) => index === 0 ? 0 : distance(points[index - 1], point));
+	const total = lengths.reduce((sum, length) => sum + length, 0);
+	let travelled = 0;
+	return points.map((point, index) => {
+		travelled += lengths[index];
+		const offset = total > 0 ? travelled / total : index / Math.max(1, points.length - 1);
+		return {
+			x: point.x,
+			y: point.y,
+			offset: index === points.length - 1 ? 1 : offset
+		};
+	});
+}
+function riseRoute(from, to) {
+	const target = centreOf(to);
+	const top = {
+		x: from.x + from.width / 2,
+		y: from.y
+	};
+	return [
+		centreOf(from),
+		top,
+		target
+	];
+}
+function routeAlong(edge, start, end) {
+	if (!edge.length) return [start, end];
+	return [
+		start,
+		...distance(edge[edge.length - 1], start) < distance(edge[0], start) ? [...edge].reverse() : edge,
+		end
+	];
+}
+function formatCount(value, decimals) {
+	const text = value.toFixed(decimals);
+	return Number(text) === 0 ? 0 .toFixed(decimals) : text;
+}
+function decimalsOf(value) {
+	for (let digits = 0; digits < 6; digits++) if (Math.abs(Number(value.toFixed(digits)) - value) < 1e-9) return digits;
+	return 6;
+}
+// src/shared/motion/dom-stage.ts
+var LAYER_CLASS = "motion-layer";
+var GHOST_CLASS = "motion-ghost";
+var PROBE_PX = 100;
+var MAX_COPY_NODES = 400;
+var COPIED_STYLES = [
+	"display",
+	"box-sizing",
+	"width",
+	"height",
+	"padding",
+	"border",
+	"border-radius",
+	"background-color",
+	"color",
+	"font-family",
+	"font-size",
+	"font-weight",
+	"font-style",
+	"line-height",
+	"letter-spacing",
+	"text-align",
+	"white-space",
+	"direction",
+	"vertical-align",
+	"opacity",
+	"box-shadow",
+	"fill",
+	"stroke",
+	"stroke-width",
+	"stroke-dasharray",
+	"font-variant-numeric",
+	"grid-template-columns",
+	"gap",
+	"align-items",
+	"justify-content"
+];
+function findAnchors(stage) {
+	const anchors = /* @__PURE__ */ new Map();
+	for (const element of stage.querySelectorAll("[" + ANCHOR_ATTRIBUTE + "]")) {
+		const name = element.getAttribute("data-anchor") ?? "";
+		if (name && !anchors.has(name) && !element.closest(".motion-layer")) anchors.set(name, element);
+	}
+	return anchors;
+}
+function layerOf(stage) {
+	const found = stage.querySelector(":scope > .motion-layer");
+	if (found instanceof HTMLElement) return found;
+	if (getComputedStyle(stage).position === "static") stage.style.position = "relative";
+	const layer = document.createElement("div");
+	layer.className = LAYER_CLASS;
+	layer.setAttribute("aria-hidden", "true");
+	layer.style.cssText = "position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:50;contain:style";
+	const probe = document.createElement("div");
+	probe.className = "motion-probe";
+	probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;width:100px;height:100px";
+	layer.append(probe);
+	stage.append(layer);
+	return layer;
+}
+function removeLayer(stage) {
+	stage.querySelector(":scope > .motion-layer")?.remove();
+}
+function clearGhosts(stage) {
+	for (const ghost of stage.querySelectorAll(":scope > .motion-layer > .motion-ghost")) ghost.remove();
+}
+var EMPTY = {
+	left: 0,
+	top: 0,
+	width: 0,
+	height: 0
+};
+function measureBox(stage) {
+	const probe = layerOf(stage).querySelector(".motion-probe");
+	return probe ? stageBoxOf(probe.getBoundingClientRect(), PROBE_PX) : stageBoxOf(EMPTY, 1);
+}
+function rectIn(box, element) {
+	return toStage(box, element.getBoundingClientRect());
+}
+function copyStyle(from, to) {
+	if (!(to instanceof HTMLElement || to instanceof SVGElement)) return;
+	const style = getComputedStyle(from);
+	for (const property of COPIED_STYLES) to.style.setProperty(property, style.getPropertyValue(property));
+	to.removeAttribute("id");
+	to.removeAttribute(ANCHOR_ATTRIBUTE);
+}
+function inOwnSvg(element, copy, size) {
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("width", String(size.width));
+	svg.setAttribute("height", String(size.height));
+	svg.style.overflow = "visible";
+	const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	const parent = element.parentNode;
+	const matrix = parent instanceof SVGGraphicsElement ? parent.getCTM() : null;
+	if (matrix) {
+		const values = [
+			matrix.a,
+			matrix.b,
+			matrix.c,
+			matrix.d,
+			matrix.e,
+			matrix.f
+		];
+		group.setAttribute("transform", "matrix(" + values.join(" ") + ")");
+	}
+	group.append(copy);
+	svg.append(group);
+	return svg;
+}
+function copyOf$1(element, box) {
+	const copy = element.cloneNode(true);
+	const originals = [element, ...element.querySelectorAll("*")];
+	const copies = [copy, ...copy.querySelectorAll("*")];
+	const count = originals.length > MAX_COPY_NODES ? 1 : originals.length;
+	if (count === 1) copy.replaceChildren();
+	for (let index = 0; index < count; index++) copyStyle(originals[index], copies[index]);
+	if (element instanceof SVGGraphicsElement && !(element instanceof SVGSVGElement)) {
+		const rect = rectIn(box, element.ownerSVGElement ?? element);
+		return {
+			copy: inOwnSvg(element, copy, rect),
+			rect
+		};
+	}
+	return {
+		copy,
+		rect: rectIn(box, element)
+	};
+}
+function measureFirsts(stage, needs) {
+	const firsts = /* @__PURE__ */ new Map();
+	if (!needs.places.length) return firsts;
+	const anchors = findAnchors(stage);
+	const box = measureBox(stage);
+	for (const name of needs.places) {
+		const element = anchors.get(name);
+		const rect = element?.getBoundingClientRect();
+		if (!element || !rect || rect.width === 0 && rect.height === 0) continue;
+		const text = (element.textContent ?? "").trim();
+		if (needs.copies.includes(name)) {
+			const { copy, rect } = copyOf$1(element, box);
+			firsts.set(name, {
+				rect: rectIn(box, element),
+				text,
+				copy: {
+					element: copy,
+					rect
+				}
+			});
+		} else firsts.set(name, {
+			rect: rectIn(box, element),
+			text
+		});
+	}
+	return firsts;
+}
+// src/shared/motion/ghosts.ts
+var RING_GAP_PX = 4;
+var FONT_PROPERTIES = [
+	"font-family",
+	"font-size",
+	"font-weight",
+	"font-style"
+];
+function ghostOf(extraClass) {
+	const ghost = document.createElement("div");
+	ghost.className = GHOST_CLASS + " " + extraClass;
+	ghost.style.cssText = "position:absolute;left:0;top:0;opacity:0;margin:0;";
+	return ghost;
+}
+function inkOf(style, element) {
+	const fill = style.getPropertyValue("fill");
+	const isPaint = fill && fill !== "none" && !fill.startsWith("url(");
+	return element instanceof SVGElement && isPaint ? fill : style.color;
+}
+function takeFont(ghost, like) {
+	const style = getComputedStyle(like);
+	for (const property of FONT_PROPERTIES) ghost.style.setProperty(property, style.getPropertyValue(property));
+}
+function valueGhost(text, like, end) {
+	const ghost = ghostOf("motion-value");
+	ghost.dir = "auto";
+	ghost.textContent = text;
+	takeFont(ghost, like);
+	ghost.style.left = end.x + "px";
+	ghost.style.top = end.y + "px";
+	ghost.style.cssText += "white-space:nowrap;line-height:1.5;padding:0 5px;border-radius:4px;border:1px solid var(--accent);background:var(--raised);color:var(--ink);box-shadow:0 2px 6px var(--shadow);transform:translate(-50%, -50%);will-change:transform";
+	return ghost;
+}
+function ringGhost(rect, colour) {
+	const ring = ghostOf("motion-ring");
+	const height = rect.height + 8;
+	const width = Math.max(rect.width + 8, height);
+	ring.style.left = rect.x + rect.width / 2 - width / 2 + "px";
+	ring.style.top = rect.y - RING_GAP_PX + "px";
+	ring.style.width = width + "px";
+	ring.style.height = height + "px";
+	ring.style.cssText += "box-sizing:border-box;border:2px solid " + colour + ";border-radius:6px;box-shadow:0 0 0 3px color-mix(in srgb, " + colour + " 25%, transparent)";
+	return ring;
+}
+function arrowGhost(tail, colour, headPx) {
+	const root = ghostOf("motion-arrow");
+	root.style.left = tail.x + "px";
+	root.style.top = tail.y + "px";
+	root.style.cssText += "width:0;height:0;transform-origin:0 0;will-change:transform";
+	const shaft = document.createElement("div");
+	shaft.style.cssText = "position:absolute;left:0;top:-1px;width:1px;height:2px;transform-origin:0 50%;transform:scaleX(0);background:" + colour;
+	const head = document.createElement("div");
+	head.style.cssText = "position:absolute;left:0;width:" + headPx + "px;height:" + headPx + "px;top:" + -headPx / 2 + "px;clip-path:polygon(0 0, 100% 50%, 0 100%);background:" + colour;
+	root.append(shaft, head);
+	return {
+		root,
+		shaft,
+		head
+	};
+}
+function textGhost(text, like, rect) {
+	const ghost = ghostOf("motion-count");
+	ghost.dir = "ltr";
+	ghost.textContent = text;
+	takeFont(ghost, like);
+	const style = getComputedStyle(like);
+	const align = style.textAlign === "center" || style.textAnchor === "middle";
+	const end = style.textAlign === "right" || style.textAlign === "end";
+	ghost.style.left = rect.x + "px";
+	ghost.style.top = rect.y + "px";
+	ghost.style.minWidth = rect.width + "px";
+	ghost.style.height = rect.height + "px";
+	ghost.style.color = inkOf(style, like);
+	ghost.style.cssText += "display:flex;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums;justify-content:" + (align ? "center" : end ? "flex-end" : "flex-start");
+	return ghost;
+}
+function copyGhost(copy) {
+	const ghost = ghostOf("motion-copy");
+	ghost.style.left = copy.rect.x + "px";
+	ghost.style.top = copy.rect.y + "px";
+	ghost.style.width = copy.rect.width + "px";
+	ghost.style.height = copy.rect.height + "px";
+	ghost.style.opacity = "1";
+	ghost.append(copy.element);
+	return ghost;
+}
+var TONE_COLOURS = {
+	focus: "var(--accent)",
+	compare: "var(--orange)",
+	good: "var(--ok)",
+	bad: "var(--err)",
+	pointer: "var(--ptr)"
+};
+// src/shared/motion/scene.ts
+var CSS_EASING = {
+	glide: "cubic-bezier(0.37, 0, 0.63, 1)",
+	out: "ease-out",
+	in: "ease-in",
+	linear: "linear"
+};
+function timingOf(track, fill) {
+	return {
+		delay: track.start,
+		duration: track.duration,
+		easing: CSS_EASING[track.easing],
+		fill
+	};
+}
+function hideUntil(scene, element, until) {
+	scene.animate(element, [{ opacity: 0 }, { opacity: 0 }], {
+		duration: until,
+		fill: "none"
+	});
+}
+// src/shared/motion/waapi-draw.ts
+var HEAD_PX = 9;
+function tracePath(scene, track, path) {
+	if (!(path instanceof SVGGeometryElement)) {
+		scene.animate(path, [{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)" }], timingOf(track, "backwards"));
+		return;
+	}
+	const length = Math.max(1, path.getTotalLength());
+	const dashes = length + " " + length;
+	const style = getComputedStyle(path);
+	const keyframes = [{
+		strokeDasharray: dashes,
+		strokeDashoffset: String(length)
+	}, {
+		strokeDasharray: dashes,
+		strokeDashoffset: "0"
+	}];
+	if (style.markerEnd !== "none" || style.markerStart !== "none") {
+		keyframes[0] = {
+			...keyframes[0],
+			markerEnd: "none",
+			markerStart: "none"
+		};
+		keyframes.splice(1, 0, {
+			offset: .98,
+			markerEnd: "none",
+			markerStart: "none"
+		});
+		keyframes[2] = {
+			...keyframes[2],
+			markerEnd: style.markerEnd,
+			markerStart: style.markerStart
+		};
+	}
+	scene.animate(path, keyframes, timingOf(track, "backwards"));
+}
+function playDraw(scene, track, motion) {
+	const path = motion.path ? scene.anchors.get(motion.path) : void 0;
+	if (!motion.from || !motion.to) {
+		if (!path) return "no path " + motion.path;
+		tracePath(scene, track, path);
+		return null;
+	}
+	const from = scene.anchors.get(motion.from);
+	const to = scene.anchors.get(motion.to);
+	if (!from || !to) return "no end " + (from ? motion.to : motion.from);
+	const arrow = arrowBetween(scene.rect(from), scene.rect(to));
+	const was = motion.was ? scene.placeOf(motion.was) : null;
+	const start = was ? edgeToward(was, arrow.tail) : arrow.tail;
+	const startAngle = Math.atan2(start.y - arrow.tail.y, start.x - arrow.tail.x) * 180 / Math.PI;
+	const startLength = was ? Math.hypot(start.x - arrow.tail.x, start.y - arrow.tail.y) : 0;
+	swingArrow(scene, track, motion, {
+		angle: was ? startAngle : arrow.angle,
+		startLength
+	}, arrow);
+	if (path) hideUntil(scene, path, track.start + track.duration);
+	return null;
+}
+function swingArrow(scene, track, motion, start, arrow) {
+	const ghost = arrowGhost(arrow.tail, TONE_COLOURS[motion.tone ?? "pointer"], HEAD_PX);
+	scene.addGhost(ghost.root);
+	const timing = timingOf(track, "none");
+	const angle = nearestTurn(start.angle, arrow.angle);
+	const turn = [{
+		opacity: 1,
+		transform: "rotate(" + start.angle + "deg)"
+	}, {
+		opacity: 1,
+		transform: "rotate(" + angle + "deg)"
+	}];
+	scene.animate(ghost.root, turn, timing);
+	const shaft = [start.startLength, arrow.length].map((length) => ({ transform: "scaleX(" + Math.max(0, length - HEAD_PX) + ")" }));
+	scene.animate(ghost.shaft, shaft, timing);
+	const head = [start.startLength, arrow.length].map((length) => ({ transform: "translateX(" + Math.max(0, length - HEAD_PX) + "px)" }));
+	scene.animate(ghost.head, head, timing);
+}
+// src/shared/motion/waapi-kinds.ts
+var EDGE_SAMPLES = 16;
+var SMALL_SCALE = "0.6";
+var SAME_PLACE_PX = .5;
+function fly(scene, track, text, route, target) {
+	const end = route[route.length - 1];
+	const ghost = valueGhost(text, target, end);
+	scene.addGhost(ghost);
+	const keyframes = routeOffsets(route).map((point) => ({
+		offset: point.offset,
+		opacity: 1,
+		transform: "translate(-50%, -50%) translate(" + (point.x - end.x) + "px, " + (point.y - end.y) + "px)"
+	}));
+	scene.animate(ghost, keyframes, timingOf(track, "none"));
+	hideUntil(scene, target, track.start + track.duration);
+}
+function valueText(scene, motion) {
+	if (motion.value !== void 0) return motion.value;
+	return scene.firsts.get(motion.from)?.text ?? (scene.anchors.get(motion.from)?.textContent ?? "").trim();
+}
+function playMove(scene, track, motion) {
+	const target = scene.anchors.get(motion.to);
+	const first = scene.placeOf(motion.from);
+	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
+	const route = [centreOf(first), centreOf(scene.rect(target))];
+	fly(scene, track, valueText(scene, motion), route, target);
+	return null;
+}
+function edgePoints(scene, edge) {
+	if (!(edge instanceof SVGGeometryElement)) return [];
+	const matrix = edge.getScreenCTM();
+	const length = edge.getTotalLength();
+	if (!matrix || !Number.isFinite(length)) return [];
+	const box = scene.box();
+	const points = [];
+	for (let sample = 0; sample <= EDGE_SAMPLES; sample++) {
+		const point = edge.getPointAtLength(length * sample / EDGE_SAMPLES).matrixTransform(matrix);
+		points.push({
+			x: (point.x - box.originX) / box.scaleX,
+			y: (point.y - box.originY) / box.scaleY
+		});
+	}
+	return points;
+}
+function playRise(scene, track, motion) {
+	const target = scene.anchors.get(motion.to);
+	const first = scene.placeOf(motion.from);
+	if (!target || !first) return target ? "no source " + motion.from : "no target " + motion.to;
+	const last = scene.rect(target);
+	const edge = motion.along ? edgePoints(scene, scene.anchors.get(motion.along)) : [];
+	const route = edge.length ? routeAlong(edge, centreOf(first), centreOf(last)) : riseRoute(first, last);
+	fly(scene, track, valueText(scene, motion), route, target);
+	return null;
+}
+function aboutCentre(element) {
+	return element instanceof SVGElement ? {
+		transformOrigin: "center",
+		transformBox: "fill-box"
+	} : { transformOrigin: "center" };
+}
+function playAppear(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const isGrowing = (motion.style ?? "grow") === "grow";
+	const centre = isGrowing ? aboutCentre(element) : {};
+	const from = isGrowing ? {
+		opacity: 0,
+		scale: SMALL_SCALE,
+		...centre
+	} : { opacity: 0 };
+	scene.animate(element, [from, centre], timingOf(track, "backwards"));
+	return null;
+}
+function playLeave(scene, track, motion) {
+	const isShrinking = (motion.style ?? "shrink") === "shrink";
+	const element = scene.anchors.get(motion.anchor);
+	const copy = element ? null : scene.firsts.get(motion.anchor)?.copy;
+	const target = element ?? (copy ? copyGhost(copy) : null);
+	if (!target) return "not on screen " + motion.anchor;
+	if (!element) scene.addGhost(target);
+	const centre = isShrinking ? aboutCentre(target) : {};
+	const to = isShrinking ? {
+		opacity: 0,
+		scale: SMALL_SCALE,
+		...centre
+	} : { opacity: 0 };
+	const animation = scene.animate(target, [centre, to], timingOf(track, "forwards"));
+	if (element) scene.hold(animation);
+	return null;
+}
+function ownScale(scene, element) {
+	const matrix = element instanceof SVGGraphicsElement ? element.getScreenCTM() : null;
+	const box = scene.box();
+	if (!matrix || !matrix.a || !matrix.d) return {
+		x: 1,
+		y: 1
+	};
+	return {
+		x: box.scaleX / matrix.a,
+		y: box.scaleY / matrix.d
+	};
+}
+function playSlide(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	const first = scene.firsts.get(motion.anchor)?.rect;
+	if (!element || !first) return (element ? "no place before the step: " : "no element ") + motion.anchor;
+	const last = scene.rect(element);
+	const scale = ownScale(scene, element);
+	const dx = (first.x - last.x) * scale.x;
+	const dy = (first.y - last.y) * scale.y;
+	if (Math.abs(dx) < SAME_PLACE_PX && Math.abs(dy) < SAME_PLACE_PX) return null;
+	const from = { translate: dx + "px " + dy + "px" };
+	scene.animate(element, [from, {}], timingOf(track, "backwards"));
+	return null;
+}
+function playHighlight(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const ring = ringGhost(scene.rect(element), TONE_COLOURS[motion.tone ?? "focus"]);
+	scene.addGhost(ring);
+	scene.animate(ring, [
+		{
+			opacity: 0,
+			transform: "scale(1.25)"
+		},
+		{
+			opacity: 1,
+			transform: "scale(1)",
+			offset: .25
+		},
+		{
+			opacity: 1,
+			transform: "scale(1)",
+			offset: .75
+		},
+		{
+			opacity: 0,
+			transform: "scale(1)"
+		}
+	], timingOf(track, "none"));
+	return null;
+}
+function playCount(scene, track, motion) {
+	const element = scene.anchors.get(motion.anchor);
+	if (!element) return "no element " + motion.anchor;
+	const decimals = motion.decimals ?? Math.max(decimalsOf(motion.from), decimalsOf(motion.to));
+	const textAt = (fraction) => (motion.prefix ?? "") + formatCount(mix(motion.from, motion.to, fraction), decimals) + (motion.suffix ?? "");
+	const ghost = textGhost(textAt(0), element, scene.rect(element));
+	scene.addGhost(ghost);
+	const until = track.start + track.duration;
+	const clock = scene.animate(ghost, [{ opacity: 1 }, { opacity: 1 }], { duration: until });
+	hideUntil(scene, element, until);
+	scene.everyFrame(() => {
+		const fraction = trackFraction(track, Number(clock.currentTime ?? 0));
+		const text = textAt(track.easing === "linear" ? fraction : easeInOut(fraction));
+		if (ghost.textContent !== text) ghost.textContent = text;
+	});
+	return null;
+}
+function renderTrack(scene, track) {
+	const motion = track.motion;
+	switch (motion.kind) {
+		case "move": return playMove(scene, track, motion);
+		case "rise": return playRise(scene, track, motion);
+		case "appear": return playAppear(scene, track, motion);
+		case "leave": return playLeave(scene, track, motion);
+		case "slide": return playSlide(scene, track, motion);
+		case "highlight": return playHighlight(scene, track, motion);
+		case "draw": return playDraw(scene, track, motion);
+		case "count": return playCount(scene, track, motion);
+	}
+}
+// src/shared/motion/waapi.ts
+function hasWebAnimations(element) {
+	return typeof element.animate === "function";
+}
+var Run = class {
+	stage;
+	anchors;
+	firsts;
+	done;
+	animations = [];
+	held = [];
+	frames = /* @__PURE__ */ new Set();
+	measured = null;
+	hasEnded = false;
+	played = 0;
+	skipped = [];
+	constructor(stage, firsts, done) {
+		this.stage = stage;
+		this.anchors = findAnchors(stage);
+		this.firsts = firsts;
+		this.done = done;
+	}
+	start(schedule) {
+		const canAnimate = hasWebAnimations(this.stage);
+		for (const track of schedule.tracks) {
+			const reason = canAnimate ? renderTrack(this, track) : "no Web Animations in this browser";
+			if (reason) this.skipped.push({
+				index: track.index,
+				kind: track.motion.kind,
+				reason
+			});
+			else this.played += 1;
+		}
+		if (!this.animations.length) {
+			this.end();
+			return;
+		}
+		const ends = this.animations.map((animation) => animation.finished);
+		Promise.allSettled(ends).then(() => this.end());
+	}
+	finish() {
+		for (const animation of this.animations) if (animation.playState !== "finished" && animation.playState !== "idle") animation.finish();
+		this.end();
+	}
+	stop() {
+		this.finish();
+		for (const animation of this.held) animation.cancel();
+	}
+	box() {
+		this.measured ??= measureBox(this.stage);
+		return this.measured;
+	}
+	rect(element) {
+		return toStage(this.box(), element.getBoundingClientRect());
+	}
+	placeOf(name) {
+		const first = this.firsts.get(name);
+		if (first) return first.rect;
+		const element = this.anchors.get(name);
+		return element ? this.rect(element) : null;
+	}
+	animate(element, keyframes, timing) {
+		const animation = element.animate(keyframes, timing);
+		this.animations.push(animation);
+		return animation;
+	}
+	hold(animation) {
+		this.held.push(animation);
+	}
+	addGhost(ghost) {
+		layerOf(this.stage).append(ghost);
+	}
+	everyFrame(draw) {
+		let handle = 0;
+		const frame = () => {
+			this.frames.delete(handle);
+			if (this.hasEnded) return;
+			draw();
+			handle = requestAnimationFrame(frame);
+			this.frames.add(handle);
+		};
+		draw();
+		handle = requestAnimationFrame(frame);
+		this.frames.add(handle);
+	}
+	end() {
+		if (this.hasEnded) return;
+		this.hasEnded = true;
+		for (const frame of this.frames) cancelAnimationFrame(frame);
+		this.frames.clear();
+		clearGhosts(this.stage);
+		this.done({
+			played: this.played,
+			skipped: this.skipped
+		});
+	}
+};
+var webAnimationsRenderer = {
+	measure(stage, needs) {
+		return measureFirsts(stage, needs);
+	},
+	play(stage, schedule, firsts, done) {
+		const run = new Run(stage, firsts, done);
+		run.start(schedule);
+		return run;
+	},
+	release(stage) {
+		removeLayer(stage);
+	}
+};
+// src/shared/motion/react.ts
+function createMotionPlayer(options) {
+	return new MotionPlayer(webAnimationsRenderer, options);
+}
+function useMotion(stepKey, transition, motion) {
+	const [player] = (0, import_react.useState)(() => createMotionPlayer());
+	const stage = (0, import_react.useRef)(null);
+	const cueStep = (0, import_react.useEffectEvent)((key) => player.cue(key, motion, transition));
+	(0, import_react.useLayoutEffect)(() => {
+		if (stage.current) {
+			cueStep(stepKey);
+			player.show(stage.current, stepKey);
+		}
+	}, [player, stepKey]);
+	(0, import_react.useLayoutEffect)(() => () => player.dispose(), [player]);
+	return {
+		stage,
+		finish: (0, import_react.useCallback)(() => player.finish(), [player])
+	};
+}
+// src/engines/net/view/arrival.ts
+var EVENT_DOT = "timeline.event.dot";
+var EVENT_LABEL = "timeline.event.label";
+var ARRIVAL = together([appear({
+	anchor: EVENT_DOT,
+	style: "fade",
+	ms: 160
+}), appear({
+	anchor: EVENT_LABEL,
+	style: "fade",
+	ms: 160
+})]);
 var OUTSIDE_PX = 2e3;
-var SAME_FRACTION = 1e-9;
+var SAME_FRACTION$2 = 1e-9;
 var MAX_KEYS = 2e3;
 function isDrawable(scenario) {
 	return [scenario.total, ...scenario.segments.flatMap((s) => [
@@ -4987,7 +6379,7 @@ function keyTimes(scenario) {
 	scenario.segments.forEach((s) => all.push(s.start, s.end, s.start + s.prop, s.end + s.prop));
 	scenario.waits.forEach((interval) => all.push(interval.from, interval.to));
 	scenario.procs.forEach((interval) => all.push(interval.from, interval.to));
-	const eps = scenario.total * SAME_FRACTION;
+	const eps = scenario.total * SAME_FRACTION$2;
 	const keys = [];
 	all.filter((time) => Number.isFinite(time)).sort((a, b) => a - b).forEach((time) => {
 		if (!keys.length || time - keys[keys.length - 1] > eps) keys.push(time);
@@ -5039,6 +6431,21 @@ function mapping(keys, from, to, heights) {
 		return tops[gap - from] + part * heights[gap - from];
 	};
 }
+function timeAt(map, y) {
+	const { keys } = map;
+	let low = map.from;
+	let high = map.to;
+	if (y <= map.y(keys[low])) return keys[low];
+	if (y >= map.y(keys[high])) return keys[high];
+	while (high - low > 1) {
+		const middle = low + high >> 1;
+		if (map.y(keys[middle]) <= y) low = middle;
+		else high = middle;
+	}
+	const top = map.y(keys[low]);
+	const part = (y - top) / (map.y(keys[high]) - top);
+	return keys[low] + part * (keys[high] - keys[low]);
+}
 function timeMap(scenario, spacing, choice, now, plot) {
 	const keys = keyTimes(scenario);
 	const [from, to] = windowOf(keys, choice, now, Math.max(4, Math.floor(plot / (spacing === "events" ? 28 : 25.6))));
@@ -5070,6 +6477,226 @@ function timeMap(scenario, spacing, choice, now, plot) {
 		stretched: shared.stretched,
 		y
 	};
+}
+// src/engines/net/view/now-glide.ts
+var MIN_GLIDE_PX = 1;
+function isDrawn(map, y) {
+	return y >= -.5 && y <= map.height + .5;
+}
+function glideSpan(map, from, to) {
+	const fromY = map.y(from);
+	const toY = map.y(to);
+	if (!(to > from && toY - fromY >= MIN_GLIDE_PX) || !isDrawn(map, fromY) || !isDrawn(map, toY)) return null;
+	return {
+		from,
+		to,
+		fromY,
+		toY
+	};
+}
+function glideTime(map, span, progress) {
+	if (progress <= 0) return span.from;
+	if (progress >= 1) return span.to;
+	const time = timeAt(map, span.fromY + (span.toY - span.fromY) * progress);
+	return Number.isFinite(time) ? Math.min(span.to, Math.max(span.from, time)) : span.to;
+}
+function sourceWaits(scenario) {
+	return scenario.segments.filter((segment) => segment.link === 0 && segment.start - scenario.proc > timeSlack(segment.start)).map((segment) => ({
+		packet: segment.packet,
+		node: 0,
+		from: scenario.proc,
+		to: segment.start,
+		slot: 0,
+		slots: 1
+	}));
+}
+function assignSlots(waits) {
+	const slotEnds = [];
+	waits.sort((a, b) => a.from - b.from || a.packet - b.packet);
+	for (const wait of waits) {
+		let slot = slotEnds.findIndex((end) => end <= wait.from + timeSlack(wait.from));
+		if (slot < 0) slot = slotEnds.length;
+		slotEnds[slot] = wait.to;
+		wait.slot = slot;
+	}
+	waits.forEach((wait) => wait.slots = Math.max(1, slotEnds.length));
+}
+var waitsOf = /* @__PURE__ */ new WeakMap();
+function queueWaits(scenario) {
+	let waits = waitsOf.get(scenario);
+	if (!waits) {
+		waits = listWaits(scenario);
+		waitsOf.set(scenario, waits);
+	}
+	return waits;
+}
+function listWaits(scenario) {
+	const all = [...sourceWaits(scenario), ...scenario.waits.map((wait) => ({
+		...wait,
+		slot: 0,
+		slots: 1
+	}))];
+	const result = [];
+	scenario.nodes.forEach((_, node) => {
+		const here = all.filter((wait) => wait.node === node);
+		assignSlots(here);
+		result.push(...here);
+	});
+	return result;
+}
+function laneLeft(nodeX, node) {
+	return node === 0 ? nodeX + 3 : nodeX - 3 - 22;
+}
+// src/engines/net/view/now-status.ts
+var SAME_FRACTION$1 = 1e-9;
+function packetsOf(segments) {
+	return segments.map((segment) => segment.packet + 1);
+}
+function fitTimeText(seconds) {
+	return quantityText({
+		value: seconds,
+		dims: KIND_DIMS.time
+	});
+}
+var LABEL_CHAR_PX$1 = 7.4;
+var MIN_GUTTER_PX = 70;
+var GUTTER_PAD_PX = 14;
+function axisGutter(times) {
+	const longest = times.reduce((most, time) => Math.max(most, fitTimeText(time).length), 0);
+	return Math.max(MIN_GUTTER_PX, Math.ceil(longest * LABEL_CHAR_PX$1) + GUTTER_PAD_PX);
+}
+function fitAxisTime(seconds, gutter) {
+	const room = Math.floor((gutter - GUTTER_PAD_PX) / LABEL_CHAR_PX$1);
+	let text = fitTimeText(seconds);
+	for (let digits = 5; digits >= 2 && text.length > room; digits--) text = fitTimeText(Number(seconds.toPrecision(digits)));
+	return text;
+}
+function timeText(scenario, seconds) {
+	return formatNumber(seconds / scenario.timeUnit.factor) + " " + scenario.timeUnit.text;
+}
+var Moment = class {
+	t;
+	eps;
+	constructor(scenario, t) {
+		this.t = t;
+		this.eps = (scenario.total || 1) * SAME_FRACTION$1;
+	}
+	is(time) {
+		return Math.abs(time - this.t) <= this.eps;
+	}
+	within(from, to) {
+		return from <= this.t + this.eps && this.t + this.eps < to;
+	}
+	reached(time) {
+		return time <= this.t + this.eps;
+	}
+};
+function sendingItems(scenario, out, now) {
+	const sending = out.find((segment) => now.within(segment.start, segment.end));
+	if (sending) {
+		const packet = sending.packet + 1;
+		if (now.is(sending.start)) return [{
+			kind: "startsSending",
+			packet
+		}];
+		return [{
+			kind: "sending",
+			packet,
+			left: timeFact(scenario, sending.end - now.t)
+		}];
+	}
+	const finished = out.find((segment) => now.is(segment.end));
+	return finished ? [{
+		kind: "sent",
+		packet: finished.packet + 1
+	}] : [];
+}
+function processingItems(scenario, node, now) {
+	return scenario.procs.filter((interval) => interval.node === node && now.within(interval.from, interval.to)).map((interval) => interval.packet < 0 ? { kind: "preparing" } : {
+		kind: "processing",
+		packet: interval.packet + 1
+	});
+}
+function itemsOf(scenario, node, now) {
+	const last = scenario.nodes.length - 1;
+	const out = scenario.segments.filter((segment) => segment.link === node);
+	const incoming = scenario.segments.filter((segment) => segment.link === node - 1);
+	const items = processingItems(scenario, node, now);
+	const receiving = incoming.filter((segment) => now.within(segment.start + segment.prop, segment.end + segment.prop));
+	if (receiving.length) items.push({
+		kind: "receiving",
+		packets: packetsOf(receiving)
+	});
+	items.push(...sendingItems(scenario, out, now));
+	const onWire = out.filter((segment) => segment.prop > 0 && now.within(segment.end, segment.end + segment.prop));
+	if (onWire.length) items.push({
+		kind: "onWire",
+		packets: packetsOf(onWire),
+		to: nodeFact(scenario, node + 1)
+	});
+	if (node === last) {
+		const got = incoming.filter((segment) => now.reached(segment.end + segment.prop));
+		if (got.length) items.push({
+			kind: "received",
+			packets: packetsOf(got)
+		});
+	} else if (node === 0 && out.every((segment) => now.reached(segment.end)) && !items.length) items.push({ kind: "sentAll" });
+	return items.length ? items : [{ kind: node === last ? "nothingYet" : "idle" }];
+}
+function queueItem(waits, node, now) {
+	return {
+		kind: "queue",
+		packets: waits.filter((wait) => wait.node === node && now.within(wait.from, wait.to)).map((wait) => wait.packet + 1)
+	};
+}
+function nodeStatuses(scenario, t) {
+	const now = new Moment(scenario, t);
+	const waits = queueWaits(scenario);
+	return scenario.nodes.map((name, node) => ({
+		node,
+		name,
+		items: [...itemsOf(scenario, node, now), queueItem(waits, node, now)]
+	}));
+}
+// src/engines/net/view/NowStatus.tsx
+function NowStatus({ scenario, event, now, index, count }) {
+	const listRef = (0, import_react.useRef)(null);
+	const t = now;
+	const rows = nodeStatuses(scenario, t);
+	(0, import_react.useLayoutEffect)(() => {
+		const list = listRef.current;
+		const row = list ? list.querySelector(".here") : null;
+		if (list && row && list.scrollHeight > list.clientHeight) list.scrollTop = row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2;
+	}, [event]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+		className: "net-now",
+		dir: "rtl",
+		lang: "he",
+		"aria-label": "מה כל צומת עושה עכשיו",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "net-now-h",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
+				dir: "ltr",
+				className: "net-now-t",
+				children: "t = " + timeText(scenario, t)
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: " · צעד " + (index + 1) + (count ? " מתוך " + count : "") })]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+			className: "net-now-list",
+			ref: listRef,
+			children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+				className: "net-now-row" + (event && event.node === row.node ? " here" : ""),
+				"aria-current": event && event.node === row.node ? "step" : void 0,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("bdi", {
+					dir: "ltr",
+					className: "net-now-name",
+					children: row.name
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "net-now-what",
+					children: row.items.map((item) => say$2(TEXTS.activities, item)).join(" · ")
+				})]
+			}, row.name))
+		})]
+	});
 }
 // src/engines/net/view/TimelineControls.tsx
 var saved = {
@@ -5177,26 +6804,35 @@ function Overview(props) {
 		})
 	});
 }
+function OverviewTicks(props) {
+	const { keys, total, inner } = props;
+	const x = (time) => STRIP_MARGIN + inner * time / total;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		className: "nt-ov-base",
+		x1: x(0),
+		x2: x(total),
+		y1: 20,
+		y2: 20
+	}), keys.map((key, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		className: "nt-ov-tick",
+		x1: x(key),
+		x2: x(key),
+		y1: 15,
+		y2: 25
+	}, i))] });
+}
+var StaticTicks = (0, import_react.memo)(OverviewTicks);
 function OverviewMarks(props) {
 	const { scenario, map, now, inner } = props;
 	const x = (time) => STRIP_MARGIN + inner * time / scenario.total;
 	const from = map.keys[map.from];
 	const to = map.keys[map.to];
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-			className: "nt-ov-base",
-			x1: x(0),
-			x2: x(scenario.total),
-			y1: 20,
-			y2: 20
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticTicks, {
+			keys: map.keys,
+			total: scenario.total,
+			inner
 		}),
-		map.keys.map((key, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-			className: "nt-ov-tick",
-			x1: x(key),
-			x2: x(key),
-			y1: 15,
-			y2: 25
-		}, i)),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
 			className: "nt-ov-win",
 			x: x(from) - 2,
@@ -5283,6 +6919,397 @@ function ToolButtons(props) {
 				onClick: () => space("events")
 			})
 		]
+	});
+}
+var LABEL_GAP_PX$1 = 9;
+var ROW_STEP_PX = 17;
+var LABEL_CHAR_PX = 6;
+var LABEL_MARGIN_PX = 2;
+var TRIES = [
+	[
+		0,
+		"own",
+		0
+	],
+	[
+		0,
+		"own",
+		1
+	],
+	[
+		0,
+		"other",
+		0
+	],
+	[
+		0,
+		"other",
+		1
+	],
+	[
+		0,
+		"own",
+		2
+	],
+	[
+		1,
+		"own",
+		0
+	],
+	[
+		1,
+		"own",
+		1
+	],
+	[
+		1,
+		"other",
+		0
+	],
+	[
+		1,
+		"own",
+		2
+	],
+	[
+		2,
+		"own",
+		0
+	],
+	[
+		2,
+		"other",
+		0
+	],
+	[
+		2,
+		"own",
+		1
+	],
+	[
+		2,
+		"other",
+		1
+	],
+	[
+		2,
+		"own",
+		2
+	]
+];
+function labelTexts(packet, bit) {
+	const name = "P" + (packet + 1);
+	const isFirst = bit === "first";
+	const words = TEXTS.words;
+	return [
+		{
+			english: name + (isFirst ? " first bit" : " last bit"),
+			hebrew: isFirst ? words.firstBit : words.lastBit
+		},
+		{
+			english: name + (isFirst ? " first" : " last"),
+			hebrew: isFirst ? words.firstShort : words.lastShort
+		},
+		{
+			english: name,
+			hebrew: ""
+		}
+	];
+}
+function labelString(text) {
+	return text.english + (text.hebrew ? " / " + text.hebrew : "");
+}
+function estimateText(text) {
+	return labelString(text).length * LABEL_CHAR_PX;
+}
+function pillAt(mark, text, side, row, area, measure) {
+	const width = Math.ceil(measure(text)) + 10;
+	if (width > area.right - area.left) return null;
+	const left = Math.min(area.right - width, Math.max(area.left, mark.x - width / 2));
+	const offset = LABEL_GAP_PX$1 + row * ROW_STEP_PX;
+	const top = side === "above" ? mark.y - offset - 15 : mark.y + offset;
+	if (top < area.top || top + 15 > area.bottom) return null;
+	return {
+		left,
+		top,
+		width,
+		height: 15
+	};
+}
+function overlaps$1(a, b) {
+	const m = LABEL_MARGIN_PX;
+	return a.left < b.left + b.width + m && b.left < a.left + a.width + m && a.top < b.top + b.height + m && b.top < a.top + a.height + m;
+}
+function labelRank(mark, focus) {
+	return (mark.packet === focus ? -1 : mark.packet) * 2 + (mark.bit === "first" ? 0 : 1);
+}
+function placeBitLabels(marks, area, blocked, focus, measure = estimateText) {
+	const ordered = [...marks].sort((a, b) => labelRank(a, focus) - labelRank(b, focus));
+	const taken = [...blocked];
+	const placed = [];
+	for (const mark of ordered) {
+		const texts = labelTexts(mark.packet, mark.bit);
+		const own = mark.bit === "first" ? "above" : "below";
+		for (const [level, which, row] of TRIES) {
+			const side = which === "own" ? own : own === "above" ? "below" : "above";
+			const box = pillAt(mark, texts[level], side, row, area, measure);
+			if (box && !taken.some((other) => overlaps$1(box, other))) {
+				placed.push({
+					mark,
+					text: texts[level],
+					box
+				});
+				taken.push(box);
+				break;
+			}
+		}
+	}
+	return placed;
+}
+// src/engines/net/view/bit-marks.ts
+var SAME_FRACTION = 1e-9;
+function slackOf(scenario) {
+	return (scenario.total || 1) * SAME_FRACTION;
+}
+function segmentAt(scenario, packet, t) {
+	const eps = slackOf(scenario);
+	return scenario.segments.find((segment) => segment.packet === packet && segment.start <= t + eps && t <= segment.end + segment.prop + eps);
+}
+function placeBit(segment, leaves, t, eps, geometry) {
+	const sender = geometry.x(segment.link);
+	const receiver = geometry.x(segment.link + 1);
+	if (t < leaves - eps) return {
+		place: "sender",
+		x: sender
+	};
+	if (segment.prop <= eps || t >= leaves + segment.prop - eps) return {
+		place: "receiver",
+		x: receiver
+	};
+	const top = geometry.y(leaves);
+	const bottom = geometry.y(leaves + segment.prop);
+	const part = bottom > top ? (geometry.y(t) - top) / (bottom - top) : 0;
+	const along = Number.isFinite(part) ? Math.min(1, Math.max(0, part)) : 0;
+	return {
+		place: along > 0 ? "wire" : "sender",
+		x: sender + along * (receiver - sender)
+	};
+}
+function bitMarks(scenario, t, geometry) {
+	const eps = slackOf(scenario);
+	const y = geometry.y(t);
+	const marks = [];
+	for (let packet = 0; packet < scenario.packets && Number.isFinite(y); packet++) {
+		const segment = segmentAt(scenario, packet, t);
+		if (!segment) continue;
+		const first = placeBit(segment, segment.start, t, eps, geometry);
+		const last = placeBit(segment, segment.end, t, eps, geometry);
+		if (!Number.isFinite(first.x) || !Number.isFinite(last.x)) continue;
+		marks.push({
+			packet,
+			bit: "first",
+			link: segment.link,
+			y,
+			...first
+		});
+		marks.push({
+			packet,
+			bit: "last",
+			link: segment.link,
+			y,
+			...last
+		});
+	}
+	return marks;
+}
+function wireRank(mark) {
+	return -mark.packet * 2 + (mark.bit === "first" ? 1 : 0);
+}
+function wireOrder(a, b) {
+	const dx = a.x - b.x;
+	return Math.abs(dx) >= .5 ? dx : wireRank(a) - wireRank(b);
+}
+function spreadMarks(marks) {
+	const sorted = marks.map((mark) => ({ ...mark })).sort(wireOrder);
+	let first = 0;
+	while (first < sorted.length) {
+		let last = first;
+		while (last + 1 < sorted.length && sorted[last + 1].x - sorted[last].x < 14) last++;
+		const group = sorted.slice(first, last + 1);
+		const middle = group.reduce((sum, mark) => sum + mark.x, 0) / group.length;
+		group.forEach((mark, i) => {
+			mark.x = middle + (i - (group.length - 1) / 2) * 14;
+		});
+		first = last + 1;
+	}
+	return sorted;
+}
+// src/engines/net/view/TimelineBits.tsx
+var PACKET_COLOURS$2 = 4;
+var MARK_HALF_PX = 6.5;
+var LEADER_GAP_PX = 8;
+var LABEL_BASELINE_PX = 11;
+var NAME_FONT = "700 11px ";
+var ENGLISH_FONT = "600 11px ";
+var HEBREW_FONT = "400 11px ";
+var MEASURE_SLACK_PX = 2;
+var measuredWidths = /* @__PURE__ */ new Map();
+var measuring;
+function measuringTools() {
+	if (measuring === void 0) {
+		const context = typeof document === "undefined" ? null : document.createElement("canvas").getContext("2d");
+		measuring = context ? {
+			context,
+			family: getComputedStyle(document.body).fontFamily
+		} : null;
+	}
+	return measuring;
+}
+function measureInPage(text) {
+	const key = labelString(text);
+	const known = measuredWidths.get(key);
+	const tools = measuringTools();
+	if (known !== void 0 || !tools) return known ?? estimateText(text);
+	const { context, family } = tools;
+	const [name, ...rest] = text.english.split(" ");
+	const parts = [
+		[NAME_FONT, name],
+		[ENGLISH_FONT, rest.length ? " " + rest.join(" ") : ""],
+		[HEBREW_FONT, text.hebrew ? " / " + text.hebrew : ""]
+	];
+	let width = MEASURE_SLACK_PX;
+	for (const [font, part] of parts) {
+		context.font = font + family;
+		width += context.measureText(part).width;
+	}
+	if (document.fonts.status === "loaded") measuredWidths.set(key, width);
+	return width;
+}
+function packetIndexOf(fact) {
+	return fact && "packet" in fact ? fact.packet - 1 : -1;
+}
+function BitShape({ mark }) {
+	const { x, y } = mark;
+	const half = MARK_HALF_PX;
+	if (mark.bit === "first") {
+		const points = [
+			[x - half, y - half - .5],
+			[x + half + .5, y],
+			[x - half, y + half + .5]
+		];
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
+			className: "nt-bit",
+			points: points.map((p) => p.join(",")).join(" ")
+		});
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: "nt-bit",
+		x: x - half + .5,
+		y: y - half + .5,
+		width: 2 * half - 1,
+		height: 2 * half - 1
+	});
+}
+function Leader({ label }) {
+	const { mark, box } = label;
+	const isBelow = box.top > mark.y;
+	const fromY = mark.y + (isBelow ? LEADER_GAP_PX : -8);
+	const toY = isBelow ? box.top : box.top + box.height;
+	const toX = Math.min(box.left + box.width - 3, Math.max(box.left + 3, mark.x));
+	if (Math.abs(toY - fromY) < 3 && Math.abs(toX - mark.x) < 3) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		className: "nt-bitlead",
+		x1: mark.x,
+		y1: fromY,
+		x2: toX,
+		y2: toY
+	});
+}
+function BitLabelPill({ label }) {
+	const { box, text } = label;
+	const [name, ...rest] = text.english.split(" ");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: "nt-bitpill",
+		x: box.left,
+		y: box.top,
+		width: box.width,
+		height: box.height,
+		rx: 3
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
+		className: "nt-bitlabel",
+		x: box.left + box.width / 2,
+		y: box.top + LABEL_BASELINE_PX,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
+				className: "nt-bitname",
+				children: name
+			}),
+			rest.length ? " " + rest.join(" ") : null,
+			text.hebrew ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
+				className: "nt-bithe",
+				lang: "he",
+				children: " / " + text.hebrew
+			}) : null
+		]
+	})] });
+}
+function bitLayout(scenario, scales, now, height, focus, avoid) {
+	const y = scales.y(now);
+	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return {
+		marks: [],
+		labels: []
+	};
+	const marks = spreadMarks(bitMarks(scenario, now, scales));
+	return {
+		marks,
+		labels: placeBitLabels(marks, {
+			left: scales.left + 2,
+			right: scales.width - 2,
+			top: scales.top,
+			bottom: height - 1
+		}, avoid ? [avoid] : [], focus, measureInPage)
+	};
+}
+function colourOf(mark) {
+	return "nt-p" + mark.packet % PACKET_COLOURS$2;
+}
+function BitMarks({ layout }) {
+	const { marks, labels } = layout;
+	if (!marks.length) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: "nt-bits",
+		"aria-hidden": "true",
+		children: [
+			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+				className: colourOf(label.mark),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Leader, { label })
+			}, "r" + label.mark.packet + label.mark.bit)),
+			labels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+				className: colourOf(label.mark),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitLabelPill, { label })
+			}, "l" + label.mark.packet + label.mark.bit)),
+			marks.map((mark) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+				className: colourOf(mark),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitShape, { mark })
+			}, "m" + mark.packet + mark.bit))
+		]
+	});
+}
+function BitChip({ bit }) {
+	const size = 17;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		className: "nt-chip-bit nt-p0",
+		width: size,
+		height: size,
+		"aria-hidden": "true",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitShape, { mark: {
+			packet: 0,
+			bit,
+			link: 0,
+			place: "wire",
+			x: size / 2,
+			y: size / 2
+		} })
 	});
 }
 var MIN_COL_PX = 96;
@@ -5409,7 +7436,7 @@ function AxisPin(props) {
 				x: left - 12,
 				y: nowY + 4,
 				textAnchor: "end",
-				children: fitTimeText(now)
+				children: fitAxisTime(now, left)
 			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowName, {
 				kind: "trans",
@@ -5506,34 +7533,56 @@ function isStretched(segment, scales) {
 	const drawn = scales.y(segment.end) - scales.y(segment.start);
 	return !map.scale || drawn > (segment.end - segment.start) * map.scale * STRETCH_FACTOR + 2;
 }
-function BandLabel(props) {
-	const { segment, scales, now } = props;
+function bandText(segment, scales) {
 	const x = (scales.x(segment.link) + scales.x(segment.link + 1)) / 2;
 	const middleY = (scales.y(segment.start) + scales.y(segment.end + segment.prop)) / 2;
 	const height = scales.y(segment.end) - scales.y(segment.start);
 	const name = "P" + (segment.packet + 1);
 	const duration = fitTimeText(segment.end - segment.start);
+	if (height >= TWO_LINES_PX) return {
+		x,
+		middleY,
+		lines: [name, duration]
+	};
 	const oneLine = name + " · " + duration;
-	const className = "nt-plabel" + later((segment.start + segment.end) / 2, now);
-	if (height >= TWO_LINES_PX) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
+	return {
+		x,
+		middleY,
+		lines: [oneLine.length * CHAR_PX < scales.column - 8 ? oneLine : name]
+	};
+}
+function bandTextRect(text) {
+	const width = Math.max(...text.lines.map((line) => line.length)) * CHAR_PX - 4;
+	const isTwoLines = text.lines.length > 1;
+	const top = text.middleY - (isTwoLines ? 9 : 3);
+	return {
+		left: text.x - width / 2,
+		top,
+		width,
+		height: isTwoLines ? 22 : 7
+	};
+}
+function BandLabel(props) {
+	const { x, middleY, lines } = props.text;
+	const className = "nt-plabel" + later(props.time, props.now);
+	if (lines.length > 1) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", {
 		className,
 		x,
 		y: middleY - 2,
 		textAnchor: "middle",
-		children: [name, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
+		children: [lines[0], /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", {
 			className: "nt-dur",
 			x,
 			dy: 14,
-			children: duration
+			children: lines[1]
 		})]
 	});
-	const fits = oneLine.length * CHAR_PX < scales.column - 8;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
 		className,
 		x,
 		y: middleY + 4,
 		textAnchor: "middle",
-		children: fits ? oneLine : name
+		children: lines[0]
 	});
 }
 function Jag(props) {
@@ -5552,28 +7601,42 @@ function Jag(props) {
 		points: points.map((p) => p.join(",")).join(" ")
 	});
 }
+function isClear(text, scales, clear) {
+	const { x, middleY: y } = text;
+	const isInPlot = y > scales.top + LABEL_EDGE_PX && y < scales.top + scales.plot - 4;
+	const rect = bandTextRect(text);
+	const isHidden = clear.hides.some((box) => overlaps$1(box, rect));
+	return isInPlot && !isUnder(x, y, clear.avoid) && !isHidden;
+}
 function BandMarks(props) {
-	const { scenario, scales, now, avoid } = props;
+	const { scenario, scales, now } = props;
 	const shown = scenario.segments.filter((segment) => isInWindow(segment, scales));
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [shown.filter((segment) => isStretched(segment, scales)).map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Jag, {
 		segment,
 		scales,
 		now
-	}, segment.packet + ":" + segment.link)), shown.filter((segment) => scales.y(segment.end) - scales.y(segment.start) >= LABEL_MIN_PX).filter((segment) => {
-		const x = (scales.x(segment.link) + scales.x(segment.link + 1)) / 2;
-		const y = (scales.y(segment.start) + scales.y(segment.end + segment.prop)) / 2;
-		return y > scales.top + LABEL_EDGE_PX && y < scales.top + scales.plot - 4 && !isUnder(x, y, avoid);
-	}).map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandLabel, {
+	}, segment.packet + ":" + segment.link)), shown.filter((segment) => scales.y(segment.end) - scales.y(segment.start) >= LABEL_MIN_PX).map((segment) => ({
 		segment,
-		scales,
+		text: bandText(segment, scales)
+	})).filter(({ text }) => isClear(text, scales, props)).map(({ segment, text }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BandLabel, {
+		text,
+		time: (segment.start + segment.end) / 2,
 		now
 	}, segment.packet + ":" + segment.link))] });
 }
-function coveredBy(avoid) {
-	return (x, y) => isUnder(x, y, avoid);
+function coveredBy(avoid, hides) {
+	return (x, y) => {
+		const around = {
+			left: x - P_LABEL_HALF,
+			top: y - P_LABEL_HALF,
+			width: 20,
+			height: 12
+		};
+		return isUnder(x, y, avoid) || hides.some((box) => overlaps$1(box, around));
+	};
 }
-function labelBoxOf(scenario, scales, event, tag) {
-	const text = eventLabel(tag);
+function labelBoxOf(scenario, scales, event, fact) {
+	const text = fact ? say$2(TEXTS.events, fact) : "";
 	if (!event || !text) return null;
 	const y = scales.y(event.time);
 	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return null;
@@ -5588,9 +7651,16 @@ function labelBoxOf(scenario, scales, event, tag) {
 		text
 	};
 }
+function eventPillRect(box) {
+	return {
+		left: box.left,
+		top: box.top,
+		width: box.width,
+		height: EV_HEIGHT
+	};
+}
 function NowMark(props) {
-	const { scales, event, box } = props;
-	const now = event ? event.time : 0;
+	const { scales, now, event, box } = props;
 	const y = scales.y(now);
 	if (y < scales.top - 1 || y > scales.top + scales.plot + 1) return null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
@@ -5605,23 +7675,50 @@ function NowMark(props) {
 			}),
 			event ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
 				className: "nt-dot",
+				...anchor(EVENT_DOT),
 				cx: scales.x(event.node),
 				cy: y,
 				r: 6
 			}) : null,
-			box ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-				className: "nt-evpill",
-				x: box.left,
-				y: box.top,
-				width: box.width,
-				height: EV_HEIGHT,
-				rx: 4
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
-				className: "nt-evlabel",
-				x: box.left + box.width / 2,
-				y: box.top + 14,
-				children: box.text
-			})] }) : null
+			box ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+				...anchor(EVENT_LABEL),
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+					className: "nt-evpill",
+					x: box.left,
+					y: box.top,
+					width: box.width,
+					height: EV_HEIGHT,
+					rx: 4
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+					className: "nt-evlabel",
+					x: box.left + box.width / 2,
+					y: box.top + 14,
+					children: box.text
+				})]
+			}) : null
+		]
+	});
+}
+function ScaleNote({ scenario, scales }) {
+	if (scales.map.spacing === "events") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+		className: "nt-note",
+		dir: "rtl",
+		lang: "he",
+		children: "מרווח שווה בין האירועים: הגובה אינו לפי הזמן. הזמנים כתובים על הציר ועל הבלוקים."
+	});
+	if (!scenario.segments.some((segment) => isStretched(segment, scales))) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "nt-note",
+		dir: "rtl",
+		lang: "he",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "nt-note-jag",
+				"aria-hidden": "true",
+				children: "≷"
+			}),
+			" ",
+			"בלוק קצר מאוד צויר גבוה יותר מהזמן שלו, כדי שיהיה אפשר לראות אותו; הזמן האמיתי כתוב עליו."
 		]
 	});
 }
@@ -5716,6 +7813,36 @@ function useWidth$1() {
 	}, []);
 	return [ref, width];
 }
+function usePrefs(scenario) {
+	const [prefs, setPrefs] = (0, import_react.useState)(() => prefsFor(scenarioKey(scenario)));
+	const change = (next) => {
+		savePrefs(next);
+		setPrefs(next);
+	};
+	return [prefs, change];
+}
+function useTimelineLayout(scenario, stepTime) {
+	const [boxRef, width] = useWidth$1();
+	const [prefs, change] = usePrefs(scenario);
+	const map = (0, import_react.useMemo)(() => isDrawable(scenario) ? timeMap(scenario, prefs.spacing, prefs.choice, stepTime, followPlot(width)) : null, [
+		scenario,
+		prefs,
+		stepTime,
+		width
+	]);
+	return {
+		boxRef,
+		width,
+		prefs,
+		change,
+		map,
+		scales: (0, import_react.useMemo)(() => map ? scalesOf(scenario, width, map) : null, [
+			scenario,
+			width,
+			map
+		])
+	};
+}
 function keepInView(box, x, gutter) {
 	if (!box || x < 0 || box.scrollWidth <= box.clientWidth) return;
 	const isLeft = x < box.scrollLeft + gutter + SCROLL_MARGIN;
@@ -5752,29 +7879,12 @@ function Happenings({ scenario, scales }) {
 		scales
 	}, "p" + interval.packet + ":" + interval.node))] });
 }
-function ScaleNote({ scenario, scales }) {
-	if (scales.map.spacing === "events") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-		className: "nt-note",
-		dir: "rtl",
-		lang: "he",
-		children: "מרווח שווה בין האירועים: הגובה אינו לפי הזמן. הזמנים כתובים על הציר ועל הבלוקים."
-	});
-	if (!scenario.segments.some((segment) => isStretched(segment, scales))) return null;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-		className: "nt-note",
-		dir: "rtl",
-		lang: "he",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: "nt-note-jag",
-				"aria-hidden": "true",
-				children: "≷"
-			}),
-			" ",
-			"בלוק קצר מאוד צויר גבוה יותר מהזמן שלו, כדי שיהיה אפשר לראות אותו; הזמן האמיתי כתוב עליו."
-		]
-	});
-}
+var StaticGrid = (0, import_react.memo)(GridLines);
+var StaticFrame = (0, import_react.memo)(Frame);
+var StaticHappenings = (0, import_react.memo)(Happenings);
+var StaticLanes = (0, import_react.memo)(QueueLanes);
+var StaticQueueBoxes = (0, import_react.memo)(QueueBoxes);
+var StaticScaleNote = (0, import_react.memo)(ScaleNote);
 function describe(scenario, event, tag) {
 	const now = event ? event.time : 0;
 	return "timeline of " + scenario.nodes.join(", ") + ", " + scenario.packets + " packet(s); now t = " + timeText(scenario, now) + (tag ? ": " + tag : "");
@@ -5801,14 +7911,6 @@ function ClipDefs(props) {
 		})
 	})] });
 }
-function usePrefs(scenario) {
-	const [prefs, setPrefs] = (0, import_react.useState)(() => prefsFor(scenarioKey(scenario)));
-	const change = (next) => {
-		savePrefs(next);
-		setPrefs(next);
-	};
-	return [prefs, change];
-}
 function SplitAtNow(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
 		className: "nt-future",
@@ -5820,45 +7922,50 @@ function SplitAtNow(props) {
 		children: props.children
 	})] });
 }
+function heightOf(scales) {
+	return scales.top + scales.plot + BOTTOM;
+}
 function Diagram(props) {
-	const { scenario, event, tag, scales } = props;
+	const { scenario, event, step, now, isSettled, scales } = props;
 	const id = (0, import_react.useId)().replace(/[^A-Za-z0-9]/g, "");
-	const now = event ? event.time : 0;
 	const nowY = Math.max(scales.top, Math.min(scales.top + scales.plot, scales.y(now)));
-	const height = scales.top + scales.plot + BOTTOM;
-	const box = labelBoxOf(scenario, scales, event, tag);
+	const height = heightOf(scales);
+	const box = isSettled ? labelBoxOf(scenario, scales, event, step.fact) : null;
+	const pill = box ? eventPillRect(box) : null;
+	const bits = bitLayout(scenario, scales, now, height, packetIndexOf(step.fact), pill);
+	const hides = bits.labels.map((label) => label.box);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 		className: "nt-svg",
 		width: scales.width,
 		height,
 		viewBox: "0 0 " + scales.width + " " + height,
 		role: "img",
-		"aria-label": describe(scenario, event, tag),
+		"aria-label": describe(scenario, event, step.tag),
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipDefs, {
 				id,
 				scales,
 				nowY
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GridLines, { scales }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticGrid, { scales }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticFrame, {
 				scenario,
 				scales
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SplitAtNow, {
 				id,
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Happenings, {
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticHappenings, {
 					scenario,
 					scales
 				})
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLanes, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticLanes, {
 				scenario,
 				scales
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SplitAtNow, {
 				id,
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueBoxes, {
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticQueueBoxes, {
 					scenario,
 					scales
 				})
@@ -5867,24 +7974,24 @@ function Diagram(props) {
 				scenario,
 				scales,
 				now,
-				avoid: box
+				avoid: box,
+				hides
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QueueLabels, {
 				scenario,
 				scales,
 				now,
-				isCovered: coveredBy(box)
+				isCovered: coveredBy(box, hides)
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowMark, {
 				scales,
-				event,
+				now,
+				event: isSettled ? event : void 0,
 				box
-			})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitMarks, { layout: bits })
 		]
 	});
-}
-function heightOf(scales) {
-	return scales.top + scales.plot + BOTTOM;
 }
 function NotDrawable({ ref }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -5898,13 +8005,9 @@ function NotDrawable({ ref }) {
 		})
 	});
 }
-function Timeline({ scenario, event, tag }) {
-	const [boxRef, width] = useWidth$1();
-	const [prefs, change] = usePrefs(scenario);
-	const drawable = isDrawable(scenario);
-	const now = event ? event.time : 0;
-	const map = drawable ? timeMap(scenario, prefs.spacing, prefs.choice, now, followPlot(width)) : null;
-	const scales = map ? scalesOf(scenario, width, map) : null;
+function Timeline(props) {
+	const { scenario, event, layout, now, step, isSettled, stageRef } = props;
+	const { boxRef, width, prefs, change, map, scales } = layout;
 	const eventX = scales && event ? scales.x(event.node) : -1;
 	const gutter = scales ? scales.left : 0;
 	(0, import_react.useLayoutEffect)(() => keepInView(boxRef.current, eventX, gutter), [
@@ -5925,13 +8028,16 @@ function Timeline({ scenario, event, tag }) {
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "nt-stage",
+			ref: stageRef,
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "nt-box",
 				ref: boxRef,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Diagram, {
 					scenario,
 					event,
-					tag,
+					step,
+					now,
+					isSettled,
 					scales
 				})
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AxisPin, {
@@ -5941,19 +8047,100 @@ function Timeline({ scenario, event, tag }) {
 				height: heightOf(scales)
 			})]
 		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScaleNote, {
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaticScaleNote, {
 			scenario,
 			scales
 		})
 	] });
 }
-// src/engines/net/view/NetView.tsx
-function Bilingual(props) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [props.english + " ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
-		lang: "he",
-		children: "/ " + props.hebrew
+// src/engines/net/view/ScenarioView.tsx
+function layoutKey(layout) {
+	const { spacing, choice } = layout.prefs;
+	return [
+		layout.width,
+		spacing,
+		choice.follow,
+		choice.all,
+		choice.center
+	].join("|");
+}
+function TimelineLegend(props) {
+	const { scenario } = props;
+	const words = TEXTS.words;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nt-legend",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "done",
+				hebrew: words.done
+			})] }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0 nt-chip-later" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "to come",
+				hebrew: words.toCome
+			})] }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-now" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "now",
+				hebrew: words.now
+			})] }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "first" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "first bit",
+				hebrew: words.firstBit
+			})] }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BitChip, { bit: "last" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "last bit",
+				hebrew: words.lastBit
+			})] }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "queue",
+				hebrew: words.queue
+			})] }),
+			scenario.procs.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-proc" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
+				english: "processing",
+				hebrew: words.processing
+			})] }) : null
+		]
+	});
+}
+function useArrival(isGliding) {
+	const [hasGlide] = (0, import_react.useState)(isGliding);
+	const { stage } = useMotion(isGliding ? "gliding" : "arrived", hasGlide ? "next" : "jump", isGliding ? null : ARRIVAL);
+	return stage;
+}
+function ScenarioView(props) {
+	const { scenario, step, index, count, transition, previous } = props;
+	const event = step.event;
+	const stepTime = event ? event.time : 0;
+	const layout = useTimelineLayout(scenario, stepTime);
+	const span = layout.map && previous ? glideSpan(layout.map, previous.time, stepTime) : null;
+	const { progress, isGliding, finish } = useStepTransition(index, span ? transition : "jump");
+	const [firstLayout] = (0, import_react.useState)(() => layoutKey(layout));
+	const isMoved = layoutKey(layout) !== firstLayout;
+	(0, import_react.useEffect)(() => {
+		if (isMoved) finish();
+	}, [isMoved, finish]);
+	const glide = isGliding && !isMoved ? span : null;
+	const now = glide && layout.map ? glideTime(layout.map, glide, progress) : stepTime;
+	const stageRef = useArrival(glide !== null);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowStatus, {
+		scenario,
+		event,
+		now,
+		index,
+		count
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", {
+		className: "net-timeline",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Timeline, {
+			scenario,
+			event,
+			step,
+			now,
+			isSettled: glide === null,
+			layout,
+			stageRef
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimelineLegend, { scenario })]
 	})] });
 }
+// src/engines/net/view/NetView.tsx
 function Rendered(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 		className: props.className,
@@ -6021,34 +8208,6 @@ function StepCard(props) {
 				lang: "he",
 				dangerouslySetInnerHTML: { __html: step.why }
 			}) : null
-		]
-	});
-}
-function TimelineLegend(props) {
-	const { scenario } = props;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "nt-legend",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
-				english: "done",
-				hebrew: "כבר קרה"
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-p0 nt-chip-later" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
-				english: "to come",
-				hebrew: "עוד יקרה"
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-now" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
-				english: "now",
-				hebrew: "עכשיו"
-			})] }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-queue" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
-				english: "queue",
-				hebrew: "תור"
-			})] }),
-			scenario.procs.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "nt-chip nt-chip-proc" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bilingual, {
-				english: "processing",
-				hebrew: "עיבוד"
-			})] }) : null
 		]
 	});
 }
@@ -6155,7 +8314,9 @@ function revealFresh(root) {
 	const box = panel.getBoundingClientRect();
 	if (row.bottom > box.bottom) panel.scrollTop += row.bottom - box.bottom + REVEAL_MARGIN_PX;
 }
-function NetView({ step, index, count, scenario }) {
+function NetView(props) {
+	const { step, scenario } = props;
+	const transition = props.transition || "run";
 	const [lit, setLit] = (0, import_react.useState)([]);
 	const rootRef = (0, import_react.useRef)(null);
 	(0, import_react.useLayoutEffect)(() => {
@@ -6178,30 +8339,19 @@ function NetView({ step, index, count, scenario }) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepCard, {
 				step,
-				index
+				index: props.index
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "net-grid",
-				children: [
-					scenario ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NowStatus, {
-						scenario,
-						event: step.event,
-						index,
-						count
-					}) : null,
-					scenario ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", {
-						className: "net-timeline",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Timeline, {
-							scenario,
-							event: step.event,
-							tag: step.tag
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimelineLegend, { scenario })]
-					}) : null,
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariableTable, {
-						step,
-						lit
-					})
-				]
+				children: [scenario ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScenarioView, {
+					...props,
+					scenario,
+					step,
+					transition
+				}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariableTable, {
+					step,
+					lit
+				})]
 			})
 		]
 	});
@@ -6256,6 +8406,10 @@ function transcript(context) {
 	});
 	return html;
 }
+function glideStart(context) {
+	const { ui, state } = context;
+	return ui.stepTransition() === "next" && context.drawnIndex === state.idx - 1 ? state.steps[context.drawnIndex]?.event : void 0;
+}
 function drawStep(context) {
 	const { ui, state } = context;
 	const step = state.steps[state.idx];
@@ -6264,8 +8418,11 @@ function drawStep(context) {
 		step,
 		index: state.idx,
 		count: state.steps.length,
-		scenario: state.scenario
+		scenario: state.scenario,
+		transition: ui.stepTransition(),
+		previous: glideStart(context)
 	});
+	context.drawnIndex = state.idx;
 	const view = (0, import_react.createElement)(ViewGuard, {
 		key: context.viewKey,
 		children: panel
@@ -6394,7 +8551,8 @@ function attach(ui) {
 	const context = {
 		ui,
 		state,
-		viewKey: 0
+		viewKey: 0,
+		drawnIndex: -1
 	};
 	ui.setEngineLabel("timeline · in browser", "");
 	ui.ed.setName(MAIN_FILE);
@@ -9538,6 +11696,22 @@ function setBadge(context, hasPassed, passedCount, testCount) {
 	}
 	paintBadge(context, hasPassed, passedCount, testCount);
 }
+// src/core/code-box/step-moves.js
+var SINGLE_STEPS = {
+	next: "next",
+	back: "back"
+};
+function transitionOf(kind, isRepeat) {
+	return !isRepeat && SINGLE_STEPS[kind] || "jump";
+}
+function moveWithTransition(context, transition, work) {
+	context.stepTransition = transition;
+	try {
+		work();
+	} finally {
+		context.stepTransition = "run";
+	}
+}
 // src/core/code-box/debug-frame.js
 var FIELD_TAGS = /^(INPUT|TEXTAREA|SELECT)$/;
 function setWideLayout(isWide) {
@@ -9579,21 +11753,21 @@ function isInField(target) {
 	if (FIELD_TAGS.test(target.tagName) || target.isContentEditable) return true;
 	return !!(target.closest && target.closest(".ftabs"));
 }
+function stepKeyMove(event) {
+	const isField = isInField(event.target);
+	if (event.key === "F10" || !isField && event.key === "ArrowLeft") return "next";
+	return !isField && event.key === "ArrowRight" ? "back" : null;
+}
 function wireStepKeys(context) {
 	const { state, host } = context;
 	document.addEventListener("keydown", (event) => {
 		const controller = context.controller;
 		const hasModifier = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 		if (state.mode !== "debug" || !controller.move || event.defaultPrevented || hasModifier) return;
-		if (!host.getClientRects().length) return;
-		const isField = isInField(event.target);
-		if (event.key === "F10" || !isField && event.key === "ArrowLeft") {
-			event.preventDefault();
-			controller.move("next");
-		} else if (!isField && event.key === "ArrowRight") {
-			event.preventDefault();
-			controller.move("back");
-		}
+		const kind = stepKeyMove(event);
+		if (!kind || !host.getClientRects().length) return;
+		event.preventDefault();
+		moveWithTransition(context, transitionOf(kind, event.repeat), () => controller.move(kind));
 	});
 }
 // src/core/code-box/file-view.js
@@ -9912,11 +12086,13 @@ function pressActionButton(context, action, actionButton) {
 	if (action === "reset") pressReset(context, actionButton);
 }
 function pressStepButton(context, kind) {
+	const controller = context.controller;
 	if (kind === "stop") stopDebugging(context);
-	else if (context.controller.move) context.controller.move(kind);
+	else if (controller.move) moveWithTransition(context, transitionOf(kind), () => controller.move(kind));
 }
 function seekStep(context, index) {
-	if (context.controller.seek) context.controller.seek(index);
+	const controller = context.controller;
+	if (controller.seek) moveWithTransition(context, "jump", () => controller.seek(index));
 }
 function onBoxKey(context, event) {
 	const isWide = document.body.classList.contains("wide");
@@ -11320,6 +13496,9 @@ function steppingMembers(context) {
 		focusStepBar() {
 			focusStepBar(context);
 		},
+		stepTransition() {
+			return context.stepTransition || "run";
+		},
 		showMemory(where, memoryView) {
 			const changes = { memory: memoryView };
 			if (where !== null) changes.memoryWhere = where;
@@ -11454,7 +13633,8 @@ function createBoxContext(host, box, options) {
 			undoSnapshot: null,
 			undoTimer: 0
 		},
-		isBusy: false
+		isBusy: false,
+		stepTransition: "run"
 	};
 }
 function createMainEditor(context) {
@@ -23373,7 +25553,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 2dca632 מ-2026-11-09 02:28"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 2dca632</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 7e15905 מ-2026-11-09 02:45"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 7e15905</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
