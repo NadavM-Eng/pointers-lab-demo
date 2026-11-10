@@ -9121,29 +9121,29 @@ installCourseDiagrams({});
 	});
 	U.push({
 		id: "question",
-		title: "שאלה 17",
-		body: body([R`<p>זו שאלה 17 מתרגיל בחדו"א 1 באוניברסיטת בן-גוריון. היא נראית פשוטה, אבל היא בודקת בדיוק את ההגדרות.</p>
-<div class="callout key"><b>שאלה 17</b><p>תהיינה $(a_n)$ ו-$(b_n)$ סדרות חסומות. הוכיחו או הפריכו:</p><ul>
-<li>(א) הסדרה $(a_n + b_n)$ חסומה.</li>
-<li>(ב) הסדרה $(a_n b_n)$ חסומה.</li>
-<li>(ג) אם $b_n \ne 0$ לכל $n$, אז הסדרה $\left(\frac{a_n}{b_n}\right)$ חסומה.</li>
-<li>(ד) אם קיים $c > 0$ כך ש-$|b_n| \ge c$ לכל $n$, אז הסדרה $\left(\frac{a_n}{b_n}\right)$ חסומה.</li></ul></div>
-<h3>"הוכיחו או הפריכו"</h3>
-<p><b>להוכיח</b> פירושו להראות שהטענה נכונה לכל שתי סדרות חסומות: אי אפשר לבדוק דוגמאות, צריך טיעון כללי. <b>להפריך</b> פירושו למצוא דוגמה נגדית <b>אחת</b>: סדרות שמקיימות את כל התנאים, והמסקנה לא נכונה בהן.</p>
-<p>הדרך: קודם מנחשים בעזרת דוגמאות (▶ הרצה עושה את זה כאן), ורק אז כותבים הוכחה או דוגמה נגדית. התשובות: (א), (ב) ו-(ד) נכונות; (ג) לא נכונה. בכל תת-שיעור יש הוכחה שעוברים עליה שורה אחר שורה, ובשניים יש תרגיל.</p>
-<div class="callout"><b>הגדלים בהוכחות</b><p>כמו בשאלה, $m_1 \le a_n \le M_1$ ו-$m_2 \le b_n \le M_2$. מהם בונים גדלים חדשים, כמו $K_1 = \max(|m_1|, |M_1|)$ או $K = K_1 K_2$. בחלונית רואים כל גודל, מה הוא אומר וממה הוא נבנה.</p></div>`])
+		title: "ארבע טענות",
+		body: body([R`<p>שאלה אחת, ארבע טענות על סדרות חסומות. בכל טענה מחליטים: היא נכונה תמיד, או שיש מקרה שבו היא נשברת. השאלה נכתבה לקורס הזה, והיא מתרגלת את מה שההגדרה של חסימות דורשת בפועל.</p>
+<div class="callout key"><b>השאלה</b><p>נתון ש-$(a_n)$ ו-$(b_n)$ סדרות חסומות. לכל טענה, הוכיחו אותה או תנו דוגמה נגדית:</p><ul>
+<li>(א) הסדרה $(2a_n - 3b_n)$ חסומה.</li>
+<li>(ב) הסדרה $(a_n b_n^2)$ חסומה.</li>
+<li>(ג) אם $b_n > 0$ לכל $n$, אז הסדרה $\left(\frac{a_n}{b_n}\right)$ חסומה.</li>
+<li>(ד) אם יש מספר $c > 0$ כך ש-$b_n \ge c$ לכל $n$, אז הסדרה $\left(\frac{a_n}{b_n}\right)$ חסומה.</li></ul></div>
+<h3>הוכחה או דוגמה נגדית</h3>
+<p><b>הוכחה</b> צריכה לעבוד לכל שתי סדרות חסומות, ולכן היא טיעון כללי: דוגמאות לא מספיקות. <b>דוגמה נגדית</b> היא זוג סדרות <b>אחד</b> שעומד בכל התנאים, ובו המסקנה לא מתקיימת.</p>
+<p>כדאי להתחיל מניחוש: ▶ הרצה בודקת כל טענה על מספרים. רק אחרי הניחוש כותבים הוכחה או דוגמה. התשובות: (א), (ב) ו-(ד) נכונות, ו-(ג) לא. לכל טענה יש שיעור עם הוכחה שעוברים עליה שורה אחר שורה, ובשניים מהם יש גם תרגיל.</p>
+<div class="callout"><b>הגדלים בהוכחות</b><p>כמו בשיעור 1: $m_1 \le a_n \le M_1$ ו-$m_2 \le b_n \le M_2$. מהם בונים גדלים חדשים, כמו $K_1 = \max(|m_1|, |M_1|)$. בחלונית רואים כל גודל, מה הוא אומר וממה הוא נבנה.</p></div>`])
 	});
 	U.push({
 		id: "sum",
-		title: "(א) סכום",
+		title: "(א) צירוף ליניארי",
 		body: body([
-			R`<p>טענה (א): אם $a_n$ ו-$b_n$ חסומות, גם $a_n + b_n$ חסומה. כדי להוכיח צריך <b>למצוא</b> חסם תחתון וחסם עליון לסכום, מתוך החסמים של $a_n$ ושל $b_n$.</p>
-<p>הרעיון: מחברים אי-שוויונות. אם $m_1 \le a_n \le M_1$ ו-$m_2 \le b_n \le M_2$, אז $m_1 + m_2 \le a_n + b_n \le M_1 + M_2$. החסמים של הסכום הם סכומי החסמים, ושניהם מספרים קבועים.</p>
-<p>עברו על ההוכחה שורה אחר שורה. שימו לב לצעד 4: שם נולדים $m$ ו-$M$, והחלונית מראה ש-$M$ נגזר מ-$M_1$ ומ-$M_2$. העכבר על הערך מסמן את המקורות.</p>`,
+			R`<p>טענה (א): אם $a_n$ ו-$b_n$ חסומות, גם $2a_n - 3b_n$ חסומה. כדי להוכיח צריך <b>למצוא</b> חסם תחתון וחסם עליון לסדרה החדשה, מתוך החסמים של $a_n$ ושל $b_n$.</p>
+<p>הרעיון: כופלים כל אי-שוויון במקדם שלו, ואז מחברים. כפל במספר חיובי שומר על הכיוון, וכפל במספר <b>שלילי</b> הופך אותו: מ-$m_2 \le b_n \le M_2$ יוצא $-3M_2 \le -3b_n \le -3m_2$. לכן החסם התחתון של $2a_n - 3b_n$ משתמש בחסם ה<b>עליון</b> של $b_n$.</p>
+<p>עברו על ההוכחה שורה אחר שורה. בצעד 4 הכיוון מתהפך, ובצעד 6 נולדים $m$ ו-$M$: החלונית מראה ש-$m$ נגזר מ-$m_1$ ומ-$M_2$. העכבר על הערך מסמן את המקורות.</p>`,
 			proofBox({
-				id: "sum-proof",
-				title: "הוכחה: הסכום חסום",
-				tex: R`% Claim (a): if (a_n) and (b_n) are bounded, so is (a_n + b_n).
+				id: "combo-proof",
+				title: "הוכחה: הצירוף חסום",
+				tex: R`% Claim (a): if (a_n) and (b_n) are bounded, so is (2a_n - 3b_n).
 \begin{proof}
 \given{a_n}{הסדרה הראשונה (נתונה)}
 \given{m_1}{חסם תחתון של $a_n$}
@@ -9153,54 +9153,56 @@ installCourseDiagrams({});
 \given{m_2}{חסם תחתון של $b_n$}
 \given{M_2}{חסם עליון של $b_n$}
 \step{m_2 \le b_n \le M_2 \quad \forall n}{וכך גם $b_n$, עם חסמים $m_2$ ו-$M_2$.}
-\step{m_1 + m_2 \le a_n + b_n \le M_1 + M_2 \quad \forall n}{מחברים צד לצד: אם $x \le y$ ו-$z \le w$ אז $x + z \le y + w$. זה נכון לכל $n$, כי שני אי-השוויונות נכונים לכל $n$.}
-\define{m}{m_1 + m_2}{חסם תחתון של $a_n + b_n$}
-\define{M}{M_1 + M_2}{חסם עליון של $a_n + b_n$}
-\step{m = m_1 + m_2, \quad M = M_1 + M_2}{נותנים שם לשני הקצוות. הם מספרים קבועים, שלא תלויים ב-$n$, ולכן הם יכולים להיות חסמים.}
-\step{m \le a_n + b_n \le M \quad \forall n}{מצאנו חסם תחתון וחסם עליון, ולכן $a_n + b_n$ חסומה. \qed}
+\step{2m_1 \le 2a_n \le 2M_1 \quad \forall n}{כופלים את אי-השוויון של $a_n$ ב-$2$. המספר חיובי, ולכן הכיוון נשמר.}
+\step{-3M_2 \le -3b_n \le -3m_2 \quad \forall n}{כופלים את אי-השוויון של $b_n$ ב-$-3$. המספר שלילי, ולכן הכיוון מתהפך: $M_2$ עובר לצד הקטן ו-$m_2$ לצד הגדול.}
+\step{2m_1 - 3M_2 \le 2a_n - 3b_n \le 2M_1 - 3m_2 \quad \forall n}{מחברים צד לצד: אם $x \le y$ ו-$z \le w$ אז $x + z \le y + w$. זה נכון לכל $n$, כי שני אי-השוויונות נכונים לכל $n$.}
+\define{m}{2m_1 - 3M_2}{חסם תחתון של $2a_n - 3b_n$}
+\define{M}{2M_1 - 3m_2}{חסם עליון של $2a_n - 3b_n$}
+\step{m = 2m_1 - 3M_2, \quad M = 2M_1 - 3m_2}{נותנים שם לשני הקצוות. הם מספרים קבועים, שלא תלויים ב-$n$, ולכן הם יכולים להיות חסמים.}
+\step{m \le 2a_n - 3b_n \le M \quad \forall n}{מצאנו חסם תחתון וחסם עליון, ולכן $2a_n - 3b_n$ חסומה. \qed}
 \end{proof}`,
 				example: {
 					values: {
-						m_1: -3,
-						M_1: 3,
-						m_2: 2,
-						M_2: 3
+						m_1: -1,
+						M_1: 2,
+						m_2: -1,
+						M_2: 1
 					},
 					seqs: {
-						a_n: R`3 \cdot (-1)^n`,
-						b_n: R`2 + \frac{1}{n}`
+						a_n: R`2 - \frac{3}{n}`,
+						b_n: R`(-1)^n`
 					},
 					cols: [
 						"a_n",
 						"b_n",
-						"a_n + b_n"
+						"2a_n - 3b_n"
 					],
 					hyp: [R`m_1 \le a_n \le M_1`, R`m_2 \le b_n \le M_2`],
-					claim: R`m_1 + m_2 \le a_n + b_n \le M_1 + M_2`
+					claim: R`2m_1 - 3M_2 \le 2a_n - 3b_n \le 2M_1 - 3m_2`
 				}
 			}),
 			R`<h3>אותה הוכחה עם ערך מוחלט</h3>
-<p>עם ההגדרה השקולה: $|a_n| \le K_1$ ו-$|b_n| \le K_2$, ולפי <b>אי-שוויון המשולש</b> $|a_n + b_n| \le |a_n| + |b_n| \le K_1 + K_2$. החסם הוא $K = K_1 + K_2$.</p>
-<p>בתרגיל הבא נתונים רק $m_1, M_1, m_2, M_2$, וצריך לכתוב $K$ כך ש-$|a_n + b_n| \le K$ לכל $n$. נראה טבעי לכתוב $M_1 + M_2$, אבל זה חסם רק למעלה: כשהסדרות שליליות, $|a_n + b_n|$ יכול להיות גדול ממנו.</p>
-<div class="callout"><b>איך בודקים תשובה במתמטיקה</b><p>✓ בדיקות מגריל מאות חסמים, ובכל פעם איברים של סדרות שעומדות בהם, ובודק ש-$|a_n + b_n| \le K$ בכל ההגרלות. זה לא מוכיח שהתשובה נכונה, אבל תשובה שגויה נופלת מהר, ואתם רואים את הדוגמה שהפילה אותה.</p></div>`,
+<p>עם ההגדרה השקולה: $|a_n| \le K_1$ ו-$|b_n| \le K_2$, ולפי <b>אי-שוויון המשולש</b> $|2a_n - 3b_n| \le 2|a_n| + 3|b_n| \le 2K_1 + 3K_2$. החסם הוא $K = 2K_1 + 3K_2$, ואין צורך לחשוב על כיוונים.</p>
+<p>בתרגיל הבא נתונים רק $m_1, M_1, m_2, M_2$, וצריך לכתוב $K$ כך ש-$|2a_n - 3b_n| \le K$ לכל $n$. נראה טבעי להציב את החסמים העליונים, $2M_1 - 3M_2$, אבל זה לא חסם אפילו מלמעלה: כש-$a_n$ קרובה ל-$M_1$ ו-$b_n$ קרובה ל-$m_2$, הצירוף גדול ממנו.</p>
+<div class="callout"><b>איך בודקים תשובה במתמטיקה</b><p>✓ בדיקות מגריל מאות חסמים, ובכל פעם איברים של סדרות שעומדות בהם, ובודק ש-$|2a_n - 3b_n| \le K$ בכל ההגרלות. זה לא מוכיח שהתשובה נכונה, אבל תשובה שגויה נופלת מהר, ואתם רואים את הדוגמה שהפילה אותה.</p></div>`,
 			{
-				id: "sum-bound",
-				title: "חסם לסכום",
-				task: H(R`כתבו ב-<code>proof.tex</code> את $K$ כך ש-$|a_n + b_n| \le K$ לכל $n$, בעזרת $m_1, M_1, m_2, M_2$ בלבד. כותבים ב-LaTeX: <code>\max(x, y)</code>, <code>|x|</code>, <code>\frac{x}{y}</code>, <code>x \cdot y</code>. אפשר להגדיר שמות עזר בשורות שלפני $K$; בטרמינל רואים את התשובה מסודרת תוך כדי הקלדה.`),
-				code: R`% (a) Find a bound K with |a_n + b_n| \le K for every n.
+				id: "combo-bound",
+				title: "חסם לצירוף",
+				task: H(R`כתבו ב-<code>proof.tex</code> את $K$ כך ש-$|2a_n - 3b_n| \le K$ לכל $n$, בעזרת $m_1, M_1, m_2, M_2$ בלבד. כותבים ב-LaTeX: <code>\max(x, y)</code>, <code>|x|</code>, <code>\frac{x}{y}</code>, <code>x \cdot y</code>. מספר לפני ערך מוחלט כותבים עם <code>\cdot</code>: <code>2 \cdot |m_1|</code>, לא <code>2|m_1|</code>. אפשר להגדיר שמות עזר בשורות שלפני $K$; בטרמינל רואים את התשובה מסודרת תוך כדי הקלדה.`),
+				code: R`% (a) Find a bound K with |2a_n - 3b_n| \le K for every n.
 % Known for every n:  m_1 \le a_n \le M_1  and  m_2 \le b_n \le M_2.
 % Write K with m_1, M_1, m_2, M_2 only (not with a_n, b_n or n), in LaTeX:
-%   +  -  x \cdot y  \frac{x}{y}  |x|  \max(x, y)  \min(x, y)
+%   +  -  x \cdot y  \frac{x}{y}  |x|  \max(x, y)  \min(x, y)   (2|x| is 2 \cdot |x|)
 % Helper names are allowed on the lines above K, like  K_1 = ...
-K = M_1 + M_2`,
-				solution: R`% (a) Find a bound K with |a_n + b_n| \le K for every n.
+K = 2M_1 - 3M_2`,
+				solution: R`% (a) Find a bound K with |2a_n - 3b_n| \le K for every n.
 % Known for every n:  m_1 \le a_n \le M_1  and  m_2 \le b_n \le M_2.
 % Write K with m_1, M_1, m_2, M_2 only (not with a_n, b_n or n), in LaTeX:
-%   +  -  x \cdot y  \frac{x}{y}  |x|  \max(x, y)  \min(x, y)
+%   +  -  x \cdot y  \frac{x}{y}  |x|  \max(x, y)  \min(x, y)   (2|x| is 2 \cdot |x|)
 % Helper names are allowed on the lines above K, like  K_1 = ...
 K_1 = \max(|m_1|, |M_1|)
 K_2 = \max(|m_2|, |M_2|)
-K = K_1 + K_2`,
+K = 2K_1 + 3K_2`,
 				proof: {
 					answer: "K",
 					forbid: [
@@ -9232,23 +9234,23 @@ K = K_1 + K_2`,
 					],
 					example: {
 						values: {
-							m_1: -4,
-							M_1: 1,
-							m_2: -3,
-							M_2: 2
+							m_1: -1,
+							M_1: 2,
+							m_2: -1,
+							M_2: 3
 						},
 						seqs: {
-							a_n: R`-4 + \frac{5}{n}`,
-							b_n: R`-3 + \frac{5}{n}`
+							a_n: R`2 - \frac{3}{n}`,
+							b_n: R`-1 + \frac{4}{n}`
 						},
 						cols: [
 							"a_n",
 							"b_n",
-							"a_n + b_n",
+							"2a_n - 3b_n",
 							"K"
 						],
 						hyp: [R`m_1 \le a_n \le M_1`, R`m_2 \le b_n \le M_2`],
-						claim: R`|a_n + b_n| \le K`,
+						claim: R`|2a_n - 3b_n| \le K`,
 						terms: 6
 					}
 				},
@@ -9287,7 +9289,7 @@ K = K_1 + K_2`,
 							"m_2",
 							"M_2"
 						]],
-						claim: R`|a_n + b_n| \le K`
+						claim: R`|2a_n - 3b_n| \le K`
 					},
 					{
 						type: "sample",
@@ -9323,7 +9325,7 @@ K = K_1 + K_2`,
 							"m_2",
 							"M_2"
 						]],
-						claim: R`|a_n + b_n| \le K`
+						claim: R`|2a_n - 3b_n| \le K`
 					},
 					{
 						type: "sample",
@@ -9359,7 +9361,7 @@ K = K_1 + K_2`,
 							"m_2",
 							"M_2"
 						]],
-						claim: R`|a_n + b_n| \le K`
+						claim: R`|2a_n - 3b_n| \le K`
 					},
 					{
 						type: "sample",
@@ -9387,7 +9389,7 @@ K = K_1 + K_2`,
 							]
 						],
 						terms: [],
-						claim: R`K \le 2 \left(\max(|m_1|, |M_1|) + \max(|m_2|, |M_2|)\right)`
+						claim: R`K \le 2 \left(2\max(|m_1|, |M_1|) + 3\max(|m_2|, |M_2|)\right)`
 					},
 					{
 						type: "example",
@@ -9399,15 +9401,15 @@ K = K_1 + K_2`,
 	});
 	U.push({
 		id: "product",
-		title: "(ב) מכפלה",
-		body: body([R`<p>טענה (ב): המכפלה $a_n b_n$ של שתי סדרות חסומות חסומה. כאן החיבור של (א) לא עובד: אי אפשר פשוט להכפיל את החסמים.</p>
-<div class="callout warn"><b>טעות נפוצה</b><p>"$m_1 m_2 \le a_n b_n \le M_1 M_2$" לא נכון כשיש מספרים שליליים. למשל $-2 \le a_n \le 1$ ו-$-3 \le b_n \le 1$: ב-$a_n = -2$, $b_n = -3$ המכפלה היא $6$, גדולה מ-$M_1 M_2 = 1$.</p></div>
-<p>הפתרון: עוברים לערכים מוחלטים, שהם אי-שליליים. מגדירים $K_1 = \max(|m_1|, |M_1|)$, ולפי ההוכחה בשיעור 1 $|a_n| \le K_1$. כך גם $K_2$. עכשיו</p>
-\[ |a_n b_n| = |a_n| \cdot |b_n| \le K_1 K_2. \]
-<p>▶ הרצה מראה את הדוגמה של האזהרה: המכפלה עוברת את $M_1 M_2 = 1$, אבל לא את $K_1 K_2 = 6$.</p>`, proofBox({
-			id: "product-proof",
+		title: "(ב) מכפלה וריבוע",
+		body: body([R`<p>טענה (ב): הסדרה $a_n b_n^2$ חסומה כש-$a_n$ ו-$b_n$ חסומות. כאן הדרך של (א) לא עובדת: אי אפשר פשוט להעלות בריבוע ולהכפיל את החסמים.</p>
+<div class="callout warn"><b>טעות נפוצה</b><p>"$m_2^2 \le b_n^2 \le M_2^2$" לא נכון כשיש מספרים שליליים. למשל $-3 \le b_n \le 1$: ב-$b_n = -3$ הריבוע הוא $9$, גדול מ-$M_2^2 = 1$. מאותה סיבה "$a_n b_n^2 \le M_1 M_2^2$" נשבר: עם $-2 \le a_n \le 1$, ב-$a_n = 1$ וב-$b_n = -3$ המכפלה היא $9$.</p></div>
+<p>הפתרון: עוברים לערכים מוחלטים, שהם אי-שליליים. מגדירים $K_1 = \max(|m_1|, |M_1|)$, ולפי ההוכחה בשיעור 1 $|a_n| \le K_1$. כך גם $|b_n| \le K_2$. עכשיו</p>
+\[ |a_n b_n^2| = |a_n| \cdot |b_n|^2 \le K_1 K_2^2. \]
+<p>▶ הרצה מראה את הדוגמה של האזהרה: המכפלה עוברת את $M_1 M_2^2 = 1$, אבל לא את $K_1 K_2^2 = 18$.</p>`, proofBox({
+			id: "square-proof",
 			title: "הוכחה: המכפלה חסומה",
-			tex: R`% Claim (b): if (a_n) and (b_n) are bounded, so is (a_n b_n).
+			tex: R`% Claim (b): if (a_n) and (b_n) are bounded, so is (a_n b_n^2).
 \begin{proof}
 \given{a_n}{הסדרה הראשונה (נתונה)}
 \given{m_1}{חסם תחתון של $a_n$}
@@ -9421,10 +9423,11 @@ K = K_1 + K_2`,
 \step{K_1 = \max(|m_1|, |M_1|), \quad |a_n| \le K_1 \quad \forall n}{כמו בהוכחה של שיעור 1: $K_1$ גדול משני החסמים בערך מוחלט, ולכן $|a_n| \le K_1$ לכל $n$.}
 \define{K_2}{\max(|m_2|, |M_2|)}{חסם של $|b_n|$}
 \step{K_2 = \max(|m_2|, |M_2|), \quad |b_n| \le K_2 \quad \forall n}{באותה דרך $|b_n| \le K_2$ לכל $n$.}
-\step{|a_n b_n| = |a_n| \cdot |b_n|}{הערך המוחלט של מכפלה הוא מכפלת הערכים המוחלטים.}
-\step{|a_n| \cdot |b_n| \le K_1 K_2}{מכפילים את $|a_n| \le K_1$ ב-$|b_n| \le K_2$. זה מותר כי כל הצדדים \textbf{אי-שליליים}: אם $0 \le x \le X$ ו-$0 \le y \le Y$ אז $xy \le XY$. בלי ערך מוחלט זה לא נכון (האזהרה בהסבר).}
-\define{K}{K_1 K_2}{חסם של $|a_n b_n|$}
-\step{K = K_1 K_2, \quad |a_n b_n| \le K \quad \forall n}{קיבלנו $|a_n b_n| \le K$ לכל $n$, כלומר $-K \le a_n b_n \le K$: המכפלה חסומה. \qed}
+\step{|b_n^2| = |b_n|^2 \le K_2^2}{הריבוע אינו שלילי, ולכן $|b_n^2| = |b_n|^2$. מעלים בריבוע את $0 \le |b_n| \le K_2$: זה מותר כי שני הצדדים \textbf{אי-שליליים}. בלי ערך מוחלט זה לא נכון (האזהרה בהסבר).}
+\step{|a_n b_n^2| = |a_n| \cdot |b_n|^2}{הערך המוחלט של מכפלה הוא מכפלת הערכים המוחלטים.}
+\step{|a_n| \cdot |b_n|^2 \le K_1 K_2^2}{מכפילים את $|a_n| \le K_1$ ב-$|b_n|^2 \le K_2^2$. זה מותר כי כל הצדדים אי-שליליים: אם $0 \le x \le X$ ו-$0 \le y \le Y$ אז $xy \le XY$.}
+\define{K}{K_1 K_2^2}{חסם של $|a_n b_n^2|$}
+\step{K = K_1 K_2^2, \quad |a_n b_n^2| \le K \quad \forall n}{קיבלנו $|a_n b_n^2| \le K$ לכל $n$, כלומר $-K \le a_n b_n^2 \le K$: הסדרה חסומה. \qed}
 \end{proof}`,
 			example: {
 				values: {
@@ -9434,51 +9437,51 @@ K = K_1 + K_2`,
 					M_2: 1
 				},
 				seqs: {
-					a_n: R`-2 + \frac{3}{n}`,
+					a_n: R`1 - \frac{3}{n}`,
 					b_n: R`-3 + \frac{4}{n}`
 				},
 				cols: [
 					"a_n",
 					"b_n",
-					"a_n b_n"
+					"a_n b_n^2"
 				],
 				hyp: [R`m_1 \le a_n \le M_1`, R`m_2 \le b_n \le M_2`],
-				claim: R`|a_n b_n| \le \max(|m_1|, |M_1|) \cdot \max(|m_2|, |M_2|)`
+				claim: R`|a_n b_n^2| \le \max(|m_1|, |M_1|) \cdot \max(|m_2|, |M_2|)^2`
 			}
 		})])
 	});
 	U.push({
 		id: "quotient",
-		title: "(ג) מנה",
+		title: "(ג) מנה, מכנה חיובי",
 		body: body([
-			R`<p>טענה (ג): אם $b_n \ne 0$ לכל $n$, אז $\frac{a_n}{b_n}$ חסומה. הטענה <b>לא נכונה</b>, ולכן מפריכים אותה בדוגמה נגדית.</p>
-<p>הבעיה היא המכנה: $b_n$ לא אפס אף פעם, אבל הוא יכול <b>להתקרב</b> לאפס, ואז המנה גדלה. הדוגמה הפשוטה: $a_n = 1$ ו-$b_n = \frac{1}{n}$. שתיהן חסומות, $b_n$ אף פעם לא $0$, והמנה היא $\frac{a_n}{b_n} = n$, שאינה חסומה.</p>
-<p>בהפרכה הגדלים בחלונית הם הדוגמה הנגדית עצמה, ובצעדים 2, 3 ו-6 יש טבלה של האיברים הראשונים. אחר כך באה ההוכחה ש-$n$ לא חסומה: מניחים שיש חסם $K$ ומגיעים לסתירה.</p>`,
+			R`<p>טענה (ג): אם $b_n > 0$ לכל $n$, אז $\frac{a_n}{b_n}$ חסומה. הטענה <b>לא נכונה</b>, ולכן מפריכים אותה בדוגמה נגדית.</p>
+<p>הבעיה היא המכנה: $b_n$ חיובי תמיד, אבל הוא יכול <b>להתקרב</b> לאפס, ואז המנה גדלה. דוגמה: $a_n = (-1)^n$ ו-$b_n = \frac{1}{n}$. שתיהן חסומות, $b_n > 0$ לכל $n$, והמנה היא $(-1)^n n$: היא מחליפה סימן, ובערך מוחלט היא $n$, שאינה חסומה.</p>
+<p>בהפרכה הגדלים בחלונית הם הדוגמה הנגדית עצמה, ובצעדים 2, 3 ו-6 יש טבלה של האיברים הראשונים. אחר כך באה ההוכחה שהמנה לא חסומה: מניחים שיש חסם $K$ ומגיעים לסתירה.</p>`,
 			proofBox({
-				id: "quotient-refute",
+				id: "ratio-refute",
 				title: "הפרכה: דוגמה נגדית",
-				tex: R`% Claim (c): if b_n \ne 0 for every n, then (\frac{a_n}{b_n}) is bounded.
+				tex: R`% Claim (c): if b_n > 0 for every n, then (\frac{a_n}{b_n}) is bounded.
 % Refute it with one counterexample.
 \begin{proof}
-\define{a_n}{1}{המונה: סדרה קבועה, חסומה}
-\step{a_n = 1 \quad \forall n}{בוחרים מונה פשוט, סדרה קבועה. היא חסומה: $1 \le a_n \le 1$.}
-\define{b_n}{\frac{1}{n}}{המכנה: חסומה, אף פעם לא $0$}
+\define{a_n}{(-1)^n}{המונה: $-1$ או $1$, חסומה}
+\step{a_n = (-1)^n, \quad -1 \le a_n \le 1 \quad \forall n}{בוחרים מונה חסום שמחליף סימן: כל איבר שלו הוא $-1$ או $1$.}
+\define{b_n}{\frac{1}{n}}{המכנה: חסומה וחיובית}
 \showterms
-\step{b_n = \frac{1}{n} \quad \forall n}{ובמכנה $b_n = \frac{1}{n}$. היא חסומה, כי $0 < \frac{1}{n} \le 1$, ואף איבר שלה אינו $0$. כל התנאים של הטענה מתקיימים.}
-\define{c_n}{\frac{a_n}{b_n} = n}{המנה $\frac{a_n}{b_n}$}
+\step{0 < b_n \le 1 \quad \forall n}{ובמכנה $b_n = \frac{1}{n}$. היא חסומה, וכל איבר שלה חיובי. כל התנאים של הטענה מתקיימים.}
+\define{c_n}{\frac{a_n}{b_n}}{המנה $\frac{a_n}{b_n}$}
 \showterms
-\step{\frac{a_n}{b_n} = \frac{1}{\frac{1}{n}} = n}{המנה היא בדיוק $n$. בטבלה רואים שהיא גדלה בלי סוף.}
+\step{\left|\frac{a_n}{b_n}\right| = \frac{|a_n|}{b_n} = \frac{1}{\frac{1}{n}} = n}{$|a_n| = 1$ ו-$b_n > 0$, ולכן הערך המוחלט של המנה הוא בדיוק $n$. בטבלה המנה מחליפה סימן וגדלה בלי סוף.}
 \given{K}{חסם של המנה (הנחה בשלילה)}
-\step{\exists K \;\; \forall n:\; \left|\frac{a_n}{b_n}\right| \le K}{נניח בשלילה שהמנה חסומה: יש מספר $K$ כך ש-$\left|\frac{a_n}{b_n}\right| \le K$ לכל $n$. ב-$n = 1$ המנה היא $1$, ולכן $K \ge 1$.}
+\step{\exists K \;\; \forall n:\; \left|\frac{a_n}{b_n}\right| \le K}{נניח בשלילה שהמנה חסומה: יש מספר $K$ כך ש-$\left|\frac{a_n}{b_n}\right| \le K$ לכל $n$. ב-$n = 1$ הערך המוחלט הוא $1$, ולכן $K \ge 1$.}
 \define{n}{\lfloor K \rfloor + 1}{מספר טבעי מסוים, גדול מ-$K$}
 \step{n = \lfloor K \rfloor + 1 > K}{יש מספר טבעי גדול מ-$K$, למשל $n = \lfloor K \rfloor + 1$ (הוא טבעי כי $K \ge 1$). מעכשיו $n$ הוא המספר הזה.}
 \showterms
-\step{\left|\frac{a_n}{b_n}\right| = n > K}{ב-$n$ הזה $\left|\frac{a_n}{b_n}\right| = n > K$, בסתירה להנחה של צעד 4 שהמנה לכל היותר $K$ לכל $n$.}
-\step{\forall K \;\; \exists n:\; \left|\frac{a_n}{b_n}\right| > K}{ההנחה הובילה לסתירה, ולכן אין חסם: לכל $K$ יש $n$ שבו המנה גדולה מ-$K$. הסדרה $\frac{a_n}{b_n}$ לא חסומה, והטענה (ג) \textbf{לא נכונה}. \qed}
+\step{\left|\frac{a_n}{b_n}\right| = n > K}{ב-$n$ הזה $\left|\frac{a_n}{b_n}\right| = n > K$, בסתירה להנחה של צעד 4 שהמנה לכל היותר $K$ בערך מוחלט לכל $n$.}
+\step{\forall K \;\; \exists n:\; \left|\frac{a_n}{b_n}\right| > K}{ההנחה הובילה לסתירה, ולכן אין חסם: לכל $K$ יש $n$ שבו המנה גדולה מ-$K$ בערך מוחלט. הסדרה $\frac{a_n}{b_n}$ לא חסומה, והטענה (ג) \textbf{לא נכונה}. \qed}
 \end{proof}`,
 				example: {
 					seqs: {
-						a_n: "1",
+						a_n: "(-1)^n",
 						b_n: R`\frac{1}{n}`
 					},
 					cols: [
@@ -9486,11 +9489,7 @@ K = K_1 + K_2`,
 						"b_n",
 						R`\frac{a_n}{b_n}`
 					],
-					hyp: [
-						"a_n = 1",
-						R`0 < b_n \le 1`,
-						R`b_n \ne 0`
-					],
+					hyp: [R`-1 \le a_n \le 1`, R`0 < b_n \le 1`],
 					refute: {
 						expr: R`\frac{a_n}{b_n}`,
 						bounds: [
@@ -9502,42 +9501,42 @@ K = K_1 + K_2`,
 				},
 				ranges: { K: [1, 100] }
 			}),
-			R`<div class="callout key"><b>למה זה עובד</b><p>כל מה שהטענה דרשה מ-$b_n$ הוא שלא יהיה $0$. זה לא מספיק: צריך שיהיה <b>רחוק</b> מ-$0$. בדיוק זה התנאי של (ד).</p></div>`
+			R`<div class="callout key"><b>למה זה עובד</b><p>כל מה שהטענה דרשה מ-$b_n$ הוא שיהיה חיובי. זה לא מספיק: צריך שיהיה <b>רחוק</b> מ-$0$, כלומר גדול ממספר חיובי קבוע. בדיוק זה התנאי של (ד).</p></div>`
 		])
 	});
 	U.push({
 		id: "quotient-c",
 		title: "(ד) מנה, מכנה רחוק מ-0",
 		body: body([
-			R`<p>טענה (ד): אם יש $c > 0$ כך ש-$|b_n| \ge c$ לכל $n$, אז $\frac{a_n}{b_n}$ חסומה. עכשיו המכנה לא יכול להתקרב ל-$0$, והטענה <b>נכונה</b>.</p>
-<p>הרעיון: מונה גדול יותר ומכנה קטן יותר נותנים מנה גדולה יותר. $|a_n| \le K_1$ מלמעלה ו-$|b_n| \ge c$ מלמטה, ולכן</p>
-\[ \left|\frac{a_n}{b_n}\right| = \frac{|a_n|}{|b_n|} \le \frac{K_1}{c}. \]
-<p>שימו לב: ההוכחה לא משתמשת בכך ש-$b_n$ חסומה. מספיק ש-$a_n$ חסומה ו-$|b_n| \ge c$.</p>`,
+			R`<p>טענה (ד): אם יש $c > 0$ כך ש-$b_n \ge c$ לכל $n$, אז $\frac{a_n}{b_n}$ חסומה. עכשיו המכנה לא יכול להתקרב ל-$0$, והטענה <b>נכונה</b>.</p>
+<p>הרעיון: מונה גדול יותר ומכנה קטן יותר נותנים מנה גדולה יותר. $|a_n| \le K_1$ מלמעלה ו-$b_n \ge c$ מלמטה, ולכן</p>
+\[ \left|\frac{a_n}{b_n}\right| = \frac{|a_n|}{b_n} \le \frac{K_1}{c}. \]
+<p>שימו לב: ההוכחה לא משתמשת בחסם העליון של $b_n$. מספיק ש-$a_n$ חסומה ו-$b_n \ge c > 0$.</p>`,
 			proofBox({
-				id: "quotient-c-proof",
+				id: "ratio-c-proof",
 				title: "הוכחה: המנה חסומה",
-				tex: R`% Claim (d): if (a_n) is bounded and |b_n| \ge c > 0 for every n,
+				tex: R`% Claim (d): if (a_n) is bounded and b_n \ge c > 0 for every n,
 % then (\frac{a_n}{b_n}) is bounded.
 \begin{proof}
 \given{a_n}{המונה (נתונה, חסומה)}
 \given{K_1}{חסם של $|a_n|$}
 \step{|a_n| \le K_1 \quad \forall n}{נתון: $(a_n)$ חסומה. לפי ההגדרה השקולה יש $K_1$ כך ש-$|a_n| \le K_1$ לכל $n$ (למשל $K_1 = \max(|m_1|, |M_1|)$, כמו ב-(ב)).}
 \given{b_n}{המכנה (נתון)}
-\given{c}{המרחק המינימלי של $b_n$ מ-$0$}
-\step{|b_n| \ge c > 0 \quad \forall n}{נתון. בפרט $b_n \ne 0$, כך שהמנה מוגדרת.}
-\step{\left|\frac{a_n}{b_n}\right| = \frac{|a_n|}{|b_n|}}{$\left|\tfrac{x}{y}\right| = \tfrac{|x|}{|y|}$: הערך המוחלט של מנה הוא מנת הערכים המוחלטים (המכנה אינו $0$).}
-\step{\frac{|a_n|}{|b_n|} \le \frac{K_1}{|b_n|} \le \frac{K_1}{c}}{המונה גדל, המכנה קטן: קודם המונה גדל ל-$K_1$, והמכנה חיובי. אחר כך $|b_n| \ge c > 0$ נותן $\frac{1}{|b_n|} \le \frac{1}{c}$, ומכפילים ב-$K_1 \ge 0$.}
+\given{c}{חסם תחתון חיובי של $b_n$}
+\step{b_n \ge c > 0 \quad \forall n}{נתון. בפרט $b_n > 0$, כך שהמנה מוגדרת ו-$|b_n| = b_n$.}
+\step{\left|\frac{a_n}{b_n}\right| = \frac{|a_n|}{b_n}}{הערך המוחלט של מנה הוא מנת הערכים המוחלטים, ו-$|b_n| = b_n$ כי $b_n$ חיובי.}
+\step{\frac{|a_n|}{b_n} \le \frac{K_1}{b_n} \le \frac{K_1}{c}}{המונה גדל, המכנה קטן: קודם המונה גדל ל-$K_1$, והמכנה חיובי. אחר כך $b_n \ge c > 0$ נותן $\frac{1}{b_n} \le \frac{1}{c}$, ומכפילים ב-$K_1 \ge 0$.}
 \define{K}{\frac{K_1}{c}}{חסם של $\left|\frac{a_n}{b_n}\right|$}
 \step{K = \frac{K_1}{c}, \quad \left|\frac{a_n}{b_n}\right| \le K \quad \forall n}{$K$ קבוע, לא תלוי ב-$n$, ולכן הסדרה חסומה. כאן נכשלה (ג): ל-$b_n = \frac{1}{n}$ אין $c > 0$ כזה. \qed}
 \end{proof}`,
 				example: {
 					values: {
-						K_1: 3,
-						c: .5
+						K_1: 2,
+						c: .25
 					},
 					seqs: {
-						a_n: R`3 \cdot (-1)^n`,
-						b_n: R`\frac{1}{2} + \frac{1}{n}`
+						a_n: R`2 - \frac{4}{n}`,
+						b_n: R`\frac{1}{4} + \frac{1}{n^2}`
 					},
 					cols: [
 						"a_n",
@@ -9546,23 +9545,23 @@ K = K_1 + K_2`,
 					],
 					hyp: [
 						R`|a_n| \le K_1`,
-						R`|b_n| \ge c`,
+						R`b_n \ge c`,
 						"c > 0"
 					],
 					claim: R`\left|\frac{a_n}{b_n}\right| \le \frac{K_1}{c}`
 				}
 			}),
-			R`<p>בתרגיל: נתונים $K_1$ ו-$c$, וצריך לכתוב $K$. הניחוש $K_1 c$ נשמע סביר, אבל כש-$c$ קטן מ-$1$ הוא קטן מדי. ▶ הרצה מראה את זה על הדוגמה, ו-✓ בדיקות מגריל ערכים של $c$ קטנים וגדולים.</p>`,
+			R`<p>בתרגיל: נתונים $K_1$ ו-$c$, וצריך לכתוב $K$. הניחוש $K_1 c$ נשמע סביר, אבל כש-$c$ קטן מ-$1$ הוא קטן מדי: בדוגמה $K_1 c = \frac{1}{2}$, והמנה מגיעה כמעט ל-$8$. ▶ הרצה מראה את זה, ו-✓ בדיקות מגריל ערכים של $c$ קטנים וגדולים.</p>`,
 			{
-				id: "quotient-c-bound",
+				id: "ratio-c-bound",
 				title: "חסם למנה",
 				task: H(R`כתבו ב-<code>proof.tex</code> את $K$ כך ש-$\left|\frac{a_n}{b_n}\right| \le K$ לכל $n$, בעזרת $K_1$ ו-$c$ בלבד. כותבים ב-LaTeX, למשל שבר כ-<code>\frac{x}{y}</code>; בטרמינל רואים את התשובה מסודרת תוך כדי הקלדה.`),
 				code: R`% (d) Find a bound K with |\frac{a_n}{b_n}| \le K for every n.
-% Known for every n:  |a_n| \le K_1  and  |b_n| \ge c > 0.
+% Known for every n:  |a_n| \le K_1  and  b_n \ge c > 0.
 % Write K with K_1 and c only (not with a_n, b_n or n), in LaTeX.
 K = K_1 \cdot c`,
 				solution: R`% (d) Find a bound K with |\frac{a_n}{b_n}| \le K for every n.
-% Known for every n:  |a_n| \le K_1  and  |b_n| \ge c > 0.
+% Known for every n:  |a_n| \le K_1  and  b_n \ge c > 0.
 % Write K with K_1 and c only (not with a_n, b_n or n), in LaTeX.
 K = \frac{K_1}{c}`,
 				proof: {
@@ -9578,17 +9577,17 @@ K = \frac{K_1}{c}`,
 						value: R`|a_n| \le K_1`
 					}, {
 						name: "c",
-						mean: "$|b_n|$ לפחות $c$",
-						value: R`|b_n| \ge c > 0`
+						mean: "$b_n$ לפחות $c$",
+						value: R`b_n \ge c > 0`
 					}],
 					example: {
 						values: {
-							K_1: 3,
-							c: .5
+							K_1: 2,
+							c: .25
 						},
 						seqs: {
-							a_n: R`3 \cdot (-1)^n`,
-							b_n: R`\frac{1}{2} + \frac{1}{n}`
+							a_n: R`2 - \frac{4}{n}`,
+							b_n: R`\frac{1}{4} + \frac{1}{n^2}`
 						},
 						cols: [
 							"a_n",
@@ -9598,7 +9597,7 @@ K = \frac{K_1}{c}`,
 						],
 						hyp: [
 							R`|a_n| \le K_1`,
-							R`|b_n| \ge c`,
+							R`b_n \ge c`,
 							"c > 0"
 						],
 						claim: R`\left|\frac{a_n}{b_n}\right| \le K`,
@@ -9625,8 +9624,7 @@ K = \frac{K_1}{c}`,
 						], [
 							"b_n",
 							"c",
-							"c + 10",
-							true
+							"c + 10"
 						]],
 						claim: R`\left|\frac{a_n}{b_n}\right| \le K`
 					},
@@ -9649,8 +9647,7 @@ K = \frac{K_1}{c}`,
 						], [
 							"b_n",
 							"c",
-							"c + 10",
-							true
+							"c + 10"
 						]],
 						claim: R`\left|\frac{a_n}{b_n}\right| \le K`
 					},
@@ -9673,8 +9670,7 @@ K = \frac{K_1}{c}`,
 						], [
 							"b_n",
 							"c",
-							"c + 100",
-							true
+							"c + 100"
 						]],
 						claim: R`\left|\frac{a_n}{b_n}\right| \le K`
 					},
@@ -9706,28 +9702,38 @@ K = \frac{K_1}{c}`,
 		title: "חידון",
 		quiz: quiz([
 			{
-				s: R`(א) $a_n$ ו-$b_n$ חסומות. האם $a_n + b_n$ חסומה?`,
+				s: R`(א) $a_n$ ו-$b_n$ חסומות. האם $2a_n - 3b_n$ חסומה?`,
 				o: ["כן, תמיד: יש הוכחה", "לא תמיד: יש דוגמה נגדית"],
 				a: 0,
-				w: R`נכון תמיד: $m_1 + m_2 \le a_n + b_n \le M_1 + M_2$, או עם ערך מוחלט $|a_n + b_n| \le K_1 + K_2$.`
+				w: R`נכון תמיד: $2m_1 - 3M_2 \le 2a_n - 3b_n \le 2M_1 - 3m_2$, או עם ערך מוחלט $|2a_n - 3b_n| \le 2K_1 + 3K_2$.`
 			},
 			{
-				s: R`(ב) $a_n$ ו-$b_n$ חסומות. האם $a_n b_n$ חסומה?`,
+				s: R`(ב) $a_n$ ו-$b_n$ חסומות. האם $a_n b_n^2$ חסומה?`,
 				o: ["כן, תמיד: יש הוכחה", "לא תמיד: יש דוגמה נגדית"],
 				a: 0,
-				w: R`נכון תמיד: $|a_n b_n| = |a_n| \cdot |b_n| \le K_1 K_2$.`
+				w: R`נכון תמיד: $|a_n b_n^2| = |a_n| \cdot |b_n|^2 \le K_1 K_2^2$.`
 			},
 			{
-				s: R`(ג) $a_n$ ו-$b_n$ חסומות ו-$b_n \ne 0$ לכל $n$. האם $\frac{a_n}{b_n}$ חסומה?`,
+				s: R`(ג) $a_n$ ו-$b_n$ חסומות ו-$b_n > 0$ לכל $n$. האם $\frac{a_n}{b_n}$ חסומה?`,
 				o: ["כן, תמיד: יש הוכחה", "לא תמיד: יש דוגמה נגדית"],
 				a: 1,
-				w: R`לא תמיד: $a_n = 1$ ו-$b_n = \frac{1}{n}$ נותנות $\frac{a_n}{b_n} = n$.`
+				w: R`לא תמיד: $a_n = (-1)^n$ ו-$b_n = \frac{1}{n}$ נותנות $\left|\frac{a_n}{b_n}\right| = n$.`
 			},
 			{
-				s: R`(ד) $a_n$ ו-$b_n$ חסומות ויש $c > 0$ כך ש-$|b_n| \ge c$ לכל $n$. האם $\frac{a_n}{b_n}$ חסומה?`,
+				s: R`(ד) $a_n$ ו-$b_n$ חסומות ויש $c > 0$ כך ש-$b_n \ge c$ לכל $n$. האם $\frac{a_n}{b_n}$ חסומה?`,
 				o: ["כן, תמיד: יש הוכחה", "לא תמיד: יש דוגמה נגדית"],
 				a: 0,
 				w: R`נכון תמיד: $\left|\frac{a_n}{b_n}\right| \le \frac{K_1}{c}$.`
+			},
+			{
+				s: R`בהוכחה של (א), מאיפה בא החסם התחתון של $-3b_n$?`,
+				o: [
+					R`מ-$M_2$: $-3M_2 \le -3b_n$`,
+					R`מ-$m_2$: $-3m_2 \le -3b_n$`,
+					R`צריך את שניהם, $m_2 + M_2$`
+				],
+				a: 0,
+				w: R`כפל ב-$-3$ הופך את הכיוון: $b_n \le M_2$ נותן $-3b_n \ge -3M_2$. לכן החסם העליון של $b_n$ נותן את החסם התחתון של $-3b_n$.`
 			},
 			{
 				s: R`למה $K = n + 1$ איננו חסם של $a_n = n$, אף על פי ש-$n \le n + 1$ לכל $n$?`,
@@ -9742,39 +9748,37 @@ K = \frac{K_1}{c}`,
 			{
 				s: "למה בהוכחה של (ב) עוברים לערכים מוחלטים?",
 				o: [
-					R`כי $m_1 m_2 \le a_n b_n \le M_1 M_2$ לא תמיד נכון כשיש מספרים שליליים`,
+					R`כי $b_n \le M_2$ לא נותן $b_n^2 \le M_2^2$ כשיש מספרים שליליים`,
 					"כי זה קצר יותר, אבל גם הדרך השנייה נכונה",
 					"כי ההגדרה של חסומה דורשת ערך מוחלט"
 				],
 				a: 0,
-				w: R`למשל $a_n = -2$ ו-$b_n = -3$ עם $M_1 = M_2 = 1$: המכפלה $6$ גדולה מ-$M_1 M_2 = 1$. ערכים מוחלטים אינם שליליים, ואז מותר להכפיל אי-שוויונות.`
+				w: R`למשל $-3 \le b_n \le 1$: ב-$b_n = -3$ הריבוע $9$ גדול מ-$M_2^2 = 1$. ערכים מוחלטים אינם שליליים, ואז מותר להעלות בריבוע ולהכפיל אי-שוויונות.`
 			},
 			{
 				s: R`בהוכחה של (ד), מה באמת צריך לדעת על $b_n$?`,
 				o: [
-					R`רק ש-$|b_n| \ge c > 0$ לכל $n$`,
-					R`ש-$b_n$ חסומה`,
-					R`רק ש-$b_n \ne 0$ לכל $n$`
+					R`רק ש-$b_n \ge c > 0$ לכל $n$`,
+					R`ש-$b_n$ חסומה גם מלמעלה`,
+					R`רק ש-$b_n > 0$ לכל $n$`
 				],
 				a: 0,
-				w: R`ההוכחה משתמשת רק ב-$|b_n| \ge c$. ש-$b_n \ne 0$ לבד לא מספיק, כפי שמראה (ג).`
+				w: R`ההוכחה משתמשת רק ב-$b_n \ge c > 0$. ש-$b_n > 0$ לבד לא מספיק, כפי שמראה (ג).`
 			}
 		])
 	});
 	U.push({
 		id: "sources",
 		title: "מקורות",
-		body: body([R`<p>לא מצאנו פתרון רשמי ומפורסם של שאלה 17 של בן-גוריון. ההוכחות כאן הן הטיעונים המקובלים, ובדקנו כל צעד בעצמנו. אלה המקורות שבהם השתמשנו, ובמה כל אחד מהם תומך:</p>
+		body: body([R`<p>השאלה של הקורס נכתבה בשבילו. העובדות שהיא משתמשת בהן מקובלות ומופיעות בכל ספר על סדרות, וההוכחות כאן הן הטיעונים המקובלים; בדקנו כל צעד בעצמנו. אלה מקורות פתוחים שבהם אפשר לקרוא עוד, ובמה כל אחד מהם תומך:</p>
 <ul>
-<li><a href="https://www2.math.utah.edu/~treiberg/M3213suppl5.pdf" target="_blank" rel="noopener">A. Treibergs, University of Utah, Math 3210: Second Midterm Exam, Solutions</a>: הוכחה שסכום של סדרות חסומות חסום, $|x_k + y_k| \le M_1 + M_2$ (סעיף (א)).</li>
+<li><a href="https://www2.math.utah.edu/~treiberg/M3213suppl5.pdf" target="_blank" rel="noopener">A. Treibergs, University of Utah, Math 3210: Second Midterm Exam, Solutions</a>: הוכחה שסכום של סדרות חסומות חסום, $|x_k + y_k| \le M_1 + M_2$. אותו טיעון, עם מקדמים, הוא (א).</li>
+<li><a href="https://archive.nptel.ac.in/content/storage2/courses/122101003/Slide/Module-1/Lec-2/Sec-2.3/2.3_4.html" target="_blank" rel="noopener">NPTEL (IIT), Real Numbers, Functions and Sequences, §2.3, practice exercises</a>: סכום ומכפלה של סדרות חסומות (הרעיון של (ב)), ודוגמה שבה המנה לא חסומה.</li>
+<li><a href="https://mathcs.org/analysis/reals/numseq/problems.html" target="_blank" rel="noopener">B. Wachsmuth, Interactive Real Analysis: Number Sequences, Problems</a>: "הוכיחו או הפריכו" על מנה של סדרות חסומות (הרעיון של (ג)).</li>
 <li><a href="https://math.libretexts.org/Bookshelves/Analysis/Mathematical_Analysis_(Zakon)/03%3A_Vector_Spaces_and_Metric_Spaces/3.11%3A_Operations_on_Convergent_Sequences/3.11.E%3A_Problems_on_Limits_of_Sequences_(Exercises)" target="_blank" rel="noopener">E. Zakon, Mathematical Analysis I, §3.11.E (LibreTexts)</a>: סדרה "רחוקה מ-$0$" ($|a_m| \ge \varepsilon$) והחסימות של $\frac{1}{a_m}$ (הרעיון של (ד)).</li>
-<li><a href="https://mathcs.org/analysis/reals/numseq/problems.html" target="_blank" rel="noopener">B. Wachsmuth, Interactive Real Analysis: Number Sequences, Problems</a>: "הוכיחו או הפריכו" על מנה של סדרות חסומות (סעיף (ג) כשאלה מקובלת).</li>
-<li><a href="https://archive.nptel.ac.in/content/storage2/courses/122101003/Slide/Module-1/Lec-2/Sec-2.3/2.3_4.html" target="_blank" rel="noopener">NPTEL (IIT), Real Numbers, Functions and Sequences, §2.3, practice exercises</a>: סכום ומכפלה של סדרות חסומות, ודוגמה שבה המנה לא חסומה.</li>
 <li><a href="https://he.wikibooks.org/wiki/%D7%97%D7%A9%D7%91%D7%95%D7%9F_%D7%90%D7%99%D7%A0%D7%A4%D7%99%D7%A0%D7%99%D7%98%D7%A1%D7%99%D7%9E%D7%9C%D7%99/%D7%A1%D7%93%D7%A8%D7%95%D7%AA/%D7%A1%D7%93%D7%A8%D7%95%D7%AA_%D7%97%D7%A1%D7%95%D7%9E%D7%95%D7%AA" target="_blank" rel="noopener">ויקיספר: חשבון אינפיניטסימלי, סדרות חסומות</a>: ההגדרות בעברית, וההגדרה השקולה עם ערך מוחלט.</li>
-<li><a href="https://math.haifa.ac.il/viselter/teaching/InfiA/Sol6.pdf" target="_blank" rel="noopener">A. Viselter, אוניברסיטת חיפה, חשבון אינפיניטסימלי א, פתרון תרגיל 6</a>: משתמש בחסימות של סכום ומכפלה של סדרות חסומות.</li>
-<li><a href="https://math.bgu.ac.il/he/teaching/fall2017/courses/infinitesimal-calculus-1" target="_blank" rel="noopener">אוניברסיטת בן-גוריון, חשבון אינפיניטסימלי 1</a>: דף הקורס (נושאים, בלי פתרונות).</li>
 </ul>
-<div class="callout"><b>על הקורס הזה</b><p>אותו מבנה של הקורס במצביעים (הסבר, קופסה, שורה אחר שורה, בדיקות) מלמד הוכחות. ההוכחות כתובות ב-LaTeX, כמו בספר. הבדיקות במספרים אינן הוכחה; הן תופסות תשובות שגויות.</p></div>`])
+<div class="callout"><b>על הקורס הזה</b><p>אותו מבנה של קורס תכנות (הסבר, קופסה, שורה אחר שורה, בדיקות) מלמד הוכחות. ההוכחות כתובות ב-LaTeX, כמו בספר. הבדיקות במספרים אינן הוכחה; הן תופסות תשובות שגויות.</p></div>`])
 	});
 	window.PContent = U;
 })();
@@ -30412,7 +30416,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 2c6fa21 מ-2026-11-10 16:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 2c6fa21</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a94345f מ-2026-11-11 00:08"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a94345f</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>

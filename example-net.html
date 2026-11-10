@@ -3110,7 +3110,7 @@ code.math-bad {
   font-size: 1em;
 }
 
-/* ── The timeline diagram (view/Timeline.tsx), drawn the lecture's way ── */
+/* ── The timeline diagram (view/Timeline.tsx): nodes across, time going down ── */
 .net-timeline {
   margin: 0;
   border: 1px solid var(--line);
@@ -3309,7 +3309,7 @@ code.math-bad {
   stroke-width: 1.5;
 }
 
-/* a packet's band: a light fill and a coloured edge, as on the slides */
+/* a packet's band: a light fill and a coloured edge */
 .nt-band {
   stroke-width: 1.6;
   stroke-linejoin: round;
@@ -3798,7 +3798,7 @@ var authoring = {
 				},
 				{
 					k: "expect",
-					label: "הערך הצפוי עם יחידה (כמו 26 ms)"
+					label: "הערך הצפוי עם יחידה (כמו 19 ms)"
 				},
 				TOLERANCE_FIELD
 			],
@@ -3819,7 +3819,7 @@ var authoring = {
 				},
 				{
 					k: "expect",
-					label: "הערך הצפוי עם יחידה (כמו 26 ms)"
+					label: "הערך הצפוי עם יחידה (כמו 19 ms)"
 				},
 				TOLERANCE_FIELD,
 				OF_FIELD
@@ -5865,7 +5865,7 @@ var SUMMARY_RULE_WIDTH = 36;
 var DETAIL_INDENT = "       ";
 var ACTION = "✓ Tests";
 function expected(test) {
-	if (typeof test.expect !== "string" || !test.expect.trim()) throw new InputError("the test has no expect value (add one, like expect: '26 ms')");
+	if (typeof test.expect !== "string" || !test.expect.trim()) throw new InputError("the test has no expect value (add one, like expect: '19 ms')");
 	try {
 		return evaluate(parseExpr(test.expect), /* @__PURE__ */ new Map());
 	} catch (error) {
@@ -9232,22 +9232,25 @@ link G -> SRV: R = 3 Mbps, d = 600 km`,
 				tests: [runs]
 			},
 			R`<p>ומה אם מחלקים את <b>אותה הודעה</b> ליותר חבילות? כותבים את גודל ההודעה כולה, <code>M</code>,
-במקום <code>L</code>, והמנוע מחשב את גודל כל חבילה: $L = M / N$. זו הדוגמה של ההרצאה: הודעה של
-$80{,}000$ ביט מ-<code>S</code> ל-<code>T</code> דרך שני נתבים.</p>
+במקום <code>L</code>, והמנוע מחשב את גודל כל חבילה: $L = M / N$. בקופסה הודעה של $48{,}000$ ביט
+מ-<code>A</code> ל-<code>B</code> דרך שלושה נתבים: ארבעה קווים של $12\,\text{Mbps}$, ובשניים
+מהם יחד $600\,\text{km}$, כלומר $3\,\text{ms}$ של התפשטות.</p>
 <div class="callout key"><b>נסו</b><p>הריצו ב-⏯ עם <code>N = 1</code>, אחר כך שנו ל-<code>N = 4</code>
-ול-<code>N = 10</code> והריצו שוב. ליד סך הכול, תחת "הריצות שלך", נשמרת כל ריצה:
-<bdi dir="ltr">N=1: 26 ms · N=4: 14 ms · N=10: 11.6 ms</bdi>. חבילה קטנה מגיעה כולה לנתב מהר יותר,
-והוא מתחיל להעביר אותה בזמן שהבאות עוד בדרך (store-and-forward), ולכן הפיצול מקצר את הזמן. שינוי
-של משהו מלבד <code>N</code> מתחיל את הרשימה מחדש, והכפתור × מנקה אותה.</p></div>`,
+ול-<code>N = 12</code> והריצו שוב. ליד סך הכול, תחת "הריצות שלך", נשמרת כל ריצה:
+<bdi dir="ltr">N=1: 19 ms · N=4: 10 ms · N=12: 8 ms</bdi>. חבילה קטנה מגיעה כולה לנתב מהר יותר,
+והוא מתחיל להעביר אותה בזמן שהבאות עוד בדרך (store-and-forward), ולכן הפיצול מקצר את הזמן. אבל
+הרווח קטן מפעם לפעם: את $3\,\text{ms}$ של ההתפשטות שום פיצול לא מקצר. שינוי של משהו מלבד
+<code>N</code> מתחיל את הרשימה מחדש, והכפתור × מנקה אותה.</p></div>`,
 			{
 				id: "xn-split",
 				title: "פיצול הודעה לחבילות",
-				code: R`M = 80000 bit       # the whole message: L = M / N
-N = 1               # try 4 and 10
+				code: R`M = 48000 bit       # the whole message: L = M / N
+N = 1               # try 4 and 12
 s = 200000 km/s
-link S -> R1: R = 10 Mbps, d = 0 km
-link R1 -> R2: R = 10 Mbps, d = 400 km
-link R2 -> T: R = 10 Mbps, d = 0 km`,
+link A -> R1: R = 12 Mbps, d = 0 km
+link R1 -> R2: R = 12 Mbps, d = 500 km
+link R2 -> R3: R = 12 Mbps, d = 100 km
+link R3 -> B: R = 12 Mbps, d = 0 km`,
 				tests: [runs]
 			},
 			R`<p>ומה אם הקו השני איטי? כאן חבילה עוברת את הקו הראשון ב-$1\,\text{ms}$ ואת השני ב-$3\,\text{ms}$.
@@ -30160,7 +30163,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 2c6fa21 מ-2026-11-10 16:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 2c6fa21</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a94345f מ-2026-11-11 00:08"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a94345f</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
