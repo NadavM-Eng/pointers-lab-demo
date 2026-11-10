@@ -313,6 +313,130 @@ body.side-closed .nav-subj.shut .nav-subj-in{display:block}
 .theme-sw button{background:var(--raised);border:0;color:var(--muted);padding:3px 10px;cursor:pointer;font-size:13px}
 .theme-sw button:focus-visible{outline-offset:-3px}
 .theme-sw button.on{background:var(--accent);color:var(--accent-ink)}
+
+/* ── the animations panel (src/core/page/motion-switch.js): a footer row that opens, like the
+   compiler's flags panel; the speed as a segmented switch like the theme's, when as radios ── */
+.motion-panel {
+  color: var(--ink-2);
+  padding: 5px 0;
+}
+
+.motion-panel summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.motion-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.motion-panel summary::before {
+  content: '◂';
+  color: var(--accent-text);
+}
+
+.motion-panel[open] summary::before {
+  content: '▾';
+}
+
+.motion-now {
+  margin-inline-start: auto;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.motion-body {
+  padding: 4px 0 2px;
+}
+
+.motion-body .side-h {
+  margin: 6px 0 4px;
+}
+
+.motion-speed {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.motion-speed button {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 3px 2px 4px;
+  border: 0;
+  border-inline-start: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.25;
+}
+
+.motion-speed button:first-child {
+  border-inline-start: 0;
+}
+
+.motion-speed button:hover {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+.motion-speed button:focus-visible {
+  outline-offset: -3px;
+}
+
+.motion-speed button.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.motion-speed b {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.motion-speed small {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.motion-when label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.motion-when input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.motion-when small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.motion-note {
+  margin: 6px 0 2px;
+  border: 1px solid var(--warn);
+  border-radius: 7px;
+  padding: 6px 9px;
+  background: color-mix(in srgb, var(--warn) 8%, var(--panel));
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
 .admin-sw{display:inline-flex;align-items:center;cursor:pointer;user-select:none}
 .admin-sw input{position:absolute;opacity:0;width:1px;height:1px}
 .admin-sw .knob{width:32px;height:18px;border-radius:9px;background:var(--gutter);position:relative;transition:background .15s}
@@ -425,19 +549,19 @@ pre.code-static span{display:block;white-space:pre}
   }
 }
 
-/* The animation follows the block's own sideways scroll; with reduced motion there is no fade
-   (the shade stays). The mask only uses the alpha of its colours; --ink is an opaque stand-in. */
+/* The animation follows the block's own sideways scroll; while the lab shows steps at once
+   (<html data-motion="off">: the sidebar's choice, by default Windows' reduced motion) there is
+   no fade (the shade stays). The mask only uses the alpha of its colours; --ink is an opaque
+   stand-in. */
 @supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    pre.code-static {
-      --pre-fade-mask: linear-gradient(to right,
-        transparent calc(var(--pre-fade-left) - 40px),
-        var(--ink) var(--pre-fade-left),
-        var(--ink) calc(100% - var(--pre-fade-right)),
-        transparent calc(100% - var(--pre-fade-right) + 40px));
-      animation: pre-edge-fade linear both;
-      animation-timeline: scroll(self inline);
-    }
+  :root[data-motion='on'] pre.code-static {
+    --pre-fade-mask: linear-gradient(to right,
+      transparent calc(var(--pre-fade-left) - 40px),
+      var(--ink) var(--pre-fade-left),
+      var(--ink) calc(100% - var(--pre-fade-right)),
+      transparent calc(100% - var(--pre-fade-right) + 40px));
+    animation: pre-edge-fade linear both;
+    animation-timeline: scroll(self inline);
   }
 }
 .task{margin:24px 0 8px;border:1px solid var(--orange);border-radius:10px;padding:12px 16px;background:color-mix(in srgb,var(--orange) 8%,var(--panel))}
@@ -701,7 +825,9 @@ code,pre,.ed,.ed-hl,.ed-ta,.term-out,.mem-body,.fl-cmd{font-variant-ligatures:no
 .vrow:nth-child(odd) > span{background:color-mix(in srgb,var(--panel-2) 70%,var(--panel))}
 .vrow > span.vv{flex-wrap:wrap;align-items:flex-start}
 .vrow.has-arr > span{align-items:flex-start}
-.vrow.fresh > span{animation:fresh 1.1s ease-out}
+/* a changed row's glow (C's new variable, the net "now" list) belongs to the step's motion: it
+   plays at the lab's speed (--motion-speed, src/shared/motion-settings.ts) */
+.vrow.fresh > span{animation:fresh calc(1.1s / var(--motion-speed, 1)) ease-out}
 @keyframes fresh{from{box-shadow:inset 0 0 0 100px color-mix(in srgb,var(--accent) 22%,transparent)}to{box-shadow:none}}
 /* a narrow stack (the lesson shown while stepping, small windows): the Hebrew half of the headers goes, cells get tighter */
 @container (max-width:640px){
@@ -838,8 +964,11 @@ table.tbl {
   body.debugging .wb-code{border-bottom:1px solid var(--line-2)}
 }
 
-/* ── reduced motion: no animation at all (the universal selector needs !important to reach every rule) ── */
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ── reduced motion: no animation at all (the universal selector needs !important to reach
+   every rule) while the lab shows steps at once: <html data-motion="off"> is the sidebar's
+   choice "never", or "follow Windows" while Windows asks for reduced motion
+   (src/shared/motion-settings.ts); "always" sets "on", so the system's wish stops here ── */
+:root[data-motion='off'] *{animation:none!important;transition:none!important}
 
 /* ── printing: lesson and code on white, without sidebar, buttons and step bar (last in the file, so it needs no !important) ── */
 @media print{
@@ -1353,6 +1482,27 @@ body:not(.admin) .au-texf {
   font-size: 13px;
   text-align: start;
 }
+
+/* ── a test field with fixed values (a kind's `choices`): a list, in the look of the inputs ── */
+.au-lbl > select {
+  align-self: flex-start;
+  min-width: 220px;
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+/* the reason under a disabled menu item, or alone in a menu (no test kind, no box template) */
+.au-menu .au-mi:disabled + .au-mn,
+.au-menu .au-mn:first-child {
+  font-size: 12.5px;
+  color: var(--muted);
+}
 /* ═══ The guided tour (src/core/tour, docs/VITE.md section 12): the veil, the spotlight, the
    speech bubble, the teacher's offer, and the sidebar's tour row. Only var(--token) colours, but
    the veil: half-transparent black in both themes, so a light page is dimmed as clearly as a
@@ -1386,14 +1536,15 @@ body:not(.admin) .au-texf {
   box-shadow: 0 0 0 200vmax var(--tour-veil);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .tour-spot {
-    transition:
-      left 0.25s ease,
-      top 0.25s ease,
-      width 0.25s ease,
-      height 0.25s ease;
-  }
+/* the spot glides to the next step's part while the lab animates (<html data-motion="on">, the
+   sidebar's choice, src/shared/motion-settings.ts); the tour is the page's furniture, not a
+   step's motion, so it keeps its pace at every animation speed */
+:root[data-motion='on'] .tour-spot {
+  transition:
+    left 0.25s ease,
+    top 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
 }
 
 /* ── the bubble ── */
@@ -1980,6 +2131,7 @@ body .tour-roomy .wb-grid {
 
 .sdd-body {
   display: grid;
+  flex: none;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 16px;
   min-height: 0;
@@ -2004,10 +2156,98 @@ body .tour-roomy .wb-grid {
   margin-inline-end: auto;
 }
 
-.sdd-text {
+/* the JSON field: line numbers in a gutter that scrolls with the text, and bands behind the
+   lines with a problem (JsonField.tsx); every line is LINE_PX (20px) tall, lines do not wrap */
+.sdd-editor {
+  position: relative;
+  display: flex;
   min-height: 300px;
   height: 46vh;
+  overflow: hidden;
   resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.sdd-editor:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.sdd-gutter {
+  flex: none;
+  min-width: 2.6em;
+  overflow: hidden;
+  padding: 8px 0;
+  border-right: 1px solid var(--line);
+  background: var(--raised);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  line-height: 20px;
+  text-align: right;
+  color: var(--muted);
+  user-select: none;
+}
+
+.sdd-num {
+  padding: 0 7px 0 8px;
+}
+
+.sdd-num.error {
+  background: color-mix(in srgb, var(--err) 22%, transparent);
+  color: var(--err);
+  font-weight: 700;
+}
+
+.sdd-num.warning {
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.sdd-bands {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.sdd-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+}
+
+.sdd-band.error {
+  background: color-mix(in srgb, var(--err) 14%, transparent);
+  box-shadow: inset 3px 0 0 var(--err);
+}
+
+.sdd-band.warning {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+
+.sdd-editor .sdd-text {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 20px;
+  resize: none;
+}
+
+.sdd-editor .sdd-text:focus-visible {
+  outline: none;
 }
 
 .sdd-status {
@@ -2058,15 +2298,32 @@ body .tour-roomy .wb-grid {
   border-color: var(--warn);
 }
 
+.sdd-goto {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 1px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.sdd-goto:hover {
+  background: var(--raised);
+}
+
 .sdd-line {
+  display: inline-block;
   margin-inline-end: 8px;
   padding: 0 6px;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--raised);
   color: var(--link);
-  font: inherit;
-  cursor: pointer;
 }
 
 .sdd-error .sdd-line {
@@ -2122,7 +2379,7 @@ body .tour-roomy .wb-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .sdd-text {
+  .sdd-editor {
     height: 34vh;
     min-height: 200px;
   }
@@ -3546,6 +3803,144 @@ var __exportAll = (all, no_symbols) => {
 	});
 	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
 	return target;
+};
+// src/engines/net/authoring.ts
+var EXAMPLE_TEMPLATE = {
+	code: "# one packet from A to B over one link\nL = 12000 bit\ns = 200000 km/s\nlink A -> B: R = 2 Mbps, d = 600 km",
+	tests: [{
+		type: "steps",
+		name: "the scenario runs to the end, events in time order"
+	}, {
+		type: "total",
+		name: "the total delay is 9 ms",
+		expect: "9 ms"
+	}]
+};
+var EXERCISE_TEMPLATE = {
+	task: "השלימו את <code>answer</code>: <b>זמן השידור</b> של החבילה בקו, <code>L / R</code>.",
+	code: "L = 12000 bit\nR = 2 Mbps\nanswer = 0 ms          # TODO: the transmission delay",
+	solution: "L = 12000 bit\nR = 2 Mbps\nanswer = L / R",
+	tests: [
+		{
+			type: "steps",
+			name: "every line can be read"
+		},
+		{
+			type: "unit",
+			name: "the answer is a time",
+			kind: "time"
+		},
+		{
+			type: "answer",
+			name: "the answer is 6 ms (units converted)",
+			expect: "6 ms"
+		}
+	]
+};
+var TOLERANCE_FIELD = {
+	k: "tol",
+	label: "סטייה יחסית מותרת (מספר מ-0 עד מתחת ל-1; ריק = 0.01, אחוז אחד)",
+	json: true,
+	optional: true
+};
+var OF_FIELD = {
+	k: "of",
+	label: "השם שנבדק (ריק = answer)",
+	optional: true
+};
+var authoring = {
+	example: EXAMPLE_TEMPLATE,
+	exercise: EXERCISE_TEMPLATE,
+	testKinds: [
+		{
+			type: "steps",
+			label: "הטקסט נקרא ורץ עד הסוף",
+			hint: "כל שורה נקראת, יש לפחות צעד אחד, הזמנים לא יורדים, ובתרחיש הצעד האחרון הוא בעיכוב הכולל.",
+			fields: [{
+				k: "name",
+				label: "שם הבדיקה"
+			}],
+			blank: {
+				type: "steps",
+				name: "every line can be read"
+			}
+		},
+		{
+			type: "total",
+			label: "העיכוב הכולל של התרחיש",
+			hint: "משווה את העיכוב הכולל של התרחיש לערך הצפוי, אחרי המרת יחידות (12 ms = 0.012 s).",
+			fields: [
+				{
+					k: "name",
+					label: "שם הבדיקה"
+				},
+				{
+					k: "expect",
+					label: "הערך הצפוי עם יחידה (כמו 26 ms)"
+				},
+				TOLERANCE_FIELD
+			],
+			blank: {
+				type: "total",
+				name: "the total delay is 9 ms",
+				expect: "9 ms"
+			}
+		},
+		{
+			type: "answer",
+			label: "הערך של התשובה",
+			hint: "משווה את הערך האחרון של answer (או של השם שנבדק) לערך הצפוי, אחרי המרת יחידות, בתוך הסטייה המותרת.",
+			fields: [
+				{
+					k: "name",
+					label: "שם הבדיקה"
+				},
+				{
+					k: "expect",
+					label: "הערך הצפוי עם יחידה (כמו 26 ms)"
+				},
+				TOLERANCE_FIELD,
+				OF_FIELD
+			],
+			blank: {
+				type: "answer",
+				name: "the answer is 6 ms (units converted)",
+				expect: "6 ms"
+			}
+		},
+		{
+			type: "unit",
+			label: "הסוג של התשובה (יחידה)",
+			hint: "נכשלת כשלתשובה (או לשם שנבדק) יש סוג אחר. מספר בלי יחידה מקבל רמז להוסיף יחידה.",
+			fields: [
+				{
+					k: "name",
+					label: "שם הבדיקה"
+				},
+				{
+					k: "kind",
+					label: "הסוג",
+					choices: [
+						["", "time (ברירת המחדל)"],
+						["time", "time · זמן"],
+						["size", "size · גודל"],
+						["rate", "rate · קצב"],
+						["distance", "distance · מרחק"],
+						["speed", "speed · מהירות"],
+						["pace", "pace · עיכוב לכל ק\"מ"],
+						["number", "number · מספר בלי יחידה"]
+					],
+					optional: true
+				},
+				OF_FIELD
+			],
+			blank: {
+				type: "unit",
+				name: "the answer is a time",
+				kind: "time"
+			}
+		}
+	]
 };
 // src/engines/net/model/limits.ts
 var MAX_TEXT_CHARS = 1e4;
@@ -5817,6 +6212,7 @@ var FIELDS = {
 	},
 	slide: {
 		anchor: "anchor",
+		arc: "arc?",
 		ms: "ms?"
 	},
 	highlight: {
@@ -5863,6 +6259,7 @@ var RULE_CHECKS = {
 	ease: (value) => EASINGS.includes(value) ? null : "not one of " + EASINGS.join(", "),
 	scale: (value) => isWithin(value, .1, 1) ? null : "not a size from 0.1 to 1",
 	offset: (value) => isWithin(value, -1e3, 1e3) ? null : "not -1000 to 1000 px",
+	arc: (value) => isWithin(value, -3, 3) ? null : "not -3 to 3",
 	flag: (value) => typeof value === "boolean" ? null : "not true or false"
 };
 var TIMING_FIELDS = {
@@ -5988,6 +6385,132 @@ function validateMotion(value) {
 	});
 	return walk.problems;
 }
+// src/shared/motion-settings.ts
+var MOTION_CHOICES = [
+	"system",
+	"always",
+	"never"
+];
+var DEFAULT_SETTINGS = {
+	speed: 1,
+	choice: "system"
+};
+var SPEED_KEY = "lab:motion-speed";
+var CHOICE_KEY = "lab:motion";
+var SPEED_PARAM = "motion-speed";
+var CHOICE_PARAM = "motion";
+var REDUCE_QUERY = "(prefers-reduced-motion: reduce)";
+function parseSpeed(value) {
+	let speed = NaN;
+	if (typeof value === "number") speed = value;
+	else if (typeof value === "string" && value.trim() !== "") speed = Number(value);
+	return Number.isFinite(speed) && speed >= .05 && speed <= 8 ? speed : null;
+}
+function parseChoice(value) {
+	return MOTION_CHOICES.find((choice) => choice === value) ?? null;
+}
+function addressSettings(search) {
+	const params = new URLSearchParams(search);
+	const speed = parseSpeed(params.get(SPEED_PARAM));
+	const choice = parseChoice(params.get(CHOICE_PARAM));
+	return {
+		...speed === null ? {} : { speed },
+		...choice === null ? {} : { choice }
+	};
+}
+function settingsOf(saved, search) {
+	return {
+		speed: parseSpeed(saved.speed) ?? DEFAULT_SETTINGS.speed,
+		choice: parseChoice(saved.choice) ?? DEFAULT_SETTINGS.choice,
+		...addressSettings(search)
+	};
+}
+function showsStepsAtOnce(choice, systemReduces) {
+	return choice === "never" || choice === "system" && systemReduces;
+}
+function scaledMs(ms, speed) {
+	return speed > 0 ? ms / speed : ms;
+}
+var current = null;
+var listeners$4 = /* @__PURE__ */ new Set();
+var isWatchingSystem = false;
+function isInPage() {
+	return typeof window !== "undefined" && typeof document !== "undefined";
+}
+function readSaved(key) {
+	try {
+		const text = localStorage.getItem(key);
+		return text === null ? null : JSON.parse(text);
+	} catch {
+		return null;
+	}
+}
+function motionSettings() {
+	if (!current) current = isInPage() ? settingsOf({
+		speed: readSaved(SPEED_KEY),
+		choice: readSaved(CHOICE_KEY)
+	}, location.search) : DEFAULT_SETTINGS;
+	return current;
+}
+function motionSpeed() {
+	return motionSettings().speed;
+}
+function systemReducesMotion() {
+	if (!isInPage() || typeof window.matchMedia !== "function") return false;
+	return window.matchMedia(REDUCE_QUERY).matches;
+}
+function reducesMotion() {
+	return showsStepsAtOnce(motionSettings().choice, systemReducesMotion());
+}
+function notify$1() {
+	listeners$4.forEach((listener) => listener());
+}
+function save$1(change) {
+	try {
+		if (change.speed !== void 0) localStorage.setItem(SPEED_KEY, JSON.stringify(change.speed));
+		if (change.choice !== void 0) localStorage.setItem(CHOICE_KEY, JSON.stringify(change.choice));
+		return true;
+	} catch {
+		return false;
+	}
+}
+function changeMotionSettings(change) {
+	const speed = parseSpeed(change.speed);
+	const choice = parseChoice(change.choice);
+	const valid = {
+		...speed === null ? {} : { speed },
+		...choice === null ? {} : { choice }
+	};
+	current = {
+		...motionSettings(),
+		...valid
+	};
+	const isSaved = save$1(valid);
+	applyMotionToPage();
+	notify$1();
+	return isSaved;
+}
+function applyMotionToPage() {
+	if (!isInPage()) return;
+	const root = document.documentElement;
+	root.dataset.motion = reducesMotion() ? "off" : "on";
+	root.style.setProperty("--motion-speed", String(motionSpeed()));
+}
+function setUpMotionSettings() {
+	applyMotionToPage();
+	if (isWatchingSystem || !isInPage() || typeof window.matchMedia !== "function") return;
+	isWatchingSystem = true;
+	window.matchMedia(REDUCE_QUERY).addEventListener("change", () => {
+		applyMotionToPage();
+		notify$1();
+	});
+}
+function onMotionChange(listener) {
+	listeners$4.add(listener);
+	return () => {
+		listeners$4.delete(listener);
+	};
+}
 function easeInOut(fraction) {
 	return (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, fraction)))) / 2;
 }
@@ -5995,8 +6518,10 @@ function glides(transition, reducesMotion) {
 	return transition === "next" && !reducesMotion;
 }
 function prefersReducedMotion() {
-	if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	return reducesMotion();
+}
+function glideMs() {
+	return scaledMs(560, motionSpeed());
 }
 function startStep(key, transition, reducesMotion) {
 	return {
@@ -6057,7 +6582,7 @@ function useStepTransition(stepKey, transition) {
 		const glide = new StepGlide((progress) => setState((now) => now.key === stepKey && now.progress !== progress ? {
 			key: stepKey,
 			progress
-		} : now), pageClock());
+		} : now), pageClock(), glideMs());
 		glide.start();
 		return () => glide.stop();
 	}, [stepKey, isGliding]);
@@ -6158,6 +6683,18 @@ function scheduleOf(motion) {
 		isCompressed: true
 	};
 }
+function atSpeed(schedule, speed) {
+	if (speed === 1 || !(speed > 0)) return schedule;
+	return {
+		tracks: schedule.tracks.map((track) => ({
+			...track,
+			start: scaledMs(track.start, speed),
+			duration: scaledMs(track.duration, speed)
+		})),
+		total: scaledMs(schedule.total, speed),
+		isCompressed: schedule.isCompressed
+	};
+}
 function trackFraction(track, time) {
 	if (track.duration <= 0) return time >= track.start ? 1 : 0;
 	return Math.min(1, Math.max(0, (time - track.start) / track.duration));
@@ -6184,6 +6721,7 @@ function problemsOf(motion) {
 var MotionPlayer = class {
 	renderer;
 	reducesMotion;
+	speed;
 	warn;
 	warned = /* @__PURE__ */ new Set();
 	stage = null;
@@ -6193,6 +6731,7 @@ var MotionPlayer = class {
 	constructor(renderer, options = {}) {
 		this.renderer = renderer;
 		this.reducesMotion = options.reducesMotion ?? prefersReducedMotion;
+		this.speed = options.speed ?? motionSpeed;
 		this.warn = options.warn ?? ((message) => console.warn(message));
 	}
 	cue(key, motion, transition) {
@@ -6208,7 +6747,7 @@ var MotionPlayer = class {
 			this.warnOnce("motion not played (" + problems + ")");
 			return;
 		}
-		const schedule = scheduleOf(single);
+		const schedule = atSpeed(scheduleOf(single), this.speed());
 		const firsts = this.safely(() => this.stage ? this.renderer.measure(this.stage, firstNeedsOf(schedule)) : null, "measuring");
 		this.cued = {
 			key,
@@ -6369,6 +6908,31 @@ function routeAlong(edge, start, end) {
 		...distance(edge[edge.length - 1], start) < distance(edge[0], start) ? [...edge].reverse() : edge,
 		end
 	];
+}
+function arcBow(from, to, size, arc) {
+	const length = distance(from, to);
+	if (!length) return 0;
+	return arc * (Math.abs(to.y - from.y) * size.width + Math.abs(to.x - from.x) * size.height) / length;
+}
+function arcPath(from, to, bow) {
+	const dx = to.x - from.x;
+	const dy = to.y - from.y;
+	const length = Math.hypot(dx, dy) || 1;
+	const normal = {
+		x: dy / length,
+		y: -dx / length
+	};
+	const points = [];
+	for (let piece = 0; piece <= 16; piece++) {
+		const along = piece / 16;
+		const off = bow * Math.sin(Math.PI * along);
+		points.push({
+			x: (from.x - to.x) * (1 - along) + normal.x * off,
+			y: (from.y - to.y) * (1 - along) + normal.y * off,
+			offset: along
+		});
+	}
+	return points;
 }
 function formatCount(value, decimals) {
 	const text = value.toFixed(decimals);
@@ -6894,9 +7458,19 @@ function playSlide(scene, track, motion) {
 	const dx = (first.x - last.x) * scale.x;
 	const dy = (first.y - last.y) * scale.y;
 	if (Math.abs(dx) < SAME_PLACE_PX && Math.abs(dy) < SAME_PLACE_PX) return null;
-	const from = { translate: dx + "px " + dy + "px" };
-	scene.animate(element, [from, {}], timingOf(track, "backwards"));
+	const keyframes = [...slideKeyframes(first, last, motion.arc, scale), {}];
+	scene.animate(element, keyframes, timingOf(track, "backwards"));
 	return null;
+}
+function slideKeyframes(first, last, arc, scale) {
+	const translate = (x, y) => x * scale.x + "px " + y * scale.y + "px";
+	if (!arc) return [{ translate: translate(first.x - last.x, first.y - last.y) }];
+	const from = centreOf(first);
+	const to = centreOf(last);
+	return arcPath(from, to, arcBow(from, to, last, arc)).slice(0, -1).map((point) => ({
+		offset: point.offset,
+		translate: translate(point.x, point.y)
+	}));
 }
 function playHighlight(scene, track, motion) {
 	const element = scene.anchors.get(motion.anchor);
@@ -9878,6 +10452,7 @@ window.LabEngine = {
 	highlight,
 	tour,
 	formula: { render: formulaMathml$1 },
+	authoring,
 	files: {
 		main: "scenario.txt",
 		solution: "solution.txt"
@@ -14551,10 +15126,11 @@ function CodeSplitter({ context }) {
 }
 var OPEN_MS = 240;
 var PLAYERS = /* @__PURE__ */ new WeakMap();
+var layoutSpeed = () => 1;
 function islandPlayerOf(box) {
 	let player = PLAYERS.get(box);
 	if (!player) {
-		player = createMotionPlayer();
+		player = createMotionPlayer({ speed: layoutSpeed });
 		PLAYERS.set(box, player);
 	}
 	return player;
@@ -17305,6 +17881,10 @@ var codeBox = CodeBox;
 function labEngine() {
 	return window.LabEngine;
 }
+function engineName() {
+	const engine = labEngine();
+	return String(engine.name || engine.id || "");
+}
 function isBox(item) {
 	return Boolean(item) && typeof item === "object";
 }
@@ -18029,6 +18609,12 @@ var CHANGE_FIELDS = {
 	],
 	actor: ["label", "sub"]
 };
+var NODE_CHANGE_FIELDS = [
+	"label",
+	"sub",
+	"x",
+	"y"
+];
 // src/core/step-diagram/check-values.ts
 var MAX_PROBLEMS = 40;
 var ID_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
@@ -18319,6 +18905,106 @@ function formulaProblem(latex) {
 		return error instanceof Error ? error.message : String(error);
 	}
 }
+// src/core/step-diagram/JsonField.tsx
+var LINE_PX = 20;
+var COLUMN_RE = /\(column (\d+)\)$/;
+function goToLine(field, line, column) {
+	const lines = field.value.split("\n");
+	const index = Math.max(0, Math.min(lines.length - 1, line - 1));
+	const start = lines.slice(0, index).reduce((sum, text) => sum + text.length + 1, 0);
+	const indent = lines[index].length - lines[index].trimStart().length;
+	const offset = column > 0 ? Math.min(column - 1, lines[index].length) : indent;
+	field.focus();
+	field.setSelectionRange(start + offset, start + offset);
+	field.scrollTop = Math.max(0, index * LINE_PX - field.clientHeight / 3);
+}
+function columnOf(problem) {
+	const match = COLUMN_RE.exec(problem.message);
+	return match ? Number(match[1]) : 0;
+}
+function ProblemItems(props) {
+	const { onLine } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+		className: "sdd-list sdd-" + props.kind,
+		lang: "en",
+		dir: "ltr",
+		children: props.items.map((problem, index) => {
+			const line = problem.line ? problem.line + props.shift : 0;
+			const text = (problem.path ? problem.path + ": " : "") + problem.message;
+			const label = line ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "sdd-line",
+				children: ["line ", line]
+			}) : null;
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: line && onLine ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "sdd-goto",
+				title: "לשורה " + line + " בשדה",
+				onClick: () => onLine(line, columnOf(problem)),
+				children: [label, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: text })]
+			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [label, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: text })] }) }, index);
+		})
+	});
+}
+function markedLines(check, shift) {
+	const marks = /* @__PURE__ */ new Map();
+	const errors = check.diagram ? [] : check.problems;
+	for (const problem of check.warnings.filter((item) => item.line)) marks.set(problem.line + shift, "warning");
+	for (const problem of errors.filter((item) => item.line)) marks.set(problem.line + shift, "error");
+	return marks;
+}
+function LineNumbers(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: Array.from({ length: props.count }, (_, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "sdd-num " + (props.marks.get(index + 1) || ""),
+		children: index + 1
+	}, index)) });
+}
+function JsonField(props) {
+	const { text, marks, ref } = props;
+	const [top, setTop] = (0, import_react.useState)(0);
+	const count = text.split("\n").length;
+	const numbers = (0, import_react.useMemo)(() => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LineNumbers, {
+		count,
+		marks
+	}), [count, marks]);
+	const shift = { transform: "translateY(" + -top + "px)" };
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "sdd-editor",
+		dir: "ltr",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "sdd-gutter",
+				"aria-hidden": "true",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					style: shift,
+					children: numbers
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "sdd-bands",
+				style: shift,
+				"aria-hidden": "true",
+				children: Array.from(marks).map(([line, kind]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "sdd-band " + kind,
+					style: { top: (line - 1) * LINE_PX }
+				}, line))
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
+				id: "sdd-text",
+				ref,
+				className: "au-code sdd-text",
+				dir: "ltr",
+				lang: "en",
+				wrap: "off",
+				spellCheck: false,
+				autoFocus: true,
+				value: text,
+				placeholder: "{\n  \"format\": \"step-diagram/1\",\n  \"style\": \"sequence\",\n  ...\n}",
+				onChange: (event) => props.setText(event.target.value),
+				onScroll: (event) => setTop(event.currentTarget.scrollTop)
+			})
+		]
+	});
+}
 // src/core/step-diagram/sample.ts
 var DIAGRAM_SAMPLE = JSON.stringify({
 	format: "step-diagram/1",
@@ -18526,14 +19212,51 @@ var MAP_FONT = {
 	note: 12,
 	badge: 11.5
 };
+var COMPACT_CHARS = 4;
+var COMPACT_MIN_WIDTH = 44;
+var COMPACT_PADDING = 26;
 var PAIR_GAP = 13;
 var PAIR_SPREAD = 26;
 var LABEL_OFFSET = 15;
-function layoutNodes(diagram, width, height, talking) {
-	const preferred = clamp(width / 5.4, 70, 132);
-	const wide = placeNodes$1(diagram, width, height, preferred);
-	const room = narrowestRoom(wide, talking);
-	return room < preferred ? placeNodes$1(diagram, width, height, Math.max(MIN_BOX_WIDTH, room)) : wide;
+function nodePlaces(diagram) {
+	let places = new Map(diagram.actors.map((actor) => [actor.id, {
+		x: actor.x,
+		y: actor.y
+	}]));
+	const perStep = [];
+	for (const step of diagram.steps) {
+		const moves = step.change.filter((change) => places.has(change.id) && (change.fields.x ?? change.fields.y) !== void 0);
+		if (moves.length) {
+			places = new Map(places);
+			for (const { id, fields } of moves) {
+				const old = places.get(id);
+				const x = fields.x ?? old.x;
+				places.set(id, {
+					x,
+					y: fields.y ?? old.y
+				});
+			}
+		}
+		perStep.push(places);
+	}
+	return perStep.length ? perStep : [places];
+}
+function compactWidth(diagram, places) {
+	if (!(new Set(places).size > 1) || diagram.actors.some((actor) => actor.icon)) return 0;
+	const ids = new Set(diagram.actors.map((actor) => actor.id));
+	const texts = diagram.actors.flatMap((actor) => [actor.label, actor.sub]);
+	for (const change of diagram.steps.flatMap((step) => step.change)) if (ids.has(change.id)) texts.push(String(change.fields.label ?? ""), String(change.fields.sub ?? ""));
+	if (texts.some((text) => text.length > COMPACT_CHARS)) return 0;
+	const widest = Math.max(...texts.map((text) => textWidth(text, MAP_FONT.node)));
+	return Math.max(COMPACT_MIN_WIDTH, Math.ceil(widest + COMPACT_PADDING));
+}
+function layoutNodes(diagram, size, talking, places, compact) {
+	const distinct = [...new Set(places)];
+	const preferred = clamp(size.width / 5.4, 70, 132);
+	const boxW = Math.min(compact || preferred, preferred);
+	const room = Math.min(...distinct.map((at) => narrowestRoom(placeNodes$1(diagram, size, boxW, at), talking)));
+	const finalW = room < boxW ? Math.max(Math.min(MIN_BOX_WIDTH, boxW), room) : boxW;
+	return new Map(distinct.map((at) => [at, placeNodes$1(diagram, size, finalW, at)]));
 }
 var MIN_BOX_WIDTH = 64;
 var ICON_BOX_WIDTH = 92;
@@ -18542,14 +19265,16 @@ var TALK_GAP = 56;
 function pairKey(a, b) {
 	return [a, b].sort().join("\0");
 }
-function placeNodes$1(diagram, width, height, boxW) {
+function placeNodes$1(diagram, size, boxW, places) {
+	const { width, height } = size;
 	const nodes = /* @__PURE__ */ new Map();
 	diagram.actors.forEach((actor) => {
+		const place = places.get(actor.id) || actor;
 		const icon = actor.icon !== null && boxW >= ICON_BOX_WIDTH;
 		const lines = wrapLabel(actor.label, boxW - 14 - (icon ? 18 : 0), MAP_FONT.node, 3);
 		const h = 14 + lines.length * 17 + (actor.sub ? 15 : 0);
-		const cx = clamp(boxW / 2 + 6 + actor.x / 100 * (width - boxW - 12), boxW / 2, width - boxW / 2);
-		const cy = clamp(h / 2 + 8 + actor.y / 100 * (height - h - 16), h / 2, height - h / 2);
+		const cx = clamp(boxW / 2 + 6 + place.x / 100 * (width - boxW - 12), boxW / 2, width - boxW / 2);
+		const cy = clamp(h / 2 + 8 + place.y / 100 * (height - h - 16), h / 2, height - h / 2);
 		nodes.set(actor.id, {
 			cx,
 			cy,
@@ -18654,36 +19379,55 @@ function linkGeometry(link, nodes, isTalking) {
 }
 function layoutMap(diagram, width) {
 	const drawWidth = Math.max(260, width);
-	const height = Math.round(clamp(drawWidth * .56, 240, 420));
+	const places = nodePlaces(diagram);
+	const compact = compactWidth(diagram, places);
+	const tall = compact ? clamp(drawWidth * .32, 200, 260) : clamp(drawWidth * .56, 240, 420);
+	const height = Math.round(tall);
 	const elements = diagram.steps.flatMap((step) => step.add);
 	const messages = elements.filter((e) => e.type === "message");
 	const talking = new Set(messages.map((message) => pairKey(message.from, message.to)));
-	const nodes = layoutNodes(diagram, drawWidth, height, talking);
-	const places = pairPlaces(messages);
-	const layout = {
+	const boxes = layoutNodes(diagram, {
+		width: drawWidth,
+		height
+	}, talking, places, compact);
+	const context = {
+		elements,
+		messages,
+		talking,
+		pairs: pairPlaces(messages),
+		height
+	};
+	const frames = /* @__PURE__ */ new Map();
+	boxes.forEach((nodes, at) => frames.set(at, mapFrame(nodes, context)));
+	return {
 		width: drawWidth,
 		height,
+		frames: places.map((at) => frames.get(at))
+	};
+}
+function mapFrame(nodes, context) {
+	const frame = {
 		nodes,
 		messages: /* @__PURE__ */ new Map(),
 		links: /* @__PURE__ */ new Map(),
 		notes: /* @__PURE__ */ new Map()
 	};
-	for (const message of messages) layout.messages.set(message.id, messageGeometry$1(message, nodes, places.get(message.id)));
-	for (const element of elements) if (element.type === "link") {
-		const isTalking = talking.has(pairKey(element.from, element.to));
-		layout.links.set(element.id, linkGeometry(element, nodes, isTalking));
+	for (const message of context.messages) frame.messages.set(message.id, messageGeometry$1(message, nodes, context.pairs.get(message.id)));
+	for (const element of context.elements) if (element.type === "link") {
+		const isTalking = context.talking.has(pairKey(element.from, element.to));
+		frame.links.set(element.id, linkGeometry(element, nodes, isTalking));
 	} else if (element.type === "note") {
 		const node = nodes.get(element.at);
 		const lines = wrapLabel(element.text, Math.max(node.w + 30, 120), MAP_FONT.note);
 		const below = node.cy + node.h / 2 + 16;
-		const y = below + lines.length * 15 < height ? below : node.cy - node.h / 2 - 8 - (lines.length - 1) * 15;
-		layout.notes.set(element.id, {
+		const y = below + lines.length * 15 < context.height ? below : node.cy - node.h / 2 - 8 - (lines.length - 1) * 15;
+		frame.notes.set(element.id, {
 			x: node.cx,
 			y,
 			lines
 		});
 	}
-	return layout;
+	return frame;
 }
 // src/core/step-diagram/check-context.ts
 function checkActorRef(context, path, value) {
@@ -18936,6 +19680,227 @@ function highlightProblem(state, target) {
 	if (!(actor ? state.actorShown.get(id) : state.shown.get(id))) return `'${id}' is hidden in this step, so it cannot be highlighted`;
 	return part === void 0 ? "" : partProblem(state, target, id, part);
 }
+// src/core/step-diagram/check-actors.ts
+var ACTOR_FIELDS = {
+	sequence: [
+		"id",
+		"label",
+		"sub",
+		"hidden"
+	],
+	map: [
+		"id",
+		"label",
+		"sub",
+		"hidden",
+		"x",
+		"y",
+		"icon"
+	],
+	layers: [
+		"id",
+		"label",
+		"sub",
+		"hidden",
+		"layers"
+	]
+};
+var ACTOR_WORD = {
+	sequence: "actor",
+	map: "node",
+	layers: "device"
+};
+function checkLayers(list, value, duplicates) {
+	if (value === void 0) return DEFAULT_LAYERS.map((layer) => ({ ...layer }));
+	const items = checkList(list, "layers", value, {
+		min: 1,
+		max: LIMITS.layers
+	});
+	const layers = [];
+	items.forEach((raw, index) => {
+		const path = "layers[" + index + "]";
+		if (!isPlainObject(raw)) {
+			list.add(path, "must be {\"id\": \"transport\", \"label\": \"תעבורה\"}, not " + kindOf$1(raw));
+			return;
+		}
+		checkFields(list, path, raw, ["id", "label"], duplicates, "a layer");
+		const id = checkId(list, childField(path, "id"), raw.id, true);
+		const label = checkText(list, childField(path, "label"), raw.label, {
+			max: LIMITS.actorLabel,
+			required: true
+		});
+		if (id && layers.some((layer) => layer.id === id)) list.add(childField(path, "id"), "the layer '" + id + "' is written twice");
+		else if (id) layers.push({
+			id,
+			label
+		});
+	});
+	return layers;
+}
+function checkDeviceLayers(list, path, value, stack) {
+	const all = stack.map((layer) => layer.id);
+	if (value === void 0) return all;
+	const items = checkList(list, path, value, {
+		min: 1,
+		max: LIMITS.layers
+	});
+	const ids = items.filter((item) => typeof item === "string");
+	const unknown = ids.find((id) => !all.includes(id));
+	if (ids.length !== items.length || unknown !== void 0) {
+		list.add(path, unknown !== void 0 ? "'" + unknown + "' is not a layer" + suggestion(unknown, all) : "must list layer ids in \"...\"");
+		return all;
+	}
+	const bottom = all.slice(all.length - ids.length);
+	if (ids.join(" ") !== bottom.join(" ")) {
+		list.add(path, "a device has the bottom layers of the stack, in order: with " + ids.length + " layers that is " + JSON.stringify(bottom));
+		return all;
+	}
+	return ids;
+}
+function checkActor(list, path, raw, style, stack, duplicates) {
+	checkFields(list, path, raw, ACTOR_FIELDS[style], duplicates, "an " + ACTOR_WORD[style]);
+	const id = checkId(list, childField(path, "id"), raw.id, true);
+	const label = checkText(list, childField(path, "label"), raw.label, {
+		max: LIMITS.actorLabel,
+		required: true
+	});
+	const sub = checkText(list, childField(path, "sub"), raw.sub, { max: LIMITS.sub });
+	const hidden = checkFlag(list, childField(path, "hidden"), raw.hidden, false);
+	const place = {
+		min: 0,
+		max: 100,
+		fallback: -1
+	};
+	const isMap = style === "map";
+	const hasIcon = isMap && raw.icon !== void 0;
+	const layersPath = childField(path, "layers");
+	const actor = {
+		id,
+		label,
+		sub,
+		hidden,
+		x: isMap ? checkNumber(list, childField(path, "x"), raw.x, place) : -1,
+		y: isMap ? checkNumber(list, childField(path, "y"), raw.y, place) : -1,
+		icon: hasIcon ? checkChoice(list, childField(path, "icon"), raw.icon, ICONS, "host") || null : null,
+		layers: style === "layers" ? checkDeviceLayers(list, layersPath, raw.layers, stack) : []
+	};
+	return id ? actor : null;
+}
+function placeNodes(actors) {
+	const perRow = actors.length > 5 ? Math.ceil(actors.length / 2) : actors.length;
+	actors.forEach((actor, index) => {
+		const row = Math.floor(index / perRow);
+		const column = index % perRow;
+		const inRow = Math.min(perRow, actors.length - row * perRow);
+		actor.x = Math.round((column + .5) / inRow * 100);
+		actor.y = actors.length > perRow ? row === 0 ? 25 : 75 : 50;
+	});
+}
+function checkPlaces(list, actors) {
+	const placed = actors.filter((actor) => actor.x >= 0 && actor.y >= 0);
+	const half = actors.filter((actor) => actor.x >= 0 !== actor.y >= 0);
+	if (half.length) {
+		list.add("actors", "the node '" + half[0].id + "' has only one of x and y: give both");
+		return;
+	}
+	if (!placed.length) {
+		placeNodes(actors);
+		return;
+	}
+	if (placed.length !== actors.length) {
+		const missing = actors.find((actor) => actor.x < 0);
+		list.add("actors", "give every node x and y, or none (then they are placed in a row): '" + (missing ? missing.id : "") + "' has none");
+		return;
+	}
+	for (let i = 0; i < actors.length; i++) for (let j = i + 1; j < actors.length; j++) if (Math.hypot(actors[i].x - actors[j].x, actors[i].y - actors[j].y) < 12) {
+		list.add("actors", "the nodes '" + actors[i].id + "' and '" + actors[j].id + "' are almost at the same place: move one (x and y go from 0 to 100)");
+		return;
+	}
+}
+function arePlacesWritten(value) {
+	return Array.isArray(value) && value.some((raw) => isPlainObject(raw) && (raw.x !== void 0 || raw.y !== void 0));
+}
+function checkActors(list, value, style, stack, duplicates) {
+	const max = LIMITS.actors[style];
+	const items = checkList(list, "actors", value, {
+		min: 1,
+		max
+	});
+	const actors = /* @__PURE__ */ new Map();
+	items.forEach((raw, index) => {
+		const path = "actors[" + index + "]";
+		if (!isPlainObject(raw)) {
+			list.add(path, "must be an object {\"id\": \"...\", \"label\": \"...\"}, not " + kindOf$1(raw));
+			return;
+		}
+		const actor = checkActor(list, path, raw, style, stack, duplicates);
+		if (actor && actors.has(actor.id)) list.add(childField(path, "id"), "the id '" + actor.id + "' is used twice: every " + ACTOR_WORD[style] + " has its own id");
+		else if (actor) actors.set(actor.id, actor);
+	});
+	if (style === "map" && actors.size) checkPlaces(list, Array.from(actors.values()));
+	if (actors.size && Array.from(actors.values()).every((actor) => actor.hidden)) list.add("actors", "every " + ACTOR_WORD[style] + " is hidden: show at least one at the start");
+	return actors;
+}
+// src/core/step-diagram/check-moves.ts
+var NodeMoves = class {
+	places = /* @__PURE__ */ new Map();
+	moves = [];
+	style;
+	isPlaced;
+	list;
+	constructor(actors, style, isPlaced, list) {
+		this.style = style;
+		this.isPlaced = isPlaced;
+		this.list = list;
+		actors.forEach((actor, id) => this.places.set(id, {
+			x: actor.x,
+			y: actor.y
+		}));
+	}
+	checkPlace(path, id, key, value) {
+		const place = this.places.get(id) || {
+			x: 0,
+			y: 0
+		};
+		if (this.style !== "map") {
+			this.list.add(path, "only a node of a map moves (x and y): a " + this.style + " diagram places its actors itself");
+			return place[key];
+		}
+		if (!this.isPlaced) {
+			this.list.add(path, "a node moves only in a map whose nodes have places: give every node x and y in \"actors\"");
+			return place[key];
+		}
+		const range = {
+			min: 0,
+			max: 100,
+			fallback: place[key]
+		};
+		const number = checkNumber(this.list, path, value, range);
+		this.places.set(id, {
+			...place,
+			[key]: number
+		});
+		if (!this.moves.some((move) => move.id === id)) this.moves.push({
+			id,
+			path: path.replace(/\.[xy]$/, "")
+		});
+		return number;
+	}
+	endStep() {
+		const reported = /* @__PURE__ */ new Set();
+		for (const move of this.moves) {
+			const place = this.places.get(move.id);
+			for (const [otherId, other] of this.places) {
+				const isClose = Math.hypot(place.x - other.x, place.y - other.y) < 12;
+				if (otherId === move.id || !isClose || reported.has(otherId)) continue;
+				reported.add(move.id);
+				this.list.add(move.path, "after this step the nodes '" + move.id + "' and '" + otherId + "' are almost at the same place: a swap changes the places of both, or choose another place (at least 12 apart)");
+				break;
+			}
+		}
+		this.moves = [];
+	}
+};
 // src/core/step-diagram/check-steps.ts
 var STEP_FIELDS = [
 	"caption",
@@ -18959,12 +19924,14 @@ var StepWalk = class {
 	duplicates;
 	actors;
 	checkFormula;
-	constructor(style, list, duplicates, actors, checkFormula) {
+	moves;
+	constructor(style, list, duplicates, actors, options) {
 		this.style = style;
 		this.list = list;
 		this.duplicates = duplicates;
 		this.actors = actors;
-		this.checkFormula = checkFormula;
+		this.checkFormula = options.checkFormula;
+		this.moves = new NodeMoves(actors, style, Boolean(options.isPlaced), list);
 		actors.forEach((actor, id) => this.actorShown.set(id, !actor.hidden));
 		this.context = {
 			style,
@@ -19046,17 +20013,18 @@ var StepWalk = class {
 			this.list.add(childField(path, "id"), unknownIdProblem(this, id));
 			return null;
 		}
-		const kind = element ? element.type : "actor";
-		const allowed = CHANGE_FIELDS[kind];
+		const kind = element ? element.type : this.style === "map" ? "node" : "actor";
+		const allowed = element ? CHANGE_FIELDS[kind] : NODE_CHANGE_FIELDS;
 		checkFields(this.list, path, raw, ["id", ...allowed], this.duplicates, "a change of a " + kind);
 		const keys = Object.keys(raw).filter((key) => allowed.includes(key));
 		if (!keys.length) {
-			this.list.add(path, "changes nothing: a change of a " + kind + " sets " + allowed.join(", "));
+			const sets = kind === "actor" ? CHANGE_FIELDS.actor : allowed;
+			this.list.add(path, "changes nothing: a change of a " + kind + " sets " + sets.join(", "));
 			return null;
 		}
 		return {
 			id,
-			fields: element ? this.changedElementFields(path, element, raw, keys) : this.changedActorFields(path, raw, keys)
+			fields: element ? this.changedElementFields(path, element, raw, keys) : this.changedActorFields(path, id, raw, keys)
 		};
 	}
 	changedField(path, element, key, value) {
@@ -19085,9 +20053,13 @@ var StepWalk = class {
 		});
 		return fields;
 	}
-	changedActorFields(path, raw, keys) {
+	changedActorFields(path, id, raw, keys) {
 		const fields = {};
 		for (const key of keys) {
+			if (key === "x" || key === "y") {
+				fields[key] = this.moves.checkPlace(childField(path, key), id, key, raw[key]);
+				continue;
+			}
 			const max = key === "label" ? LIMITS.actorLabel : LIMITS.sub;
 			fields[key] = checkText(this.list, childField(path, key), raw[key], {
 				max,
@@ -19149,6 +20121,7 @@ var StepWalk = class {
 		const show = this.toggleAll(path, "show", raw.show);
 		const add = this.addAll(path, raw.add);
 		const change = this.changeAll(path, raw.change);
+		this.moves.endStep();
 		const hide = this.toggleAll(path, "hide", raw.hide);
 		const highlight = this.highlightAll(path, raw.highlight);
 		if (!show.length && !add.length && !change.length && !hide.length && !highlight.length && path !== "steps[0]") this.list.warn(path, "this step changes nothing in the picture (only its caption)");
@@ -19162,12 +20135,12 @@ var StepWalk = class {
 		};
 	}
 };
-function checkSteps(value, style, list, duplicates, actors, checkFormula) {
+function checkSteps(value, style, list, duplicates, actors, options = {}) {
 	const items = checkList(list, "steps", value, {
 		min: 1,
 		max: LIMITS.steps
 	});
-	const walk = new StepWalk(style, list, duplicates, actors, checkFormula);
+	const walk = new StepWalk(style, list, duplicates, actors, options);
 	const steps = [];
 	items.forEach((raw, index) => {
 		const path = "steps[" + index + "]";
@@ -19239,6 +20212,7 @@ function nextScene(scene, index, caption) {
 		highlight: /* @__PURE__ */ new Set(),
 		added: /* @__PURE__ */ new Set(),
 		changed: /* @__PURE__ */ new Set(),
+		moved: /* @__PURE__ */ new Set(),
 		trails
 	};
 }
@@ -19289,6 +20263,10 @@ function applyChange(scene, id, fields) {
 	if (actor) {
 		actor.label = fields.label ?? actor.label;
 		actor.sub = fields.sub ?? actor.sub;
+		actor.x = fields.x ?? actor.x;
+		actor.y = fields.y ?? actor.y;
+		if (fields.x !== void 0 || fields.y !== void 0) scene.moved.add(id);
+		if (fields.label === void 0 && fields.sub === void 0) return;
 	} else if (element) element.element = {
 		...element.element,
 		...fields
@@ -19298,11 +20276,14 @@ function applyChange(scene, id, fields) {
 function buildScenes(diagram) {
 	const actors = /* @__PURE__ */ new Map();
 	diagram.actors.forEach((actor) => {
+		const { label, sub, x, y } = actor;
 		actors.set(actor.id, {
 			actor,
-			label: actor.label,
-			sub: actor.sub,
-			shown: !actor.hidden
+			label,
+			sub,
+			shown: !actor.hidden,
+			x,
+			y
 		});
 	});
 	let scene = {
@@ -19313,6 +20294,7 @@ function buildScenes(diagram) {
 		highlight: /* @__PURE__ */ new Set(),
 		added: /* @__PURE__ */ new Set(),
 		changed: /* @__PURE__ */ new Set(),
+		moved: /* @__PURE__ */ new Set(),
 		trails: /* @__PURE__ */ new Map()
 	};
 	const scenes = [];
@@ -19482,30 +20464,9 @@ function spanGeometry(span, layout) {
 	};
 }
 var POP_SCALE = .86;
-var HEADER_SHIFT_PX = -14;
-var RING_MS = 700;
 var EASE = "settle";
 function partAnchor(part, id) {
 	return "sd-" + part + ":" + id;
-}
-function partNumbers(diagram) {
-	const numbers = /* @__PURE__ */ new Map();
-	const visit = (parts) => {
-		for (const part of parts || []) if (!numbers.has(part.text)) numbers.set(part.text, numbers.size);
-	};
-	for (const step of diagram.steps) {
-		step.add.forEach((element) => visit(element.type === "packet" ? element.parts : void 0));
-		step.change.forEach((change) => visit(change.fields.parts));
-	}
-	return numbers;
-}
-function chipIds(packet, numbers) {
-	const seen = /* @__PURE__ */ new Map();
-	return packet.parts.map((part) => {
-		const occurrence = (seen.get(part.text) || 0) + 1;
-		seen.set(part.text, occurrence);
-		return packet.id + ".p" + (numbers.get(part.text) ?? 0) + "#" + occurrence;
-	});
 }
 function waitOf(ms) {
 	return Number.isFinite(ms) ? Math.min(MAX_DELAY_MS, Math.max(0, Math.round(ms))) : 0;
@@ -19541,6 +20502,99 @@ function arrowDraws(id, delay, ms) {
 function isRedrawn(scene, id) {
 	return scene.added.has(id) || scene.changed.has(id);
 }
+// src/core/step-diagram/motion-map.ts
+var NODE_ARC = 1.1;
+var PASS_SAMPLES = 20;
+function passesAnother(id, scene, previous) {
+	const placeAt = (nodeId, along) => {
+		const before = previous.actors.get(nodeId);
+		const after = scene.actors.get(nodeId);
+		return {
+			x: before.x + (after.x - before.x) * along,
+			y: before.y + (after.y - before.y) * along
+		};
+	};
+	const others = Array.from(scene.actors.keys()).filter((other) => other !== id && (scene.actors.get(other).shown || previous.actors.get(other).shown));
+	for (let sample = 1; sample < PASS_SAMPLES; sample++) {
+		const along = sample / PASS_SAMPLES;
+		const here = placeAt(id, along);
+		for (const other of others) {
+			const there = placeAt(other, along);
+			if (Math.hypot(here.x - there.x, here.y - there.y) < 12) return true;
+		}
+	}
+	return false;
+}
+function nodeMoveMotions(scene, previous) {
+	const moving = Array.from(scene.moved).filter((id) => previous && previous.actors.get(id).shown && scene.actors.get(id).shown);
+	if (!previous || !moving.length) return [];
+	const motions = moving.map((id) => {
+		const arc = passesAnother(id, scene, previous) ? { arc: NODE_ARC } : {};
+		return slide({
+			anchor: partAnchor("actor", id),
+			ms: 560,
+			ease: EASE,
+			...arc
+		});
+	});
+	for (const { element, shown } of scene.elements.values()) {
+		const part = ATTACHED_PART[element.type];
+		const isAttached = attachedNodes(element).some((node) => moving.includes(node));
+		const isOwn = scene.added.has(element.id) || part === "note" && isRedrawn(scene, element.id);
+		if (shown && part && isAttached && !isOwn) motions.push(fadeIn(partAnchor(part, element.id), 560, 260));
+	}
+	return motions;
+}
+var ATTACHED_PART = {
+	message: "msg",
+	link: "link",
+	note: "note"
+};
+function attachedNodes(element) {
+	if (element.type === "message" || element.type === "link") return [element.from, element.to];
+	return element.type === "note" ? [element.at] : [];
+}
+function mapMotions(scene, previous) {
+	const shown = Array.from(scene.elements.values()).filter((state) => state.shown);
+	const newMessages = shown.filter((state) => state.element.type === "message" && scene.added.has(state.element.id));
+	const motions = nodeMoveMotions(scene, previous);
+	const start = motions.length ? 560 : 0;
+	newMessages.forEach(({ element }, order) => {
+		const delay = start + order * 520;
+		const later = delay + 364;
+		motions.push(arrowDraws(element.id, delay, 520));
+		motions.push(popIn(partAnchor("badge", element.id), later));
+		if (element.type === "message" && element.label) motions.push(fadeIn(partAnchor("label", element.id), later, 260));
+	});
+	for (const { element } of shown) if (element.type === "link" && scene.added.has(element.id)) motions.push(fadeIn(partAnchor("link", element.id), start, 364));
+	else if (element.type === "note" && isRedrawn(scene, element.id)) {
+		const delay = start + newMessages.length * 520;
+		motions.push(fadeIn(partAnchor("note", element.id), delay, 260));
+	}
+	return motions;
+}
+// src/core/step-diagram/motion.ts
+var HEADER_SHIFT_PX = -14;
+var RING_MS = 700;
+function partNumbers(diagram) {
+	const numbers = /* @__PURE__ */ new Map();
+	const visit = (parts) => {
+		for (const part of parts || []) if (!numbers.has(part.text)) numbers.set(part.text, numbers.size);
+	};
+	for (const step of diagram.steps) {
+		step.add.forEach((element) => visit(element.type === "packet" ? element.parts : void 0));
+		step.change.forEach((change) => visit(change.fields.parts));
+	}
+	return numbers;
+}
+function chipIds(packet, numbers) {
+	const seen = /* @__PURE__ */ new Map();
+	return packet.parts.map((part) => {
+		const occurrence = (seen.get(part.text) || 0) + 1;
+		seen.set(part.text, occurrence);
+		return packet.id + ".p" + (numbers.get(part.text) ?? 0) + "#" + occurrence;
+	});
+}
 function actorMotions(diagram, scene) {
 	return diagram.actors.filter((actor) => scene.actors.get(actor.id).shown && isRedrawn(scene, actor.id)).map((actor) => {
 		const name = partAnchor("actor", actor.id);
@@ -19564,24 +20618,6 @@ function sequenceMotions(scene, times) {
 			motions.push(fadeIn(partAnchor("span", element.id), 0, 364));
 			if (element.band) motions.push(fadeIn(partAnchor("band", element.id), 0, 364));
 		}
-	}
-	return motions;
-}
-function mapMotions(scene) {
-	const shown = Array.from(scene.elements.values()).filter((state) => state.shown);
-	const newMessages = shown.filter((state) => state.element.type === "message" && scene.added.has(state.element.id));
-	const motions = [];
-	newMessages.forEach(({ element }, order) => {
-		const delay = order * 520;
-		const later = delay + 364;
-		motions.push(arrowDraws(element.id, delay, 520));
-		motions.push(popIn(partAnchor("badge", element.id), later));
-		if (element.type === "message" && element.label) motions.push(fadeIn(partAnchor("label", element.id), later, 260));
-	});
-	for (const { element } of shown) if (element.type === "link" && scene.added.has(element.id)) motions.push(fadeIn(partAnchor("link", element.id), 0, 364));
-	else if (element.type === "note" && isRedrawn(scene, element.id)) {
-		const delay = newMessages.length * 520;
-		motions.push(fadeIn(partAnchor("note", element.id), delay, 260));
 	}
 	return motions;
 }
@@ -19675,7 +20711,7 @@ function stepMotions(diagram, scenes) {
 	const numbers = partNumbers(diagram);
 	return scenes.map((scene, index) => {
 		const previous = index > 0 ? scenes[index - 1] : null;
-		const style = diagram.style === "sequence" ? sequenceMotions(scene, times) : diagram.style === "map" ? mapMotions(scene) : layersMotions(scene, previous, numbers);
+		const style = diagram.style === "sequence" ? sequenceMotions(scene, times) : diagram.style === "map" ? mapMotions(scene, previous) : layersMotions(scene, previous, numbers);
 		const parts = [...actorMotions(diagram, scene), ...style];
 		const drawn = scheduleOf(together(parts)).total;
 		const motions = [...parts, ...ringMotions(diagram, scene, drawn, numbers)];
@@ -20134,7 +21170,7 @@ function MapView(props) {
 	const shown = Array.from(scene.elements.values()).filter((state) => state.shown).sort((a, b) => isNow(a.element.id) - isNow(b.element.id));
 	const parts = {
 		scene,
-		layout
+		layout: layout.frames[Math.min(scene.index, layout.frames.length - 1)]
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SvgFrame, {
 		width: layout.width,
@@ -20161,165 +21197,6 @@ function MapView(props) {
 			})
 		]
 	});
-}
-// src/core/step-diagram/check-actors.ts
-var ACTOR_FIELDS = {
-	sequence: [
-		"id",
-		"label",
-		"sub",
-		"hidden"
-	],
-	map: [
-		"id",
-		"label",
-		"sub",
-		"hidden",
-		"x",
-		"y",
-		"icon"
-	],
-	layers: [
-		"id",
-		"label",
-		"sub",
-		"hidden",
-		"layers"
-	]
-};
-var MIN_NODE_DISTANCE = 12;
-var ACTOR_WORD = {
-	sequence: "actor",
-	map: "node",
-	layers: "device"
-};
-function checkLayers(list, value, duplicates) {
-	if (value === void 0) return DEFAULT_LAYERS.map((layer) => ({ ...layer }));
-	const items = checkList(list, "layers", value, {
-		min: 1,
-		max: LIMITS.layers
-	});
-	const layers = [];
-	items.forEach((raw, index) => {
-		const path = "layers[" + index + "]";
-		if (!isPlainObject(raw)) {
-			list.add(path, "must be {\"id\": \"transport\", \"label\": \"תעבורה\"}, not " + kindOf$1(raw));
-			return;
-		}
-		checkFields(list, path, raw, ["id", "label"], duplicates, "a layer");
-		const id = checkId(list, childField(path, "id"), raw.id, true);
-		const label = checkText(list, childField(path, "label"), raw.label, {
-			max: LIMITS.actorLabel,
-			required: true
-		});
-		if (id && layers.some((layer) => layer.id === id)) list.add(childField(path, "id"), "the layer '" + id + "' is written twice");
-		else if (id) layers.push({
-			id,
-			label
-		});
-	});
-	return layers;
-}
-function checkDeviceLayers(list, path, value, stack) {
-	const all = stack.map((layer) => layer.id);
-	if (value === void 0) return all;
-	const items = checkList(list, path, value, {
-		min: 1,
-		max: LIMITS.layers
-	});
-	const ids = items.filter((item) => typeof item === "string");
-	const unknown = ids.find((id) => !all.includes(id));
-	if (ids.length !== items.length || unknown !== void 0) {
-		list.add(path, unknown !== void 0 ? "'" + unknown + "' is not a layer" + suggestion(unknown, all) : "must list layer ids in \"...\"");
-		return all;
-	}
-	const bottom = all.slice(all.length - ids.length);
-	if (ids.join(" ") !== bottom.join(" ")) {
-		list.add(path, "a device has the bottom layers of the stack, in order: with " + ids.length + " layers that is " + JSON.stringify(bottom));
-		return all;
-	}
-	return ids;
-}
-function checkActor(list, path, raw, style, stack, duplicates) {
-	checkFields(list, path, raw, ACTOR_FIELDS[style], duplicates, "an " + ACTOR_WORD[style]);
-	const id = checkId(list, childField(path, "id"), raw.id, true);
-	const label = checkText(list, childField(path, "label"), raw.label, {
-		max: LIMITS.actorLabel,
-		required: true
-	});
-	const sub = checkText(list, childField(path, "sub"), raw.sub, { max: LIMITS.sub });
-	const hidden = checkFlag(list, childField(path, "hidden"), raw.hidden, false);
-	const place = {
-		min: 0,
-		max: 100,
-		fallback: -1
-	};
-	const isMap = style === "map";
-	const hasIcon = isMap && raw.icon !== void 0;
-	const layersPath = childField(path, "layers");
-	const actor = {
-		id,
-		label,
-		sub,
-		hidden,
-		x: isMap ? checkNumber(list, childField(path, "x"), raw.x, place) : -1,
-		y: isMap ? checkNumber(list, childField(path, "y"), raw.y, place) : -1,
-		icon: hasIcon ? checkChoice(list, childField(path, "icon"), raw.icon, ICONS, "host") || null : null,
-		layers: style === "layers" ? checkDeviceLayers(list, layersPath, raw.layers, stack) : []
-	};
-	return id ? actor : null;
-}
-function placeNodes(actors) {
-	const perRow = actors.length > 5 ? Math.ceil(actors.length / 2) : actors.length;
-	actors.forEach((actor, index) => {
-		const row = Math.floor(index / perRow);
-		const column = index % perRow;
-		const inRow = Math.min(perRow, actors.length - row * perRow);
-		actor.x = Math.round((column + .5) / inRow * 100);
-		actor.y = actors.length > perRow ? row === 0 ? 25 : 75 : 50;
-	});
-}
-function checkPlaces(list, actors) {
-	const placed = actors.filter((actor) => actor.x >= 0 && actor.y >= 0);
-	const half = actors.filter((actor) => actor.x >= 0 !== actor.y >= 0);
-	if (half.length) {
-		list.add("actors", "the node '" + half[0].id + "' has only one of x and y: give both");
-		return;
-	}
-	if (!placed.length) {
-		placeNodes(actors);
-		return;
-	}
-	if (placed.length !== actors.length) {
-		const missing = actors.find((actor) => actor.x < 0);
-		list.add("actors", "give every node x and y, or none (then they are placed in a row): '" + (missing ? missing.id : "") + "' has none");
-		return;
-	}
-	for (let i = 0; i < actors.length; i++) for (let j = i + 1; j < actors.length; j++) if (Math.hypot(actors[i].x - actors[j].x, actors[i].y - actors[j].y) < MIN_NODE_DISTANCE) {
-		list.add("actors", "the nodes '" + actors[i].id + "' and '" + actors[j].id + "' are almost at the same place: move one (x and y go from 0 to 100)");
-		return;
-	}
-}
-function checkActors(list, value, style, stack, duplicates) {
-	const max = LIMITS.actors[style];
-	const items = checkList(list, "actors", value, {
-		min: 1,
-		max
-	});
-	const actors = /* @__PURE__ */ new Map();
-	items.forEach((raw, index) => {
-		const path = "actors[" + index + "]";
-		if (!isPlainObject(raw)) {
-			list.add(path, "must be an object {\"id\": \"...\", \"label\": \"...\"}, not " + kindOf$1(raw));
-			return;
-		}
-		const actor = checkActor(list, path, raw, style, stack, duplicates);
-		if (actor && actors.has(actor.id)) list.add(childField(path, "id"), "the id '" + actor.id + "' is used twice: every " + ACTOR_WORD[style] + " has its own id");
-		else if (actor) actors.set(actor.id, actor);
-	});
-	if (style === "map" && actors.size) checkPlaces(list, Array.from(actors.values()));
-	if (actors.size && Array.from(actors.values()).every((actor) => actor.hidden)) list.add("actors", "every " + ACTOR_WORD[style] + " is hidden: show at least one at the start");
-	return actors;
 }
 // src/core/step-diagram/json-error.ts
 var JsonTextError = class extends Error {
@@ -20618,7 +21495,10 @@ function checkBody(list, value, style, duplicates, options) {
 	if (style !== "layers" && value.layers !== void 0) list.add("layers", "is for layers diagrams only: leave it out");
 	const layers = style === "layers" ? checkLayers(list, value.layers, duplicates) : [];
 	const actors = checkActors(list, value.actors, style, layers, duplicates);
-	const steps = checkSteps(value.steps, style, list, duplicates, actors, options.checkFormula);
+	const steps = checkSteps(value.steps, style, list, duplicates, actors, {
+		checkFormula: options.checkFormula,
+		isPlaced: arePlacesWritten(value.actors)
+	});
 	return {
 		format: FORMAT,
 		style,
@@ -21174,31 +22054,6 @@ function readable(source) {
 		return source;
 	}
 }
-function selectLine(field, line) {
-	const lines = field.value.split("\n");
-	const index = Math.max(0, Math.min(lines.length - 1, line - 1));
-	const start = lines.slice(0, index).reduce((sum, text) => sum + text.length + 1, 0);
-	field.focus();
-	field.setSelectionRange(start, start + lines[index].length);
-	const lineHeight = parseFloat(getComputedStyle(field).lineHeight) || 20;
-	field.scrollTop = Math.max(0, index * lineHeight - field.clientHeight / 3);
-}
-function ProblemItems(props) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
-		className: "sdd-list sdd-" + props.kind,
-		lang: "en",
-		dir: "ltr",
-		children: props.items.map((problem, index) => {
-			const line = problem.line ? problem.line + props.shift : 0;
-			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [line ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-				type: "button",
-				className: "sdd-line",
-				onClick: () => props.onLine(line),
-				children: ["line ", line]
-			}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (problem.path ? problem.path + ": " : "") + problem.message })] }, index);
-		})
-	});
-}
 function Status(props) {
 	const { pasted, isEmpty } = props;
 	const diagram = pasted.check.diagram;
@@ -21294,28 +22149,23 @@ function SourcePane(props) {
 	const { pasted } = props;
 	const fieldRef = (0, import_react.useRef)(null);
 	const isEmpty = !props.text.trim();
-	const goToLine = (line) => {
-		if (fieldRef.current) selectLine(fieldRef.current, line);
+	const marks = (0, import_react.useMemo)(() => isEmpty ? /* @__PURE__ */ new Map() : markedLines(pasted.check, pasted.shift), [pasted, isEmpty]);
+	const onLine = (line, column) => {
+		if (fieldRef.current) goToLine(fieldRef.current, line, column);
 	};
 	const lists = {
 		shift: pasted.shift,
-		onLine: goToLine
+		onLine
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "sdd-src",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceTools, { setText: props.setText }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
-				id: "sdd-text",
-				ref: fieldRef,
-				className: "au-code sdd-text",
-				dir: "ltr",
-				lang: "en",
-				spellCheck: false,
-				autoFocus: true,
-				value: props.text,
-				placeholder: "{\n  \"format\": \"step-diagram/1\",\n  \"style\": \"sequence\",\n  ...\n}",
-				onChange: (event) => props.setText(event.target.value)
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(JsonField, {
+				text: props.text,
+				setText: props.setText,
+				marks,
+				ref: fieldRef
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Status, {
 				pasted,
@@ -23832,6 +24682,13 @@ var SIDEBAR_STEPS$1 = [
 		text: "בהיר או כהה: הבחירה נשמרת בדפדפן הזה ומשותפת לכל הקורסים.",
 		target: "#theme-sw",
 		isInSidebar: true
+	},
+	{
+		id: "side-motion",
+		title: "אנימציות",
+		text: say("כאן מאטים את האנימציות של הצעדים (עד פי ארבעה) ובוחרים מתי להנפיש: לפי Windows, תמיד", "או אף פעם. גם זה נשמר בדפדפן לכל הקורסים."),
+		target: "#motion-panel",
+		isInSidebar: true
 	}
 ];
 var BOX_STEPS = [
@@ -24172,7 +25029,7 @@ async function bringIntoView(element, also) {
 }
 async function scrollToSee(element, block) {
 	if (isAllInSight(element)) return;
-	const isReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const isReduced = prefersReducedMotion();
 	scrollIntoSight(element, block);
 	await sleep(isReduced ? 0 : SCROLL_SETTLE_MS);
 }
@@ -25362,7 +26219,7 @@ function FillRow(props) {
 			text: "… מריץ"
 		});
 		const runOnce = engineAuthoring().runOnce;
-		const result = await runOnce(box.solution || box.code || "", String(test.stdin || ""));
+		const result = await runOnce(box.solution || box.code || "", String(test.stdin || ""), box);
 		setIsRunning(false);
 		if (result.error) {
 			setMessage({
@@ -25415,6 +26272,14 @@ function fieldText(test, field) {
 	return field.json ? JSON.stringify(rawValue) : String(rawValue);
 }
 function storeTyped(box, testIndex, field, typedText) {
+	const isEmpty = field.json ? !typedText.trim() : !typedText;
+	if (field.optional && isEmpty) {
+		setTestField(box, testIndex, field.k, void 0);
+		return {
+			isValid: true,
+			storedText: ""
+		};
+	}
 	if (field.json) {
 		let parsed;
 		try {
@@ -25431,13 +26296,6 @@ function storeTyped(box, testIndex, field, typedText) {
 			storedText: JSON.stringify(parsed)
 		};
 	}
-	if (field.optional && !typedText) {
-		setTestField(box, testIndex, field.k, void 0);
-		return {
-			isValid: true,
-			storedText: ""
-		};
-	}
 	const text = typedText.replace(/\r/g, "");
 	setTestField(box, testIndex, field.k, text);
 	return {
@@ -25445,8 +26303,34 @@ function storeTyped(box, testIndex, field, typedText) {
 		storedText: text
 	};
 }
+function ChoiceList(props) {
+	const { choices, modelText } = props;
+	const isKnown = choices.some(([value]) => value === modelText);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
+		value: modelText,
+		"aria-label": props.label,
+		dir: "ltr",
+		onChange: (event) => props.onText(event.currentTarget.value),
+		children: [isKnown ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+			value: modelText,
+			children: modelText + " (לא ברשימה)"
+		}), choices.map(([value, label]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+			value,
+			children: label
+		}, value))]
+	});
+}
 function FieldControl(props) {
 	const { field, controlProps } = props;
+	if (field.choices) {
+		const { modelText, label, onText } = controlProps;
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChoiceList, {
+			choices: field.choices,
+			modelText,
+			label,
+			onText
+		});
+	}
 	if (field.code) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CodeArea, {
 		...controlProps,
 		minRows: field.rows || TEST_CODE_ROWS
@@ -25565,6 +26449,13 @@ function useFocusNewCard(listRef) {
 	};
 	return markAdded;
 }
+function noKindItems() {
+	const name = engineName();
+	return [{ note: (name ? "המנוע «" + name + "»" : "המנוע של הקורס") + " לא מגדיר לעורך סוגי בדיקות (LabEngine.authoring.testKinds), ולכן אי אפשר להוסיף כאן בדיקה. את הבדיקות של הקופסה כותבים בקובץ השיעור." }, {
+		label: "הבנתי",
+		keep: true
+	}];
+}
 function TestList(props) {
 	const { box } = props;
 	const kinds = engineAuthoring().testKinds || [];
@@ -25576,7 +26467,7 @@ function TestList(props) {
 			markAdded();
 			addTest(box, cloneData(kind.blank || { type: kind.type }));
 		}));
-		openMenu(event.currentTarget, "סוג הבדיקה", items);
+		openMenu(event.currentTarget, "סוג הבדיקה", items.length ? items : noKindItems());
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "au-tests",
@@ -25843,8 +26734,7 @@ function PreviewBlock(props) {
 	if (!check.diagram) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProblemItems, {
 		items: check.problems,
 		shift: 0,
-		kind: "error",
-		onLine: () => void 0
+		kind: "error"
 	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DiagramPlayer, { diagram: check.diagram }, props.source);
 }
@@ -26508,7 +27398,8 @@ var FRAMED_TYPES = [
 	"table",
 	"code_static",
 	"schem",
-	"chips"
+	"chips",
+	"step_diagram"
 ];
 function isStructural(tr) {
 	const uiEvent = tr.getMeta("uiEvent");
@@ -27619,8 +28510,14 @@ function NameForm(props) {
 	});
 }
 // src/core/sidebar/sidebar-menus.ts
+function newSubLessonItems(label, run) {
+	if (hasBoxTemplates()) return [menuItem(label, run)];
+	const name = engineName();
+	const reason = "למנוע" + (name ? " «" + name + "»" : " של הקורס") + " אין תבנית של קופסת קוד חדשה (LabEngine.authoring.example / exercise), ולכן את התת-שיעור כותבים בקובץ השיעור.";
+	return [menuItem(label, run, { disabled: true }), { note: reason }];
+}
 function openUnitAddMenu(unitId, anchor) {
-	openMenu(anchor, "הוספה", [menuItem("שיעור חדש אחרי", () => newUnitAfter(unitId, anchor)), menuItem("תת-שיעור חדש בסוף השיעור", () => newSubLesson(unitId, "end", anchor), { disabled: !hasBoxTemplates() })]);
+	openMenu(anchor, "הוספה", [menuItem("שיעור חדש אחרי", () => newUnitAfter(unitId, anchor)), ...newSubLessonItems("תת-שיעור חדש בסוף השיעור", () => newSubLesson(unitId, "end", anchor))]);
 }
 function convertItem(boxId, isExample) {
 	return menuItem(isExample ? "הפיכה לתרגיל" : "הפיכה לדוגמה", () => convertBox(boxId));
@@ -27666,7 +28563,7 @@ function deleteStepItem(page) {
 }
 function openStepAddMenu(page, anchor) {
 	const unitId = page.u.id;
-	const items = [menuItem("תת-שיעור חדש אחריו", () => newSubLesson(unitId, page.key, anchor), { disabled: !hasBoxTemplates() })];
+	const items = newSubLessonItems("תת-שיעור חדש אחריו", () => newSubLesson(unitId, page.key, anchor));
 	if (page.box) items.push(deleteStepItem(page));
 	openMenu(anchor, "הוספה", items);
 }
@@ -28707,6 +29604,72 @@ function setUpSplitter() {
 	splitter.addEventListener("keydown", moveByKey);
 	refreshSplit();
 }
+// src/core/page/motion-switch.js
+var SPEED_NAMES = /* @__PURE__ */ new Map([
+	[.25, "איטי מאוד"],
+	[.5, "איטי"],
+	[1, "רגיל"],
+	[2, "מהיר"]
+]);
+var SPEED_GLYPHS = /* @__PURE__ */ new Map([
+	[.25, "¼×"],
+	[.5, "½×"],
+	[1, "1×"],
+	[2, "2×"]
+]);
+var OFF_TEXT = "כבויות";
+function speedText(speed) {
+	const name = SPEED_NAMES.get(speed);
+	const glyph = "⁦" + (SPEED_GLYPHS.get(speed) ?? speed + "×") + "⁩";
+	return name ? name + " " + glyph : glyph;
+}
+function showOpenPanel(panel) {
+	const footer = panel.closest(".side-foot");
+	if (!panel.open || !footer) return;
+	const below = panel.getBoundingClientRect().bottom - footer.getBoundingClientRect().bottom;
+	if (below > 0) footer.scrollTop += below;
+}
+function setText(id, text) {
+	const element = document.getElementById(id);
+	if (element && element.textContent !== text) element.textContent = text;
+}
+function paintMotionPanel() {
+	const { speed, choice } = motionSettings();
+	document.querySelectorAll("[data-motion-speed]").forEach((button) => {
+		const isOn = Number(button.dataset.motionSpeed) === speed;
+		button.classList.toggle("on", isOn);
+		button.setAttribute("aria-pressed", String(isOn));
+	});
+	document.querySelectorAll("input[name=\"motion-when\"]").forEach((input) => {
+		input.checked = input.value === choice;
+	});
+	const systemReduces = systemReducesMotion();
+	setText("motion-now", reducesMotion() ? OFF_TEXT : speedText(speed));
+	setText("motion-sys", systemReduces ? "(כרגע: כבויות)" : "(כרגע: פועלות)");
+	const note = document.getElementById("motion-note");
+	if (note) note.hidden = !(choice === "system" && systemReduces);
+}
+function chooseMotion(change) {
+	if (!changeMotionSettings(change)) {
+		CodeBox.store.failed = true;
+		document.dispatchEvent(new CustomEvent("ptr-store-fail"));
+	}
+}
+function setUpMotionSwitch() {
+	const panel = document.getElementById("motion-panel");
+	if (!panel) return;
+	panel.addEventListener("toggle", () => showOpenPanel(panel));
+	panel.addEventListener("click", (event) => {
+		const button = event.target.closest("[data-motion-speed]");
+		if (button) chooseMotion({ speed: Number(button.dataset.motionSpeed) });
+	});
+	panel.addEventListener("change", (event) => {
+		const input = event.target;
+		if (input instanceof HTMLInputElement && input.name === "motion-when") chooseMotion({ choice: input.value });
+	});
+	onMotionChange(paintMotionPanel);
+	paintMotionPanel();
+}
 // src/core/page/theme.js
 var THEME_STORAGE_KEY = "lab:theme";
 function paintTheme(theme) {
@@ -28795,6 +29758,7 @@ function setUpShell() {
 	setUpSidebarFold();
 	setUpSplitter();
 	setUpThemeSwitch();
+	setUpMotionSwitch();
 	setUpAdminSwitch(engine);
 	setUpStoreWarning();
 	setUpTours();
@@ -28812,6 +29776,7 @@ function currentPages() {
 }
 function startLabPage() {
 	const course = window.LabCourse;
+	setUpMotionSettings();
 	paintCourseName(course);
 	syncPagesWithModel(course);
 	followTheModel(course);
@@ -29240,11 +30205,54 @@ window.__lab = {
     <div class="side-foot">
       <div id="engine-slot"></div>
       <div class="side-row"><span>ערכת צבעים</span><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
+      <!-- the animations: speed and when (src/core/page/motion-switch.js,
+           src/shared/motion-settings.ts) -->
+      <details class="motion-panel" id="motion-panel">
+        <summary>
+          <span class="motion-t">אנימציות</span>
+          <span class="motion-now" id="motion-now"></span>
+        </summary>
+        <div class="motion-body">
+          <div class="side-h" id="motion-speed-h">מהירות</div>
+          <div class="motion-speed" role="group" aria-labelledby="motion-speed-h">
+            <button type="button" data-motion-speed="0.25" aria-pressed="false">
+              <b dir="ltr">¼×</b><small>איטי מאוד</small>
+            </button>
+            <button type="button" data-motion-speed="0.5" aria-pressed="false">
+              <b dir="ltr">½×</b><small>איטי</small>
+            </button>
+            <button type="button" data-motion-speed="1" aria-pressed="false">
+              <b dir="ltr">1×</b><small>רגיל</small>
+            </button>
+            <button type="button" data-motion-speed="2" aria-pressed="false">
+              <b dir="ltr">2×</b><small>מהיר</small>
+            </button>
+          </div>
+          <div class="side-h" id="motion-when-h">מתי</div>
+          <div class="motion-when" role="radiogroup" aria-labelledby="motion-when-h">
+            <label>
+              <input type="radio" name="motion-when" value="system">
+              <span>לפי Windows <small id="motion-sys"></small></span>
+            </label>
+            <label>
+              <input type="radio" name="motion-when" value="always">
+              <span>תמיד</span>
+            </label>
+            <label>
+              <input type="radio" name="motion-when" value="never">
+              <span>אף פעם</span>
+            </label>
+          </div>
+          <p class="motion-note" id="motion-note" hidden>
+            ב-Windows כבויים אפקטי ההנפשה, ולכן כל צעד מוצג מיד. «תמיד» מראה את האנימציות בכל זאת.
+          </p>
+        </div>
+      </details>
       <div class="side-row"><span>סיור מודרך</span><span class="tour-sw"><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button><button class="b ghost au-sm admin-only" id="tour-teacher" type="button">למורה</button></span></div>
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit a40b5ae מ-2026-11-09 21:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · a40b5ae</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף vite-react-version, commit 953715f מ-2026-11-10 03:44"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">vite-react-version</span> · 953715f</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
