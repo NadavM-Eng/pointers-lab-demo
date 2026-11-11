@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-R21RS2zl89BxzaFdq06a5hUo0Rc+KiJwiP0hZRJh9UM=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-QyJp+17naAyunxYcJec5LYpFlQXjTmTvsjVjl8YXoTE=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -20133,46 +20133,67 @@ function followPointer(start, handlers, cursorClass) {
 		clientX: start.clientX,
 		clientY: start.clientY
 	};
-	const trackOf = trackFrom.bind(null, start);
+	let isOver = false;
+	const note = (event) => {
+		last = trackFrom(start, event);
+	};
 	const onMove = (event) => {
-		if (event.pointerId === start.pointerId) {
-			last = trackOf(event);
-			handlers.move(last);
-		}
+		if (event.pointerId !== start.pointerId) return;
+		note(event);
+		if (event.buttons === 0 && event.pointerType !== "touch") finish(false);
+		else handlers.move(last);
 	};
 	const finish = (isCancelled) => {
-		listen(false, {
-			onMove,
-			onUp,
-			onCancel,
-			onKey
-		});
-		document.body.classList.remove("isl-dragging", ...CURSOR_CLASSES);
-		handlers.end(last, isCancelled);
-	};
-	const onUp = (event) => {
-		if (event.pointerId === start.pointerId) {
-			last = trackOf(event);
-			finish(false);
+		if (!isOver) {
+			isOver = true;
+			listen(false, listeners);
+			releaseCapture(start);
+			document.body.classList.remove("isl-dragging", ...CURSOR_CLASSES);
+			handlers.end(last, isCancelled);
 		}
 	};
-	const onCancel = (event) => {
-		if (event.pointerId === start.pointerId) finish(true);
-	};
-	const onKey = (event) => {
-		if (event.key === "Escape") {
-			event.preventDefault();
-			event.stopPropagation();
-			finish(true);
-		}
-	};
-	listen(true, {
+	const listeners = {
 		onMove,
-		onUp,
-		onCancel,
-		onKey
-	});
+		...endingsOf(start, note, finish)
+	};
+	listen(true, listeners);
+	captureOn(start);
 	startCursor(cursorClass);
+}
+function endingsOf(start, note, finish) {
+	return {
+		onUp(event) {
+			if (event.pointerId === start.pointerId) {
+				note(event);
+				finish(false);
+			}
+		},
+		onCancel(event) {
+			if (event.pointerId === start.pointerId) finish(true);
+		},
+		onKey(event) {
+			if (event.key === "Escape") {
+				event.preventDefault();
+				event.stopPropagation();
+				finish(true);
+			}
+		},
+		onLeave() {
+			if (document.visibilityState === "hidden" || !document.hasFocus()) finish(true);
+		}
+	};
+}
+function captureOn(start) {
+	const element = start.currentTarget;
+	if (element instanceof Element) try {
+		element.setPointerCapture(start.pointerId);
+	} catch {}
+}
+function releaseCapture(start) {
+	const element = start.currentTarget;
+	if (element instanceof Element && element.isConnected) try {
+		if (element.hasPointerCapture(start.pointerId)) element.releasePointerCapture(start.pointerId);
+	} catch {}
 }
 function startCursor(cursorClass) {
 	if (cursorClass) document.body.classList.add(cursorClass, "isl-dragging");
@@ -20183,6 +20204,9 @@ function listen(isOn, listeners) {
 	change("pointerup", listeners.onUp);
 	change("pointercancel", listeners.onCancel);
 	change("keydown", listeners.onKey, true);
+	change("blur", listeners.onLeave);
+	if (isOn) document.addEventListener("visibilitychange", listeners.onLeave);
+	else document.removeEventListener("visibilitychange", listeners.onLeave);
 }
 function trackFrom(start, event) {
 	return {
@@ -22262,13 +22286,10 @@ function keptSize(old, reading) {
 	return old.width === size.width && old.height === size.height ? old : size;
 }
 function makeSizeMeasurer(read, sink) {
-	let wasDrawn = false;
 	return (isFromObserver) => {
 		const reading = read();
-		const hasComeOnScreen = reading.isDrawn && !wasDrawn;
-		wasDrawn = reading.isDrawn;
 		if (!reading.isDrawn) return;
-		(hasComeOnScreen && isFromObserver ? sink.applyNow : sink.apply)((old) => keptSize(old, reading));
+		(isFromObserver ? sink.applyNow : sink.apply)((old) => keptSize(old, reading));
 	};
 }
 // src/core/islands/area-hooks.ts
@@ -35019,22 +35040,38 @@ function readSavedShare() {
 }
 function startDrag$1(event) {
 	const splitter = split.splitter;
-	splitter.setPointerCapture(event.pointerId);
+	let isOver = false;
+	try {
+		splitter.setPointerCapture(event.pointerId);
+	} catch {}
 	splitter.classList.add("drag");
 	document.body.classList.add("dragging");
 	const followPointer = (moveEvent) => {
+		if (moveEvent.buttons === 0 && moveEvent.pointerType !== "touch") {
+			endDrag();
+			return;
+		}
 		const stageBox = split.stage.getBoundingClientRect();
 		applyLessonShare((stageBox.right - moveEvent.clientX) / stageBox.width, false);
 	};
 	const endDrag = () => {
+		if (isOver) return;
+		isOver = true;
 		splitter.removeEventListener("pointermove", followPointer);
+		splitter.removeEventListener("pointerup", endDrag);
+		splitter.removeEventListener("pointercancel", endDrag);
+		splitter.removeEventListener("lostpointercapture", endDrag);
+		window.removeEventListener("blur", endDrag);
 		splitter.classList.remove("drag");
 		document.body.classList.remove("dragging");
 		const { stageWidth } = widthBounds();
 		if (split.appliedWidth !== null) applyLessonShare(split.appliedWidth / stageWidth, true);
 	};
 	splitter.addEventListener("pointermove", followPointer);
-	splitter.addEventListener("pointerup", endDrag, { once: true });
+	splitter.addEventListener("pointerup", endDrag);
+	splitter.addEventListener("pointercancel", endDrag);
+	splitter.addEventListener("lostpointercapture", endDrag);
+	window.addEventListener("blur", endDrag);
 }
 function moveByKey(event) {
 	if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
@@ -35715,7 +35752,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 7a2a5c2 מ-2026-11-11 10:10"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 7a2a5c2</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit b24d474 מ-2026-11-11 10:23"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · b24d474</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
