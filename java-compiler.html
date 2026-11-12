@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-P5475orHA9Yj+yo8cjWKYwyFyQB0AD0ppq/QjB6kjnA=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-QUlRUvSGtxRvmjrC4X4dkclEbwAX35RhnjQPJFwhXKE=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title>המהדר של Java: רישיונות וקוד מקור · מעבדות קוד</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -181,7 +181,7 @@ body {
 }
 
 .hub-head {
-  padding: 40px 0 8px;
+  padding: 40px 0 18px;
 }
 
 .hub-top {
@@ -192,10 +192,9 @@ body {
   justify-content: space-between;
 }
 
-.hub-kick {
-  color: var(--accent-text);
-  font-family: var(--f-mono);
-  font-size: 13px;
+/* the theme switch keeps the far end of the row, alone or after the link back */
+.hub-top .theme-sw {
+  margin-inline-start: auto;
 }
 
 .hub-head h1 {
@@ -290,17 +289,24 @@ body {
   font-size: 12px;
 }
 
-.hub-ckick {
-  color: var(--accent-text);
-  font-family: var(--f-mono);
-  font-size: 12.5px;
+/* a course's English line, under its Hebrew title (course.js `en`) */
+.hub-en {
+  color: var(--muted);
+  font-size: 13px;
   text-align: right;
 }
 
-.hub-desc {
+/* the full site's two lists: the courses, then the example courses */
+.hub-group {
+  margin: 30px 0 12px;
   color: var(--ink-2);
-  font-size: 15px;
-  text-wrap: pretty;
+  font-family: var(--f-disp);
+  font-size: 21px;
+  font-weight: 400;
+}
+
+.hub-group:first-child {
+  margin-top: 8px;
 }
 
 .hub-meta {
@@ -411,7 +417,7 @@ body {
   font-size: 14px;
 }
 
-.hub-list[hidden],
+.hub-courses[hidden],
 .hub-folder[hidden] {
   display: none;
 }
@@ -515,6 +521,45 @@ body {
 
 .hub-lessons .passed .n {
   color: var(--ok);
+}
+
+/* ── the licences page (licenses-page.ts): a section per third-party work, its licence folded ── */
+.lic {
+  margin: 18px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  text-align: left;
+}
+
+.lic h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.lic p {
+  margin: 6px 0;
+}
+
+.lic summary {
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.lic-text {
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.lic-credits li {
+  margin: 4px 0;
 }
 </style>
 </head>
@@ -636,16 +681,16 @@ body {
 </main>
 <footer class="hub-foot">
 <p>הקוד וההתקדמות נשמרים בדפדפן הזה, לכל קורס בנפרד.</p>
-<p><a href="LICENSE.txt">רישיון המעבדה</a> · 
-<a href="THIRD_PARTY_NOTICES.txt">תוכנה של צד שלישי</a></p>
+<p><a href="licenses.html">רישיונות / Licenses</a></p>
 </footer>
 <script>/*
  * The hub page's script (inlined by src/vite/hub-page.ts; a classic script, no imports): the
  * theme switch, under the lab's own key 'lab:theme' so the courses follow it, and each course
  * card's progress: how many of the course's exercises passed, read from the keys the course page
- * writes ('<prefix>pass:<box id>', JSON true). The hub writes nothing else. A course with
- * subjects has a second level, its subject list (index.html#<course id>): the address chooses
- * which level is shown, so the browser's back and forward move between them.
+ * writes ('<prefix>pass:<box id>', JSON true; also under the prefixes of the courses it took
+ * over, data-former). The hub writes nothing else. A course with subjects has a second level,
+ * its subject list (index.html#<course id>): the address chooses which level is shown, so the
+ * browser's back and forward move between them.
  */
 
 /** The lab's theme key (the same as src/core/page/theme.js). */
@@ -701,6 +746,19 @@ function setUpThemeSwitch() {
 }
 
 /**
+ * Tells whether an exercise passed: under the course's prefix, or under the prefix of a course
+ * it took over (course.js `formerly`; the course page copies those keys at its first visit).
+ *
+ * @param {HTMLElement} element an element with data-prefix (and maybe data-former)
+ * @param {string} id the box id
+ * @returns {boolean} true when it passed
+ */
+function hasPassed(element, id) {
+  const prefixes = [element.dataset.prefix].concat(JSON.parse(element.dataset.former || '[]'));
+  return prefixes.some((prefix) => readStored(prefix + 'pass:' + id) === true);
+}
+
+/**
  * Fills one card's progress: N / M exercises passed, and the bar.
  *
  * @param {HTMLElement} progress the card's span.hub-prog
@@ -712,8 +770,7 @@ function paintProgress(progress) {
   if (!ids.length) {
     return;
   }
-  const prefix = progress.dataset.prefix;
-  const passed = ids.filter((id) => readStored(prefix + 'pass:' + id) === true).length;
+  const passed = ids.filter((id) => hasPassed(progress, id)).length;
   progress.querySelector('.prog-n').textContent = passed + '/' + ids.length;
   progress.querySelector('i').style.width = Math.round((passed / ids.length) * 100) + '%';
   progress.setAttribute('aria-label', passed + ' מתוך ' + ids.length + ' תרגילים עברו');
@@ -729,8 +786,7 @@ function paintProgress(progress) {
  */
 function paintLesson(lesson) {
   const ids = JSON.parse(lesson.dataset.ids || '[]');
-  const prefix = lesson.dataset.prefix;
-  const isPassed = ids.length > 0 && ids.every((id) => readStored(prefix + 'pass:' + id) === true);
+  const isPassed = ids.length > 0 && ids.every((id) => hasPassed(lesson, id));
   lesson.querySelector('.ck').hidden = !isPassed;
   lesson.classList.toggle('passed', isPassed);
 }
@@ -770,7 +826,7 @@ function showLevel(isMove) {
     section.hidden = !isShown;
     folder = isShown ? section : folder;
   });
-  document.querySelectorAll('.hub-main > .hub-list, .hub-main > h2.sr').forEach((element) => {
+  document.querySelectorAll('.hub-main > .hub-courses').forEach((element) => {
     element.hidden = Boolean(folder);
   });
   document.title = folder ? folder.dataset.title + ' · ' + SITE_TITLE : SITE_TITLE;
@@ -780,7 +836,7 @@ function showLevel(isMove) {
     return;
   }
   window.scrollTo(0, 0);
-  const card = left && document.querySelector('.hub-main > .hub-list a[href="#' + left + '"]');
+  const card = left && document.querySelector('.hub-courses a[href="#' + left + '"]');
   const target = folder ? folder.querySelector('.hub-ftitle') : card;
   if (target) {
     target.focus({ preventScroll: true });

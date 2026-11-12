@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-2M6Ei7AfU4psrCFWT3R2X+UZcgFP6r7CZqq3Z5mvyVc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-fiY9uIaDBwz9qKTvisvUsaE9R9VNw4NhNThxHxkUSPI=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -187,6 +187,9 @@ body.no-code .code-pane,body.no-code .split{display:none}
 .side{background:var(--panel);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .side-top{display:flex;align-items:center;gap:10px;padding:14px 14px 10px 12px}
 .logo{font-weight:700;font-size:18px;white-space:nowrap;display:flex;gap:8px;align-items:center;flex:1;min-width:0;color:var(--ink);text-decoration:none}
+.logo-t{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.logo-t > span{overflow:hidden;text-overflow:ellipsis}
+.logo-en{font-size:12px;font-weight:400;color:var(--muted);text-align:right;overflow:hidden;text-overflow:ellipsis}
 .logo .tag{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--accent-text);border:1px solid var(--accent);border-radius:4px;padding:0 6px;direction:ltr}
 .icon-b{flex:0 0 auto;width:32px;height:32px;border-radius:7px;border:1px solid var(--line);background:var(--raised);color:var(--ink-2);cursor:pointer;display:grid;place-items:center;font-size:14px;line-height:1}
 .icon-b:hover{background:var(--panel-2);color:var(--ink)}
@@ -224,6 +227,18 @@ body.no-code .code-pane,body.no-code .split{display:none}
 .nav-subj.shut .nav-subj-in{display:none}
 .side-foot{border-top:1px solid var(--line);padding:8px 16px 14px;font-size:13.5px;max-height:40%;flex:none;overflow-y:auto}
 .side-h{margin:4px 0 6px;font-size:12px;color:var(--muted);font-weight:600}
+/* ── the settings: one button in the foot, a floating panel (page/settings-panel.js; the
+   owner, 2026-11-12). On a phone the panel is a sheet at the drawer's bottom (below). ── */
+.side-set{padding:2px 0 4px}
+.set-b{padding:4px 10px}
+.set-b[aria-expanded="true"]{background:var(--sel);color:var(--ink);border-color:var(--accent)}
+.set-pop{position:fixed;z-index:85;width:316px;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 36px var(--shadow);overflow:hidden;--set-sheet:0}
+.set-pop[hidden]{display:none}
+.set-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 8px 14px;border-bottom:1px solid var(--line)}
+.set-title{margin:0;font-size:14.5px;font-weight:700;color:var(--ink)}
+.set-head .icon-b{width:28px;height:28px}
+.set-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 14px 12px;font-size:13.5px}
+.set-group{margin-top:8px;padding-top:4px;border-top:1px solid var(--line)}
 .side-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;color:var(--ink-2)}
 .admin-only{display:none}
 body.admin .admin-only{display:flex}
@@ -986,6 +1001,7 @@ table.tbl {
   .app{display:block;height:auto}
   .side{position:fixed;inset:0 0 0 auto;width:min(300px,86vw);z-index:80;transform:translateX(100%);transition:transform .2s;box-shadow:-8px 0 30px var(--shadow)}
   body.side-open .side{transform:none}
+  .set-pop{inset:auto 0 0 auto;width:min(300px,86vw);max-height:78%;border-radius:12px 12px 0 0;border-width:1px 0 0;--set-sheet:1}
   body.side-closed{--side-w:272px}
   body.side-closed .logo,body.side-closed .prog-row,body.side-closed .side-foot,body.side-closed .nav-steps,body.side-closed .nav-u .t,body.side-closed .nav-u .lab{display:revert}
   body.side-closed .nav-subj-h{display:flex}
@@ -2526,6 +2542,16 @@ body.isl-nwse-resize {
   height: 100%;
 }
 
+/* docked: the canvas is the area, and an island still drawn for the area's last measured size
+   is cut at its edge instead of making the area scroll (the scrollbars would take room, and the
+   next measure would be a scrollbar short: area-scene.ts canvasOverflow). The canvas is larger
+   than the area only where the layout's minimum is (an inline length); the area scrolls then. */
+.isl-area.mode-docked .isl-canvas {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .isl-area.mode-phone .isl-canvas {
   display: flex;
   flex-direction: column;
@@ -2541,6 +2567,10 @@ body.isl-nwse-resize {
   min-height: 0;
   overflow: hidden;
   background: var(--bg);
+}
+
+.isl[hidden] {
+  display: none;
 }
 
 .isl.in-flow {
@@ -2730,6 +2760,71 @@ body.isl-nwse-resize {
 
 .isl-body[hidden] {
   display: none;
+}
+
+/* ── the "hidden" line under the area (HiddenLine.tsx): a chip per closed island; a press puts
+   it back. Chips wrap to a second row before any is cut. ── */
+.isl-hidden {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-height: 32px;
+  padding: 3px 8px;
+  box-sizing: border-box;
+  border-top: 1px solid var(--line-2);
+  background: var(--panel);
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  direction: ltr;
+}
+
+.isl-hidden-h {
+  flex: none;
+  margin-right: 2px;
+}
+
+.isl-hidden-h i,
+.isl-chip i {
+  font-family: var(--f-body);
+  font-style: normal;
+  color: var(--muted);
+}
+
+.isl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 8px 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+}
+
+.isl-chip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.isl-chip:hover {
+  border-color: var(--accent);
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+.isl-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  color: var(--ink);
 }
 
 /* ── the floating island's resize handle (bottom right) ── */
@@ -2978,7 +3073,7 @@ body.isl-nwse-resize {
   font: 600 14px/1 var(--f-mono);
 }
 
-/* ── printing: the islands one under another, open ── */
+/* ── printing: the islands one under another, open (folded and closed ones too) ── */
 @media print {
   .isl-area,
   .isl-canvas {
@@ -2994,8 +3089,13 @@ body.isl-nwse-resize {
     height: auto !important;
   }
 
-  .isl-body[hidden] {
+  .isl-body[hidden],
+  .isl[hidden] {
     display: block;
+  }
+
+  .isl-hidden {
+    display: none;
   }
 }
 
@@ -3829,6 +3929,8 @@ window.LabCourse = {
 	id: "example",
 	title: "קורס לדוגמה",
 	tag: "JS",
+	en: "Example course · JavaScript",
+	example: true,
 	public: true,
 	engine: "example-js",
 	units: window.PContent,
@@ -6910,9 +7012,44 @@ function updatedText(box) {
 }
 // src/core/code-box/store.js
 var FALLBACK_PREFIX = "lab:";
+var carriedCourses = /* @__PURE__ */ new WeakSet();
+function renamedPage(text, renames) {
+	try {
+		const parts = String(JSON.parse(text)).split("/");
+		if (Object.prototype.hasOwnProperty.call(renames, parts[0])) parts[0] = String(renames[parts[0]]);
+		return JSON.stringify(parts.join("/"));
+	} catch {
+		return text;
+	}
+}
+function carryOne(prefix, former) {
+	const from = former && former.prefix;
+	if (typeof from !== "string" || !from || from === prefix) return;
+	const mark = prefix + "carried:" + from;
+	try {
+		if (localStorage.getItem(mark) !== null) return;
+		const renames = former.units && typeof former.units === "object" ? former.units : {};
+		for (const key of Object.keys(localStorage).filter((name) => name.startsWith(from))) {
+			const rest = key.slice(from.length);
+			if (localStorage.getItem(prefix + rest) === null) {
+				const text = localStorage.getItem(key);
+				localStorage.setItem(prefix + rest, rest === "page" ? renamedPage(text, renames) : text);
+			}
+		}
+		localStorage.setItem(mark, JSON.stringify(true));
+	} catch {}
+}
+function carryFormerWork(course) {
+	if (carriedCourses.has(course)) return;
+	carriedCourses.add(course);
+	if (!Array.isArray(course.formerly)) return;
+	const prefix = course.storePrefix || "lab:" + course.id + ":";
+	course.formerly.forEach((former) => carryOne(prefix, former));
+}
 function keyPrefix() {
 	const course = window.LabCourse;
 	if (!course) return FALLBACK_PREFIX;
+	carryFormerWork(course);
 	return course.storePrefix || "lab:" + course.id + ":";
 }
 var store = {
@@ -9121,6 +9258,10 @@ function leavesOf(node) {
 	if (!node) return [];
 	return isLeaf(node) ? [node] : node.parts.flatMap(leavesOf);
 }
+function islandIds(layout) {
+	const docked = leavesOf(layout.root).map((leaf) => leaf.island);
+	return layout.float ? docked.concat(layout.float.island) : docked;
+}
 function pathOf(node, id) {
 	if (isLeaf(node)) return node.island === id ? [] : null;
 	for (let i = 0; i < node.parts.length; i++) {
@@ -9154,11 +9295,17 @@ function normalParts(split) {
 }
 function normalize(node) {
 	if (!node) return null;
-	if (isLeaf(node)) return {
-		island: node.island,
-		size: cleanSize(node.size),
-		folded: !!node.folded
-	};
+	if (isLeaf(node)) {
+		const leaf = {
+			island: node.island,
+			size: cleanSize(node.size),
+			folded: !!node.folded
+		};
+		return node.closed ? {
+			...leaf,
+			closed: true
+		} : leaf;
+	}
 	const parts = normalParts({
 		axis: node.axis,
 		size: cleanSize(node.size),
@@ -9284,11 +9431,15 @@ function placeBeside(root, path, leaf, side, ratio = 1) {
 }
 function detach(layout, id) {
 	if (layout.float && layout.float.island === id) {
-		const leaf = {
+		const open = {
 			island: id,
 			size: 1,
 			folded: layout.float.folded
 		};
+		const leaf = layout.float.closed ? {
+			...open,
+			closed: true
+		} : open;
 		return {
 			layout: {
 				...layout,
@@ -9680,6 +9831,49 @@ function dropPreview(rect, side, fraction) {
 		height
 	};
 }
+// src/core/islands/dock-close.ts
+function isClosed(layout, id) {
+	if (layout.float && layout.float.island === id) return !!layout.float.closed;
+	return leavesOf(layout.root).some((leaf) => leaf.island === id && !!leaf.closed);
+}
+function closedIslands(layout) {
+	const docked = leavesOf(layout.root).filter((leaf) => leaf.closed).map((leaf) => leaf.island);
+	return layout.float && layout.float.closed ? docked.concat(layout.float.island) : docked;
+}
+function setClosed(layout, id, isClosing) {
+	if (isClosed(layout, id) === isClosing) return layout;
+	if (layout.float && layout.float.island === id) {
+		const place = {
+			...layout.float,
+			closed: true
+		};
+		if (!isClosing) delete place.closed;
+		return {
+			...layout,
+			float: place
+		};
+	}
+	const mark = (node) => {
+		if (!isLeaf(node)) return {
+			...node,
+			parts: node.parts.map(mark)
+		};
+		if (node.island !== id) return node;
+		const leaf = {
+			...node,
+			closed: true
+		};
+		if (!isClosing) delete leaf.closed;
+		return leaf;
+	};
+	return {
+		...layout,
+		root: mark(layout.root)
+	};
+}
+function canClose(shown, id) {
+	return shown.length > 1 && shown.includes(id);
+}
 // src/core/islands/dock-places.ts
 function homeOf(root, id) {
 	const path = pathOf(root, id);
@@ -9710,25 +9904,33 @@ function floatIsland(layout, id, place) {
 	const home = homeOf(docked.root, id);
 	const { root, leaf } = takeOut(docked.root, id);
 	if (!root || !leaf) return layout;
+	const float = {
+		island: id,
+		...place,
+		folded: leaf.folded,
+		home
+	};
 	return {
 		...docked,
 		root,
-		float: {
-			island: id,
-			...place,
-			folded: leaf.folded,
-			home
-		}
+		float: leaf.closed ? {
+			...float,
+			closed: true
+		} : float
 	};
 }
 function dockFloat(layout) {
 	const place = layout.float;
 	if (!place) return layout;
-	const leaf = {
+	const open = {
 		island: place.island,
 		size: 1,
 		folded: place.folded
 	};
+	const leaf = place.closed ? {
+		...open,
+		closed: true
+	} : open;
 	const rest = {
 		...layout,
 		float: null
@@ -9772,11 +9974,14 @@ function sameLayout(a, b) {
 function roundedCopy(layout) {
 	const copy = (node, total) => {
 		const share = Math.round(node.size / total * 1e3);
-		if (isLeaf(node)) return [
-			node.island,
-			share,
-			node.folded
-		];
+		if (isLeaf(node)) {
+			const leaf = [
+				node.island,
+				share,
+				node.folded
+			];
+			return node.closed ? leaf.concat("closed") : leaf;
+		}
 		const sum = node.parts.reduce((all, part) => all + part.size, 0);
 		return [
 			node.axis,
@@ -9794,7 +9999,8 @@ function roundedCopy(layout) {
 			round(place.x),
 			round(place.y),
 			round(place.width),
-			round(place.height)
+			round(place.height),
+			!!place.closed
 		] : null,
 		code: round(layout.codeShare),
 		editing: [round(layout.editing.share), layout.editing.folded]
@@ -9930,6 +10136,7 @@ function placeItems(layout, island, context) {
 function menuOf(layout, island, context) {
 	return [
 		isFolded(layout, island) ? plainItem("fold", "fold", { kind: "unfold" }, "פתיחה", true) : plainItem("fold", "fold", { kind: "fold" }, "קיפול לשורת הכותרת", true),
+		plainItem("close", "fold", { kind: "close" }, "סגירה", canClose(context.staying ?? context.shown, island) && !context.isNeeded?.(island)),
 		...sizeItems(layout, island, context),
 		...moveItems(layout, island, context),
 		...placeItems(layout, island, context)
@@ -9968,6 +10175,7 @@ function runCommand(layout, island, command, context) {
 	switch (command.kind) {
 		case "fold":
 		case "unfold": return setFolded(layout, island, command.kind === "fold");
+		case "close": return setClosed(layout, island, true);
 		case "grow": {
 			if (floats(layout, island)) return growFloat(layout, command, context.area);
 			const delta = 48 * command.delta;
@@ -10138,11 +10346,15 @@ function readNode(value, depth, ids) {
 	if (typeof value.island === "string") {
 		if (ids.includes(value.island) || typeof value.folded !== "boolean") return null;
 		ids.push(value.island);
-		return {
+		const leaf = {
 			island: value.island,
 			size: value.size,
 			folded: value.folded
 		};
+		return value.closed === true ? {
+			...leaf,
+			closed: true
+		} : leaf;
 	}
 	const { axis, parts } = value;
 	if (axis !== "row" && axis !== "column" || !Array.isArray(parts)) return null;
@@ -10177,7 +10389,7 @@ function readFloat(value, ids) {
 	if (home === void 0 || !isNumberIn(value.width, .02, 1) || !isNumberIn(value.height, .02, 1)) return;
 	ids.push(value.island);
 	const [x, y, width, height] = fractions;
-	return {
+	const place = {
 		island: value.island,
 		x,
 		y,
@@ -10186,6 +10398,10 @@ function readFloat(value, ids) {
 		folded: value.folded,
 		home
 	};
+	return value.closed === true ? {
+		...place,
+		closed: true
+	} : place;
 }
 function readLayout(saved, declared) {
 	if (!isRecord(saved) || saved.v !== 1) return null;
@@ -10330,9 +10546,9 @@ function minOfIn(specs, id) {
 }
 // src/core/islands/CodeSplitter.tsx
 var MIN_CODE_WIDTH = 260;
-var MIN_CODE_HEIGHT = 140;
 var MIN_ISLANDS_WIDTH = 300;
 var MIN_TERMINAL_HEIGHT = 110;
+var SPLITTER_WIDTH = 5;
 var KEY_STEP = .02;
 function gridStyle(layout) {
 	return {
@@ -10350,9 +10566,9 @@ function islandsMinWidth(model, layout) {
 }
 function shareAt(grid, isStepping, clientX, clientY, leastSide) {
 	const box = grid.getBoundingClientRect();
-	if (!isStepping) return keepShare((box.bottom - clientY) / box.height, box.height, MIN_TERMINAL_HEIGHT, MIN_CODE_HEIGHT);
+	if (!isStepping) return keepShare((box.bottom - clientY) / box.height, box.height, MIN_TERMINAL_HEIGHT, 145);
 	const code = grid.querySelector(".wb-code")?.getBoundingClientRect();
-	return keepShare((!!code && code.left > box.left + 1 ? box.right - clientX : clientX - box.left) / box.width, box.width, MIN_CODE_WIDTH, leastSide);
+	return keepShare((!!code && code.left > box.left + 1 ? box.right - clientX : clientX - box.left) / box.width, box.width, MIN_CODE_WIDTH, leastSide + SPLITTER_WIDTH);
 }
 function withShare(layout, isStepping, share) {
 	return isStepping ? {
@@ -11860,6 +12076,14 @@ function useFoldedTerminal(context, isFolded) {
 }
 // src/core/islands/area-scene.ts
 var PHONE_ISLAND_HEIGHT = 240;
+var CLOSED_PLACE = {
+	rect: null,
+	isFolded: true,
+	isStrip: false,
+	isFloating: false,
+	isFirst: false,
+	isClosed: true
+};
 function isTerminalFolded(layout, mode) {
 	return mode === "editing" ? layout.editing.folded : isFolded(layout, TERMINAL_ID);
 }
@@ -11912,37 +12136,48 @@ function phonePlaces(model, drawn, shown) {
 	});
 	return places;
 }
-function sceneOf(model, layout, input) {
-	const mode = modeOf(input);
-	const isPresent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island);
-	const isPeeking = input.isInputShown && isTerminalFolded(layout, mode);
-	const drawn = isPeeking && mode !== "editing" ? setFolded(layout, TERMINAL_ID, false) : layout;
-	const docked = leavesOf(drawn.root).map((leaf) => leaf.island);
-	const order = drawn.float ? docked.concat(drawn.float.island) : docked;
-	const shown = mode === "editing" ? [TERMINAL_ID] : order.filter(isPresent);
-	const arrangement = arrange(drawn.root, input.size, model.measures, isPresent);
-	let places;
-	let size = input.size;
-	if (mode === "editing") {
-		const folded = layout.editing.folded && !isPeeking;
-		const rect = {
+function editingPlaces(model, isFolded, size) {
+	const height = isFolded ? model.measures.bar : size.height;
+	const place = {
+		rect: {
 			x: 0,
 			y: 0,
 			width: size.width,
-			height: folded ? model.measures.bar : size.height
-		};
-		places = /* @__PURE__ */ new Map([[TERMINAL_ID, {
-			rect,
-			isFolded: folded,
-			isStrip: false,
-			isFloating: false,
-			isFirst: false
-		}]]);
-	} else if (mode === "phone") places = phonePlaces(model, drawn, shown);
+			height
+		},
+		isFolded,
+		isStrip: false,
+		isFloating: false,
+		isFirst: false
+	};
+	return /* @__PURE__ */ new Map([[TERMINAL_ID, place]]);
+}
+function presenceOf(mode, input, drawn) {
+	const hasContent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island);
+	const closed = mode === "editing" ? [] : closedIslands(drawn);
+	const isPresent = (island) => hasContent(island) && !closed.includes(island);
+	return {
+		isPresent,
+		hidden: closed.filter(hasContent)
+	};
+}
+function sceneOf(model, layout, input) {
+	const mode = modeOf(input);
+	const { isPeeking, drawn, isPeekClosed, isPresent, hidden } = drawnOf(layout, mode, input);
+	const docked = leavesOf(drawn.root).map((leaf) => leaf.island);
+	const order = drawn.float ? docked.concat(drawn.float.island) : docked;
+	const shown = mode === "editing" ? [TERMINAL_ID] : order.filter(isPresent);
+	const staying = isPeekClosed ? shown.filter((island) => island !== TERMINAL_ID) : shown;
+	const arrangement = arrange(drawn.root, input.size, model.measures, isPresent);
+	let places;
+	let size = input.size;
+	if (mode === "editing") places = editingPlaces(model, layout.editing.folded && !isPeeking, size);
+	else if (mode === "phone") places = phonePlaces(model, drawn, shown);
 	else {
 		size = arrangement.size;
 		places = dockedPlaces(model, drawn, arrangement, isPresent);
 	}
+	hidden.forEach((island) => places.set(island, { ...CLOSED_PLACE }));
 	const firstEngine = shown.find((island) => island !== "terminal") ?? null;
 	const first = firstEngine ? places.get(firstEngine) : places.get(TERMINAL_ID);
 	if (first) first.isFirst = true;
@@ -11954,17 +12189,52 @@ function sceneOf(model, layout, input) {
 		size,
 		places,
 		shown,
+		staying,
+		hidden,
 		firstEngine,
 		isPresent
 	};
 }
+function drawnOf(layout, mode, input) {
+	const isPeeking = input.isInputShown && isTerminalHidden(layout, mode);
+	const peeked = isPeeking && mode !== "editing" ? peekTerminal(layout) : layout;
+	const isPeekClosed = peeked !== layout && isClosed(layout, "terminal");
+	const presence = presenceOf(mode, input, peeked);
+	if (mode === "editing" || islandIds(peeked).some(presence.isPresent)) return {
+		isPeeking,
+		drawn: peeked,
+		isPeekClosed,
+		...presence
+	};
+	const opened = setClosed(peeked, TERMINAL_ID, false);
+	return {
+		isPeeking,
+		drawn: opened,
+		isPeekClosed: false,
+		...presenceOf(mode, input, opened)
+	};
+}
+function isTerminalHidden(layout, mode) {
+	const isShut = mode !== "editing" && isClosed(layout, "terminal");
+	return isTerminalFolded(layout, mode) || isShut;
+}
+function peekTerminal(layout) {
+	return setClosed(setFolded(layout, TERMINAL_ID, false), TERMINAL_ID, false);
+}
+function canvasOverflow(needed, area) {
+	const lengths = {};
+	if (needed.width > area.width) lengths.width = needed.width;
+	if (needed.height > area.height) lengths.height = needed.height;
+	return lengths;
+}
 function openIslands(scene) {
 	const open = /* @__PURE__ */ new Map();
-	scene.places.forEach((place, island) => open.set(island, !place.isFolded));
+	scene.places.forEach((place, island) => {
+		if (!place.isClosed) open.set(island, !place.isFolded);
+	});
 	return open;
 }
-// src/core/islands/area-actions.ts
-var SPLITTER_KEY_PX = 24;
+// src/core/islands/area-apply.ts
 function titlesOf(model) {
 	const titles = /* @__PURE__ */ new Map();
 	model.specs.forEach((spec, id) => titles.set(id, spec.title));
@@ -11977,6 +12247,35 @@ function applyLayout(deps, next) {
 	islandPlayerOf(deps.context).cue(deps.model.version() + 1, motion, "next");
 	deps.model.set(next);
 }
+// src/core/islands/area-close.ts
+function isNeeded(deps, island) {
+	return island === "terminal" && deps.input.isInputShown;
+}
+function mayClose(deps, island) {
+	return deps.scene.mode !== "editing" && canClose(deps.scene.staying, island) && !isNeeded(deps, island);
+}
+function focusAfterClose(shown, island) {
+	const index = shown.indexOf(island);
+	const others = shown.filter((id) => id !== island);
+	return "[data-island=\"" + (others[Math.min(index, others.length - 1)] ?? others[0]) + "\"] :is(.isl-close, .isl-fold)";
+}
+function closeIsland(deps, island) {
+	if (!mayClose(deps, island)) return;
+	deps.focusLater(focusAfterClose(deps.scene.shown, island));
+	applyLayout(deps, setClosed(deps.layout, island, true));
+	deps.say(nameOf$1(deps, island) + " נסגר. אפשר להחזיר אותו מהשורה מוסתרים.");
+}
+function showIsland(deps, island) {
+	deps.focusLater("[data-island=\"" + island + "\"] :is(.isl-close, .isl-fold)");
+	applyLayout(deps, setClosed(deps.layout, island, false));
+	deps.say(nameOf$1(deps, island) + " הוחזר למקומו.");
+}
+function nameOf$1(deps, island) {
+	const title = deps.model.specs.get(island)?.title;
+	return "האי " + (title ? title.hebrew || title.english : island);
+}
+// src/core/islands/area-actions.ts
+var SPLITTER_KEY_PX = 24;
 function toggleFold$1(deps, island) {
 	const { layout, scene } = deps;
 	if (scene.mode === "editing") {
@@ -11991,7 +12290,7 @@ function toggleFold$1(deps, island) {
 		return;
 	}
 	if (island === "terminal" && scene.isPeeking) {
-		applyLayout(deps, setFolded(layout, TERMINAL_ID, false));
+		applyLayout(deps, setClosed(setFolded(layout, TERMINAL_ID, false), TERMINAL_ID, false));
 		return;
 	}
 	applyLayout(deps, setFolded(layout, island, !isFolded(layout, island)));
@@ -12123,11 +12422,13 @@ function menuContextOf(deps) {
 	return {
 		titles: titlesOf(model),
 		shown: scene.shown,
+		staying: scene.staying,
 		arrangement: scene.arrangement,
 		defaults: model.defaults,
 		area: scene.size,
 		rectOf: (island) => scene.places.get(island)?.rect ?? null,
-		isPhone: scene.mode === "phone"
+		isPhone: scene.mode === "phone",
+		isNeeded: isNeeded.bind(null, deps)
 	};
 }
 function closeMenu$1(deps, giveFocusBack) {
@@ -12137,6 +12438,11 @@ function closeMenu$1(deps, giveFocusBack) {
 }
 function runMenuItem(deps, item) {
 	if (!deps.menu || !item.isEnabled) return;
+	if (item.command.kind === "close") {
+		closeIsland(deps, deps.menu.island);
+		closeMenu$1(deps, false);
+		return;
+	}
 	applyLayout(deps, runCommand(deps.layout, deps.menu.island, item.command, menuContextOf(deps)));
 	closeMenu$1(deps, true);
 }
@@ -12152,6 +12458,8 @@ function controlsOf(deps) {
 		startResize: startResize.bind(null, deps),
 		dockFloat: dockBack.bind(null, deps),
 		resetLayout: resetLayout.bind(null, deps),
+		close: closeIsland.bind(null, deps),
+		mayClose: mayClose.bind(null, deps),
 		canDrag: scene.mode === "docked" && scene.shown.length > 1,
 		hasMenu: scene.mode !== "editing",
 		isChanged: !sameLayout(layout, model.defaults)
@@ -12224,6 +12532,32 @@ function isPhoneNow() {
 function useIsPhone() {
 	return (0, import_react.useSyncExternalStore)(subscribePhone, isPhoneNow);
 }
+var SAY_DELAY_MS = 60;
+var FALLBACK_FOCUS = "section.isl:not([hidden]) :is(.isl-close, .isl-fold)";
+function useFocusLater(areaRef) {
+	const waiting = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		const selector = waiting.current;
+		const area = areaRef.current;
+		waiting.current = null;
+		if (!selector || !area) return;
+		(area.querySelector(selector) || area.querySelector(FALLBACK_FOCUS))?.focus();
+	});
+	return (selector) => {
+		waiting.current = selector;
+	};
+}
+function useSay() {
+	const [said, setSaid] = (0, import_react.useState)("");
+	const timer = (0, import_react.useRef)(null);
+	(0, import_react.useEffect)(() => () => clearTimeout(timer.current ?? void 0), []);
+	const say = (text) => {
+		setSaid("");
+		clearTimeout(timer.current ?? void 0);
+		timer.current = setTimeout(() => setSaid(text), SAY_DELAY_MS);
+	};
+	return [said, say];
+}
 // src/core/islands/island-icons.tsx
 var ICON = {
 	width: 16,
@@ -12289,6 +12623,30 @@ function DotsIcon() {
 				r: 1.3
 			})
 		]
+	});
+}
+function CloseIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4.5 4.5l7 7M11.5 4.5l-7 7",
+			strokeLinecap: "round"
+		})
+	});
+}
+function ShowIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M8 3.5v9M3.5 8h9",
+			strokeLinecap: "round"
+		})
 	});
 }
 function DockIcon() {
@@ -12392,6 +12750,20 @@ function MenuButton({ props }) {
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DotsIcon, {})
 	});
 }
+function CloseButton({ props }) {
+	const { spec, controls } = props;
+	if (!controls.hasMenu || !controls.mayClose(spec.id)) return null;
+	const label = "סגירה: " + spokenName(spec);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+		type: "button",
+		className: "isl-btn isl-close",
+		lang: "he",
+		"aria-label": label,
+		title: label,
+		onClick: () => controls.close(spec.id),
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloseIcon, {})
+	});
+}
 function ExtraButtons({ props }) {
 	const { place, controls } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [place.isFirst && controls.isChanged ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
@@ -12441,7 +12813,8 @@ function Head({ props, titleId }) {
 			place.isFolded ? props.badge : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ExtraButtons, { props }),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FoldButton, { props }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MenuButton, { props })
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MenuButton, { props }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloseButton, { props })
 		]
 	});
 }
@@ -12460,7 +12833,8 @@ function StripHead({ props, titleId }) {
 				className: "isl-title isl-vtitle"
 			}),
 			props.badge,
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MenuButton, { props })
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MenuButton, { props }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloseButton, { props })
 		]
 	});
 }
@@ -12500,6 +12874,7 @@ function IslandFrame(props) {
 		"data-island": spec.id,
 		role: "group",
 		"aria-labelledby": titleId,
+		hidden: !!place.isClosed,
 		style: frameStyle(place),
 		...islandAnchor(spec.id),
 		children: [
@@ -12741,6 +13116,50 @@ function DragOverlays({ drag }) {
 		]
 	});
 }
+// src/core/islands/HiddenLine.tsx
+function Chip(props) {
+	const { spec } = props;
+	const label = "החזרה: " + (spec.title.english + (spec.title.hebrew ? " / " + spec.title.hebrew : ""));
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+		type: "button",
+		className: "isl-chip",
+		"data-island-chip": spec.id,
+		lang: "he",
+		"aria-label": label,
+		title: label,
+		onClick: () => props.onShow(spec.id),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShowIcon, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			lang: "en",
+			children: [spec.title.english, spec.title.hebrew ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+				lang: "he",
+				children: " / " + spec.title.hebrew
+			}) : null]
+		})]
+	});
+}
+function HiddenLine(props) {
+	const specs = props.hidden.map((island) => props.specs.get(island)).filter((spec) => !!spec);
+	if (!specs.length) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "isl-hidden",
+		role: "group",
+		"aria-label": "איים מוסתרים",
+		dir: "ltr",
+		lang: "he",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "isl-hidden-h",
+			lang: "en",
+			"aria-hidden": "true",
+			children: ["hidden ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+				lang: "he",
+				children: "/ מוסתרים"
+			})]
+		}), specs.map((spec) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, {
+			spec,
+			onShow: props.onShow
+		}, spec.id))]
+	});
+}
 // src/core/islands/IslandArea.tsx
 function useAreaView(context) {
 	return {
@@ -12833,11 +13252,8 @@ function engineExtras(scene, island, view) {
 		body: content ? content.view : null
 	};
 }
-function canvasStyle(scene) {
-	return scene.mode === "docked" ? {
-		width: scene.size.width,
-		height: scene.size.height
-	} : {};
+function canvasStyle(scene, area) {
+	return scene.mode === "docked" ? canvasOverflow(scene.size, area) : {};
 }
 function useAreaState(context) {
 	const model = islandsModelOf(context.engine);
@@ -12848,6 +13264,8 @@ function useAreaState(context) {
 	const size = useElementSize(areaRef, view.isDebugging);
 	const [drag, setDrag] = (0, import_react.useState)(null);
 	const [menu, setMenu] = (0, import_react.useState)(null);
+	const focusLater = useFocusLater(areaRef);
+	const [said, say] = useSay();
 	const filled = new Set(Object.keys(view.contents));
 	const { isDebugging, isInputShown } = view;
 	const input = {
@@ -12867,14 +13285,17 @@ function useAreaState(context) {
 			areaRef,
 			setDrag,
 			menu,
-			setMenu
+			setMenu,
+			focusLater,
+			say
 		},
 		view,
-		drag
+		drag,
+		said
 	};
 }
 function IslandArea({ context }) {
-	const { deps, view, drag } = useAreaState(context);
+	const { deps, view, drag, said } = useAreaState(context);
 	const { scene, model, menu, areaRef } = deps;
 	const terminal = useFoldedTerminal(context, !!scene.places.get(TERMINAL_ID)?.isFolded);
 	const terminalExtras = {
@@ -12883,27 +13304,41 @@ function IslandArea({ context }) {
 		badge: terminal.badge,
 		body: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TerminalBody, { context })
 	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "isl-area mode-" + scene.mode,
-		ref: areaRef,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "isl-canvas",
-			style: canvasStyle(scene),
-			children: [
-				model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
-					deps,
-					island,
-					drag,
-					extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
-				}, island)),
-				scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
-			]
-		}), menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
-			deps,
-			menu
-		}) : null]
-	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "isl-area mode-" + scene.mode,
+			ref: areaRef,
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "isl-canvas",
+				style: canvasStyle(scene, deps.input.size),
+				children: [
+					model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
+						deps,
+						island,
+						drag,
+						extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
+					}, island)),
+					scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
+				]
+			}), menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
+				deps,
+				menu
+			}) : null]
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HiddenLine, {
+			hidden: scene.hidden,
+			specs: model.specs,
+			onShow: (island) => showIsland(deps, island)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "sr-only",
+			role: "status",
+			"aria-live": "polite",
+			lang: "he",
+			children: said
+		})
+	] });
 }
 function AreaMenu({ deps, menu }) {
 	const spec = deps.model.specs.get(menu.island);
@@ -17916,11 +18351,11 @@ function iconButton(label, ariaLabel, onClick, className, action) {
 		onclick: onClick
 	}, label);
 }
-function escapeText$1(text) {
+function escapeText$2(text) {
 	return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 function textHtml(text) {
-	return rawHtml(escapeText$1(text));
+	return rawHtml(escapeText$2(text));
 }
 function cloneData(data) {
 	return JSON.parse(JSON.stringify(data));
@@ -18062,7 +18497,7 @@ function buildInlineNode(type, inlineHtml, attrs = null) {
 		preserveWhitespace: true
 	});
 }
-function escapeText(text) {
+function escapeText$1(text) {
 	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 function buildCalloutBody(children, schema) {
@@ -18072,7 +18507,7 @@ function buildCalloutBody(children, schema) {
 		if (looseHtml.trim()) parts.push(buildInlineNode(schema.nodes.paragraph, looseHtml.trim()));
 		looseHtml = "";
 	};
-	for (const child of children) if (child.nodeType === Node.TEXT_NODE) looseHtml += escapeText(child.data.replace(NO_BREAK_SPACE_PATTERN, " "));
+	for (const child of children) if (child.nodeType === Node.TEXT_NODE) looseHtml += escapeText$1(child.data.replace(NO_BREAK_SPACE_PATTERN, " "));
 	else if (child.nodeType === Node.ELEMENT_NODE) {
 		const element = child;
 		const tag = element.localName;
@@ -19585,6 +20020,85 @@ function restoreSnapshot(snapshot) {
 		return [];
 	}
 }
+// src/core/page/settings-panel.js
+var GAP_PX$1 = 8;
+var TOP_ROOM_PX = 16;
+var SIDE_INSET_PX = 10;
+function parts() {
+	return {
+		panel: document.getElementById("settings"),
+		button: document.getElementById("settings-b")
+	};
+}
+function isSettingsOpen() {
+	const { panel } = parts();
+	return Boolean(panel && !panel.hidden);
+}
+function isSheet(panel) {
+	return getComputedStyle(panel).getPropertyValue("--set-sheet").trim() === "1";
+}
+function placePanel() {
+	const { panel, button } = parts();
+	const side = document.getElementById("side");
+	if (!panel || !button || !side) return;
+	if (isSheet(panel)) {
+		panel.style.removeProperty("right");
+		panel.style.removeProperty("bottom");
+		panel.style.removeProperty("max-height");
+		return;
+	}
+	const buttonBox = button.getBoundingClientRect();
+	const sideBox = side.getBoundingClientRect();
+	panel.style.right = Math.max(0, window.innerWidth - sideBox.right + SIDE_INSET_PX) + "px";
+	panel.style.bottom = Math.max(0, window.innerHeight - buttonBox.top + GAP_PX$1) + "px";
+	panel.style.maxHeight = Math.max(160, buttonBox.top - GAP_PX$1 - TOP_ROOM_PX) + "px";
+}
+function openSettings() {
+	const { panel, button } = parts();
+	if (!panel || !button || !panel.hidden) return;
+	panel.hidden = false;
+	button.setAttribute("aria-expanded", "true");
+	placePanel();
+	const title = document.getElementById("settings-h");
+	if (title) title.focus({ preventScroll: true });
+}
+function closeSettings() {
+	const { panel, button } = parts();
+	if (!panel || !button || panel.hidden) return;
+	const hadFocus = panel.contains(document.activeElement);
+	panel.hidden = true;
+	button.setAttribute("aria-expanded", "false");
+	if (hadFocus) button.focus({ preventScroll: true });
+}
+function closeOnOutsideClick(event) {
+	const { panel, button } = parts();
+	const target = event.target;
+	if (!isSettingsOpen() || panel.contains(target) || button.contains(target)) return;
+	if (target instanceof Element && target.closest(".tour, .tour-bubble, [data-tour]")) return;
+	closeSettings();
+}
+function setUpSettingsPanel() {
+	const { panel, button } = parts();
+	if (!panel || !button) return;
+	button.addEventListener("click", () => isSettingsOpen() ? closeSettings() : openSettings());
+	document.getElementById("settings-x")?.addEventListener("click", closeSettings);
+	panel.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") {
+			event.stopPropagation();
+			closeSettings();
+		}
+	});
+	document.addEventListener("pointerdown", closeOnOutsideClick, true);
+	window.addEventListener("resize", () => isSettingsOpen() && placePanel());
+	new MutationObserver(() => {
+		const body = document.body.classList;
+		const isHidden = isSheet(panel) ? !body.contains("side-open") : body.contains("side-closed");
+		if (isSettingsOpen() && isHidden) closeSettings();
+	}).observe(document.body, {
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+}
 // src/core/rich/field-focus.ts
 var FIELD_SELECTOR = "#lesson-in .page:not([hidden]) :is(.ProseMirror, textarea, input[type=\"text\"])";
 var viewsByRoot = /* @__PURE__ */ new WeakMap();
@@ -19838,7 +20352,8 @@ var tourContext = {
 var changed = {
 	drawer: false,
 	admin: false,
-	edit: false
+	edit: false,
+	settings: false
 };
 var drawerState = {
 	isIn: (ctx) => !ctx.isPhone() || document.body.classList.contains("side-open"),
@@ -19876,6 +20391,19 @@ var adminState = {
 			await ctx.waitUntil(() => !document.body.classList.contains("admin"));
 		}
 		changed.admin = false;
+	}
+};
+var settingsState = {
+	needs: ["drawer"],
+	isIn: () => isSettingsOpen(),
+	enter: async (ctx) => {
+		changed.settings = changed.settings || !isSettingsOpen();
+		openSettings();
+		await ctx.sleep(60);
+	},
+	leave: () => {
+		if (changed.settings) closeSettings();
+		changed.settings = false;
 	}
 };
 var editState = {
@@ -19942,6 +20470,7 @@ function revealState(selector, needs) {
 var coreStates = {
 	drawer: drawerState,
 	admin: adminState,
+	settings: settingsState,
 	edit: editState,
 	selection: selectionState,
 	rowTools: revealState("#nav .au-row .au-btns", ["admin"]),
@@ -20135,7 +20664,7 @@ var SIDEBAR_STEPS = [
 		title: "מצב מנהל",
 		text: say("המתג הזה מדליק את מצב מנהל: כלי הכתיבה, קוד הבדיקות והפתרונות, ומהדרים נוספים.", "הסיור הדליק אותו בשבילכם, ויכבה אותו בסוף."),
 		target: adminRow,
-		states: ["admin"],
+		states: ["admin", "settings"],
 		isInSidebar: true
 	},
 	{
@@ -20265,7 +20794,7 @@ var OTHER_STEPS = [
 	{
 		id: "t-end",
 		title: "סוף הסיור",
-		text: say("הסיור לא שינה שום דבר בקורס. מצב מנהל יחזור למה שהיה,", "ואפשר לחזור לסיור מהכפתור \"למורה\" שבתחתית התפריט.")
+		text: say("הסיור לא שינה שום דבר בקורס. מצב מנהל יחזור למה שהיה,", "ואפשר לחזור לסיור מ-⚙ הגדרות שבתחתית התפריט (\"סיור למורה\").")
 	}
 ];
 var teacherSteps = [
@@ -20337,6 +20866,8 @@ async function leaveStates(current, shouldLeave) {
 async function prepareStep(current, step) {
 	const names = [...step.states || []];
 	if (step.isInSidebar && tourContext.isPhone()) names.push("drawer");
+	const target = typeof step.target === "string" ? document.querySelector(step.target) : null;
+	if (target && target.closest("#settings")) names.push("settings");
 	const wanted = withNeeds(names, current.states);
 	const pageId = step.page ? step.page(tourContext) : null;
 	const isPageChange = Boolean(pageId) && tourContext.page()?.id !== pageId;
@@ -24220,9 +24751,16 @@ function stepLinkHtml(page, isPassed) {
 var FADE_SCROLL_SLACK_PX = 2;
 var FADE_HEIGHT = "26px";
 var REPO_URL_PATTERN = /^https:\/\/[^\s"<>]+$/;
+function escapeText(text) {
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 function paintCourseName(course) {
 	const tag = course.tag ? " <span class=\"tag\">" + course.tag + "</span>" : "";
-	document.querySelector(".logo").innerHTML = course.title + tag;
+	const en = typeof course.en === "string" && course.en ? course.en : "";
+	const name = en ? "<span class=\"logo-t\"><span>" + course.title + "</span><small class=\"logo-en\" dir=\"ltr\" lang=\"en\">" + escapeText(en) + "</small></span>" : course.title;
+	const logo = document.querySelector(".logo");
+	logo.innerHTML = name + tag;
+	logo.setAttribute("title", logo.textContent || "");
 	document.title = course.title;
 	if (REPO_URL_PATTERN.test(course.repo || "")) {
 		const repoLink = document.getElementById("repo-link");
@@ -25038,7 +25576,7 @@ function speedText(speed) {
 	return name ? name + " " + glyph : glyph;
 }
 function showOpenPanel(panel) {
-	const footer = panel.closest(".side-foot");
+	const footer = panel.closest(".side-foot, .set-body");
 	if (!panel.open || !footer) return;
 	const below = panel.getBoundingClientRect().bottom - footer.getBoundingClientRect().bottom;
 	if (below > 0) footer.scrollTop += below;
@@ -25169,10 +25707,12 @@ function mountReact(course) {
 }
 function setUpShell() {
 	const engine = window.LabEngine;
+	carryFormerWork(window.LabCourse);
 	setUpSidebarFold();
 	setUpSkipLink();
 	setUpSplitter();
 	setUpThemeSwitch();
+	setUpSettingsPanel();
 	setUpMotionSwitch();
 	setUpAdminSwitch(engine);
 	setUpStoreWarning();
@@ -25618,57 +26158,67 @@ window.__lab = {
     <div class="prog-row"><div class="prog-bar"><i id="prog-bar"></i></div><span class="prog" id="prog"></span></div>
     <nav class="nav" id="nav" aria-label="יחידות"></nav>
     <div class="side-foot">
-      <div id="engine-slot"></div>
-      <div class="side-row"><span>ערכת צבעים</span><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <!-- the animations: speed and when (src/core/page/motion-switch.js,
-           src/shared/motion-settings.ts) -->
-      <details class="motion-panel" id="motion-panel">
-        <summary>
-          <span class="motion-t">אנימציות</span>
-          <span class="motion-now" id="motion-now"></span>
-        </summary>
-        <div class="motion-body">
-          <div class="side-h" id="motion-speed-h">מהירות</div>
-          <div class="motion-speed" role="group" aria-labelledby="motion-speed-h">
-            <button type="button" data-motion-speed="0.25" aria-pressed="false">
-              <b dir="ltr">¼×</b><small>איטי מאוד</small>
-            </button>
-            <button type="button" data-motion-speed="0.5" aria-pressed="false">
-              <b dir="ltr">½×</b><small>איטי</small>
-            </button>
-            <button type="button" data-motion-speed="1" aria-pressed="false">
-              <b dir="ltr">1×</b><small>רגיל</small>
-            </button>
-            <button type="button" data-motion-speed="2" aria-pressed="false">
-              <b dir="ltr">2×</b><small>מהיר</small>
-            </button>
-          </div>
-          <div class="side-h" id="motion-when-h">מתי</div>
-          <div class="motion-when" role="radiogroup" aria-labelledby="motion-when-h">
-            <label>
-              <input type="radio" name="motion-when" value="system">
-              <span>לפי Windows <small id="motion-sys"></small></span>
-            </label>
-            <label>
-              <input type="radio" name="motion-when" value="always">
-              <span>תמיד</span>
-            </label>
-            <label>
-              <input type="radio" name="motion-when" value="never">
-              <span>אף פעם</span>
-            </label>
-          </div>
-          <p class="motion-note" id="motion-note" hidden>
-            ב-Windows כבויים אפקטי ההנפשה, ולכן כל צעד מוצג מיד. «תמיד» מראה את האנימציות בכל זאת.
-          </p>
-        </div>
-      </details>
-      <div class="side-row"><span>סיור מודרך</span><span class="tour-sw"><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button><button class="b ghost au-sm admin-only" id="tour-teacher" type="button">למורה</button></span></div>
-      <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
-      <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
-      <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 693d4db מ-2026-11-12 13:36"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 693d4db</bdi></span></div>
+      <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
+      <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 54e1a67 מ-2026-11-12 17:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 54e1a67</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
+    </div>
+    <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
+      <div class="set-head"><h2 class="set-title" id="settings-h" tabindex="-1">⚙ הגדרות</h2><button class="icon-b" id="settings-x" type="button" aria-label="סגירת ההגדרות">✕</button></div>
+      <div class="set-body">
+        <div id="engine-slot"></div>
+        <!-- the animations: speed and when (src/core/page/motion-switch.js,
+             src/shared/motion-settings.ts) -->
+        <details class="motion-panel" id="motion-panel">
+          <summary>
+            <span class="motion-t">אנימציות</span>
+            <span class="motion-now" id="motion-now"></span>
+          </summary>
+          <div class="motion-body">
+            <div class="side-h" id="motion-speed-h">מהירות</div>
+            <div class="motion-speed" role="group" aria-labelledby="motion-speed-h">
+              <button type="button" data-motion-speed="0.25" aria-pressed="false">
+                <b dir="ltr">¼×</b><small>איטי מאוד</small>
+              </button>
+              <button type="button" data-motion-speed="0.5" aria-pressed="false">
+                <b dir="ltr">½×</b><small>איטי</small>
+              </button>
+              <button type="button" data-motion-speed="1" aria-pressed="false">
+                <b dir="ltr">1×</b><small>רגיל</small>
+              </button>
+              <button type="button" data-motion-speed="2" aria-pressed="false">
+                <b dir="ltr">2×</b><small>מהיר</small>
+              </button>
+            </div>
+            <div class="side-h" id="motion-when-h">מתי</div>
+            <div class="motion-when" role="radiogroup" aria-labelledby="motion-when-h">
+              <label>
+                <input type="radio" name="motion-when" value="system">
+                <span>לפי Windows <small id="motion-sys"></small></span>
+              </label>
+              <label>
+                <input type="radio" name="motion-when" value="always">
+                <span>תמיד</span>
+              </label>
+              <label>
+                <input type="radio" name="motion-when" value="never">
+                <span>אף פעם</span>
+              </label>
+            </div>
+            <p class="motion-note" id="motion-note" hidden>
+              ב-Windows כבויים אפקטי ההנפשה, ולכן כל צעד מוצג מיד. «תמיד» מראה את האנימציות בכל זאת.
+            </p>
+          </div>
+        </details>
+        <div class="side-row"><span>סיור מודרך</span><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button></div>
+        <section class="set-group" aria-labelledby="set-teacher-h">
+          <h3 class="side-h" id="set-teacher-h">למורה</h3>
+          <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
+          <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
+          <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
+          <div class="side-row admin-only"><span>סיור למורה</span><button class="b ghost au-sm admin-only" id="tour-teacher" type="button">▶ סיור</button></div>
+        </section>
+      </div>
     </div>
   </aside>
   <div class="stage">

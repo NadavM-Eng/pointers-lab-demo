@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-P5475orHA9Yj+yo8cjWKYwyFyQB0AD0ppq/QjB6kjnA=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-QUlRUvSGtxRvmjrC4X4dkclEbwAX35RhnjQPJFwhXKE=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title>מעבדות קוד</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -181,7 +181,7 @@ body {
 }
 
 .hub-head {
-  padding: 40px 0 8px;
+  padding: 40px 0 18px;
 }
 
 .hub-top {
@@ -192,10 +192,9 @@ body {
   justify-content: space-between;
 }
 
-.hub-kick {
-  color: var(--accent-text);
-  font-family: var(--f-mono);
-  font-size: 13px;
+/* the theme switch keeps the far end of the row, alone or after the link back */
+.hub-top .theme-sw {
+  margin-inline-start: auto;
 }
 
 .hub-head h1 {
@@ -290,17 +289,24 @@ body {
   font-size: 12px;
 }
 
-.hub-ckick {
-  color: var(--accent-text);
-  font-family: var(--f-mono);
-  font-size: 12.5px;
+/* a course's English line, under its Hebrew title (course.js `en`) */
+.hub-en {
+  color: var(--muted);
+  font-size: 13px;
   text-align: right;
 }
 
-.hub-desc {
+/* the full site's two lists: the courses, then the example courses */
+.hub-group {
+  margin: 30px 0 12px;
   color: var(--ink-2);
-  font-size: 15px;
-  text-wrap: pretty;
+  font-family: var(--f-disp);
+  font-size: 21px;
+  font-weight: 400;
+}
+
+.hub-group:first-child {
+  margin-top: 8px;
 }
 
 .hub-meta {
@@ -411,7 +417,7 @@ body {
   font-size: 14px;
 }
 
-.hub-list[hidden],
+.hub-courses[hidden],
 .hub-folder[hidden] {
   display: none;
 }
@@ -516,85 +522,121 @@ body {
 .hub-lessons .passed .n {
   color: var(--ok);
 }
+
+/* ── the licences page (licenses-page.ts): a section per third-party work, its licence folded ── */
+.lic {
+  margin: 18px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  text-align: left;
+}
+
+.lic h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.lic p {
+  margin: 6px 0;
+}
+
+.lic summary {
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.lic-text {
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.lic-credits li {
+  margin: 4px 0;
+}
 </style>
 </head>
 <body>
 <a class="skip" href="#courses">דלג לרשימת הקורסים</a>
 <header class="hub-head">
-<div class="hub-top"><span class="hub-kick" dir="ltr">C · Java · Networks · Math · Probability · examples</span>
+<div class="hub-top">
 <span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים">
 <button type="button" data-theme-set="light" aria-pressed="false">☀ בהיר</button>
 <button type="button" data-theme-set="dark" aria-pressed="false">☾ כהה</button>
 </span></div>
 <h1>מעבדות קוד</h1>
-<p class="hub-intro">קורסים לדוגמה: בכל שלב ההסבר כאן, והקוד והטרמינל ליד. בחרו קורס כדי להתחיל.</p>
 </header>
 <main class="hub-main" id="courses" tabindex="-1">
+<div class="hub-courses">
 <h2 class="sr">הקורסים</h2>
 <ul class="hub-list">
-<li class="hub-card"><a class="hub-link" href="c-make.html?course=c-make">
-<span class="hub-ctop"><span class="hub-title">make ו-Makefile</span><span class="hub-tag" dir="ltr">make</span></span>
-<span class="hub-ckick" dir="ltr">C · gcc · make</span>
-<span class="hub-desc">כותבים Makefile ליד הקוד, ו-make מחליט לבד מה צריך לקמפל מחדש אחרי כל שינוי. כאן רואים כל החלטה שלו, ומריצים אותו ישר מהדף.</span>
-<span class="hub-meta">7 שיעורים · 5 תרגילים</span>
-<span class="hub-prog" data-prefix="lab:c-make:" data-ids="[&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]" hidden>
-<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
-</a></li>
-<li class="hub-card"><a class="hub-link" href="math-sequences.html?course=math-sequences">
-<span class="hub-ctop"><span class="hub-title">הוכחות: סדרות חסומות</span><span class="hub-tag" dir="ltr">Infi 1</span></span>
-<span class="hub-ckick" dir="ltr">Infi 1 · sequences · proofs</span>
-<span class="hub-desc">שאלה על סדרות חסומות, עם הוכחה שעוברים עליה שורה אחר שורה: בכל צעד רואים את הטענה, את הנימוק ואת כל הגדלים שידועים עד אליו.</span>
-<span class="hub-meta">8 שיעורים · 2 תרגילים</span>
-<span class="hub-prog" data-prefix="lab:math-sequences:" data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]" hidden>
-<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
-</a></li>
-<li class="hub-card"><a class="hub-link" href="example-net.html?course=example-net">
-<span class="hub-ctop"><span class="hub-title">קורס תקשורת לדוגמה</span><span class="hub-tag" dir="ltr">net</span></span>
-<span class="hub-ckick" dir="ltr">Networks · scenarios · units · tests</span>
-<span class="hub-desc">הדגמה של מנוע התקשורת: חבילות שעוברות בקווים ובנתבים, ציר זמן שנבנה צעד אחרי צעד, חישובים עם יחידות, ובדיקות שממירות יחידות לבד.</span>
-<span class="hub-meta">8 שיעורים · 6 תרגילים</span>
-<span class="hub-prog" data-prefix="lab:example-net:" data-ids="[&quot;xn-first-check&quot;,&quot;xn-fix-units&quot;,&quot;xn-reads&quot;,&quot;xn-unit&quot;,&quot;xn-answer&quot;,&quot;xn-build&quot;]" hidden>
-<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
-</a></li>
-<li class="hub-card"><a class="hub-link" href="#probability">
-<span class="hub-ctop"><span class="hub-title">הסתברות</span><span class="hub-tag" dir="ltr">P(A)</span></span>
-<span class="hub-ckick" dir="ltr">Probability · trees · distributions · simulation</span>
-<span class="hub-desc">מבוא להסתברות בתרגילים קצרים. כותבים תשובה (מספר, שבר מדויק או ביטוי) ו-✓ בודק אותה מיד. ב-⏯ כל שאלה נפתחת לתמונה שנבנית צעד אחרי צעד: עץ, דיאגרמת ון, גרף של התפלגות עם מחוונים, וסימולציה.</span>
-<span class="hub-subjs">יסודות · הסתברות מותנית · משתנים בדידים · משתנים רציפים · סכומים וגבולות · הסקה סטטיסטית</span>
-<span class="hub-meta">6 נושאים · 19 שיעורים · 34 תרגילים</span>
-<span class="hub-prog" data-prefix="lab:probability:" data-ids="[&quot;ha-practice&quot;,&quot;ev-weekend&quot;,&quot;ev-coins&quot;,&quot;ru-system&quot;,&quot;ru-lights&quot;,&quot;co-committee&quot;,&quot;co-letters&quot;,&quot;cd-chips&quot;,&quot;cd-survey&quot;,&quot;ba-dice&quot;,&quot;ba-servers&quot;,&quot;in-shots&quot;,&quot;in-check&quot;,&quot;rv-table&quot;,&quot;rv-game&quot;,&quot;bi-packets&quot;,&quot;bi-test&quot;,&quot;gp-desk&quot;,&quot;gp-batch&quot;,&quot;gp-uniform&quot;,&quot;ct-battery&quot;,&quot;ct-uniform&quot;,&quot;ct-density&quot;,&quot;no-scores&quot;,&quot;no-sigma&quot;,&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;,&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]" hidden>
-<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
-</a></li>
 <li class="hub-card"><a class="hub-link" href="example.html?course=example">
 <span class="hub-ctop"><span class="hub-title">קורס לדוגמה</span><span class="hub-tag" dir="ltr">JS</span></span>
-<span class="hub-ckick" dir="ltr">JavaScript · loops</span>
-<span class="hub-desc">בכל שלב ההסבר כאן, והקוד והטרמינל ליד. אפשר לערוך, להריץ, להקליד קלט ולהריץ בדיקות על הפתרון.</span>
+<span class="hub-en" dir="ltr" lang="en">Example course · JavaScript</span>
 <span class="hub-meta">4 שיעורים · 3 תרגילים</span>
 <span class="hub-prog" data-prefix="lab:example:" data-ids="[&quot;sum-to&quot;,&quot;read-sum&quot;,&quot;lab1-max&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
 <li class="hub-card"><a class="hub-link" href="example-c.html?course=example-c">
 <span class="hub-ctop"><span class="hub-title">קורס C לדוגמה</span><span class="hub-tag" dir="ltr">C</span></span>
-<span class="hub-ckick" dir="ltr">C · gcc · loops</span>
-<span class="hub-desc">בכל שלב ההסבר כאן, והקוד והטרמינל ליד. אפשר לערוך, להריץ, להקליד קלט ולהריץ בדיקות על הפתרון.</span>
+<span class="hub-en" dir="ltr" lang="en">Example course · C</span>
 <span class="hub-meta">5 שיעורים · 4 תרגילים</span>
 <span class="hub-prog" data-prefix="lab:example-c:" data-ids="[&quot;sum-to&quot;,&quot;read-sum&quot;,&quot;sum-all&quot;,&quot;lab1-max&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
 <li class="hub-card"><a class="hub-link" href="example-java.html?course=example-java">
 <span class="hub-ctop"><span class="hub-title">קורס Java לדוגמה</span><span class="hub-tag" dir="ltr">Java</span></span>
-<span class="hub-ckick" dir="ltr">Java · JDK · TeaVM · tests</span>
-<span class="hub-desc">הדגמה של מנוע ה-Java: קלט מהמקלדת, עץ רקורסיה שגדל בכל קריאה, אובייקטים והפניות בזיכרון, ובדיקות שסופרות כמה צעדים הקוד שלכם עשה.</span>
+<span class="hub-en" dir="ltr" lang="en">Example course · Java</span>
 <span class="hub-meta">6 שיעורים · 6 תרגילים</span>
 <span class="hub-prog" data-prefix="lab:example-java:" data-ids="[&quot;until-zero&quot;,&quot;digit-sum&quot;,&quot;merge-sort-merge&quot;,&quot;max-sum-naive&quot;,&quot;max-sum-fast&quot;,&quot;list-sum&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
+<li class="hub-card"><a class="hub-link" href="example-net.html?course=example-net">
+<span class="hub-ctop"><span class="hub-title">קורס תקשורת לדוגמה</span><span class="hub-tag" dir="ltr">net</span></span>
+<span class="hub-en" dir="ltr" lang="en">Example course · Networks</span>
+<span class="hub-meta">8 שיעורים · 6 תרגילים</span>
+<span class="hub-prog" data-prefix="lab:example-net:" data-ids="[&quot;xn-first-check&quot;,&quot;xn-fix-units&quot;,&quot;xn-reads&quot;,&quot;xn-unit&quot;,&quot;xn-answer&quot;,&quot;xn-build&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+</a></li>
+<li class="hub-card"><a class="hub-link" href="c.html?course=c">
+<span class="hub-ctop"><span class="hub-title">שפת C</span></span>
+<span class="hub-en" dir="ltr" lang="en">C Programming Language</span>
+<span class="hub-subjs">make ו-Makefile</span>
+<span class="hub-meta">7 שיעורים · 5 תרגילים</span>
+<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+</a></li>
+<li class="hub-card"><a class="hub-link" href="calc1.html?course=calc1">
+<span class="hub-ctop"><span class="hub-title">חדו&quot;א 1</span></span>
+<span class="hub-en" dir="ltr" lang="en">Calculus 1</span>
+<span class="hub-subjs">סדרות חסומות</span>
+<span class="hub-meta">8 שיעורים · 2 תרגילים</span>
+<span class="hub-prog" data-prefix="lab:math-sequences:" data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+</a></li>
+<li class="hub-card"><a class="hub-link" href="#probability">
+<span class="hub-ctop"><span class="hub-title">הסתברות</span></span>
+<span class="hub-en" dir="ltr" lang="en">Probability</span>
+<span class="hub-subjs">יסודות · הסתברות מותנית · משתנים בדידים · משתנים רציפים · סכומים וגבולות · הסקה סטטיסטית</span>
+<span class="hub-meta">6 נושאים · 19 שיעורים · 34 תרגילים</span>
+<span class="hub-prog" data-prefix="lab:probability:" data-ids="[&quot;ha-practice&quot;,&quot;ev-weekend&quot;,&quot;ev-coins&quot;,&quot;ru-system&quot;,&quot;ru-lights&quot;,&quot;co-committee&quot;,&quot;co-letters&quot;,&quot;cd-chips&quot;,&quot;cd-survey&quot;,&quot;ba-dice&quot;,&quot;ba-servers&quot;,&quot;in-shots&quot;,&quot;in-check&quot;,&quot;rv-table&quot;,&quot;rv-game&quot;,&quot;bi-packets&quot;,&quot;bi-test&quot;,&quot;gp-desk&quot;,&quot;gp-batch&quot;,&quot;gp-uniform&quot;,&quot;ct-battery&quot;,&quot;ct-uniform&quot;,&quot;ct-density&quot;,&quot;no-scores&quot;,&quot;no-sigma&quot;,&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;,&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+</a></li>
 </ul>
+</div>
 <section class="hub-folder" id="folder-probability" data-folder="probability"
  data-title="הסתברות" aria-labelledby="folder-probability-h" hidden>
 <a class="hub-back" href="#">→ כל הקורסים</a>
 <h2 class="hub-ftitle" id="folder-probability-h" tabindex="-1">
-<span>הסתברות</span><span class="hub-tag" dir="ltr">P(A)</span></h2>
+<span>הסתברות</span></h2>
+<span class="hub-en" dir="ltr" lang="en">Probability</span>
 <p class="hub-intro">מבוא להסתברות בתרגילים קצרים. כותבים תשובה (מספר, שבר מדויק או ביטוי) ו-✓ בודק אותה מיד. ב-⏯ כל שאלה נפתחת לתמונה שנבנית צעד אחרי צעד: עץ, דיאגרמת ון, גרף של התפלגות עם מחוונים, וסימולציה.</p>
 <ul class="hub-list">
 <li class="hub-card"><div class="hub-link hub-subj">
@@ -675,17 +717,16 @@ body {
 </main>
 <footer class="hub-foot">
 <p>הקוד וההתקדמות נשמרים בדפדפן הזה, לכל קורס בנפרד.</p>
-<p>עמודי ה-<bdi dir="ltr">Java</bdi> כוללים את המהדר <bdi dir="ltr">javac</bdi> של <bdi dir="ltr">OpenJDK</bdi> (<bdi dir="ltr">GPL v2</bdi> עם <bdi dir="ltr">Classpath Exception</bdi>) בתוך <bdi dir="ltr">TeaVM</bdi> (<bdi dir="ltr">Apache 2.0</bdi>): <a href="java-compiler.html">הרישיונות וקוד המקור</a>.</p>
-<p><a href="LICENSE.txt">רישיון המעבדה</a> · 
-<a href="THIRD_PARTY_NOTICES.txt">תוכנה של צד שלישי</a></p>
+<p><a href="licenses.html">רישיונות / Licenses</a></p>
 </footer>
 <script>/*
  * The hub page's script (inlined by src/vite/hub-page.ts; a classic script, no imports): the
  * theme switch, under the lab's own key 'lab:theme' so the courses follow it, and each course
  * card's progress: how many of the course's exercises passed, read from the keys the course page
- * writes ('<prefix>pass:<box id>', JSON true). The hub writes nothing else. A course with
- * subjects has a second level, its subject list (index.html#<course id>): the address chooses
- * which level is shown, so the browser's back and forward move between them.
+ * writes ('<prefix>pass:<box id>', JSON true; also under the prefixes of the courses it took
+ * over, data-former). The hub writes nothing else. A course with subjects has a second level,
+ * its subject list (index.html#<course id>): the address chooses which level is shown, so the
+ * browser's back and forward move between them.
  */
 
 /** The lab's theme key (the same as src/core/page/theme.js). */
@@ -741,6 +782,19 @@ function setUpThemeSwitch() {
 }
 
 /**
+ * Tells whether an exercise passed: under the course's prefix, or under the prefix of a course
+ * it took over (course.js `formerly`; the course page copies those keys at its first visit).
+ *
+ * @param {HTMLElement} element an element with data-prefix (and maybe data-former)
+ * @param {string} id the box id
+ * @returns {boolean} true when it passed
+ */
+function hasPassed(element, id) {
+  const prefixes = [element.dataset.prefix].concat(JSON.parse(element.dataset.former || '[]'));
+  return prefixes.some((prefix) => readStored(prefix + 'pass:' + id) === true);
+}
+
+/**
  * Fills one card's progress: N / M exercises passed, and the bar.
  *
  * @param {HTMLElement} progress the card's span.hub-prog
@@ -752,8 +806,7 @@ function paintProgress(progress) {
   if (!ids.length) {
     return;
   }
-  const prefix = progress.dataset.prefix;
-  const passed = ids.filter((id) => readStored(prefix + 'pass:' + id) === true).length;
+  const passed = ids.filter((id) => hasPassed(progress, id)).length;
   progress.querySelector('.prog-n').textContent = passed + '/' + ids.length;
   progress.querySelector('i').style.width = Math.round((passed / ids.length) * 100) + '%';
   progress.setAttribute('aria-label', passed + ' מתוך ' + ids.length + ' תרגילים עברו');
@@ -769,8 +822,7 @@ function paintProgress(progress) {
  */
 function paintLesson(lesson) {
   const ids = JSON.parse(lesson.dataset.ids || '[]');
-  const prefix = lesson.dataset.prefix;
-  const isPassed = ids.length > 0 && ids.every((id) => readStored(prefix + 'pass:' + id) === true);
+  const isPassed = ids.length > 0 && ids.every((id) => hasPassed(lesson, id));
   lesson.querySelector('.ck').hidden = !isPassed;
   lesson.classList.toggle('passed', isPassed);
 }
@@ -810,7 +862,7 @@ function showLevel(isMove) {
     section.hidden = !isShown;
     folder = isShown ? section : folder;
   });
-  document.querySelectorAll('.hub-main > .hub-list, .hub-main > h2.sr').forEach((element) => {
+  document.querySelectorAll('.hub-main > .hub-courses').forEach((element) => {
     element.hidden = Boolean(folder);
   });
   document.title = folder ? folder.dataset.title + ' · ' + SITE_TITLE : SITE_TITLE;
@@ -820,7 +872,7 @@ function showLevel(isMove) {
     return;
   }
   window.scrollTo(0, 0);
-  const card = left && document.querySelector('.hub-main > .hub-list a[href="#' + left + '"]');
+  const card = left && document.querySelector('.hub-courses a[href="#' + left + '"]');
   const target = folder ? folder.querySelector('.hub-ftitle') : card;
   if (target) {
     target.focus({ preventScroll: true });
