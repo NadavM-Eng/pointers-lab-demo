@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-CrXRlBisqgKMVp9uh2TkLJ7trLLSZ7dBgLI613QlY7c=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-AneZn8G8GjJrHK7hU1GFY4gEOoJiDEucQxkUl6mS9/0=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -308,6 +308,10 @@ body.side-closed .nav-subj.shut .nav-subj-in{display:block}
 .eng button small{font-family:var(--f-mono);font-size:11px;color:var(--muted);direction:ltr}
 .eng button.on{border-color:var(--accent);color:var(--ink);box-shadow:inset -3px 0 0 var(--accent)}
 .eng.solo button{background:none;border-color:transparent;cursor:default;pointer-events:none;padding-inline:0;box-shadow:none}
+/* the line under the compiler of a course from outside that runs in the browser, and its "ask
+   again" (code-box/outside-run.js): small and muted, as the engines' notes under the compiler */
+.outside-note{font-size:11.5px;color:var(--muted);margin:-2px 0 8px;line-height:1.45}
+.outside-note button{font:inherit;background:none;border:0;padding:0;color:var(--link);text-decoration:underline;cursor:pointer}
 .admin-ask{display:flex;flex-direction:column;gap:6px;border:1px solid var(--warn);border-radius:7px;padding:8px 10px;margin:4px 0 6px;font-size:13px;color:var(--ink-2);background:color-mix(in srgb,var(--warn) 8%,var(--panel))}
 .admin-ask-b{display:flex;gap:8px}
 .flags-panel{color:var(--ink-2);padding:4px 0}
@@ -6397,7 +6401,7 @@ var DEFAULT_SETTINGS = {
 	choice: "system"
 };
 var SPEED_KEY = "lab:motion-speed";
-var CHOICE_KEY = "lab:motion";
+var CHOICE_KEY$1 = "lab:motion";
 var SPEED_PARAM = "motion-speed";
 var CHOICE_PARAM = "motion";
 var REDUCE_QUERY = "(prefers-reduced-motion: reduce)";
@@ -6449,7 +6453,7 @@ function readSaved(key) {
 function motionSettings() {
 	if (!current) current = isInPage() ? settingsOf({
 		speed: readSaved(SPEED_KEY),
-		choice: readSaved(CHOICE_KEY)
+		choice: readSaved(CHOICE_KEY$1)
 	}, location.search) : DEFAULT_SETTINGS;
 	return current;
 }
@@ -6469,7 +6473,7 @@ function notify$2() {
 function save$1(change) {
 	try {
 		if (change.speed !== void 0) localStorage.setItem(SPEED_KEY, JSON.stringify(change.speed));
-		if (change.choice !== void 0) localStorage.setItem(CHOICE_KEY, JSON.stringify(change.choice));
+		if (change.choice !== void 0) localStorage.setItem(CHOICE_KEY$1, JSON.stringify(change.choice));
 		return true;
 	} catch {
 		return false;
@@ -9853,6 +9857,8 @@ var layerState = {
 	localCourses: newDictionary(),
 	coursesNeedingDisk: /* @__PURE__ */ new Set(),
 	activeCourse: null,
+	isEmbeddedBase: false,
+	isFromOutside: false,
 	where: "browser",
 	initialLayer: null,
 	isFromBackup: false,
@@ -10082,6 +10088,8 @@ function packageFromDoc() {
 	};
 	if (docCourse.tag) pkg.course.tag = docCourse.tag;
 	if (isRepoUrl(docCourse.repo)) pkg.course.repo = docCourse.repo;
+	if (activeCourse && activeCourse.madeHere === true) pkg.madeHere = true;
+	if (activeCourse && typeof activeCourse.outsideId === "string") pkg.outsideId = activeCourse.outsideId;
 	return pkg;
 }
 function currentSnapshot() {
@@ -10548,6 +10556,7 @@ function courseTemplate(courseId, title, tag) {
 		format: 1,
 		package: true,
 		saved: (/* @__PURE__ */ new Date()).toISOString(),
+		madeHere: true,
 		course,
 		units
 	};
@@ -10632,6 +10641,8 @@ async function exportCourse() {
 	const pkg = packageFromDoc();
 	pkg.exported = (/* @__PURE__ */ new Date()).toISOString();
 	delete pkg.saved;
+	delete pkg.madeHere;
+	delete pkg.outsideId;
 	const courseId = pkg.course.id;
 	const pageHtml = await readOwnPage();
 	if (pageHtml && pageHtml.indexOf(pageMarker(PACKAGE_PLACE_MARKER)) >= 0) {
@@ -11764,6 +11775,16 @@ function resolveConflict(pkg, mode) {
 	};
 	return null;
 }
+function newImportStamp() {
+	const bytes = /* @__PURE__ */ new Uint8Array(8);
+	crypto.getRandomValues(bytes);
+	return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+function forgetOutsideAnswer(courseId) {
+	try {
+		localStorage.removeItem("lab:" + courseId + ":outside-run");
+	} catch {}
+}
 async function importPackage(file, options) {
 	const mode = (options || {}).mode;
 	const read = await readPackageFile(file);
@@ -11783,11 +11804,14 @@ async function importPackage(file, options) {
 	const pkg = cleanPackage(read.pkg);
 	pkg.saved = (/* @__PURE__ */ new Date()).toISOString();
 	delete pkg.exported;
+	delete pkg.madeHere;
+	pkg.outsideId = newImportStamp();
 	const conflictResult = resolveConflict(pkg, mode);
 	if (conflictResult) return conflictResult;
 	await flushUnsaved();
 	const writeResult = await writeCourse(pkg);
 	if (!writeResult.ok) return writeResult;
+	forgetOutsideAnswer(pkg.course.id);
 	openCourse(pkg.course.id);
 	return {
 		ok: true,
@@ -12467,6 +12491,7 @@ function pickBaseCourse() {
 		return builtinCourse;
 	}
 	const cleanEmbedded = cleanPackage(embeddedPackage);
+	layerState.isEmbeddedBase = true;
 	const baseCourse = Object.assign({}, cleanEmbedded.course, { units: cleanEmbedded.units });
 	if (baseCourse.id === builtinCourse.id && builtinCourse.storePrefix) baseCourse.storePrefix = builtinCourse.storePrefix;
 	return baseCourse;
@@ -12545,6 +12570,8 @@ function setUpLayer(builtinCourse) {
 	setBase();
 	loadLocalCourses();
 	pickActiveCourse();
+	const activeCourse = layerState.activeCourse;
+	layerState.isFromOutside = activeCourse ? activeCourse.madeHere !== true : layerState.isEmbeddedBase;
 	const isDiskPossible = layerState.activeCourse || isValidCourseId(layerState.baseCourse.id);
 	layerState.where = layerState.hasRunner && isDiskPossible ? "disk" : "browser";
 	window.LabCourse = buildShownCourse();
@@ -12576,6 +12603,7 @@ function createCourseLayer() {
 		status: currentStatus,
 		layer: currentSnapshot,
 		local: Boolean(layerState.activeCourse),
+		fromOutside: layerState.isFromOutside,
 		courses: listCourses,
 		switchCourse,
 		newCourse,
@@ -13208,6 +13236,103 @@ function sendTypedLine(context, input) {
 	input.value = "";
 	if (context.controller.input) context.controller.input(text);
 }
+// src/core/code-box/outside-run.js
+var CHOICE_KEY = "outside-run";
+var OUTSIDE_TEXT = "הקורס הזה יובא מבחוץ, והקוד שלו ירוץ על המחשב הזה.";
+var NOTE_ID = "outside-note";
+var isStarted = false;
+var waiting = /* @__PURE__ */ new Map();
+function localRun() {
+	const engine = window.LabEngine;
+	const hook = engine && engine.localRun;
+	return hook && typeof hook.inUse === "function" && typeof hook.useBrowser === "function" ? hook : null;
+}
+function courseFingerprint() {
+	const active = layerState.activeCourse;
+	if (active && typeof active.outsideId === "string" && active.outsideId) return "import:" + active.outsideId;
+	return "content:" + hashText(stableJson(active ? active.units : layerState.baseUnits));
+}
+function storedChoice() {
+	const saved = store.get(CHOICE_KEY, null);
+	if (!saved || typeof saved !== "object" || saved.course !== courseFingerprint()) return null;
+	return saved.choice === "here" || saved.choice === "browser" ? saved.choice : null;
+}
+function storeChoice(choice) {
+	store.set(CHOICE_KEY, choice ? {
+		choice,
+		course: courseFingerprint()
+	} : null);
+}
+function mayRunOnThisComputer() {
+	return !layerState.isFromOutside || storedChoice() === "here";
+}
+var REAL_SELFTEST_SKIPPED = "selftest-real: this course came from outside and running its code on this computer was not allowed (press Run once and choose \"run here\"); the self-test runs in the page instead";
+function startOutsideRun() {
+	if (isStarted) return;
+	isStarted = true;
+	const hook = localRun();
+	if (hook && layerState.isFromOutside && storedChoice() === "browser") hook.useBrowser(true);
+}
+function askAgain() {
+	storeChoice(null);
+	const hook = localRun();
+	if (hook) hook.useBrowser(false);
+	paintOutsideNote();
+}
+function paintOutsideNote() {
+	const old = document.getElementById(NOTE_ID);
+	const isShown = layerState.isFromOutside && !!localRun() && storedChoice() === "browser";
+	const compilers = document.querySelector("#engine-sw .eng");
+	if (!isShown || !compilers) {
+		if (old) old.remove();
+		return;
+	}
+	if (old) return;
+	const note = document.createElement("div");
+	note.id = NOTE_ID;
+	note.className = "outside-note";
+	const again = document.createElement("button");
+	again.type = "button";
+	again.textContent = "לשאול שוב";
+	again.addEventListener("click", askAgain);
+	note.append("קורס מיובא: רץ בדפדפן · ", again);
+	compilers.after(note);
+}
+function passOutsideGate(context) {
+	const hook = localRun();
+	if (!layerState.isFromOutside || !hook || storedChoice() || !hook.inUse()) return Promise.resolve(true);
+	if (waiting.has(context)) return Promise.resolve(false);
+	context.view.update({ outside: {
+		isOpen: true,
+		text: OUTSIDE_TEXT
+	} });
+	const first = context.find(".wb-outside [data-outside-here]");
+	if (first) first.focus();
+	announce$1(context, OUTSIDE_TEXT);
+	return new Promise((resolve) => waiting.set(context, resolve));
+}
+function closeStrip(context, isRun) {
+	const outside = context.view.get().outside;
+	if (outside.isOpen) context.view.update({ outside: {
+		...outside,
+		isOpen: false
+	} });
+	const resolve = waiting.get(context);
+	waiting.delete(context);
+	if (resolve) resolve(isRun);
+}
+function answerOutside(context, choice) {
+	storeChoice(choice);
+	const hook = localRun();
+	if (choice === "browser" && hook) hook.useBrowser(true);
+	paintOutsideNote();
+	closeStrip(context, true);
+}
+function dismissOutside(context) {
+	closeStrip(context, false);
+	const run = context.find(".wb-bar [data-a=run]");
+	if (run) run.focus();
+}
 // src/core/code-box/prompts.js
 var UNDO_OFFER_MS = 1e4;
 function askInBar(context, text, yesLabel, onYes, returnFocus) {
@@ -13426,7 +13551,7 @@ function pressReset(context, resetButton) {
 }
 // src/core/code-box/box-actions.js
 async function runWhileBusy(context, action, work) {
-	if (context.isBusy) return;
+	if (context.isBusy || !await passOutsideGate(context) || context.isBusy) return;
 	context.isBusy = true;
 	const pressedButton = context.find(".wb-bar [data-a=" + action + "]");
 	const hadFocus = pressedButton && document.activeElement === pressedButton;
@@ -13462,6 +13587,11 @@ function seekStep(context, index) {
 }
 function onBoxKey(context, event) {
 	const isWide = document.body.classList.contains("wide");
+	if (event.key === "Escape" && context.view.get().outside.isOpen) {
+		event.stopPropagation();
+		dismissOutside(context);
+		return;
+	}
 	if (event.key === "Escape" && context.view.get().question.isOpen) {
 		event.stopPropagation();
 		closeQuestion(context, true);
@@ -16578,6 +16708,37 @@ function UpdatedNotice({ context }) {
 		})]
 	});
 }
+// src/core/code-box/OutsideNotice.tsx
+function OutsideNotice({ context }) {
+	const outside = useBoxView(context.view, (view) => view.outside);
+	if (!outside.isOpen) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "wb-updated wb-outside",
+		dir: "rtl",
+		lang: "he",
+		role: "group",
+		"aria-label": outside.text,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "wb-updated-t",
+			children: outside.text
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "wb-updated-acts",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				className: "b",
+				type: "button",
+				"data-outside-here": "",
+				onClick: () => answerOutside(context, "here"),
+				children: "להריץ כאן"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				className: "b ghost",
+				type: "button",
+				"data-outside-browser": "",
+				onClick: () => answerOutside(context, "browser"),
+				children: "להריץ בדפדפן"
+			})]
+		})]
+	});
+}
 // src/core/code-box/editor-keys.js
 var INDENT = "    ";
 var MAKEFILE_EDITOR = /[:\s](GNUmakefile|[Mm]akefile)$/;
@@ -18730,6 +18891,7 @@ function CodeBoxView({ context }) {
 			dangerouslySetInnerHTML: { __html: box.task || "" }
 		}) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ActionBar, { context }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(OutsideNotice, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(UpdatedNotice, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$1, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaleNotice, { context }),
@@ -18887,6 +19049,9 @@ function buildEngineUi(context) {
 		},
 		progress() {
 			document.dispatchEvent(new CustomEvent("ptr-progress"));
+		},
+		mayRun() {
+			return passOutsideGate(context);
 		}
 	};
 }
@@ -18935,6 +19100,10 @@ function firstView(box, userFiles) {
 			isOpen: false,
 			head: "",
 			rest: ""
+		},
+		outside: {
+			isOpen: false,
+			text: ""
 		},
 		isDebugging: false,
 		isStale: false,
@@ -19020,15 +19189,18 @@ function createMainEditor(context) {
 		onChange: onCodeChange
 	});
 }
+async function gatedRun(context, work) {
+	return await passOutsideGate(context) ? work() : void 0;
+}
 function boxApi(context) {
 	const controller = context.controller;
 	const editor = context.editor;
 	return {
 		box: context.box,
 		ed: editor,
-		doTests: () => controller.test && controller.test(),
-		doRun: () => controller.run(),
-		startDebug: () => controller.debug && controller.debug(),
+		doTests: () => gatedRun(context, () => controller.test && controller.test()),
+		doRun: () => gatedRun(context, () => controller.run()),
+		startDebug: () => gatedRun(context, () => controller.debug && controller.debug()),
 		stopDebug() {
 			if (context.state.mode === "debug") controller.stopDebug();
 		},
@@ -19044,6 +19216,7 @@ function boxApi(context) {
 	};
 }
 function makeBox(host, box, options) {
+	startOutsideRun();
 	const context = createBoxContext(host, box, options || {});
 	host.classList.add("wb");
 	context.editor = createMainEditor(context);
@@ -25903,7 +26076,7 @@ var EDIT_STEPS = [
 	{
 		id: "t-box",
 		title: "כתיבת תרגיל",
-		text: say("מתחת למשימה: הקוד ההתחלתי (עם <code>/* TODO */</code>), הפתרון, והבדיקות.", "כל בדיקה היא כרטיס: קלט ופלט צפוי, או קוד בדיקה."),
+		text: say("מתחת למשימה: הקוד ההתחלתי (עם <code>/* TODO */</code>), הפתרון, והבדיקות.", "כל בדיקה היא כרטיס: קלט ופלט צפוי, או קוד בדיקה.", "הפתרון והבדיקות נמצאים בדף, ולכן ✓ הוא בדיקה עצמית, לא ציון."),
 		target: ".page:not([hidden]) .au-box",
 		page: firstBoxPage,
 		states: ["edit"]
@@ -30379,7 +30552,9 @@ async function checkBox(engine, box, isReal, pauseMs) {
 		problems
 	};
 }
-async function runSelfTest(engine, allBoxes, isReal) {
+async function runSelfTest(engine, allBoxes, wantsReal) {
+	const isReal = wantsReal && mayRunOnThisComputer();
+	if (wantsReal && !isReal) console.warn(REAL_SELFTEST_SKIPPED);
 	const session = openPanel();
 	const lines = [];
 	let problemCount = 0;
@@ -30442,7 +30617,11 @@ function setUpAdminSwitch(engine) {
 	adminSwitch.checked = /[?&]admin=1/.test(location.search) || !!CodeBox.store.get("admin", false);
 	paintAdminSwitch();
 	document.body.classList.toggle("admin", adminSwitch.checked);
-	if (engine.sidebar) engine.sidebar(document.getElementById("engine-slot"));
+	if (engine.sidebar) {
+		startOutsideRun();
+		engine.sidebar(document.getElementById("engine-slot"));
+		paintOutsideNote();
+	}
 	adminSwitch.addEventListener("change", onAdminSwitchChange);
 	document.getElementById("admin-yes").addEventListener("click", () => {
 		question.hidden = true;
@@ -31357,7 +31536,7 @@ window.__lab = {
       <div class="side-row"><span id="admin-lbl">מצב מנהל</span><label class="admin-sw" title="קוד הבדיקות, הפתרונות ומהדרים נוספים"><input type="checkbox" id="admin" role="switch" aria-checked="false" aria-labelledby="admin-lbl" aria-describedby="admin-desc"><span class="knob"></span></label><span class="sr" id="admin-desc">קוד הבדיקות, הפתרונות ומהדרים נוספים</span></div>
       <div class="admin-ask" id="admin-ask" role="group" aria-labelledby="admin-ask-t" hidden><span id="admin-ask-t">מצב מנהל מציג את הפתרונות. להפעיל?</span><span class="admin-ask-b"><button class="b" id="admin-yes" type="button">הפעלה</button><button class="b ghost" id="admin-no" type="button">ביטול</button></span></div>
       <div class="side-row admin-only"><button class="b reset-all" id="reset-all" title="מוחק את הקוד, הקבצים הנוספים והתקדמות הבדיקות בכל התרגילים">↺ איפוס כל התרגילים</button></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit b24d474 מ-2026-11-11 10:23"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · b24d474</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 693d4db מ-2026-11-12 13:36"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 693d4db</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
   </aside>
