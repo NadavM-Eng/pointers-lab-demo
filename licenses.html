@@ -413,8 +413,17 @@ body {
 
 /* ── a course with subjects: its card names them, and opens its subject list (hub.js) ── */
 .hub-subjs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   color: var(--ink-2);
   font-size: 14px;
+}
+
+.hub-subj-name::before {
+  content: '•';
+  margin-inline-end: 6px;
+  color: var(--muted);
 }
 
 .hub-courses[hidden],

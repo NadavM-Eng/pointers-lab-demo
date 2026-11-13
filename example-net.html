@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-YOV5L2cBZX/bm7LcOuOjYGwbdui/EPltUr7/Ar/8IHc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-itKhF/9jTPzGEuNUqOwYy5q4aI8eKFoJ82S6SOaqgZ0=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -790,7 +790,7 @@ body.debugging .wb-grid{grid-template-areas:"code split side";grid-template-colu
 .panel-h small.ok{color:var(--ok)}.panel-h small.bad{color:var(--err)}.panel-h small.wait{color:var(--warn)}.panel-h small.busy{color:var(--accent-text)}
 
 /* file tabs: one line; with many files the strip scrolls and shows a thin scrollbar, and the tabs get a little lower so they are not cut */
-.ftabs{display:flex;gap:0;align-items:flex-end;height:36px;background:var(--panel);padding:5px 8px 0;border-bottom:1px solid var(--line-2);flex-wrap:nowrap;overflow:hidden}
+.ftabs{display:flex;flex:none;gap:0;align-items:flex-end;height:36px;background:var(--panel);padding:5px 8px 0;border-bottom:1px solid var(--line-2);flex-wrap:nowrap;overflow:hidden}
 .ftabs.ovf{padding-top:2px}
 .ft{flex:none;white-space:nowrap;font-family:var(--f-mono);font-size:12.5px;background:transparent;color:var(--muted);border:0;border-radius:6px 6px 0 0;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .ft:hover{color:var(--ink)}
@@ -839,21 +839,23 @@ body:not(.admin) .admin-tab{display:none}
 .ft-cancel:hover{color:var(--err);border-color:var(--err)}
 .ft-err{color:var(--err);font-size:12px;margin-inline-start:4px;direction:rtl;text-align:right;min-width:0}
 .ed-host:not([hidden]){flex:1;min-height:0;display:flex;position:relative;container:edh/inline-size}
+/* the extra files' editors are flex items of .wb-code like main.c's: as a block, the wrapper grew to a long file's full height and squeezed the tab row */
+.ed-hosts-user{display:contents}
 .ed-host:has(.ed-ta:focus-visible)::after{content:"";position:absolute;inset:0;border:2px solid var(--accent);pointer-events:none;z-index:5}
 
 /* editor */
-.ed{--ed-fs:14.5px;--ed-lh:25px;display:flex;flex:1;min-height:0;font-family:var(--f-mono);font-size:var(--ed-fs);line-height:var(--ed-lh);overflow:auto;background:var(--bg)}
+.ed{--ed-fs:14.5px;--ed-lh:25px;display:flex;align-items:flex-start;flex:1;min-height:0;font-family:var(--f-mono);font-size:var(--ed-fs);line-height:var(--ed-lh);overflow:auto;background:var(--bg)}
 /* the larger full-screen font only when the code area holds ~80 columns */
 @container edh (min-width:880px){body.wide .ed{--ed-fs:16px;--ed-lh:27px}}
-.ed-gut{flex:0 0 auto;padding:8px 0;background:var(--bg);color:var(--gutter);text-align:right;user-select:none;position:sticky;left:0;z-index:2}
+.ed-gut{flex:0 0 auto;min-height:100%;padding:8px 0;background:var(--bg);color:var(--gutter);text-align:right;user-select:none;position:sticky;left:0;z-index:2}
 .ed-gut .g{display:block;padding:0 12px 0 20px;cursor:pointer;position:relative}
 .ed-gut .g:hover{color:var(--gutter-cur)}
 .ed-gut .g.bp{color:var(--err)}
 .ed-gut .g.bp::before{content:'●';position:absolute;left:5px}
 .ed-gut .g.cur{color:var(--gutter-cur);background:var(--caret-line);box-shadow:inset 3px 0 0 var(--accent)}
 .ed-gut .g.err{color:var(--err);background:color-mix(in srgb,var(--err) 16%,transparent);box-shadow:inset 3px 0 0 var(--err)}
-.ed-scroll{flex:1;min-width:0}
-.ed-area{position:relative;padding:8px 0;min-height:100%;--n:1}
+.ed-scroll{flex:1;min-width:0;min-height:100%;display:flex;flex-direction:column}
+.ed-area{position:relative;padding:8px 0;flex:1 0 auto;--n:1}
 .ed-hl,.ed-ta{margin:0;padding:0 14px 0 6px;font:inherit;line-height:inherit;white-space:pre;tab-size:4;border:0;width:100%}
 .ed-hl{color:var(--syn-plain);pointer-events:none;height:calc(var(--n) * var(--ed-lh))}
 .ed-hl .ln{display:block;min-height:var(--ed-lh);margin:0 -14px 0 -6px;padding:0 14px 0 6px}
@@ -16954,6 +16956,51 @@ function OutsideNotice({ context }) {
 		})]
 	});
 }
+// src/core/code-box/block-comments.ts
+function endsInsideComment(line, startsInside) {
+	let inside = startsInside;
+	let index = 0;
+	while (index < line.length) {
+		if (inside) {
+			const end = line.indexOf("*/", index);
+			if (end < 0) return true;
+			inside = false;
+			index = end + 2;
+			continue;
+		}
+		const character = line[index];
+		if (character === "\"" || character === "'") {
+			index++;
+			while (index < line.length && line[index] !== character) index += line[index] === "\\" ? 2 : 1;
+			index++;
+			continue;
+		}
+		if (character === "/" && line[index + 1] === "/") return false;
+		if (character === "/" && line[index + 1] === "*") {
+			inside = true;
+			index += 2;
+			continue;
+		}
+		index++;
+	}
+	return inside;
+}
+function blockCommentStarts(lines) {
+	const starts = [];
+	let inside = false;
+	for (const line of lines) {
+		starts.push(inside);
+		inside = endsInsideComment(line, inside);
+	}
+	return starts;
+}
+function colourCommentStart(line, highlight) {
+	const end = line.indexOf("*/");
+	const commentEnd = end < 0 ? line.length : end + 2;
+	const comment = line.slice(0, commentEnd);
+	const rest = line.slice(commentEnd);
+	return (comment ? "<i class=\"c\">" + escapeHtml$1(comment) + "</i>" : "") + (rest ? highlight(rest) : "");
+}
 // src/core/code-box/editor-keys.js
 var INDENT = "    ";
 var MAKEFILE_EDITOR = /[:\s](GNUmakefile|[Mm]akefile)$/;
@@ -17195,12 +17242,18 @@ function useLivePreview(hasPreview, textAreaRef, lines) {
 var SPARE_WIDTH_CHARS = 3;
 var highlightCache = /* @__PURE__ */ new Map();
 var HIGHLIGHT_CACHE_SIZE = 4e3;
-function highlightLine(line) {
-	let lineHtml = highlightCache.get(line);
+function highlightingEngine() {
+	return window.LabEngine;
+}
+function highlightLine(line, startsInComment) {
+	const cacheKey = (startsInComment ? "" : "") + line;
+	let lineHtml = highlightCache.get(cacheKey);
 	if (lineHtml === void 0) {
-		lineHtml = window.LabEngine.highlight(line) || " ";
+		const engine = highlightingEngine();
+		const highlight = engine.highlight.bind(engine);
+		lineHtml = (startsInComment ? colourCommentStart(line, highlight) : highlight(line)) || " ";
 		if (highlightCache.size > HIGHLIGHT_CACHE_SIZE) highlightCache.clear();
-		highlightCache.set(line, lineHtml);
+		highlightCache.set(cacheKey, lineHtml);
 	}
 	return lineHtml;
 }
@@ -17259,6 +17312,7 @@ function Gutter(props) {
 }
 function ColourLayer(props) {
 	const { marks, lines, ref, preview } = props;
+	const commentStarts = highlightingEngine().blockComments ? blockCommentStarts(lines) : null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
 		className: "ed-hl",
 		"aria-hidden": "true",
@@ -17266,9 +17320,10 @@ function ColourLayer(props) {
 		children: lines.map((line, index) => {
 			const view = preview && preview[index];
 			const classes = lineClasses("ln", marks, index + 1) + (view ? view.className : "");
+			const lineHtml = highlightLine(line, Boolean(commentStarts && commentStarts[index]));
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: classes,
-				dangerouslySetInnerHTML: { __html: view?.html || highlightLine(line) }
+				dangerouslySetInnerHTML: { __html: view?.html || lineHtml }
 			}, index);
 		})
 	});
@@ -19760,12 +19815,10 @@ function subscribeView(listener) {
 function useView(select) {
 	return (0, import_react.useSyncExternalStore)(subscribeView, () => select(state$1));
 }
-// src/core/lesson/page-model.ts
-var pageModel = {
-	pages: [],
-	byId: /* @__PURE__ */ new Map(),
-	byKey: /* @__PURE__ */ new Map()
-};
+// src/core/lesson/unit-pages.ts
+function isBoxItem(item) {
+	return Boolean(item) && typeof item === "object";
+}
 function unitPage(kind, unit, unitIndex, parts) {
 	return {
 		id: "",
@@ -19778,11 +19831,15 @@ function unitPage(kind, unit, unitIndex, parts) {
 		parts
 	};
 }
+function quizComesLast(unit) {
+	return Boolean(unit.quiz) && (unit.body || []).some(isBoxItem);
+}
 function splitUnitIntoPages(unit, unitIndex) {
 	const unitPages = [];
-	if (unit.quiz) unitPages.push(unitPage("quiz", unit, unitIndex, []));
+	const quizLast = quizComesLast(unit);
+	if (unit.quiz && !quizLast) unitPages.push(unitPage("quiz", unit, unitIndex, []));
 	let textBuffer = [];
-	for (const part of unit.body || []) if (isBox(part)) {
+	for (const part of unit.body || []) if (isBoxItem(part)) {
 		const page = unitPage("box", unit, unitIndex, textBuffer);
 		page.box = part;
 		page.key = part.id;
@@ -19792,8 +19849,26 @@ function splitUnitIntoPages(unit, unitIndex) {
 	const lastPage = unitPages[unitPages.length - 1];
 	if (textBuffer.length && lastPage && lastPage.kind === "box") lastPage.after = textBuffer;
 	else if (textBuffer.length || !unitPages.length) unitPages.push(unitPage("text", unit, unitIndex, textBuffer));
+	if (quizLast) unitPages.push(unitPage("quiz", unit, unitIndex, []));
 	return unitPages;
 }
+function unitPageId(unit, stepIndex) {
+	return unit.id + (stepIndex ? "/" + (stepIndex + 1) : "");
+}
+function pageIdOfBox(unit, boxId) {
+	let pageIndex = unit.quiz && !quizComesLast(unit) ? 1 : 0;
+	for (const item of unit.body || []) {
+		if (isBoxItem(item) && item.id === boxId) break;
+		if (isBoxItem(item)) pageIndex++;
+	}
+	return unitPageId(unit, pageIndex);
+}
+// src/core/lesson/page-model.ts
+var pageModel = {
+	pages: [],
+	byId: /* @__PURE__ */ new Map(),
+	byKey: /* @__PURE__ */ new Map()
+};
 function computePages(course) {
 	const pages = [{
 		id: "home",
@@ -19809,7 +19884,7 @@ function computePages(course) {
 		unitPages.forEach((page, stepIndex) => {
 			page.si = stepIndex;
 			page.of = unitPages.length;
-			page.id = unit.id + (stepIndex ? "/" + (stepIndex + 1) : "");
+			page.id = unitPageId(unit, stepIndex);
 			pages.push(page);
 		});
 		unit.pages = unitPages;
@@ -19823,14 +19898,6 @@ function computePages(course) {
 function pageOfBox(boxId) {
 	const page = pageModel.byKey.get(boxId);
 	return page && page.box ? page : void 0;
-}
-function pageIdOfBox(unit, boxId) {
-	let pageIndex = unit.quiz ? 1 : 0;
-	for (const item of unit.body || []) {
-		if (isBox(item) && item.id === boxId) break;
-		if (isBox(item)) pageIndex++;
-	}
-	return unit.id + (pageIndex ? "/" + (pageIndex + 1) : "");
 }
 function isLastBoxPage(page) {
 	const boxPages = (page.u?.pages || []).filter((candidate) => candidate.box);
@@ -29435,6 +29502,19 @@ function followLessonWidth(lessonColumn) {
 	if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", fitPageOnScreen);
 }
 // src/core/lesson/Quiz.tsx
+function useQuizPass(passKey, rightCount, total) {
+	(0, import_react.useEffect)(() => {
+		if (!passKey || total === 0 || rightCount < total) return;
+		if (!codeBox.store.get("quizpass:" + passKey, false)) {
+			codeBox.store.set("quizpass:" + passKey, true);
+			document.dispatchEvent(new CustomEvent("ptr-progress"));
+		}
+	}, [
+		passKey,
+		rightCount,
+		total
+	]);
+}
 var ANSWER_LETTERS = [
 	"א",
 	"ב",
@@ -29596,6 +29676,7 @@ function Quiz(props) {
 	const { questions } = props;
 	const { chosen, liveText, rootRef, answer, retry } = useQuizAnswers(questions);
 	const rightCount = chosen.filter((choice, index) => choice === questions[index]?.a).length;
+	useQuizPass(props.passKey || "", rightCount, questions.length);
 	const isAnyAnswered = chosen.some((choice) => choice !== void 0);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		ref: rootRef,
@@ -29985,7 +30066,10 @@ function UnitPage(props) {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Crumb, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageTitles, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextParts, { parts: page.parts }),
-		quiz ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Quiz, { questions: quiz }, JSON.stringify(quiz)) : null,
+		quiz ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Quiz, {
+			questions: quiz,
+			passKey: page.u.id
+		}, JSON.stringify(quiz)) : null,
 		page.box ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TaskCard, { box: page.box }) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextParts, { parts: page.after || [] })
 	] });
@@ -30134,7 +30218,7 @@ function newSubIndex(unit, afterKey) {
 	}
 	const afterPage = pageModel.byKey.get(afterKey);
 	if (afterPage && afterPage.box) return body.indexOf(afterPage.box) + 1;
-	return afterPage && afterPage.kind === "quiz" ? 0 : body.length;
+	return afterPage && afterPage.kind === "quiz" && !quizComesLast(unit) ? 0 : body.length;
 }
 function insertSubLesson(unitId, afterKey, box) {
 	const unit = unitById(unitId);
@@ -30545,6 +30629,9 @@ function ListTail() {
 function hasPassed(box) {
 	return Boolean(codeBox.store.get("pass:" + box.id, false));
 }
+function hasPassedQuiz(unit) {
+	return Boolean(unit && unit.quiz && codeBox.store.get("quizpass:" + unit.id, false));
+}
 function isExercisePage(page) {
 	return Boolean(page.box && page.box.task);
 }
@@ -30597,7 +30684,7 @@ function stepLabelHtml(page) {
 }
 function StepLink(props) {
 	const { page, isCurrent } = props;
-	const isPassed = isExercisePage(page) && hasPassed(page.box);
+	const isPassed = isExercisePage(page) ? hasPassed(page.box) : page.kind === "quiz" && hasPassedQuiz(page.u);
 	const className = [
 		page.box ? "" : "text",
 		isPassed ? "passed" : "",
@@ -31119,7 +31206,7 @@ async function runSelfTest(engine, allBoxes, wantsReal) {
 	};
 }
 // src/core/page/admin.js
-var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|stdin|ver):/;
+var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|stdin|ver|quizpass):/;
 function paintAdminSwitch() {
 	const adminSwitch = document.getElementById("admin");
 	adminSwitch.setAttribute("aria-checked", String(adminSwitch.checked));
@@ -32028,7 +32115,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 54e1a67 מ-2026-11-12 17:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 54e1a67</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 864a42b מ-2026-11-13 19:41, ועוד שינויים בקוד שעוד לא נכנסו ל-commit"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 864a42b+</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>

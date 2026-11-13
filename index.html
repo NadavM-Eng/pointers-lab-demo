@@ -413,8 +413,17 @@ body {
 
 /* ── a course with subjects: its card names them, and opens its subject list (hub.js) ── */
 .hub-subjs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   color: var(--ink-2);
   font-size: 14px;
+}
+
+.hub-subj-name::before {
+  content: '•';
+  margin-inline-end: 6px;
+  color: var(--muted);
 }
 
 .hub-courses[hidden],
@@ -605,18 +614,18 @@ body {
 <span class="hub-prog" data-prefix="lab:example-net:" data-ids="[&quot;xn-first-check&quot;,&quot;xn-fix-units&quot;,&quot;xn-reads&quot;,&quot;xn-unit&quot;,&quot;xn-answer&quot;,&quot;xn-build&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
-<li class="hub-card"><a class="hub-link" href="c.html?course=c">
+<li class="hub-card"><a class="hub-link" href="#c">
 <span class="hub-ctop"><span class="hub-title">שפת C</span></span>
 <span class="hub-en" dir="ltr" lang="en">C Programming Language</span>
-<span class="hub-subjs">make ו-Makefile</span>
-<span class="hub-meta">7 שיעורים · 5 תרגילים</span>
-<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]" hidden>
+<span class="hub-subjs"><span class="hub-subj-name">1. מבנה של תוכנית C</span><span class="hub-subj-name">2. משתנים וטיפוסים</span><span class="hub-subj-name">make ו-Makefile</span></span>
+<span class="hub-meta">3 נושאים · 27 שיעורים · 29 תרגילים</span>
+<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-first-text&quot;,&quot;structure-include-fix&quot;,&quot;structure-main-fix&quot;,&quot;structure-braces-fix&quot;,&quot;structure-statements-semi&quot;,&quot;structure-statements-swap&quot;,&quot;structure-return-stop&quot;,&quot;structure-comments-off&quot;,&quot;structure-printf-add&quot;,&quot;structure-printf-box&quot;,&quot;structure-review-write&quot;,&quot;structure-review-fix&quot;,&quot;types-variable-year&quot;,&quot;types-assign-points&quot;,&quot;types-overview-change&quot;,&quot;types-int-sum&quot;,&quot;types-float-double-price&quot;,&quot;types-char-letter&quot;,&quot;types-string-reverse&quot;,&quot;types-sizeof-var&quot;,&quot;types-uninit-fix&quot;,&quot;types-const-days&quot;,&quot;types-review-card&quot;,&quot;types-review-fix&quot;,&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
 <li class="hub-card"><a class="hub-link" href="calc1.html?course=calc1">
 <span class="hub-ctop"><span class="hub-title">חדו&quot;א 1</span></span>
 <span class="hub-en" dir="ltr" lang="en">Calculus 1</span>
-<span class="hub-subjs">סדרות חסומות</span>
+<span class="hub-subjs"><span class="hub-subj-name">סדרות חסומות</span></span>
 <span class="hub-meta">8 שיעורים · 2 תרגילים</span>
 <span class="hub-prog" data-prefix="lab:math-sequences:" data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
@@ -624,13 +633,77 @@ body {
 <li class="hub-card"><a class="hub-link" href="#probability">
 <span class="hub-ctop"><span class="hub-title">הסתברות</span></span>
 <span class="hub-en" dir="ltr" lang="en">Probability</span>
-<span class="hub-subjs">יסודות · הסתברות מותנית · משתנים בדידים · משתנים רציפים · סכומים וגבולות · הסקה סטטיסטית</span>
+<span class="hub-subjs"><span class="hub-subj-name">יסודות</span><span class="hub-subj-name">הסתברות מותנית</span><span class="hub-subj-name">משתנים בדידים</span><span class="hub-subj-name">משתנים רציפים</span><span class="hub-subj-name">סכומים וגבולות</span><span class="hub-subj-name">הסקה סטטיסטית</span></span>
 <span class="hub-meta">6 נושאים · 19 שיעורים · 34 תרגילים</span>
 <span class="hub-prog" data-prefix="lab:probability:" data-ids="[&quot;ha-practice&quot;,&quot;ev-weekend&quot;,&quot;ev-coins&quot;,&quot;ru-system&quot;,&quot;ru-lights&quot;,&quot;co-committee&quot;,&quot;co-letters&quot;,&quot;cd-chips&quot;,&quot;cd-survey&quot;,&quot;ba-dice&quot;,&quot;ba-servers&quot;,&quot;in-shots&quot;,&quot;in-check&quot;,&quot;rv-table&quot;,&quot;rv-game&quot;,&quot;bi-packets&quot;,&quot;bi-test&quot;,&quot;gp-desk&quot;,&quot;gp-batch&quot;,&quot;gp-uniform&quot;,&quot;ct-battery&quot;,&quot;ct-uniform&quot;,&quot;ct-density&quot;,&quot;no-scores&quot;,&quot;no-sigma&quot;,&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;,&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]" hidden>
 <span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
 </a></li>
 </ul>
 </div>
+<section class="hub-folder" id="folder-c" data-folder="c"
+ data-title="שפת C" aria-labelledby="folder-c-h" hidden>
+<a class="hub-back" href="#">→ כל הקורסים</a>
+<h2 class="hub-ftitle" id="folder-c-h" tabindex="-1">
+<span>שפת C</span></h2>
+<span class="hub-en" dir="ltr" lang="en">C Programming Language</span>
+<p class="hub-intro">בכל שלב ההסבר כאן, והקוד והטרמינל ליד. אפשר לערוך, להריץ, להקליד קלט, לעבור על התוכנית שורה אחר שורה ולראות כל משתנה וכל כתובת במחסנית, ולהריץ בדיקות על הפתרון.</p>
+<ul class="hub-list">
+<li class="hub-card"><div class="hub-link hub-subj">
+<a class="hub-ctop hub-start" href="c.html?course=c#structure-first">
+<span class="hub-title">1. מבנה של תוכנית C</span></a>
+<span class="hub-meta">9 שיעורים · 12 תרגילים</span>
+<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-first-text&quot;,&quot;structure-include-fix&quot;,&quot;structure-main-fix&quot;,&quot;structure-braces-fix&quot;,&quot;structure-statements-semi&quot;,&quot;structure-statements-swap&quot;,&quot;structure-return-stop&quot;,&quot;structure-comments-off&quot;,&quot;structure-printf-add&quot;,&quot;structure-printf-box&quot;,&quot;structure-review-write&quot;,&quot;structure-review-fix&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+<ol class="hub-lessons" aria-label="השיעורים: 1. מבנה של תוכנית C">
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-first-text&quot;]"><a href="c.html?course=c#structure-first"><span class="n" dir="ltr">1</span><span class="t">התוכנית הראשונה</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-include-fix&quot;]"><a href="c.html?course=c#structure-include"><span class="n" dir="ltr">2</span><span class="t">הספרייה stdio.h</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-main-fix&quot;]"><a href="c.html?course=c#structure-main"><span class="n" dir="ltr">3</span><span class="t">הפונקציה main</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-braces-fix&quot;]"><a href="c.html?course=c#structure-braces"><span class="n" dir="ltr">4</span><span class="t">סוגריים מסולסלים</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-statements-semi&quot;,&quot;structure-statements-swap&quot;]"><a href="c.html?course=c#structure-statements"><span class="n" dir="ltr">5</span><span class="t">פקודות ונקודה-פסיק</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-return-stop&quot;]"><a href="c.html?course=c#structure-return"><span class="n" dir="ltr">6</span><span class="t">קוד היציאה ו-return 0</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-comments-off&quot;]"><a href="c.html?course=c#structure-comments"><span class="n" dir="ltr">7</span><span class="t">הערות בקוד</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-printf-add&quot;,&quot;structure-printf-box&quot;]"><a href="c.html?course=c#structure-printf"><span class="n" dir="ltr">8</span><span class="t">הדפסת טקסט</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-review-write&quot;,&quot;structure-review-fix&quot;]"><a href="c.html?course=c#structure-review"><span class="n" dir="ltr">9</span><span class="t">חזרה: מבנה התוכנית</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+</ol>
+</div></li>
+<li class="hub-card"><div class="hub-link hub-subj">
+<a class="hub-ctop hub-start" href="c.html?course=c#types-variable">
+<span class="hub-title">2. משתנים וטיפוסים</span></a>
+<span class="hub-meta">11 שיעורים · 12 תרגילים</span>
+<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-variable-year&quot;,&quot;types-assign-points&quot;,&quot;types-overview-change&quot;,&quot;types-int-sum&quot;,&quot;types-float-double-price&quot;,&quot;types-char-letter&quot;,&quot;types-string-reverse&quot;,&quot;types-sizeof-var&quot;,&quot;types-uninit-fix&quot;,&quot;types-const-days&quot;,&quot;types-review-card&quot;,&quot;types-review-fix&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+<ol class="hub-lessons" aria-label="השיעורים: 2. משתנים וטיפוסים">
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-variable-year&quot;]"><a href="c.html?course=c#types-variable"><span class="n" dir="ltr">10</span><span class="t">מה זה משתנה</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-assign-points&quot;]"><a href="c.html?course=c#types-assign"><span class="n" dir="ltr">11</span><span class="t">שינוי ערך</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-overview-change&quot;]"><a href="c.html?course=c#types-overview"><span class="n" dir="ltr">12</span><span class="t">כל הטיפוסים יחד</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-int-sum&quot;]"><a href="c.html?course=c#types-int"><span class="n" dir="ltr">13</span><span class="t">מספר שלם: int</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-float-double-price&quot;]"><a href="c.html?course=c#types-float-double"><span class="n" dir="ltr">14</span><span class="t">מספר עשרוני: double</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-char-letter&quot;]"><a href="c.html?course=c#types-char"><span class="n" dir="ltr">15</span><span class="t">תו אחד: char</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-string-reverse&quot;]"><a href="c.html?course=c#types-string"><span class="n" dir="ltr">16</span><span class="t">מחרוזת: מילה</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-sizeof-var&quot;]"><a href="c.html?course=c#types-sizeof"><span class="n" dir="ltr">17</span><span class="t">כמה מקום תופס כל טיפוס</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-uninit-fix&quot;]"><a href="c.html?course=c#types-uninit"><span class="n" dir="ltr">18</span><span class="t">משתנה בלי ערך התחלתי</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-const-days&quot;]"><a href="c.html?course=c#types-const"><span class="n" dir="ltr">19</span><span class="t">שמות לקבועים</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;types-review-card&quot;,&quot;types-review-fix&quot;]"><a href="c.html?course=c#types-review"><span class="n" dir="ltr">20</span><span class="t">חזרה: משתנים וטיפוסים</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+</ol>
+</div></li>
+<li class="hub-card"><div class="hub-link hub-subj">
+<a class="hub-ctop hub-start" href="c.html?course=c#split">
+<span class="hub-title">make ו-Makefile</span></a>
+<span class="hub-meta">7 שיעורים · 5 תרגילים</span>
+<span class="hub-prog" data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]" hidden>
+<span class="prog-bar"><i></i></span><span class="prog-n" dir="ltr"></span></span>
+<ol class="hub-lessons" aria-label="השיעורים: make ו-Makefile">
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[]"><a href="c.html?course=c#split"><span class="n" dir="ltr">21</span><span class="t">תוכנית בכמה קבצים</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;fm-link&quot;]"><a href="c.html?course=c#first-makefile"><span class="n" dir="ltr">22</span><span class="t">Makefile ראשון</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;rb-header&quot;]"><a href="c.html?course=c#rebuild"><span class="n" dir="ltr">23</span><span class="t">מה נבנה מחדש, ולמה</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;var-flags&quot;]"><a href="c.html?course=c#variables"><span class="n" dir="ltr">24</span><span class="t">משתנים: CC ו-CFLAGS</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;pat-rule&quot;]"><a href="c.html?course=c#patterns"><span class="n" dir="ltr">25</span><span class="t">$@, $&lt; וכלל תבנית</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;clean-target&quot;]"><a href="c.html?course=c#clean"><span class="n" dir="ltr">26</span><span class="t">clean ו-.PHONY</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+<li data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[]"><a href="c.html?course=c#make-quiz"><span class="n" dir="ltr">27</span><span class="t">חידון</span><span class="ck" hidden>✓<span class="sr"> הושלם</span></span></a></li>
+</ol>
+</div></li>
+</ul>
+</section>
 <section class="hub-folder" id="folder-probability" data-folder="probability"
  data-title="הסתברות" aria-labelledby="folder-probability-h" hidden>
 <a class="hub-back" href="#">→ כל הקורסים</a>

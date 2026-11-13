@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-60n0s++RVJ1snDSgK5rT8XeenOXhLRDP2lUh3RmWKi8=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-fDPA5uWnycH1qVFvdn1jekyY89nSWTJ2Rz7SmQBXeCE=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -790,7 +790,7 @@ body.debugging .wb-grid{grid-template-areas:"code split side";grid-template-colu
 .panel-h small.ok{color:var(--ok)}.panel-h small.bad{color:var(--err)}.panel-h small.wait{color:var(--warn)}.panel-h small.busy{color:var(--accent-text)}
 
 /* file tabs: one line; with many files the strip scrolls and shows a thin scrollbar, and the tabs get a little lower so they are not cut */
-.ftabs{display:flex;gap:0;align-items:flex-end;height:36px;background:var(--panel);padding:5px 8px 0;border-bottom:1px solid var(--line-2);flex-wrap:nowrap;overflow:hidden}
+.ftabs{display:flex;flex:none;gap:0;align-items:flex-end;height:36px;background:var(--panel);padding:5px 8px 0;border-bottom:1px solid var(--line-2);flex-wrap:nowrap;overflow:hidden}
 .ftabs.ovf{padding-top:2px}
 .ft{flex:none;white-space:nowrap;font-family:var(--f-mono);font-size:12.5px;background:transparent;color:var(--muted);border:0;border-radius:6px 6px 0 0;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .ft:hover{color:var(--ink)}
@@ -839,21 +839,23 @@ body:not(.admin) .admin-tab{display:none}
 .ft-cancel:hover{color:var(--err);border-color:var(--err)}
 .ft-err{color:var(--err);font-size:12px;margin-inline-start:4px;direction:rtl;text-align:right;min-width:0}
 .ed-host:not([hidden]){flex:1;min-height:0;display:flex;position:relative;container:edh/inline-size}
+/* the extra files' editors are flex items of .wb-code like main.c's: as a block, the wrapper grew to a long file's full height and squeezed the tab row */
+.ed-hosts-user{display:contents}
 .ed-host:has(.ed-ta:focus-visible)::after{content:"";position:absolute;inset:0;border:2px solid var(--accent);pointer-events:none;z-index:5}
 
 /* editor */
-.ed{--ed-fs:14.5px;--ed-lh:25px;display:flex;flex:1;min-height:0;font-family:var(--f-mono);font-size:var(--ed-fs);line-height:var(--ed-lh);overflow:auto;background:var(--bg)}
+.ed{--ed-fs:14.5px;--ed-lh:25px;display:flex;align-items:flex-start;flex:1;min-height:0;font-family:var(--f-mono);font-size:var(--ed-fs);line-height:var(--ed-lh);overflow:auto;background:var(--bg)}
 /* the larger full-screen font only when the code area holds ~80 columns */
 @container edh (min-width:880px){body.wide .ed{--ed-fs:16px;--ed-lh:27px}}
-.ed-gut{flex:0 0 auto;padding:8px 0;background:var(--bg);color:var(--gutter);text-align:right;user-select:none;position:sticky;left:0;z-index:2}
+.ed-gut{flex:0 0 auto;min-height:100%;padding:8px 0;background:var(--bg);color:var(--gutter);text-align:right;user-select:none;position:sticky;left:0;z-index:2}
 .ed-gut .g{display:block;padding:0 12px 0 20px;cursor:pointer;position:relative}
 .ed-gut .g:hover{color:var(--gutter-cur)}
 .ed-gut .g.bp{color:var(--err)}
 .ed-gut .g.bp::before{content:'●';position:absolute;left:5px}
 .ed-gut .g.cur{color:var(--gutter-cur);background:var(--caret-line);box-shadow:inset 3px 0 0 var(--accent)}
 .ed-gut .g.err{color:var(--err);background:color-mix(in srgb,var(--err) 16%,transparent);box-shadow:inset 3px 0 0 var(--err)}
-.ed-scroll{flex:1;min-width:0}
-.ed-area{position:relative;padding:8px 0;min-height:100%;--n:1}
+.ed-scroll{flex:1;min-width:0;min-height:100%;display:flex;flex-direction:column}
+.ed-area{position:relative;padding:8px 0;flex:1 0 auto;--n:1}
 .ed-hl,.ed-ta{margin:0;padding:0 14px 0 6px;font:inherit;line-height:inherit;white-space:pre;tab-size:4;border:0;width:100%}
 .ed-hl{color:var(--syn-plain);pointer-events:none;height:calc(var(--n) * var(--ed-lh))}
 .ed-hl .ln{display:block;min-height:var(--ed-lh);margin:0 -14px 0 -6px;padding:0 14px 0 6px}
@@ -15148,6 +15150,7 @@ window.LabEngine = {
 	id: "c",
 	name: "C",
 	highlight,
+	blockComments: true,
 	tour,
 	files: {
 		main: "main.c",
@@ -15234,6 +15237,19 @@ installCourseDiagrams({});
 		stdin,
 		expect
 	});
+	const escapeText = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	const ioBlock = (label, text) => "<b>" + label + "</b><pre class=\"code-static\">" + String(text).replace(/\n$/, "").split("\n").map((line) => "<span>" + (escapeText(line) || " ") + "</span>").join("") + "</pre>";
+	const outputExample = (output, input) => "<br>" + (input ? ioBlock("קלט לדוגמה", input) : "") + ioBlock("פלט לדוגמה", output);
+	const withOutputs = (unit) => {
+		for (const part of unit.body || []) if (part && typeof part === "object" && part.task) {
+			const example = part.example || (part.tests || []).find((test) => test.type === "io");
+			if (example) {
+				const output = example.output !== void 0 ? example.output : example.expect;
+				part.task += outputExample(output, example.stdin);
+			}
+		}
+		return unit;
+	};
 	const mk = (...lines) => lines.map((line) => line.replace(/^>/, "	")).join("\n") + "\n";
 	const make = (goals, expect) => Object.assign({ make: goals }, expect || {});
 	const CALC_H = R`#ifndef CALC_H
@@ -15269,6 +15285,2153 @@ int main(void)
 	const CALC_MAKEFILE = mk("prog: main.o calc.o", ">gcc main.o calc.o -o prog", "", "main.o: main.c calc.h", ">gcc -c main.c", "", "calc.o: calc.c calc.h", ">gcc -c calc.c");
 	const IN_MAKEFILE = (code) => "/* the task is in the Makefile tab */\n" + code;
 	const U = [];
+	const FIRST_HELLO = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello, C!\n");
+    return 0;
+}`;
+	const FIRST_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: change the text to I am learning C */
+    printf("Hello, C!\n");
+    return 0;
+}`;
+	const FIRST_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("I am learning C\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-first",
+		title: "התוכנית הראשונה",
+		body: [
+			R`<p>זו תוכנית C שלמה. היא מדפיסה שורה אחת.</p>
+<p>לחצו <b>▶ הרצה</b> והסתכלו בטרמינל שמתחת לקוד.</p>`,
+			{
+				id: "structure-first-run",
+				title: "מריצים את התוכנית",
+				code: FIRST_HELLO,
+				tests: [io("prints Hello, C!", "", "Hello, C!")]
+			},
+			R`<p>בתוכנית שש שורות, ולכל אחת תפקיד:</p>
+<table class="tbl"><tr><th>השורה</th><th>מה היא עושה</th></tr>
+<tr><td class="mono">#include &lt;stdio.h&gt;</td><td>מביאה את <code>printf</code> מספרייה מוכנה</td></tr>
+<tr><td class="mono">int main(void)</td><td>כאן התוכנית מתחילה</td></tr>
+<tr><td class="mono">{</td><td>תחילת <code>main</code></td></tr>
+<tr><td class="mono">printf("Hello, C!\n");</td><td>מדפיסה שורה</td></tr>
+<tr><td class="mono">return 0;</td><td>מסיימת: הכול עבר בסדר</td></tr>
+<tr><td class="mono">}</td><td>סוף <code>main</code></td></tr></table>
+<p>לחצו <b>⏯ שורה אחר שורה</b> וראו באיזה סדר השורות רצות. בשיעורים הבאים כל שורה מקבלת שיעור משלה.</p>`,
+			{
+				id: "structure-first-lines",
+				title: "שש השורות",
+				code: FIRST_HELLO,
+				tests: [io("prints Hello, C!", "", "Hello, C!")]
+			},
+			R`<p>תורכם: הטקסט שבין המרכאות הוא מה שמודפס. שנו אותו.</p>`,
+			{
+				id: "structure-first-text",
+				title: "טקסט משלכם",
+				task: "שנו את הטקסט כך שהתוכנית תדפיס <code>I am learning C</code>.",
+				code: FIRST_START,
+				solution: FIRST_SOLVED,
+				tests: [io("prints I am learning C", "", "I am learning C")]
+			}
+		],
+		quiz: [
+			{
+				s: "בתוכנית <code>hello</code> יש שש שורות. איזו מהן גורמת לטקסט להופיע בטרמינל?",
+				o: [
+					"<code>#include &lt;stdio.h&gt;</code>",
+					"<code>printf(\"Hello, C!\\n\");</code>",
+					"<code>return 0;</code>"
+				],
+				a: 1,
+				w: "<code>printf</code> היא השורה שמדפיסה."
+			},
+			{
+				s: "איפה תוכנית C מתחילה לרוץ, גם כשיש שורות לפני <code>main</code>?",
+				o: [
+					"בשורה הראשונה של הקובץ",
+					"בשורה האחרונה של הקובץ",
+					"בשורה הראשונה בתוך <code>main</code>"
+				],
+				a: 2,
+				w: "תוכנית C תמיד מתחילה ב-<code>main</code>."
+			},
+			{
+				s: "איזה מהמשפטים על התוכנית הראשונה <b>אינו</b> נכון? קראו את כל האפשרויות לפני שעונים.",
+				o: [
+					"<code>printf</code> מדפיסה את הטקסט שבין המרכאות",
+					"<code>return 0;</code> מסיימת את <code>main</code>",
+					"השורה <code>#include</code> מדפיסה את שם הספרייה"
+				],
+				a: 2,
+				w: "<code>#include</code> מצרפת ספרייה ולא מדפיסה דבר."
+			}
+		]
+	}));
+	const INC_SHOW = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("printf comes from stdio.h\n");
+    printf("so this line works\n");
+    return 0;
+}`;
+	const INC_START = R`/* TODO: fix the name of the library */
+#include <stdoi.h>
+
+int main(void)
+{
+    printf("Ready\n");
+    return 0;
+}`;
+	const INC_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Ready\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-include",
+		title: "הספרייה stdio.h",
+		body: [
+			R`<p><code>#include &lt;stdio.h&gt;</code> מצרפת לתוכנית <b>ספרייה</b>: קוד מוכן שמישהו כבר כתב. מהספרייה הזאת מגיעה <code>printf</code>.</p>
+<p>השורה נכתבת בראש הקובץ, לפני <code>main</code>. הריצו את הדוגמה.</p>`,
+			{
+				id: "structure-include-show",
+				title: "מאיפה מגיעה printf",
+				code: INC_SHOW,
+				tests: [io("prints two lines", "", "printf comes from stdio.h\nso this line works")]
+			},
+			R`<p>שם הספרייה חייב להיות מדויק. עם טעות באות אחת, gcc לא מוצא את הקובץ ועוצר:</p>
+<pre class="code-static"><span>fatal error: stdoi.h: No such file or directory</span></pre>
+<p>התיקון: לכתוב נכון, <code>stdio.h</code>.</p>`,
+			{
+				id: "structure-include-fix",
+				title: "שם הספרייה",
+				task: "תקנו את שם הספרייה בשורה הראשונה, כך שהתוכנית תדפיס <code>Ready</code>.",
+				code: INC_START,
+				solution: INC_SOLVED,
+				tests: [io("prints Ready", "", "Ready")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה נותנת לתוכנית השורה <code>#include &lt;stdio.h&gt;</code>?",
+				o: [
+					"את <code>main</code>, כדי שהתוכנית תתחיל",
+					"את <code>printf</code>, שמגיעה מהספרייה",
+					"את <code>return 0</code>"
+				],
+				a: 1,
+				w: "<code>printf</code> מגיעה מהספרייה <code>stdio.h</code>."
+			},
+			{
+				s: "בשורה הראשונה כתוב <code>#include &lt;stdoi.h&gt;</code>. מה יקרה כשנריץ?",
+				o: [
+					"gcc עוצר: אין קובץ בשם הזה",
+					"התוכנית רצה כרגיל",
+					"gcc מתקן את השם בעצמו"
+				],
+				a: 0,
+				w: "שם הספרייה חייב להיות מדויק."
+			},
+			{
+				s: "איזו מהשורות הבאות <b>לא</b> תצרף את הספרייה של <code>printf</code>? שימו לב לכל אות.",
+				o: [
+					"<code>#include &lt;stdio.h&gt;</code>",
+					"<code>#include&lt;stdio.h&gt;</code>",
+					"<code>#include &lt;studio.h&gt;</code>"
+				],
+				a: 2,
+				w: "<code>studio</code> אינו <code>stdio</code>. הרווח החסר בשורה השנייה לא משנה."
+			}
+		]
+	}));
+	const MAIN_START_SHOW = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("First line of main\n");
+    printf("Second line of main\n");
+    return 0;
+}`;
+	const MAIN_PARTS = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Start\n");
+    printf("End\n");
+    return 0;
+}`;
+	const MAIN_FIX_START = R`#include <stdio.h>
+
+/* TODO: fix the name of the function */
+int mian(void)
+{
+    printf("Fixed\n");
+    return 0;
+}`;
+	const MAIN_FIX_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Fixed\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-main",
+		title: "הפונקציה main",
+		body: [
+			R`<p>כל תוכנית C מתחילה לרוץ ב-<code>main</code>, ויש בה בדיוק <code>main</code> אחת.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b>: הצעד הראשון הוא השורה הראשונה בתוך <code>main</code>.</p>`,
+			{
+				id: "structure-main-start",
+				title: "התוכנית מתחילה ב-main",
+				code: MAIN_START_SHOW,
+				tests: [io("prints the two lines", "", "First line of main\nSecond line of main")]
+			},
+			R`<p>השורה <code>int main(void)</code> בנויה משלושה חלקים:</p>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td class="mono">int</td><td>בסוף <code>main</code> מחזירה מספר שלם</td></tr>
+<tr><td class="mono">main</td><td>השם: כאן התוכנית מתחילה</td></tr>
+<tr><td class="mono">(void)</td><td><code>main</code> לא מקבלת שום דבר</td></tr></table>
+<p>את המספר השלם מחזירה <code>return 0;</code>, שיש לה שיעור משלה בהמשך.</p>`,
+			{
+				id: "structure-main-parts",
+				title: "שלושת החלקים של השורה",
+				code: MAIN_PARTS,
+				tests: [io("prints Start and End", "", "Start\nEnd")]
+			},
+			R`<p>אם השם כתוב לא נכון, למשל <code>mian</code>, לתוכנית אין <code>main</code>. gcc מחפש אותה, לא מוצא, ועוצר בשגיאה <code>undefined reference</code>.</p>`,
+			{
+				id: "structure-main-fix",
+				title: "השם של main",
+				task: "תקנו את שם הפונקציה, כך שהתוכנית תרוץ ותדפיס <code>Fixed</code>.",
+				code: MAIN_FIX_START,
+				solution: MAIN_FIX_SOLVED,
+				tests: [io("prints Fixed", "", "Fixed"), {
+					type: "src",
+					name: "the program has a main",
+					require: "\\bint\\s+main\\s*\\(",
+					msg: "There is no int main( in the file: check the spelling of main."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה פונקציות <code>main</code> יש בתוכנית C אחת?",
+				o: [
+					"אחת בדיוק",
+					"אחת או יותר",
+					"אף אחת: gcc מוסיף אותה"
+				],
+				a: 0,
+				w: "בכל תוכנית יש <code>main</code> אחת, ושם היא מתחילה."
+			},
+			{
+				s: "מה פירוש <code>(void)</code> בשורה <code>int main(void)</code>?",
+				o: [
+					"<code>main</code> לא מחזירה שום דבר",
+					"<code>main</code> לא מקבלת שום דבר",
+					"התוכנית ריקה"
+				],
+				a: 1,
+				w: "<code>void</code> בסוגריים אומר שאין מה לתת ל-<code>main</code>."
+			},
+			{
+				s: "כל המשפטים הבאים מדברים על השורה <code>int main(void)</code>. איזה מהם <b>אינו</b> נכון?",
+				o: [
+					"<code>int</code>: בסוף <code>main</code> מחזירה מספר שלם",
+					"<code>main</code>: השם שבו התוכנית מתחילה",
+					"<code>void</code>: <code>main</code> לא מחזירה ערך"
+				],
+				a: 2,
+				w: "<code>void</code> בסוגריים אומר שהיא לא מקבלת דבר; מספר היא כן מחזירה."
+			}
+		]
+	}));
+	const BRACES_SHOW = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Inside main: one\n");
+    printf("Inside main: two\n");
+    printf("Inside main: three\n");
+    return 0;
+}`;
+	const BRACES_START = R`#include <stdio.h>
+
+/* TODO: move the next line into the body of main */
+printf("Inside\n");
+
+int main(void)
+{
+    return 0;
+}`;
+	const BRACES_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Inside\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-braces",
+		title: "סוגריים מסולסלים",
+		body: [
+			R`<p>הסוגריים <code>{</code> ו-<code>}</code> מסמנים איפה <code>main</code> מתחילה ואיפה היא נגמרת. כל מה שביניהם הוא <b>הגוף</b> של <code>main</code>.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b>: השורות שבין הסוגריים רצות אחת אחרי השנייה.</p>`,
+			{
+				id: "structure-braces-body",
+				title: "הגוף של main",
+				code: BRACES_SHOW,
+				tests: [io("prints the three lines", "", "Inside main: one\nInside main: two\nInside main: three")]
+			},
+			R`<p>פקודה שנמצאת מחוץ לסוגריים של <code>main</code> היא שגיאה. gcc לא מצפה לפקודה שם:</p>
+<pre class="code-static"><span>error: expected declaration specifiers or '...' before string constant</span></pre>
+<p>התיקון: להעביר את הפקודה פנימה, בין <code>{</code> ל-<code>}</code>.</p>`,
+			{
+				id: "structure-braces-fix",
+				title: "שורה מחוץ ל-main",
+				task: "העבירו את השורה של <code>printf</code> לתוך הגוף של <code>main</code>, לפני <code>return 0;</code>, כך שהתוכנית תדפיס <code>Inside</code>.",
+				code: BRACES_START,
+				solution: BRACES_SOLVED,
+				tests: [io("prints Inside", "", "Inside")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מסמן ה-<code>}</code> האחרון בתוכנית?",
+				o: [
+					"את סוף השורה",
+					"את סוף <code>main</code>",
+					"הדפסה"
+				],
+				a: 1,
+				w: "<code>}</code> סוגר את הגוף של <code>main</code>."
+			},
+			{
+				s: "שורת <code>printf</code> כתובה לפני <code>int main(void)</code>, מחוץ לסוגריים. מה gcc עושה?",
+				o: [
+					"מריץ אותה ראשונה",
+					"עוצר בשגיאה",
+					"מדלג עליה בשקט"
+				],
+				a: 1,
+				w: "פקודה צריכה להיות בתוך הגוף של <code>main</code>."
+			},
+			{
+				s: "בגוף של <code>main</code>, בין <code>{</code> ל-<code>}</code>, יש שלוש פקודות. אילו מהן <b>לא</b> ירוצו?",
+				o: [
+					"רק האחרונה",
+					"רק הראשונה",
+					"אף אחת: כולן ירוצו"
+				],
+				a: 2,
+				w: "כל מה שבגוף של <code>main</code> רץ, אחת אחרי השנייה."
+			}
+		]
+	}));
+	const STMT_SHOW = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("One\n");
+    printf("Two\n");
+    printf("Three\n");
+    return 0;
+}`;
+	const SEMI_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: two semicolons are missing */
+    printf("A\n")
+    printf("B\n");
+    printf("C\n")
+    return 0;
+}`;
+	const SEMI_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("A\n");
+    printf("B\n");
+    printf("C\n");
+    return 0;
+}`;
+	const ORDER_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: swap two lines so the output is 1, 2, 3 */
+    printf("1\n");
+    printf("3\n");
+    printf("2\n");
+    return 0;
+}`;
+	const ORDER_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("1\n");
+    printf("2\n");
+    printf("3\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-statements",
+		title: "פקודות ונקודה-פסיק",
+		body: [
+			R`<p>כל שורה בתוך <code>main</code> היא <b>פקודה</b>, ובסוף כל פקודה יש <code>;</code>.</p>
+<p>הפקודות רצות מלמעלה למטה. לחצו <b>⏯ שורה אחר שורה</b> ועקבו אחרי השורה המסומנת.</p>`,
+			{
+				id: "structure-statements-order",
+				title: "מלמעלה למטה",
+				code: STMT_SHOW,
+				tests: [io("prints One, Two, Three", "", "One\nTwo\nThree")]
+			},
+			R`<p>בלי <code>;</code> gcc לא יודע איפה הפקודה נגמרת:</p>
+<pre class="code-static"><span>error: expected ';' before 'printf'</span></pre>
+<p>gcc מסמן את השורה <b>שאחרי</b> החסר, כי שם הוא הבין שמשהו חסר.</p>`,
+			{
+				id: "structure-statements-semi",
+				title: "ה-; החסרים",
+				task: "הוסיפו את שני ה-<code>;</code> החסרים. התוכנית מדפיסה <code>A</code>, <code>B</code> ו-<code>C</code>, כל אחת בשורה.",
+				code: SEMI_START,
+				solution: SEMI_SOLVED,
+				tests: [io("prints A, B, C", "", "A\nB\nC")]
+			},
+			R`<p>סדר השורות הוא סדר ההדפסה. בקוד ליד שתי שורות הפוכות.</p>`,
+			{
+				id: "structure-statements-swap",
+				title: "סדר השורות",
+				task: "החליפו את מקומן של שתי שורות, כך שיודפס <code>1</code>, <code>2</code>, <code>3</code>.",
+				code: ORDER_START,
+				solution: ORDER_SOLVED,
+				tests: [io("prints 1, 2, 3 in order", "", "1\n2\n3")]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזה סדר רצות הפקודות בתוך <code>main</code>?",
+				o: [
+					"בסדר אקראי",
+					"מלמטה למעלה",
+					"מלמעלה למטה"
+				],
+				a: 2,
+				w: "הפקודות רצות אחת אחרי השנייה, מלמעלה למטה."
+			},
+			{
+				s: "gcc כותב <code>expected ';' before 'printf'</code> על שורה 6. איפה חסר ה-<code>;</code>?",
+				o: [
+					"בשורה 6",
+					"בסוף שורה 5, השורה שלפניה",
+					"בשורה 7"
+				],
+				a: 1,
+				w: "gcc מגלה את החסר רק בשורה שאחריו."
+			},
+			{
+				s: "איזו מהשורות הבאות <b>לא</b> תתקמפל כמו שהיא כתובה, בתוך <code>main</code>?",
+				o: [
+					"<code>printf(\"A\\n\");</code>",
+					"<code>return 0;</code>",
+					"<code>printf(\"B\\n\")</code>"
+				],
+				a: 2,
+				w: "בסוף כל פקודה חייב לבוא <code>;</code>."
+			}
+		]
+	}));
+	const RET_ZERO = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("All went well\n");
+    return 0;
+}`;
+	const RET_THREE = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Something went wrong\n");
+    return 3;
+}`;
+	const RET_EARLY = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Before return\n");
+    return 0;
+    printf("After return\n");
+}`;
+	const RET_START = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Line 1\n");
+    printf("Line 2\n");
+    /* TODO: stop the program here */
+    printf("Line 3\n");
+    return 0;
+}`;
+	const RET_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Line 1\n");
+    printf("Line 2\n");
+    return 0;
+    printf("Line 3\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-return",
+		title: "קוד היציאה ו-return 0",
+		body: [
+			R`<p><code>return 0;</code> מסיימת את <code>main</code>. ה-0 אומר למחשב: <b>הכול עבר בסדר</b>.</p>
+<p>הריצו והסתכלו בשורה האחרונה בטרמינל: <code>exit code 0</code>.</p>`,
+			{
+				id: "structure-return-zero",
+				title: "מסיימים בהצלחה",
+				code: RET_ZERO,
+				tests: [io("prints All went well", "", "All went well")]
+			},
+			R`<p>המספר שאחרי <code>return</code> נקרא <b>קוד היציאה</b>. כל מספר חוץ מ-0 מסמן שמשהו השתבש.</p>
+<p>הריצו: בשורה האחרונה בטרמינל כתוב <code>exit code 3</code>.</p>`,
+			{
+				id: "structure-return-three",
+				title: "קוד יציאה אחר",
+				code: RET_THREE,
+				tests: [io("prints Something went wrong", "", "Something went wrong")]
+			},
+			R`<p><code>return</code> עוצרת את <code>main</code> מיד. שורה שבאה אחריה לא רצה.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b>: אחרי <code>return</code> התוכנית נגמרת, ו-<code>After return</code> לא מודפס.</p>`,
+			{
+				id: "structure-return-early",
+				title: "שורה שאחרי return",
+				code: RET_EARLY,
+				tests: [io("prints only Before return", "", "Before return")]
+			},
+			R`<p>תורכם: עצרו את התוכנית באמצע, כמו בעמוד הקודם.</p>`,
+			{
+				id: "structure-return-stop",
+				title: "לעצור באמצע",
+				task: "במקום ה-TODO הוסיפו <code>return 0;</code>, כך שיודפסו רק <code>Line 1</code> ו-<code>Line 2</code>. <b>אל תמחקו את השורה של <code>Line 3</code>.</b>",
+				code: RET_START,
+				solution: RET_SOLVED,
+				tests: [io("prints only Line 1 and Line 2", "", "Line 1\nLine 2"), {
+					type: "src",
+					name: "the Line 3 line is still there",
+					require: "Line 3",
+					msg: "The Line 3 line was deleted: keep it, and stop the program before it with return."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "בסוף ההרצה כתוב בטרמינל <code>exit code 3</code>. מה זה אומר?",
+				o: [
+					"התוכנית רצה 3 פעמים",
+					"<code>main</code> החזירה 3",
+					"יש שגיאה בשורה 3"
+				],
+				a: 1,
+				w: "זה המספר שאחרי <code>return</code>."
+			},
+			{
+				s: "האם שורה שבאה אחרי <code>return 0;</code> בתוך <code>main</code> רצה?",
+				o: ["כן", "לא"],
+				a: 1,
+				w: "<code>return</code> מסיימת את <code>main</code> מיד."
+			},
+			{
+				s: "בתוך <code>main</code> כתוב: <code>printf(\"A\\n\"); return 0; printf(\"B\\n\");</code>. מה <b>לא</b> יופיע בטרמינל?",
+				o: [
+					"<code>A</code>",
+					"<code>B</code>",
+					"<code>exit code 0</code>"
+				],
+				a: 1,
+				w: "<code>B</code> בא אחרי <code>return</code>, ולכן לא מודפס."
+			}
+		]
+	}));
+	const COMM_SHOW = R`#include <stdio.h>
+
+/* This program shows two kinds of comments.
+   gcc skips everything between the two marks,
+   even when the comment runs over several lines. */
+
+int main(void)
+{
+    // gcc skips this line too
+    printf("Comments are skipped\n");
+    return 0;
+}`;
+	const COMM_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: turn the next line into a comment */
+    printf("Debug\n");
+    printf("Done\n");
+    return 0;
+}`;
+	const COMM_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    // printf("Debug\n");
+    printf("Done\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-comments",
+		title: "הערות בקוד",
+		body: [
+			R`<p><b>הערה</b> היא טקסט לאנשים שקוראים את הקוד. gcc מדלג עליה.</p>
+<table class="tbl"><tr><th>כותבים</th><th>מה נהיה הערה</th></tr>
+<tr><td class="mono">// ...</td><td>מכאן ועד סוף השורה</td></tr>
+<tr><td class="mono">/* ... */</td><td>כל מה שבין הסימנים, גם כמה שורות</td></tr></table>
+<p>הריצו: רק <code>printf</code> מדפיסה.</p>`,
+			{
+				id: "structure-comments-both",
+				title: "שני סוגי הערות",
+				code: COMM_SHOW,
+				tests: [io("prints Comments are skipped", "", "Comments are skipped")]
+			},
+			R`<p>אפשר גם "לכבות" שורת קוד בלי למחוק אותה: <code>//</code> לפניה, והיא כבר לא רצה.</p>
+<pre class="code-static"><span>// printf("Debug\n");</span></pre>`,
+			{
+				id: "structure-comments-off",
+				title: "לכבות שורה",
+				task: "הפכו את השורה שמדפיסה <code>Debug</code> להערה, כך שיודפס רק <code>Done</code>. <b>אל תמחקו אותה.</b>",
+				code: COMM_START,
+				solution: COMM_SOLVED,
+				tests: [io("prints only Done", "", "Done")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה gcc עושה עם הערה?",
+				o: [
+					"מריץ אותה",
+					"מדלג עליה",
+					"מדפיס אותה"
+				],
+				a: 1,
+				w: "הערה היא לאנשים, ו-gcc מדלג עליה."
+			},
+			{
+				s: "איזו הערה יכולה להימשך כמה שורות?",
+				o: [
+					"<code>// ...</code>",
+					"<code>/* ... */</code>",
+					"<code># ...</code>"
+				],
+				a: 1,
+				w: "<code>//</code> נגמרת בסוף השורה, ו-<code>#</code> אינו הערה ב-C."
+			},
+			{
+				s: "בקוד כתוב <code>// printf(\"X\\n\");</code>, ובשורה שאחריה <code>printf(\"Y\\n\");</code>. מה <b>לא</b> יודפס?",
+				o: [
+					"<code>X</code>",
+					"<code>Y</code>",
+					"שניהם יודפסו"
+				],
+				a: 0,
+				w: "השורה עם <code>//</code> היא הערה, ולכן <code>X</code> לא מודפס."
+			}
+		]
+	}));
+	const PF_JOIN = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello");
+    printf("World");
+    return 0;
+}`;
+	const PF_NEWLINE = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello\n");
+    printf("World\n");
+    return 0;
+}`;
+	const PF_SPECIAL = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Name:\tDana\n");
+    printf("She said \"hi\"\n");
+    printf("C:\\lab\n");
+    return 0;
+}`;
+	const PF_ADD_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: one \n is missing */
+    printf("First");
+    printf("Second\n");
+    return 0;
+}`;
+	const PF_ADD_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("First\n");
+    printf("Second\n");
+    return 0;
+}`;
+	const PF_BOX_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: print the three lines of the box */
+
+    return 0;
+}`;
+	const PF_BOX_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("*****\n");
+    printf("*   *\n");
+    printf("*****\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-printf",
+		title: "הדפסת טקסט",
+		body: [
+			R`<p><code>printf</code> מדפיסה את הטקסט שבין המרכאות, בדיוק כמו שהוא.</p>
+<p>הריצו: שתי ההדפסות נדבקות לשורה אחת, <code>HelloWorld</code>.</p>`,
+			{
+				id: "structure-printf-join",
+				title: "טקסט שנדבק",
+				code: PF_JOIN,
+				tests: [io("prints HelloWorld", "", "HelloWorld")]
+			},
+			R`<p><code>\n</code> בסוף הטקסט עובר לשורה חדשה.</p>
+<p>הריצו: עכשיו כל מילה בשורה משלה.</p>`,
+			{
+				id: "structure-printf-newline",
+				title: "שורה חדשה",
+				code: PF_NEWLINE,
+				tests: [io("prints Hello and World on two lines", "", "Hello\nWorld")]
+			},
+			R`<p>עוד סימנים מיוחדים. כל אחד מתחיל ב-<code>\</code>:</p>
+<table class="tbl"><tr><th>כותבים</th><th>מודפס</th></tr>
+<tr><td class="mono">\n</td><td>שורה חדשה</td></tr>
+<tr><td class="mono">\t</td><td>רווח גדול (טאב)</td></tr>
+<tr><td class="mono">\"</td><td>מרכאות בתוך הטקסט</td></tr>
+<tr><td class="mono">\\</td><td>קו נטוי <code>\</code></td></tr></table>`,
+			{
+				id: "structure-printf-special",
+				title: "סימנים מיוחדים",
+				code: PF_SPECIAL,
+				tests: [io("prints the three special lines", "", "Name:	Dana\nShe said \"hi\"\nC:\\lab")]
+			},
+			R`<p>תורכם: בקוד ליד חסר <code>\n</code> אחד, ולכן שתי מילים נדבקות.</p>`,
+			{
+				id: "structure-printf-add",
+				title: "השורה החדשה החסרה",
+				task: "הוסיפו את ה-<code>\\n</code> החסר, כך ש-<code>First</code> ו-<code>Second</code> יודפסו בשתי שורות.",
+				code: PF_ADD_START,
+				solution: PF_ADD_SOLVED,
+				tests: [io("prints First and Second on two lines", "", "First\nSecond")]
+			},
+			R`<p>עכשיו הדפסה משלכם: שלוש שורות, כל אחת ב-<code>printf</code> משלה ועם <code>\n</code> בסופה.</p>`,
+			{
+				id: "structure-printf-box",
+				title: "מסגרת של כוכביות",
+				task: "הדפיסו את המסגרת בשלוש שורות: <code>*****</code>, אחריה <code>*   *</code> (כוכבית, שלושה רווחים, כוכבית), ואחריה שוב <code>*****</code>.",
+				code: PF_BOX_START,
+				solution: PF_BOX_SOLVED,
+				tests: [io("prints the box", "", "*****\n*   *\n*****")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסות <code>printf(\"a\");</code> ואחריה <code>printf(\"b\");</code>?",
+				o: [
+					"<code>a</code> ו-<code>b</code> בשתי שורות",
+					"<code>b</code> ואז <code>a</code>",
+					"<code>ab</code> באותה שורה"
+				],
+				a: 2,
+				w: "בלי <code>\\n</code> הטקסט נדבק."
+			},
+			{
+				s: "איזה סימן עובר לשורה חדשה?",
+				o: [
+					"<code>\\t</code>",
+					"<code>\\n</code>",
+					"<code>\\\\</code>"
+				],
+				a: 1,
+				w: "<code>\\n</code> הוא שורה חדשה, <code>\\t</code> הוא טאב."
+			},
+			{
+				s: "איזו מהשורות <b>לא</b> תדפיס מרכאות בתוך הטקסט? שימו לב לקו הנטוי.",
+				o: [
+					"<code>printf(\"say \\\"hi\\\"\");</code>",
+					"<code>printf(\"say \"hi\"\");</code>",
+					"<code>printf(\"\\\"\\\"\");</code>"
+				],
+				a: 1,
+				w: "בלי <code>\\</code> לפני <code>\"</code>, המרכאות סוגרות את הטקסט וזו שגיאה."
+			}
+		]
+	}));
+	const REV_WRITE_START = R`/* TODO: write the whole program here */
+`;
+	const REV_WRITE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("My first C program\n");
+    return 0;
+}`;
+	const REV_FIX_START = R`/* TODO: fix the three mistakes */
+
+int mian(void)
+{
+    printf("No mistakes left\n")
+    return 0;
+}`;
+	const REV_FIX_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("No mistakes left\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "structure-review",
+		title: "חזרה: מבנה התוכנית",
+		body: [
+			R`<p>כל החלקים יחד, בלי עזרה. תוכנית שלמה צריכה:</p>
+<table class="tbl"><tr><th>חלק</th><th>השיעור</th></tr>
+<tr><td class="mono">#include &lt;stdio.h&gt;</td><td>הספרייה stdio.h</td></tr>
+<tr><td class="mono">int main(void) { ... }</td><td>הפונקציה main, סוגריים מסולסלים</td></tr>
+<tr><td class="mono">printf("...\n");</td><td>הדפסת טקסט</td></tr>
+<tr><td class="mono">return 0;</td><td>קוד היציאה ו-return 0</td></tr></table>`,
+			{
+				id: "structure-review-write",
+				title: "תוכנית שלמה",
+				task: "בקובץ הריק כתבו תוכנית שלמה שמדפיסה <code>My first C program</code> ומסתיימת ב-<code>return 0;</code>.",
+				code: REV_WRITE_START,
+				solution: REV_WRITE_SOLVED,
+				tests: [io("prints My first C program", "", "My first C program"), {
+					type: "src",
+					name: "main ends with return 0",
+					require: "return\\s+0\\s*;",
+					msg: "return 0; is missing."
+				}]
+			},
+			R`<p>בתוכנית ליד שלוש טעויות, כל אחת משיעור אחר בפרק.</p>`,
+			{
+				id: "structure-review-fix",
+				title: "שלוש טעויות",
+				task: "תקנו את שלוש הטעויות, כך שהתוכנית תדפיס <code>No mistakes left</code>.",
+				code: REV_FIX_START,
+				solution: REV_FIX_SOLVED,
+				tests: [io("prints No mistakes left", "", "No mistakes left")]
+			}
+		],
+		quiz: [
+			{
+				s: "מאיפה מגיעה <code>printf</code>?",
+				o: [
+					"מ-<code>main</code>",
+					"מהספרייה <code>stdio.h</code>",
+					"gcc ממציא אותה"
+				],
+				a: 1,
+				w: "<code>#include &lt;stdio.h&gt;</code> מביאה אותה."
+			},
+			{
+				s: "כמה פונקציות <code>main</code> יש בתוכנית?",
+				o: [
+					"שתיים",
+					"אף אחת",
+					"אחת"
+				],
+				a: 2,
+				w: "בכל תוכנית יש <code>main</code> אחת."
+			},
+			{
+				s: "מה חסר בשורה <code>printf(\"Hi\\n\")</code> בתוך <code>main</code>?",
+				o: [
+					"<code>;</code> בסוף",
+					"<code>}</code> בסוף",
+					"שום דבר"
+				],
+				a: 0,
+				w: "כל פקודה נגמרת ב-<code>;</code>."
+			},
+			{
+				s: "מה אומר <code>exit code 0</code>?",
+				o: [
+					"התוכנית לא רצה",
+					"יש שגיאה בשורה 0",
+					"הכול עבר בסדר"
+				],
+				a: 2,
+				w: "<code>return 0;</code> פירושו שהכול עבר בסדר."
+			},
+			{
+				s: "מה gcc עושה עם <code>// note</code>?",
+				o: [
+					"מדפיס אותה",
+					"מדלג עליה",
+					"עוצר בשגיאה"
+				],
+				a: 1,
+				w: "זו הערה, ו-gcc מדלג עליה."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"1\\n2\");</code>?",
+				o: [
+					"<code>12</code>",
+					"<code>1\\n2</code> כמו שהוא",
+					"<code>1</code> ו-<code>2</code> בשתי שורות"
+				],
+				a: 2,
+				w: "<code>\\n</code> עובר לשורה חדשה."
+			},
+			{
+				s: "תוכנית שלמה מדפיסה שורה אחת עם <code>printf</code>. איזה מהחלקים הבאים <b>אינו</b> הכרחי בה?",
+				o: [
+					"<code>#include &lt;stdio.h&gt;</code>",
+					"הערה עם <code>//</code>",
+					"<code>int main(void)</code>"
+				],
+				a: 1,
+				w: "הערה לא חובה: gcc מדלג עליה."
+			}
+		]
+	}));
+	const VAR_ONE = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    printf("%d\n", age);
+    return 0;
+}`;
+	const VAR_TWO = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    int rooms = 3;
+    printf("%d\n", age);
+    printf("%d\n", rooms);
+    return 0;
+}`;
+	const VAR_YEAR_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: declare an int named year with the value 2026, and print it */
+
+    return 0;
+}`;
+	const VAR_YEAR_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int year = 2026;
+    printf("%d\n", year);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-variable",
+		title: "מה זה משתנה",
+		body: [
+			R`<p><b>משתנה</b> הוא קופסה בזיכרון. יש לה שלושה חלקים:</p>
+<table class="tbl"><tr><th>בשורה <code>int age = 20;</code></th><th>פירושו</th></tr>
+<tr><td class="mono">int</td><td>הטיפוס: מה מותר לשים בקופסה (כאן מספר שלם)</td></tr>
+<tr><td class="mono">age</td><td>השם של הקופסה</td></tr>
+<tr><td class="mono">20</td><td>הערך שבתוכה</td></tr></table>
+<p>הריצו: <code>printf</code> עם <code>%d</code> מדפיסה את הערך.</p>`,
+			{
+				id: "types-variable-box",
+				title: "קופסה אחת",
+				code: VAR_ONE,
+				tests: [io("prints 20", "", "20")]
+			},
+			R`<p>לחצו <b>⏯ שורה אחר שורה</b>. בטבלת המשתנים (<bdi dir="ltr">call stack</bdi>) כל משתנה מקבל שורה:</p>
+<table class="tbl"><tr><th>עמודה</th><th>מה יש בה</th></tr>
+<tr><td class="mono">name</td><td>השם</td></tr>
+<tr><td class="mono">type</td><td>הטיפוס</td></tr>
+<tr><td class="mono">address</td><td>איפה הקופסה נמצאת בזיכרון</td></tr>
+<tr><td class="mono">value</td><td>הערך</td></tr></table>`,
+			{
+				id: "types-variable-stack",
+				title: "הקופסאות בטבלה",
+				code: VAR_TWO,
+				tests: [io("prints 20 and 3", "", "20\n3")]
+			},
+			R`<p>תורכם: קופסה משלכם, בדיוק כמו <code>age</code> בעמוד הראשון.</p>`,
+			{
+				id: "types-variable-year",
+				title: "משתנה משלכם",
+				task: "הכריזו על <code>int</code> בשם <code>year</code> עם הערך <code>2026</code>, והדפיסו אותו.",
+				code: VAR_YEAR_START,
+				solution: VAR_YEAR_SOLVED,
+				tests: [io("prints 2026", "", "2026"), {
+					type: "src",
+					name: "there is an int named year",
+					require: "\\bint year\\b",
+					msg: "Declare the variable: int year = 2026;"
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "בשורה <code>int age = 20;</code>, מה הוא <b>השם</b> של המשתנה?",
+				o: [
+					"<code>int</code>",
+					"<code>age</code>",
+					"<code>20</code>"
+				],
+				a: 1,
+				w: "<code>int</code> הוא הטיפוס, <code>20</code> הוא הערך."
+			},
+			{
+				s: "מה מראה העמודה <code>value</code> בטבלת המשתנים?",
+				o: [
+					"את הערך שבקופסה",
+					"את הטיפוס",
+					"איפה הקופסה בזיכרון"
+				],
+				a: 0,
+				w: "<code>value</code> הוא הערך; <code>address</code> הוא המקום."
+			},
+			{
+				s: "כל השורות הבאות כתובות בתוך <code>main</code>. איזו מהן <b>לא</b> מכריזה על משתנה בשם <code>count</code>?",
+				o: [
+					"<code>int count = 5;</code>",
+					"<code>int count;</code>",
+					"<code>count int = 5;</code>"
+				],
+				a: 2,
+				w: "קודם הטיפוס, אחריו השם: <code>int count</code>."
+			}
+		]
+	}));
+	const ASSIGN_NEW = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    age = 21;
+    printf("%d\n", age);
+    return 0;
+}`;
+	const ASSIGN_PLUS = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    age = age + 1;
+    printf("%d\n", age);
+    return 0;
+}`;
+	const ASSIGN_COPY = R`#include <stdio.h>
+
+int main(void)
+{
+    int x = 5;
+    int y = x;
+    x = 7;
+    printf("%d\n", y);
+    return 0;
+}`;
+	const ASSIGN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int points = 15;
+    /* TODO: add 10 to points, the way age got 1 more */
+
+    printf("%d\n", points);
+    return 0;
+}`;
+	const ASSIGN_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int points = 15;
+    points = points + 10;
+
+    printf("%d\n", points);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-assign",
+		title: "שינוי ערך",
+		body: [
+			R`<p>הסימן <code>=</code> שם ערך חדש בקופסה. הערך הישן נמחק.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b> וראו את <code>age</code> הופך מ-20 ל-21.</p>`,
+			{
+				id: "types-assign-new",
+				title: "ערך חדש",
+				code: ASSIGN_NEW,
+				tests: [io("prints 21", "", "21")]
+			},
+			R`<p>בשורה <code>age = age + 1;</code> קודם מחשבים את הצד הימני עם הערך הישן (20 ועוד 1), ורק אז כותבים את התוצאה לתוך <code>age</code>.</p>`,
+			{
+				id: "types-assign-plus",
+				title: "עוד אחד",
+				code: ASSIGN_PLUS,
+				tests: [io("prints 21", "", "21")]
+			},
+			R`<p><code>y = x</code> מעתיקה את הערך שיש ב-<code>x</code> <b>עכשיו</b>. שינוי של <code>x</code> אחר כך לא משנה את <code>y</code>.</p>
+<p>הריצו: מודפס 5, לא 7.</p>`,
+			{
+				id: "types-assign-copy",
+				title: "העתקה",
+				code: ASSIGN_COPY,
+				tests: [io("prints 5", "", "5")]
+			},
+			R`<p>תורכם: כמו <code>age = age + 1</code>, עם מספר אחר.</p>`,
+			{
+				id: "types-assign-points",
+				title: "עוד 10 נקודות",
+				task: "במקום ה-TODO הוסיפו 10 ל-<code>points</code>, באותה דרך שבה <code>age</code> קיבל עוד אחד.",
+				code: ASSIGN_START,
+				solution: ASSIGN_SOLVED,
+				tests: [io("prints 25", "", "25"), {
+					type: "src",
+					name: "points itself gets 10 more",
+					require: "(^|[;{}]) points (=|\\+=) ",
+					forbid: "\\b25\\b",
+					msg: "Change points itself, for example points = points + 10; (or points += 10;), instead of writing 25."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 5;</code> ואחריה <code>int y = x;</code> ואז <code>x = 7;</code>. כמה ב-<code>y</code>?",
+				o: [
+					"7",
+					"5",
+					"12"
+				],
+				a: 1,
+				w: "<code>y</code> קיבל עותק של 5, ושינוי של <code>x</code> לא נוגע בו."
+			},
+			{
+				s: "מה קורה לערך הישן של משתנה כשכותבים <code>age = 21;</code>?",
+				o: [
+					"הוא נשמר ליד הערך החדש",
+					"הוא נמחק",
+					"הוא מתווסף ל-21"
+				],
+				a: 1,
+				w: "בקופסה יש ערך אחד בכל רגע."
+			},
+			{
+				s: "<code>int a = 3;</code> ואחריה פעמיים <code>a = a + 2;</code>. איזה מהמשפטים <b>אינו</b> נכון?",
+				o: [
+					"<code>a</code> שווה 7",
+					"<code>a</code> שווה 5",
+					"הערך של <code>a</code> השתנה פעמיים"
+				],
+				a: 1,
+				w: "3 ועוד 2 הוא 5, ועוד 2 הוא 7."
+			}
+		]
+	}));
+	const OVERVIEW = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    float weight = 62.5f;
+    double height = 1.75;
+    char grade = 'A';
+    char name[] = "Dana";
+
+    printf("%d\n", age);
+    printf("%f\n", weight);
+    printf("%f\n", height);
+    printf("%c\n", grade);
+    printf("%s\n", name);
+    return 0;
+}`;
+	const OVERVIEW_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: change age to 30 and grade to B */
+    int age = 20;
+    float weight = 62.5f;
+    double height = 1.75;
+    char grade = 'A';
+    char name[] = "Dana";
+
+    printf("%d\n", age);
+    printf("%f\n", weight);
+    printf("%f\n", height);
+    printf("%c\n", grade);
+    printf("%s\n", name);
+    return 0;
+}`;
+	const OVERVIEW_SOLVED = OVERVIEW.replace("int age = 20;", "int age = 30;").replace("char grade = 'A';", "char grade = 'B';");
+	U.push(withOutputs({
+		id: "types-overview",
+		title: "כל הטיפוסים יחד",
+		body: [
+			R`<p>לכל סוג של ערך יש טיפוס משלו, ול-<code>printf</code> יש אות לכל טיפוס:</p>
+<table class="tbl"><tr><th>טיפוס</th><th>מה הוא מחזיק</th><th>דוגמה</th><th>ב-printf</th></tr>
+<tr><td class="mono">int</td><td>מספר שלם</td><td class="mono">20</td><td class="mono">%d</td></tr>
+<tr><td class="mono">float</td><td>מספר עשרוני</td><td class="mono">62.5f</td><td class="mono">%f</td></tr>
+<tr><td class="mono">double</td><td>מספר עשרוני מדויק יותר</td><td class="mono">1.75</td><td class="mono">%f</td></tr>
+<tr><td class="mono">char</td><td>תו אחד</td><td class="mono">'A'</td><td class="mono">%c</td></tr>
+<tr><td class="mono">char name[]</td><td>מילה</td><td class="mono">"Dana"</td><td class="mono">%s</td></tr></table>
+<p>הריצו: כל ערך בשורה משלו. כל טיפוס מקבל שיעור משלו בהמשך.</p>`,
+			{
+				id: "types-overview-all",
+				title: "חמישה טיפוסים",
+				code: OVERVIEW,
+				tests: [io("prints the five values", "", "20\n62.500000\n1.750000\nA\nDana")]
+			},
+			R`<p>תורכם: שנו שני ערכים ובדקו שההדפסה משתנה איתם.</p>`,
+			{
+				id: "types-overview-change",
+				title: "ערכים אחרים",
+				task: "שנו את <code>age</code> ל-30 ואת <code>grade</code> ל-<code>B</code>.",
+				code: OVERVIEW_START,
+				solution: OVERVIEW_SOLVED,
+				tests: [io("prints 30 and B among the five values", "", "30\n62.500000\n1.750000\nB\nDana")]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה טיפוס מחזיק מילה שלמה, כמו <code>\"Dana\"</code>?",
+				o: [
+					"<code>char</code>",
+					"<code>char name[]</code>",
+					"<code>int</code>"
+				],
+				a: 1,
+				w: "<code>char</code> לבד מחזיק תו אחד בלבד."
+			},
+			{
+				s: "באיזו אות מדפיסים <code>char</code> עם <code>printf</code>?",
+				o: [
+					"<code>%d</code>",
+					"<code>%s</code>",
+					"<code>%c</code>"
+				],
+				a: 2,
+				w: "<code>%c</code> הוא תו אחד, <code>%s</code> הוא מילה."
+			},
+			{
+				s: "איזה זוג של טיפוס ואות ב-<code>printf</code> <b>לא</b> מתאים? חשבו על מה כל אות מצפה לקבל.",
+				o: [
+					"<code>int</code> עם <code>%d</code>",
+					"<code>double</code> עם <code>%f</code>",
+					"<code>char</code> עם <code>%s</code>"
+				],
+				a: 2,
+				w: "<code>%s</code> מצפה למילה; ל-<code>char</code> אחד כותבים <code>%c</code>."
+			}
+		]
+	}));
+	const INT_VALUES = R`#include <stdio.h>
+
+int main(void)
+{
+    int above = 42;
+    int below = -7;
+    int zero = 0;
+    printf("%d\n", above);
+    printf("%d\n", below);
+    printf("%d\n", zero);
+    return 0;
+}`;
+	const INT_DIVIDE = R`#include <stdio.h>
+
+int main(void)
+{
+    int half = 7 / 2;
+    printf("%d\n", half);
+    return 0;
+}`;
+	const INT_LIMITS = R`#include <stdio.h>
+#include <limits.h>
+
+int main(void)
+{
+    printf("%d\n", INT_MIN);
+    printf("%d\n", INT_MAX);
+    return 0;
+}`;
+	const INT_SUM_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 12;
+    int b = 30;
+    int c = -2;
+    /* TODO: declare an int named sum with the value a + b + c, and print it */
+
+    return 0;
+}`;
+	const INT_SUM_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 12;
+    int b = 30;
+    int c = -2;
+    int sum = a + b + c;
+    printf("%d\n", sum);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-int",
+		title: "מספר שלם: int",
+		body: [
+			R`<p><code>int</code> מחזיק מספר שלם: חיובי, שלילי או 0. מדפיסים אותו עם <code>%d</code>.</p>`,
+			{
+				id: "types-int-values",
+				title: "חיובי, שלילי ואפס",
+				code: INT_VALUES,
+				tests: [io("prints 42, -7 and 0", "", "42\n-7\n0")]
+			},
+			R`<p>חילוק של שני מספרים שלמים נותן מספר שלם: החלק שאחרי הנקודה נזרק. <code>7 / 2</code> הוא 3, לא 3.5.</p>`,
+			{
+				id: "types-int-divide",
+				title: "חילוק שלמים",
+				code: INT_DIVIDE,
+				tests: [io("prints 3", "", "3")]
+			},
+			R`<p>ל-<code>int</code> יש גבולות. הספרייה <code>limits.h</code> נותנת את הקטן והגדול שבהם:</p>
+<table class="tbl"><tr><th>השם</th><th>הערך</th></tr>
+<tr><td class="mono">INT_MIN</td><td class="mono">-2147483648</td></tr>
+<tr><td class="mono">INT_MAX</td><td class="mono">2147483647</td></tr></table>`,
+			{
+				id: "types-int-limits",
+				title: "הגבולות של int",
+				code: INT_LIMITS,
+				tests: [io("prints the smallest and the largest int", "", "-2147483648\n2147483647")]
+			},
+			R`<p>תורכם: משתנה חדש שהערך שלו מחושב משלושה אחרים.</p>`,
+			{
+				id: "types-int-sum",
+				title: "סכום",
+				task: "הכריזו על <code>int sum</code> עם הערך <code>a + b + c</code>, והדפיסו אותו.",
+				code: INT_SUM_START,
+				solution: INT_SUM_SOLVED,
+				tests: [io("prints 40", "", "40"), {
+					type: "src",
+					name: "sum is computed, not typed in",
+					require: "\\bint sum\\b",
+					forbid: "\\b40\\b",
+					msg: "Declare int sum and compute it from a, b and c, instead of writing 40."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 7 / 2);</code>?",
+				o: [
+					"3.5",
+					"3",
+					"4"
+				],
+				a: 1,
+				w: "חילוק של שלמים זורק את החלק שאחרי הנקודה."
+			},
+			{
+				s: "<code>int x = 9 / 4;</code>. מה הערך של <code>x</code>?",
+				o: [
+					"2.25",
+					"3",
+					"2"
+				],
+				a: 2,
+				w: "9 חלקי 4 הוא 2.25, ו-<code>int</code> שומר רק את ה-2."
+			},
+			{
+				s: "איזה מהערכים הבאים <b>לא</b> יכול להיות הערך של משתנה <code>int</code>, אפילו לא לרגע?",
+				o: [
+					"<code>-5</code>",
+					"<code>2.5</code>",
+					"<code>0</code>"
+				],
+				a: 1,
+				w: "ב-<code>int</code> אין חלק אחרי הנקודה."
+			}
+		]
+	}));
+	const DEC_PRINT = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 2.5;
+    printf("%f\n", price);
+    printf("%.2f\n", price);
+    return 0;
+}`;
+	const DEC_DIGITS = R`#include <stdio.h>
+
+int main(void)
+{
+    float third = 1.0f / 3;
+    double exact = 1.0 / 3;
+    printf("%.10f\n", third);
+    printf("%.10f\n", exact);
+    return 0;
+}`;
+	const DEC_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: declare a double named price with the value 19.9, and print it with 2 digits after the point */
+
+    return 0;
+}`;
+	const DEC_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 19.9;
+    printf("%.2f\n", price);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-float-double",
+		title: "מספר עשרוני: double",
+		body: [
+			R`<p>מספר עם נקודה נשמר ב-<code>double</code>. מדפיסים אותו עם <code>%f</code>:</p>
+<table class="tbl"><tr><th>ב-printf</th><th>מודפס עבור 2.5</th></tr>
+<tr><td class="mono">%f</td><td class="mono">2.500000</td></tr>
+<tr><td class="mono">%.2f</td><td class="mono">2.50</td></tr></table>
+<p>המספר שאחרי הנקודה ב-<code>%.2f</code> אומר כמה ספרות להדפיס אחרי הנקודה.</p>`,
+			{
+				id: "types-float-double-print",
+				title: "שתי ספרות אחרי הנקודה",
+				code: DEC_PRINT,
+				tests: [io("prints 2.500000 and 2.50", "", "2.500000\n2.50")]
+			},
+			R`<p>גם <code>float</code> מחזיק מספר עשרוני, אבל שומר פחות ספרות. אחרי מספר ל-<code>float</code> כותבים <code>f</code>, למשל <code>2.5f</code>.</p>
+<table class="tbl"><tr><th>טיפוס</th><th>בתים</th><th>ספרות מדויקות, בערך</th></tr>
+<tr><td class="mono">float</td><td>4</td><td>7</td></tr>
+<tr><td class="mono">double</td><td>8</td><td>15</td></tr></table>
+<p>הריצו: שליש ב-<code>float</code> מתקלקל אחרי 7 ספרות. בקורס הזה עובדים עם <code>double</code>.</p>`,
+			{
+				id: "types-float-double-digits",
+				title: "כמה ספרות כל אחד שומר",
+				code: DEC_DIGITS,
+				tests: [io("prints a third as float and as double", "", "0.3333333433\n0.3333333333")]
+			},
+			R`<p>תורכם: <code>double</code> משלכם, מודפס כמו בעמוד הראשון.</p>`,
+			{
+				id: "types-float-double-price",
+				title: "מחיר",
+				task: "הכריזו על <code>double price</code> עם הערך <code>19.9</code>, והדפיסו אותו עם שתי ספרות אחרי הנקודה.",
+				code: DEC_START,
+				solution: DEC_SOLVED,
+				tests: [io("prints 19.90", "", "19.90"), {
+					type: "src",
+					name: "price is a double",
+					require: "\\bdouble price\\b",
+					msg: "Declare it as double price = 19.9;"
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה טיפוס שומר יותר ספרות מדויקות אחרי הנקודה?",
+				o: [
+					"<code>float</code>",
+					"<code>double</code>",
+					"שניהם אותו דבר"
+				],
+				a: 1,
+				w: "<code>double</code> שומר בערך 15 ספרות, <code>float</code> בערך 7."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%.2f\\n\", 3.14159);</code>?",
+				o: [
+					"<code>3.14</code>",
+					"<code>3.141590</code>",
+					"<code>3</code>"
+				],
+				a: 0,
+				w: "<code>%.2f</code> מדפיסה שתי ספרות אחרי הנקודה."
+			},
+			{
+				s: "כל השורות הבאות מדפיסות את המספר 2.5. איזו מהן <b>לא</b> תדפיס בדיוק <code>2.50</code>?",
+				o: [
+					"<code>printf(\"%.2f\\n\", 2.5);</code>",
+					"<code>printf(\"%.2f\\n\", 2.50);</code>",
+					"<code>printf(\"%f\\n\", 2.5);</code>"
+				],
+				a: 2,
+				w: "<code>%f</code> לבד מדפיסה שש ספרות: <code>2.500000</code>."
+			}
+		]
+	}));
+	const CHAR_ONE = R`#include <stdio.h>
+
+int main(void)
+{
+    char grade = 'A';
+    printf("%c\n", grade);
+    return 0;
+}`;
+	const CHAR_NUMBER = R`#include <stdio.h>
+
+int main(void)
+{
+    char grade = 'A';
+    printf("%d\n", grade);
+    printf("%c\n", 66);
+    return 0;
+}`;
+	const CHAR_START = R`#include <stdio.h>
+
+int main(void)
+{
+    char letter = 'Z';
+    /* TODO: print letter as a character, then as a number */
+
+    return 0;
+}`;
+	const CHAR_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    char letter = 'Z';
+    printf("%c\n", letter);
+    printf("%d\n", letter);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-char",
+		title: "תו אחד: char",
+		body: [
+			R`<p><code>char</code> מחזיק תו אחד: אות, ספרה או סימן. מדפיסים אותו עם <code>%c</code>.</p>
+<table class="tbl"><tr><th>כותבים</th><th>מה זה</th></tr>
+<tr><td class="mono">'A'</td><td>תו אחד, בגרש בודד</td></tr>
+<tr><td class="mono">"A"</td><td>מילה (שבמקרה יש בה אות אחת), במרכאות</td></tr></table>`,
+			{
+				id: "types-char-one",
+				title: "תו בגרש",
+				code: CHAR_ONE,
+				tests: [io("prints A", "", "A")]
+			},
+			R`<p>בזיכרון, תו הוא מספר. עם <code>%d</code> מודפס המספר שלו, ועם <code>%c</code> התו:</p>
+<table class="tbl"><tr><th>תו</th><th>המספר שלו</th></tr>
+<tr><td class="mono">'A'</td><td class="mono">65</td></tr>
+<tr><td class="mono">'B'</td><td class="mono">66</td></tr>
+<tr><td class="mono">'a'</td><td class="mono">97</td></tr>
+<tr><td class="mono">'0'</td><td class="mono">48</td></tr></table>`,
+			{
+				id: "types-char-number",
+				title: "תו הוא מספר",
+				code: CHAR_NUMBER,
+				tests: [io("prints 65 and B", "", "65\nB")]
+			},
+			R`<p>תורכם: אותו תו בשתי הדרכים.</p>`,
+			{
+				id: "types-char-letter",
+				title: "התו והמספר שלו",
+				task: "הדפיסו את <code>letter</code> פעמיים: קודם כתו (<code>%c</code>), ואחר כך כמספר (<code>%d</code>).",
+				code: CHAR_START,
+				solution: CHAR_SOLVED,
+				tests: [io("prints Z, then 90", "", "Z\n90")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 'A');</code>?",
+				o: [
+					"<code>A</code>",
+					"<code>65</code>",
+					"<code>1</code>"
+				],
+				a: 1,
+				w: "עם <code>%d</code> מודפס המספר של התו."
+			},
+			{
+				s: "מה ההבדל בין <code>'A'</code> ל-<code>\"A\"</code>?",
+				o: [
+					"אין הבדל",
+					"הראשון תו אחד, השני מילה",
+					"הראשון מספר, השני תו"
+				],
+				a: 1,
+				w: "גרש בודד לתו, מרכאות למילה."
+			},
+			{
+				s: "איזו מההכרזות הבאות <b>אינה</b> תקינה עבור <code>char</code>? שימו לב לסוג המרכאות.",
+				o: [
+					"<code>char c = 'x';</code>",
+					"<code>char c = 120;</code>",
+					"<code>char c = \"x\";</code>"
+				],
+				a: 2,
+				w: "<code>\"x\"</code> היא מילה, ו-gcc לא מכניס מילה לתוך <code>char</code>. 120 הוא בדיוק <code>'x'</code>."
+			}
+		]
+	}));
+	const STR_ONE = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[] = "Dana";
+    printf("%s\n", name);
+    return 0;
+}`;
+	const STR_TWO = R`#include <stdio.h>
+
+int main(void)
+{
+    char first[] = "Dana";
+    char last[] = "Levi";
+    printf("%s %s\n", first, last);
+    return 0;
+}`;
+	const STR_START = R`#include <stdio.h>
+
+int main(void)
+{
+    char first[] = "Noa";
+    char last[] = "Cohen";
+    /* TODO: print the last name, a comma and a space, then the first name */
+
+    return 0;
+}`;
+	const STR_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    char first[] = "Noa";
+    char last[] = "Cohen";
+    printf("%s, %s\n", last, first);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-string",
+		title: "מחרוזת: מילה",
+		body: [
+			R`<p>מילה נשמרת ב-<code>char name[]</code>, במרכאות. מדפיסים אותה עם <code>%s</code>.</p>
+<p>הסוגריים <code>[]</code> אומרים שזו שורה של תווים, ולא תו אחד. על מחרוזות יש פרק שלם בהמשך (פרק 11).</p>`,
+			{
+				id: "types-string-one",
+				title: "מילה אחת",
+				code: STR_ONE,
+				tests: [io("prints Dana", "", "Dana")]
+			},
+			R`<p>בהדפסה אחת אפשר לשים כמה <code>%s</code>. כל אחד מקבל את המילה הבאה, לפי הסדר.</p>`,
+			{
+				id: "types-string-two",
+				title: "שם פרטי ושם משפחה",
+				code: STR_TWO,
+				tests: [io("prints Dana Levi", "", "Dana Levi")]
+			},
+			R`<p>תורכם: אותן שתי מילים, בסדר הפוך ועם פסיק.</p>`,
+			{
+				id: "types-string-reverse",
+				title: "קודם שם המשפחה",
+				task: "הדפיסו את שם המשפחה, פסיק ורווח, ואחריהם את השם הפרטי.",
+				code: STR_START,
+				solution: STR_SOLVED,
+				tests: [io("prints Cohen, Noa", "", "Cohen, Noa"), {
+					type: "src",
+					name: "the names come from the variables",
+					forbid: "printf \\( \"[^\"]*(Noa|Cohen)",
+					msg: "Print the variables first and last with %s, instead of typing the names."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזו אות מדפיסים מילה כמו <code>\"Dana\"</code>?",
+				o: [
+					"<code>%c</code>",
+					"<code>%s</code>",
+					"<code>%d</code>"
+				],
+				a: 1,
+				w: "<code>%s</code> היא מילה, <code>%c</code> תו אחד."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%s %s\\n\", last, first);</code> כש-<code>first</code> הוא <code>\"Dana\"</code> ו-<code>last</code> הוא <code>\"Levi\"</code>?",
+				o: [
+					"<code>Dana Levi</code>",
+					"<code>Levi Dana</code>",
+					"<code>first last</code>"
+				],
+				a: 1,
+				w: "כל <code>%s</code> מקבל את המילה הבאה, לפי סדר הכתיבה."
+			},
+			{
+				s: "<code>char name[] = \"Dana\";</code>. איזו מהשורות הבאות <b>לא</b> תדפיס את המילה <code>Dana</code>?",
+				o: [
+					"<code>printf(\"%s\\n\", name);</code>",
+					"<code>printf(\"%c\\n\", name);</code>",
+					"<code>printf(\"Dana\\n\");</code>"
+				],
+				a: 1,
+				w: "<code>%c</code> מצפה לתו אחד, לא למילה."
+			}
+		]
+	}));
+	const SIZE_ALL = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("%zu\n", sizeof(char));
+    printf("%zu\n", sizeof(int));
+    printf("%zu\n", sizeof(float));
+    printf("%zu\n", sizeof(double));
+    return 0;
+}`;
+	const SIZE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 2.5;
+    /* TODO: print how many bytes price takes */
+
+    return 0;
+}`;
+	const SIZE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 2.5;
+    printf("%zu\n", sizeof(price));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-sizeof",
+		title: "כמה מקום תופס כל טיפוס",
+		body: [
+			R`<p><code>sizeof</code> אומר כמה <b>בתים</b> תופס טיפוס או משתנה בזיכרון. מדפיסים את התשובה עם <code>%zu</code>.</p>
+<table class="tbl"><tr><th>טיפוס</th><th>בתים</th></tr>
+<tr><td class="mono">char</td><td>1</td></tr>
+<tr><td class="mono">int</td><td>4</td></tr>
+<tr><td class="mono">float</td><td>4</td></tr>
+<tr><td class="mono">double</td><td>8</td></tr></table>`,
+			{
+				id: "types-sizeof-all",
+				title: "ארבעה טיפוסים",
+				code: SIZE_ALL,
+				tests: [io("prints 1, 4, 4 and 8", "", "1\n4\n4\n8")]
+			},
+			R`<p>אפשר לשאול גם על משתנה: <code>sizeof(price)</code> נותן את הגודל של הטיפוס שלו.</p>`,
+			{
+				id: "types-sizeof-var",
+				title: "הגודל של משתנה",
+				task: "הדפיסו כמה בתים תופס המשתנה <code>price</code>, עם <code>sizeof</code> ו-<code>%zu</code>.",
+				code: SIZE_START,
+				solution: SIZE_SOLVED,
+				tests: [io("prints 8", "", "8"), {
+					type: "src",
+					name: "the size comes from sizeof",
+					require: "sizeof",
+					msg: "Use sizeof(price)."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה מהטיפוסים תופס הכי הרבה בתים?",
+				o: [
+					"<code>int</code>",
+					"<code>char</code>",
+					"<code>double</code>"
+				],
+				a: 2,
+				w: "<code>double</code> תופס 8 בתים."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%zu\\n\", sizeof(char));</code>?",
+				o: [
+					"1",
+					"4",
+					"8"
+				],
+				a: 0,
+				w: "<code>char</code> תופס בית אחד."
+			},
+			{
+				s: "איזה מהמשפטים על הגדלים <b>אינו</b> נכון? חשבו על כל טיפוס בנפרד.",
+				o: [
+					"<code>sizeof(int)</code> הוא 4",
+					"<code>sizeof(char)</code> הוא 2",
+					"<code>double</code> גדול מ-<code>float</code>"
+				],
+				a: 1,
+				w: "<code>char</code> תופס בית אחד, לא שניים."
+			}
+		]
+	}));
+	const UNINIT_SHOW = R`#include <stdio.h>
+
+int main(void)
+{
+    int count;
+    count = 5;
+    printf("%d\n", count);
+    return 0;
+}`;
+	const UNINIT_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: give total a starting value of 0 */
+    int total;
+    total = total + 10;
+    printf("%d\n", total);
+    return 0;
+}`;
+	const UNINIT_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int total = 0;
+    total = total + 10;
+    printf("%d\n", total);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-uninit",
+		title: "משתנה בלי ערך התחלתי",
+		body: [
+			R`<p>משתנה שהוכרז בלי ערך מחזיק <b>זבל</b>: מה שהיה במקום הזה בזיכרון קודם.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b>: לפני השורה <code>count = 5;</code> מופיע בטבלה <code>?</code> בעמודת הערך, ואחריה 5.</p>`,
+			{
+				id: "types-uninit-show",
+				title: "סימן שאלה בטבלה",
+				code: UNINIT_SHOW,
+				tests: [io("prints 5", "", "5")]
+			},
+			R`<div class="callout warn"><b>חישוב עם זבל</b><p><code>total = total + 10;</code> בלי ערך התחלתי מוסיף 10 למספר מקרי, וכל הרצה עלולה להדפיס משהו אחר. התיקון: לתת ערך כבר בהכרזה, <code>int total = 0;</code>.</p></div>`,
+			{
+				id: "types-uninit-fix",
+				title: "ערך התחלתי",
+				task: "תנו ל-<code>total</code> ערך התחלתי 0 כבר בהכרזה, כך שהתוכנית תדפיס תמיד 10.",
+				code: UNINIT_START,
+				solution: UNINIT_SOLVED,
+				tests: [io("prints 10", "", "10"), {
+					type: "src",
+					name: "total starts at 0",
+					require: "int total = 0",
+					msg: "Give total its starting value where it is declared: int total = 0;"
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "מה יש במשתנה <code>int count;</code> לפני שנתנו לו ערך?",
+				o: [
+					"תמיד 0",
+					"מספר מקרי שהיה בזיכרון",
+					"שגיאה: אי אפשר להכריז כך"
+				],
+				a: 1,
+				w: "הוא מחזיק את מה שהיה שם קודם, ולכן נותנים לו ערך התחלתי."
+			},
+			{
+				s: "איזו מההכרזות הבאות <b>לא</b> נותנת למשתנה ערך התחלתי?",
+				o: [
+					"<code>int a = 0;</code>",
+					"<code>int c = -1;</code>",
+					"<code>int b;</code>"
+				],
+				a: 2,
+				w: "<code>int b;</code> מכריזה בלי ערך, ו-<code>b</code> מחזיק זבל."
+			},
+			{
+				s: "בתוכנית כתוב <code>int sum;</code> ואחר כך <code>sum = sum + 3;</code>. איזה מהמשפטים <b>אינו</b> נכון?",
+				o: [
+					"<code>sum</code> בטוח שווה 3",
+					"<code>sum</code> עלול להיות כל מספר",
+					"כדאי לכתוב <code>int sum = 0;</code>"
+				],
+				a: 0,
+				w: "3 נוסף לזבל, ולכן התוצאה לא ידועה מראש."
+			}
+		]
+	}));
+	const CONST_SHOW = R`#include <stdio.h>
+
+#define MAX_SCORE 100
+
+int main(void)
+{
+    const int PASS_MARK = 56;
+    printf("%d\n", MAX_SCORE);
+    printf("%d\n", PASS_MARK);
+    return 0;
+}`;
+	const CONST_START = R`#include <stdio.h>
+
+/* TODO: add #define DAYS 7 here, and use DAYS instead of 7 below */
+
+int main(void)
+{
+    printf("%d\n", 3 * 7);
+    printf("%d\n", 5 * 7);
+    return 0;
+}`;
+	const CONST_SOLVED = R`#include <stdio.h>
+
+#define DAYS 7
+
+int main(void)
+{
+    printf("%d\n", 3 * DAYS);
+    printf("%d\n", 5 * DAYS);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-const",
+		title: "שמות לקבועים",
+		body: [
+			R`<p>ערך שלא משתנה אף פעם מקבל שם. יש שתי דרכים, ושמות הקבועים כתובים באותיות גדולות:</p>
+<table class="tbl"><tr><th>כותבים</th><th>איפה</th></tr>
+<tr><td class="mono">#define MAX_SCORE 100</td><td>בראש הקובץ, בלי <code>=</code> ובלי <code>;</code></td></tr>
+<tr><td class="mono">const int PASS_MARK = 56;</td><td>כמו משתנה, עם <code>const</code> לפני הטיפוס</td></tr></table>`,
+			{
+				id: "types-const-show",
+				title: "שני קבועים",
+				code: CONST_SHOW,
+				tests: [io("prints 100 and 56", "", "100\n56")]
+			},
+			R`<p>אי אפשר לשנות קבוע. השורה <code>PASS_MARK = 60;</code> עוצרת את gcc:</p>
+<pre class="code-static"><span>error: assignment of read-only variable 'PASS_MARK'</span></pre>
+<p>תורכם: המספר 7 חוזר בקוד פעמיים. תנו לו שם.</p>`,
+			{
+				id: "types-const-days",
+				title: "שם למספר שחוזר",
+				task: "הוסיפו בראש הקובץ <code>#define DAYS 7</code>, והחליפו בו את שני ה-7 בתוך <code>main</code>.",
+				code: CONST_START,
+				solution: CONST_SOLVED,
+				tests: [io("prints 21 and 35", "", "21\n35"), {
+					type: "src",
+					name: "main uses DAYS instead of 7",
+					require: "\\bDAYS\\b",
+					forbid: "\\b7\\b",
+					msg: "Use DAYS in main wherever 7 was (3 * DAYS or DAYS * 3 are both fine)."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "אפשר לשנות את הערך של <code>const int LIMIT = 5;</code> בהמשך התוכנית?",
+				o: [
+					"כן, עם <code>LIMIT = 6;</code>",
+					"לא: gcc עוצר בשגיאה",
+					"רק בתוך <code>main</code>"
+				],
+				a: 1,
+				w: "קבוע הוא לקריאה בלבד."
+			},
+			{
+				s: "איזו שורת <code>#define</code> כתובה נכון?",
+				o: [
+					"<code>#define DAYS = 7;</code>",
+					"<code>#define DAYS 7</code>",
+					"<code>define DAYS 7;</code>"
+				],
+				a: 1,
+				w: "<code>#define</code> בא בלי <code>=</code> ובלי <code>;</code>."
+			},
+			{
+				s: "בתוכנית כתוב <code>const int LIMIT = 5;</code>. איזו מהשורות הבאות <b>לא</b> תתקמפל?",
+				o: [
+					"<code>printf(\"%d\\n\", LIMIT);</code>",
+					"<code>LIMIT = 6;</code>",
+					"<code>int x = LIMIT;</code>"
+				],
+				a: 1,
+				w: "מותר לקרוא קבוע, אסור לכתוב אליו."
+			}
+		]
+	}));
+	const REV_CARD_START = R`/* TODO: write the whole program here */
+`;
+	const REV_CARD_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[] = "Dana";
+    int age = 21;
+    double height = 1.68;
+    char grade = 'A';
+
+    printf("%s\n", name);
+    printf("%d\n", age);
+    printf("%.2f\n", height);
+    printf("%c\n", grade);
+    return 0;
+}`;
+	const REV_TYPES_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: fix the types and the printf letters so it prints 9.99 and B */
+    int price = 9.99;
+    int grade = 'B';
+    printf("%d\n", price);
+    printf("%d\n", grade);
+    return 0;
+}`;
+	const REV_TYPES_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 9.99;
+    char grade = 'B';
+    printf("%.2f\n", price);
+    printf("%c\n", grade);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "types-review",
+		title: "חזרה: משתנים וטיפוסים",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו "כרטיס תלמיד": ארבעה משתנים, כל אחד בטיפוס שמתאים לו, וכל אחד מודפס בשורה משלו.</p>
+<table class="tbl"><tr><th>מה</th><th>ערך</th><th>השיעור</th></tr>
+<tr><td>שם</td><td class="mono">Dana</td><td>מחרוזת: מילה</td></tr>
+<tr><td>גיל</td><td class="mono">21</td><td>מספר שלם: int</td></tr>
+<tr><td>גובה, שתי ספרות אחרי הנקודה</td><td class="mono">1.68</td><td>מספר עשרוני: double</td></tr>
+<tr><td>ציון</td><td class="mono">A</td><td>תו אחד: char</td></tr></table>`,
+			{
+				id: "types-review-card",
+				title: "כרטיס תלמיד",
+				task: "בקובץ הריק כתבו תוכנית שלמה עם ארבעת המשתנים שבטבלה, כל אחד בטיפוס שלו, והדפיסו אותם לפי הסדר, כל אחד בשורה.",
+				code: REV_CARD_START,
+				solution: REV_CARD_SOLVED,
+				tests: [
+					io("prints the card", "", "Dana\n21\n1.68\nA"),
+					{
+						type: "src",
+						name: "the height is a double",
+						require: "\\bdouble\\b",
+						msg: "Keep the height in a double."
+					},
+					{
+						type: "src",
+						name: "the grade is a char",
+						require: "char \\w+ = '",
+						msg: "Keep the grade in a char, such as char grade = 'A';"
+					}
+				]
+			},
+			R`<p>בתוכנית ליד שני ערכים נשמרו בטיפוס הלא נכון, ולכן ההדפסה יוצאת <code>9</code> ו-<code>66</code>.</p>`,
+			{
+				id: "types-review-fix",
+				title: "הטיפוס הנכון",
+				task: "תקנו את הטיפוסים ואת האותיות ב-<code>printf</code>, כך שיודפסו <code>9.99</code> ו-<code>B</code>.",
+				code: REV_TYPES_START,
+				solution: REV_TYPES_SOLVED,
+				tests: [io("prints 9.99 and B", "", "9.99\nB")]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזה טיפוס שומרים את הגובה <code>1.75</code>?",
+				o: [
+					"<code>int</code>",
+					"<code>double</code>",
+					"<code>char</code>"
+				],
+				a: 1,
+				w: "מספר עם נקודה נשמר ב-<code>double</code>."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 'A');</code>?",
+				o: [
+					"<code>A</code>",
+					"<code>1</code>",
+					"<code>65</code>"
+				],
+				a: 2,
+				w: "עם <code>%d</code> מודפס המספר של התו."
+			},
+			{
+				s: "<code>int half = 7 / 2;</code>. כמה ב-<code>half</code>?",
+				o: [
+					"3",
+					"3.5",
+					"4"
+				],
+				a: 0,
+				w: "חילוק של שלמים זורק את החלק שאחרי הנקודה."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%zu\\n\", sizeof(double));</code>?",
+				o: [
+					"4",
+					"8",
+					"2"
+				],
+				a: 1,
+				w: "<code>double</code> תופס 8 בתים."
+			},
+			{
+				s: "מה יש ב-<code>int n;</code> לפני שנתנו לו ערך?",
+				o: [
+					"0",
+					"מספר מקרי",
+					"השם n"
+				],
+				a: 1,
+				w: "משתנה בלי ערך התחלתי מחזיק זבל."
+			},
+			{
+				s: "איזו מההכרזות הבאות <b>לא</b> מתאימה לערך שבתוכה? קראו כל אחת עד הסוף.",
+				o: [
+					"<code>int count = 12;</code>",
+					"<code>double price = 4.5;</code>",
+					"<code>int letter = \"A\";</code>"
+				],
+				a: 2,
+				w: "<code>\"A\"</code> היא מילה; למילה צריך <code>char letter[]</code>."
+			},
+			{
+				s: "<code>int age = 20;</code>. כל השורות מדפיסות משהו. איזו מהן <b>לא</b> תדפיס <code>20</code>?",
+				o: [
+					"<code>printf(\"%d\\n\", age);</code>",
+					"<code>printf(\"%c\\n\", age);</code>",
+					"<code>printf(\"%d\\n\", 20);</code>"
+				],
+				a: 1,
+				w: "<code>%c</code> מדפיסה את התו שהמספר 20 מייצג, לא את המספר."
+			}
+		]
+	}));
 	U.push({
 		id: "split",
 		title: "תוכנית בכמה קבצים",
@@ -15735,6 +17898,26 @@ int main(void)
 		]
 	});
 	[
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-structure",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
+		"c-types",
 		"make",
 		"make",
 		"make",
@@ -15755,11 +17938,23 @@ window.LabCourse = {
 	en: "C Programming Language",
 	order: 1,
 	engine: "c",
-	subjects: [{
-		id: "make",
-		title: "make ו-Makefile",
-		public: true
-	}],
+	subjects: [
+		{
+			id: "c-structure",
+			title: "1. מבנה של תוכנית C",
+			public: true
+		},
+		{
+			id: "c-types",
+			title: "2. משתנים וטיפוסים",
+			public: true
+		},
+		{
+			id: "make",
+			title: "make ו-Makefile",
+			public: true
+		}
+	],
 	formerly: [{
 		id: "c-make",
 		prefix: "lab:c-make:",
@@ -21394,6 +23589,51 @@ function OutsideNotice({ context }) {
 		})]
 	});
 }
+// src/core/code-box/block-comments.ts
+function endsInsideComment(line, startsInside) {
+	let inside = startsInside;
+	let index = 0;
+	while (index < line.length) {
+		if (inside) {
+			const end = line.indexOf("*/", index);
+			if (end < 0) return true;
+			inside = false;
+			index = end + 2;
+			continue;
+		}
+		const character = line[index];
+		if (character === "\"" || character === "'") {
+			index++;
+			while (index < line.length && line[index] !== character) index += line[index] === "\\" ? 2 : 1;
+			index++;
+			continue;
+		}
+		if (character === "/" && line[index + 1] === "/") return false;
+		if (character === "/" && line[index + 1] === "*") {
+			inside = true;
+			index += 2;
+			continue;
+		}
+		index++;
+	}
+	return inside;
+}
+function blockCommentStarts(lines) {
+	const starts = [];
+	let inside = false;
+	for (const line of lines) {
+		starts.push(inside);
+		inside = endsInsideComment(line, inside);
+	}
+	return starts;
+}
+function colourCommentStart(line, highlight) {
+	const end = line.indexOf("*/");
+	const commentEnd = end < 0 ? line.length : end + 2;
+	const comment = line.slice(0, commentEnd);
+	const rest = line.slice(commentEnd);
+	return (comment ? "<i class=\"c\">" + escapeHtml$1(comment) + "</i>" : "") + (rest ? highlight(rest) : "");
+}
 // src/core/code-box/editor-keys.js
 var INDENT = "    ";
 var MAKEFILE_EDITOR = /[:\s](GNUmakefile|[Mm]akefile)$/;
@@ -21635,12 +23875,18 @@ function useLivePreview(hasPreview, textAreaRef, lines) {
 var SPARE_WIDTH_CHARS = 3;
 var highlightCache = /* @__PURE__ */ new Map();
 var HIGHLIGHT_CACHE_SIZE = 4e3;
-function highlightLine(line) {
-	let lineHtml = highlightCache.get(line);
+function highlightingEngine() {
+	return window.LabEngine;
+}
+function highlightLine(line, startsInComment) {
+	const cacheKey = (startsInComment ? "" : "") + line;
+	let lineHtml = highlightCache.get(cacheKey);
 	if (lineHtml === void 0) {
-		lineHtml = window.LabEngine.highlight(line) || " ";
+		const engine = highlightingEngine();
+		const highlight = engine.highlight.bind(engine);
+		lineHtml = (startsInComment ? colourCommentStart(line, highlight) : highlight(line)) || " ";
 		if (highlightCache.size > HIGHLIGHT_CACHE_SIZE) highlightCache.clear();
-		highlightCache.set(line, lineHtml);
+		highlightCache.set(cacheKey, lineHtml);
 	}
 	return lineHtml;
 }
@@ -21699,6 +23945,7 @@ function Gutter(props) {
 }
 function ColourLayer(props) {
 	const { marks, lines, ref, preview } = props;
+	const commentStarts = highlightingEngine().blockComments ? blockCommentStarts(lines) : null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
 		className: "ed-hl",
 		"aria-hidden": "true",
@@ -21706,9 +23953,10 @@ function ColourLayer(props) {
 		children: lines.map((line, index) => {
 			const view = preview && preview[index];
 			const classes = lineClasses("ln", marks, index + 1) + (view ? view.className : "");
+			const lineHtml = highlightLine(line, Boolean(commentStarts && commentStarts[index]));
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: classes,
-				dangerouslySetInnerHTML: { __html: view?.html || highlightLine(line) }
+				dangerouslySetInnerHTML: { __html: view?.html || lineHtml }
 			}, index);
 		})
 	});
@@ -24200,12 +26448,10 @@ function subscribeView(listener) {
 function useView(select) {
 	return (0, import_react.useSyncExternalStore)(subscribeView, () => select(state$1));
 }
-// src/core/lesson/page-model.ts
-var pageModel = {
-	pages: [],
-	byId: /* @__PURE__ */ new Map(),
-	byKey: /* @__PURE__ */ new Map()
-};
+// src/core/lesson/unit-pages.ts
+function isBoxItem(item) {
+	return Boolean(item) && typeof item === "object";
+}
 function unitPage(kind, unit, unitIndex, parts) {
 	return {
 		id: "",
@@ -24218,11 +26464,15 @@ function unitPage(kind, unit, unitIndex, parts) {
 		parts
 	};
 }
+function quizComesLast(unit) {
+	return Boolean(unit.quiz) && (unit.body || []).some(isBoxItem);
+}
 function splitUnitIntoPages(unit, unitIndex) {
 	const unitPages = [];
-	if (unit.quiz) unitPages.push(unitPage("quiz", unit, unitIndex, []));
+	const quizLast = quizComesLast(unit);
+	if (unit.quiz && !quizLast) unitPages.push(unitPage("quiz", unit, unitIndex, []));
 	let textBuffer = [];
-	for (const part of unit.body || []) if (isBox(part)) {
+	for (const part of unit.body || []) if (isBoxItem(part)) {
 		const page = unitPage("box", unit, unitIndex, textBuffer);
 		page.box = part;
 		page.key = part.id;
@@ -24232,8 +26482,26 @@ function splitUnitIntoPages(unit, unitIndex) {
 	const lastPage = unitPages[unitPages.length - 1];
 	if (textBuffer.length && lastPage && lastPage.kind === "box") lastPage.after = textBuffer;
 	else if (textBuffer.length || !unitPages.length) unitPages.push(unitPage("text", unit, unitIndex, textBuffer));
+	if (quizLast) unitPages.push(unitPage("quiz", unit, unitIndex, []));
 	return unitPages;
 }
+function unitPageId(unit, stepIndex) {
+	return unit.id + (stepIndex ? "/" + (stepIndex + 1) : "");
+}
+function pageIdOfBox(unit, boxId) {
+	let pageIndex = unit.quiz && !quizComesLast(unit) ? 1 : 0;
+	for (const item of unit.body || []) {
+		if (isBoxItem(item) && item.id === boxId) break;
+		if (isBoxItem(item)) pageIndex++;
+	}
+	return unitPageId(unit, pageIndex);
+}
+// src/core/lesson/page-model.ts
+var pageModel = {
+	pages: [],
+	byId: /* @__PURE__ */ new Map(),
+	byKey: /* @__PURE__ */ new Map()
+};
 function computePages(course) {
 	const pages = [{
 		id: "home",
@@ -24249,7 +26517,7 @@ function computePages(course) {
 		unitPages.forEach((page, stepIndex) => {
 			page.si = stepIndex;
 			page.of = unitPages.length;
-			page.id = unit.id + (stepIndex ? "/" + (stepIndex + 1) : "");
+			page.id = unitPageId(unit, stepIndex);
 			pages.push(page);
 		});
 		unit.pages = unitPages;
@@ -24263,14 +26531,6 @@ function computePages(course) {
 function pageOfBox(boxId) {
 	const page = pageModel.byKey.get(boxId);
 	return page && page.box ? page : void 0;
-}
-function pageIdOfBox(unit, boxId) {
-	let pageIndex = unit.quiz ? 1 : 0;
-	for (const item of unit.body || []) {
-		if (isBox(item) && item.id === boxId) break;
-		if (isBox(item)) pageIndex++;
-	}
-	return unit.id + (pageIndex ? "/" + (pageIndex + 1) : "");
 }
 function isLastBoxPage(page) {
 	const boxPages = (page.u?.pages || []).filter((candidate) => candidate.box);
@@ -33875,6 +36135,19 @@ function followLessonWidth(lessonColumn) {
 	if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", fitPageOnScreen);
 }
 // src/core/lesson/Quiz.tsx
+function useQuizPass(passKey, rightCount, total) {
+	(0, import_react.useEffect)(() => {
+		if (!passKey || total === 0 || rightCount < total) return;
+		if (!codeBox.store.get("quizpass:" + passKey, false)) {
+			codeBox.store.set("quizpass:" + passKey, true);
+			document.dispatchEvent(new CustomEvent("ptr-progress"));
+		}
+	}, [
+		passKey,
+		rightCount,
+		total
+	]);
+}
 var ANSWER_LETTERS = [
 	"א",
 	"ב",
@@ -34036,6 +36309,7 @@ function Quiz(props) {
 	const { questions } = props;
 	const { chosen, liveText, rootRef, answer, retry } = useQuizAnswers(questions);
 	const rightCount = chosen.filter((choice, index) => choice === questions[index]?.a).length;
+	useQuizPass(props.passKey || "", rightCount, questions.length);
 	const isAnyAnswered = chosen.some((choice) => choice !== void 0);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		ref: rootRef,
@@ -34425,7 +36699,10 @@ function UnitPage(props) {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Crumb, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageTitles, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextParts, { parts: page.parts }),
-		quiz ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Quiz, { questions: quiz }, JSON.stringify(quiz)) : null,
+		quiz ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Quiz, {
+			questions: quiz,
+			passKey: page.u.id
+		}, JSON.stringify(quiz)) : null,
 		page.box ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TaskCard, { box: page.box }) : null,
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextParts, { parts: page.after || [] })
 	] });
@@ -34574,7 +36851,7 @@ function newSubIndex(unit, afterKey) {
 	}
 	const afterPage = pageModel.byKey.get(afterKey);
 	if (afterPage && afterPage.box) return body.indexOf(afterPage.box) + 1;
-	return afterPage && afterPage.kind === "quiz" ? 0 : body.length;
+	return afterPage && afterPage.kind === "quiz" && !quizComesLast(unit) ? 0 : body.length;
 }
 function insertSubLesson(unitId, afterKey, box) {
 	const unit = unitById(unitId);
@@ -34985,6 +37262,9 @@ function ListTail() {
 function hasPassed(box) {
 	return Boolean(codeBox.store.get("pass:" + box.id, false));
 }
+function hasPassedQuiz(unit) {
+	return Boolean(unit && unit.quiz && codeBox.store.get("quizpass:" + unit.id, false));
+}
 function isExercisePage(page) {
 	return Boolean(page.box && page.box.task);
 }
@@ -35037,7 +37317,7 @@ function stepLabelHtml(page) {
 }
 function StepLink(props) {
 	const { page, isCurrent } = props;
-	const isPassed = isExercisePage(page) && hasPassed(page.box);
+	const isPassed = isExercisePage(page) ? hasPassed(page.box) : page.kind === "quiz" && hasPassedQuiz(page.u);
 	const className = [
 		page.box ? "" : "text",
 		isPassed ? "passed" : "",
@@ -35559,7 +37839,7 @@ async function runSelfTest(engine, allBoxes, wantsReal) {
 	};
 }
 // src/core/page/admin.js
-var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|stdin|ver):/;
+var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|stdin|ver|quizpass):/;
 function paintAdminSwitch() {
 	const adminSwitch = document.getElementById("admin");
 	adminSwitch.setAttribute("aria-checked", String(adminSwitch.checked));
@@ -36468,7 +38748,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 54e1a67 מ-2026-11-12 17:25"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 54e1a67</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 864a42b מ-2026-11-13 19:41, ועוד שינויים בקוד שעוד לא נכנסו ל-commit"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 864a42b+</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
