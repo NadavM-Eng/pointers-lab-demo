@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-p3qFF8jcvcP/r75BQKahMlHTfhacda7xoSxSm8S4b9M=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-B7nGJxV0Bip2iPa7J7cbOjXcpZ+soQ2op9uL8bXAWlQ=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -15258,6 +15258,304 @@ installCourseDiagrams({});
 	};
 	const mk = (...lines) => lines.map((line) => line.replace(/^>/, "	")).join("\n") + "\n";
 	const make = (goals, expect) => Object.assign({ make: goals }, expect || {});
+	const houseMakefile = (modules, deps = {}) => {
+		const objs = ["main"].concat(modules).map((m) => m + ".o");
+		const needs = (m, own) => own.concat(deps[m] || []).join(" ");
+		const lines = [
+			"CC = gcc",
+			"CFLAGS = -std=c11 -Wall -Wextra -g",
+			"OBJS = " + objs.join(" "),
+			"",
+			"prog: $(OBJS)",
+			">$(CC) $(CFLAGS) $(OBJS) -o prog",
+			"",
+			"main.o: " + needs("main", ["main.c"].concat(modules.map((m) => m + ".h"))),
+			">$(CC) $(CFLAGS) -c main.c"
+		];
+		for (const m of modules) lines.push("", m + ".o: " + needs(m, [m + ".c", m + ".h"]), ">$(CC) $(CFLAGS) -c " + m + ".c");
+		lines.push("", "clean:", ">rm -f *.o prog", "", ".PHONY: clean");
+		return mk(...lines);
+	};
+	const project = (modules, opts = {}) => {
+		const files = {};
+		for (const [name, m] of Object.entries(modules)) {
+			files[name + ".c"] = m.c;
+			files[name + ".h"] = m.h;
+		}
+		files.Makefile = opts.makefile || houseMakefile(Object.keys(modules), opts.deps);
+		return files;
+	};
+	const taskIn = (file, code) => "/* TODO: the task is in " + file + ", not in this file */\n" + code;
+	const MATHX = {
+		h: R`#ifndef MATHX_H
+#define MATHX_H
+
+/* returns 1 when n is even, else 0 */
+int isEven(int n);
+
+/* returns x * x * x */
+int cube(int x);
+
+/* returns the sum of the digits of n (of |n| when n is negative) */
+int digitSum(int n);
+
+/* returns n with its digits reversed: 120 gives 21 */
+int reverseNumber(int n);
+
+/* returns base to the power exp, for exp >= 0 */
+int power(int base, int exp);
+
+#endif
+`,
+		c: R`#include "mathx.h"
+
+int isEven(int n)
+{
+    return n % 2 == 0;
+}
+
+int cube(int x)
+{
+    return x * x * x;
+}
+
+int digitSum(int n)
+{
+    int sum = 0;
+    if (n < 0)
+    {
+        n = -n;
+    }
+    while (n > 0)
+    {
+        sum += n % 10;
+        n /= 10;
+    }
+    return sum;
+}
+
+int reverseNumber(int n)
+{
+    int result = 0;
+    while (n > 0)
+    {
+        result = result * 10 + n % 10;
+        n /= 10;
+    }
+    return result;
+}
+
+int power(int base, int exp)
+{
+    int result = 1;
+    for (int i = 0; i < exp; i++)
+    {
+        result *= base;
+    }
+    return result;
+}
+`
+	};
+	const plainMakefile = (modules, deps = {}) => {
+		const objs = ["main"].concat(modules).map((m) => m + ".o");
+		const needs = (m, own) => own.concat(deps[m] || []).join(" ");
+		const lines = [
+			"prog: " + objs.join(" "),
+			">gcc " + objs.join(" ") + " -o prog",
+			"",
+			"main.o: " + needs("main", ["main.c"].concat(modules.map((m) => m + ".h"))),
+			">gcc -c main.c"
+		];
+		for (const m of modules) lines.push("", m + ".o: " + needs(m, [m + ".c", m + ".h"]), ">gcc -c " + m + ".c");
+		return mk(...lines);
+	};
+	const mathxProject = (mathx = MATHX, makefile = plainMakefile(["mathx"])) => project({ mathx }, { makefile });
+	const addPrototype = (h, line) => h.replace("\n#endif", line + "\n\n#endif");
+	R`#ifndef ARRAYS_H
+#define ARRAYS_H
+
+/* returns the sum of the size values of arr */
+int sumArray(int arr[], int size);
+
+/* reverses arr in place */
+void reverseArray(int arr[], int size);
+
+/* returns the index of the largest value (the first one on a tie); size > 0 */
+int maxIndex(int arr[], int size);
+
+/* returns 1 when every value is bigger than the one before it, else 0 */
+int isIncreasing(int arr[], int size);
+
+#endif
+`, R`#include "arrays.h"
+
+int sumArray(int arr[], int size)
+{
+    int sum = 0;
+    for (int i = 0; i < size; i++)
+    {
+        sum += arr[i];
+    }
+    return sum;
+}
+
+void reverseArray(int arr[], int size)
+{
+    for (int i = 0; i < size / 2; i++)
+    {
+        int temp = arr[i];
+        arr[i] = arr[size - 1 - i];
+        arr[size - 1 - i] = temp;
+    }
+}
+
+int maxIndex(int arr[], int size)
+{
+    int best = 0;
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] > arr[best])
+        {
+            best = i;
+        }
+    }
+    return best;
+}
+
+int isIncreasing(int arr[], int size)
+{
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] <= arr[i - 1])
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+`;
+	const moduleOf = (name, fns, opts = {}) => {
+		const guard = name.toUpperCase() + "_H";
+		const defs = (opts.defines || []).map((line) => line + "\n\n").join("");
+		return {
+			h: "#ifndef " + guard + "\n#define " + guard + "\n\n" + defs + fns.map((f) => f.p).join("\n\n") + "\n\n#endif\n",
+			c: (opts.includes || []).concat([name]).map((m) => "#include \"" + m + ".h\"\n").join("") + "\n" + fns.map((f) => f.b).join("\n\n") + "\n"
+		};
+	};
+	const A_SUM = {
+		p: "/* returns the sum of the size values of arr */\nint sumArray(int arr[], int size);",
+		b: R`int sumArray(int arr[], int size)
+{
+    int sum = 0;
+    for (int i = 0; i < size; i++)
+    {
+        sum += arr[i];
+    }
+    return sum;
+}`
+	};
+	const A_REVERSE = {
+		p: "/* reverses arr in place */\nvoid reverseArray(int arr[], int size);",
+		b: R`void reverseArray(int arr[], int size)
+{
+    for (int i = 0; i < size / 2; i++)
+    {
+        int temp = arr[i];
+        arr[i] = arr[size - 1 - i];
+        arr[size - 1 - i] = temp;
+    }
+}`
+	};
+	const A_MAX = {
+		p: "/* returns the index of the largest value (the first one on a tie); size > 0 */\nint maxIndex(int arr[], int size);",
+		b: R`int maxIndex(int arr[], int size)
+{
+    int best = 0;
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] > arr[best])
+        {
+            best = i;
+        }
+    }
+    return best;
+}`
+	};
+	const A_INC = {
+		p: "/* returns 1 when every value is bigger than the one before it, else 0 */\nint isIncreasing(int arr[], int size);",
+		b: R`int isIncreasing(int arr[], int size)
+{
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] <= arr[i - 1])
+        {
+            return 0;
+        }
+    }
+    return 1;
+}`
+	};
+	const starterOf = (fn, comments, ret) => {
+		const header = fn.p.split("\n").pop().replace(/;$/, "");
+		return {
+			p: fn.p,
+			b: header + "\n{\n" + comments.map((c) => "    /* " + c + " */\n").join("") + (ret ? "    " + ret + "\n" : "") + "}"
+		};
+	};
+	const M_SUM = {
+		p: "/* returns the sum of all the cells of mat, which has rows rows */\nint matrixSum(int mat[][COLS], int rows);",
+		b: R`int matrixSum(int mat[][COLS], int rows)
+{
+    int sum = 0;
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            sum += mat[i][j];
+        }
+    }
+    return sum;
+}`
+	};
+	const M_COUNT = {
+		p: "/* returns how many cells of mat are equal to value */\nint countInMatrix(int mat[][COLS], int rows, int value);",
+		b: R`int countInMatrix(int mat[][COLS], int rows, int value)
+{
+    int count = 0;
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            if (mat[i][j] == value)
+            {
+                count++;
+            }
+        }
+    }
+    return count;
+}`
+	};
+	const M_TRANSPOSE = {
+		p: "/* swaps rows and columns of the square matrix mat in place */\nvoid transposeSquare(int mat[][N]);",
+		b: R`void transposeSquare(int mat[][N])
+{
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = i + 1; j < N; j++)
+        {
+            int temp = mat[i][j];
+            mat[i][j] = mat[j][i];
+            mat[j][i] = temp;
+        }
+    }
+}`
+	};
+	const MATRIX_DEFINES = ["#define COLS 4", "#define N 3"];
+	moduleOf(`matrix`, [
+		M_SUM,
+		M_COUNT,
+		M_TRANSPOSE
+	], { defines: MATRIX_DEFINES });
 	const CALC_H = R`#ifndef CALC_H
 #define CALC_H
 
@@ -15383,7 +15681,8 @@ int main(void)
 			}
 		]
 	}));
-	const INC_SHOW = R`#include <stdio.h>
+	{
+		const INC_SHOW = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15391,7 +15690,7 @@ int main(void)
     printf("so this line works\n");
     return 0;
 }`;
-	const INC_START = R`/* TODO: fix the name of the library */
+		const INC_START = R`/* TODO: fix the name of the library */
 #include <stdoi.h>
 
 int main(void)
@@ -15399,70 +15698,71 @@ int main(void)
     printf("Ready\n");
     return 0;
 }`;
-	const INC_SOLVED = R`#include <stdio.h>
+		const INC_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
     printf("Ready\n");
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "structure-include",
-		title: "הספרייה stdio.h",
-		body: [
-			R`<p><code>#include &lt;stdio.h&gt;</code> מצרפת לתוכנית <b>ספרייה</b>: קוד מוכן שמישהו כבר כתב. מהספרייה הזאת מגיעה <code>printf</code>.</p>
+		U.push(withOutputs({
+			id: "structure-include",
+			title: "הספרייה stdio.h",
+			body: [
+				R`<p><code>#include &lt;stdio.h&gt;</code> מצרפת לתוכנית <b>ספרייה</b>: קוד מוכן שמישהו כבר כתב. מהספרייה הזאת מגיעה <code>printf</code>.</p>
 <p>השורה נכתבת בראש הקובץ, לפני <code>main</code>. הריצו את הדוגמה.</p>`,
-			{
-				id: "structure-include-show",
-				title: "מאיפה מגיעה printf",
-				code: INC_SHOW,
-				tests: [io("prints two lines", "", "printf comes from stdio.h\nso this line works")]
-			},
-			R`<p>שם הספרייה חייב להיות מדויק. עם טעות באות אחת, gcc לא מוצא את הקובץ ועוצר:</p>
+				{
+					id: "structure-include-show",
+					title: "מאיפה מגיעה printf",
+					code: INC_SHOW,
+					tests: [io("prints two lines", "", "printf comes from stdio.h\nso this line works")]
+				},
+				R`<p>שם הספרייה חייב להיות מדויק. עם טעות באות אחת, gcc לא מוצא את הקובץ ועוצר:</p>
 <pre class="code-static"><span>fatal error: stdoi.h: No such file or directory</span></pre>
 <p>התיקון: לכתוב נכון, <code>stdio.h</code>.</p>`,
-			{
-				id: "structure-include-fix",
-				title: "שם הספרייה",
-				task: "תקנו את שם הספרייה בשורה הראשונה, כך שהתוכנית תדפיס <code>Ready</code>.",
-				code: INC_START,
-				solution: INC_SOLVED,
-				tests: [io("prints Ready", "", "Ready")]
-			}
-		],
-		quiz: [
-			{
-				s: "מה נותנת לתוכנית השורה <code>#include &lt;stdio.h&gt;</code>?",
-				o: [
-					"את <code>main</code>, כדי שהתוכנית תתחיל",
-					"את <code>printf</code>, שמגיעה מהספרייה",
-					"את <code>return 0</code>"
-				],
-				a: 1,
-				w: "<code>printf</code> מגיעה מהספרייה <code>stdio.h</code>."
-			},
-			{
-				s: "בשורה הראשונה כתוב <code>#include &lt;stdoi.h&gt;</code>. מה יקרה כשנריץ?",
-				o: [
-					"gcc עוצר: אין קובץ בשם הזה",
-					"התוכנית רצה כרגיל",
-					"gcc מתקן את השם בעצמו"
-				],
-				a: 0,
-				w: "שם הספרייה חייב להיות מדויק."
-			},
-			{
-				s: "איזו מהשורות הבאות <b>לא</b> תצרף את הספרייה של <code>printf</code>? שימו לב לכל אות.",
-				o: [
-					"<code>#include &lt;stdio.h&gt;</code>",
-					"<code>#include&lt;stdio.h&gt;</code>",
-					"<code>#include &lt;studio.h&gt;</code>"
-				],
-				a: 2,
-				w: "<code>studio</code> אינו <code>stdio</code>. הרווח החסר בשורה השנייה לא משנה."
-			}
-		]
-	}));
+				{
+					id: "structure-include-fix",
+					title: "שם הספרייה",
+					task: "תקנו את שם הספרייה בשורה הראשונה, כך שהתוכנית תדפיס <code>Ready</code>.",
+					code: INC_START,
+					solution: INC_SOLVED,
+					tests: [io("prints Ready", "", "Ready")]
+				}
+			],
+			quiz: [
+				{
+					s: "מה נותנת לתוכנית השורה <code>#include &lt;stdio.h&gt;</code>?",
+					o: [
+						"את <code>main</code>, כדי שהתוכנית תתחיל",
+						"את <code>printf</code>, שמגיעה מהספרייה",
+						"את <code>return 0</code>"
+					],
+					a: 1,
+					w: "<code>printf</code> מגיעה מהספרייה <code>stdio.h</code>."
+				},
+				{
+					s: "בשורה הראשונה כתוב <code>#include &lt;stdoi.h&gt;</code>. מה יקרה כשנריץ?",
+					o: [
+						"gcc עוצר: אין קובץ בשם הזה",
+						"התוכנית רצה כרגיל",
+						"gcc מתקן את השם בעצמו"
+					],
+					a: 0,
+					w: "שם הספרייה חייב להיות מדויק."
+				},
+				{
+					s: "איזו מהשורות הבאות <b>לא</b> תצרף את הספרייה של <code>printf</code>? שימו לב לכל אות.",
+					o: [
+						"<code>#include &lt;stdio.h&gt;</code>",
+						"<code>#include&lt;stdio.h&gt;</code>",
+						"<code>#include &lt;studio.h&gt;</code>"
+					],
+					a: 2,
+					w: "<code>studio</code> אינו <code>stdio</code>. הרווח החסר בשורה השנייה לא משנה."
+				}
+			]
+		}));
+	}
 	const MAIN_START_SHOW = R`#include <stdio.h>
 
 int main(void)
@@ -21437,7 +21737,8 @@ int main(void)
 			]
 		}));
 	}
-	const DIGITS_COUNT = R`#include <stdio.h>
+	{
+		const DIGITS_COUNT = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21452,7 +21753,7 @@ int main(void)
     printf("Digits: %d\n", count);
     return 0;
 }`;
-	const DIGIT_SUM_START = R`#include <stdio.h>
+		const DIGIT_SUM_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21469,7 +21770,7 @@ int main(void)
     printf("Sum of digits: %d\n", sum);
     return 0;
 }`;
-	const DIGIT_SUM_SOLVED = R`#include <stdio.h>
+		const DIGIT_SUM_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21488,7 +21789,7 @@ int main(void)
     printf("Sum of digits: %d\n", sum);
     return 0;
 }`;
-	const REVERSE_START = R`#include <stdio.h>
+		const REVERSE_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21505,7 +21806,7 @@ int main(void)
     printf("Reversed: %d\n", reversed);
     return 0;
 }`;
-	const REVERSE_SOLVED = R`#include <stdio.h>
+		const REVERSE_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21524,89 +21825,90 @@ int main(void)
     printf("Reversed: %d\n", reversed);
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "loops-digits",
-		title: "ספרות של מספר",
-		body: [
-			R`<p>ב"חילוק שלמים ושארית" ראיתם ש-<code>n % 10</code> הוא הספרה האחרונה ו-<code>n / 10</code> מוריד אותה. בלולאה זה עובר על כל הספרות, מהסוף להתחלה:</p>
+		U.push(withOutputs({
+			id: "loops-digits",
+			title: "ספרות של מספר",
+			body: [
+				R`<p>ב"חילוק שלמים ושארית" ראיתם ש-<code>n % 10</code> הוא הספרה האחרונה ו-<code>n / 10</code> מוריד אותה. בלולאה זה עובר על כל הספרות, מהסוף להתחלה:</p>
 <table class="tbl"><tr><th>סיבוב</th><th>n</th><th>n % 10</th><th>n / 10</th></tr>
 <tr><td>1</td><td class="mono">1234</td><td class="mono">4</td><td class="mono">123</td></tr>
 <tr><td>2</td><td class="mono">123</td><td class="mono">3</td><td class="mono">12</td></tr>
 <tr><td>3</td><td class="mono">12</td><td class="mono">2</td><td class="mono">1</td></tr>
 <tr><td>4</td><td class="mono">1</td><td class="mono">1</td><td class="mono">0</td></tr></table>
 <p>כש-<code>n</code> מגיע ל-0 נגמרו הספרות. הדוגמה סופרת אותן.</p>`,
-			{
-				id: "loops-digits-count",
-				title: "כמה ספרות",
-				code: DIGITS_COUNT,
-				tests: [io("1234 has 4 digits", "", "Digits: 4")]
-			},
-			R`<p>תורכם: אותה לולאה, ובכל סיבוב מוסיפים את הספרה האחרונה לסכום.</p>`,
-			{
-				id: "loops-digits-sum",
-				title: "סכום הספרות",
-				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
-				code: DIGIT_SUM_START,
-				solution: DIGIT_SUM_SOLVED,
-				tests: [
-					io("1234 gives 10", "1234\n", "Number: Sum of digits: 10"),
-					io("7 gives 7", "7\n", "Number: Sum of digits: 7"),
-					io("0 gives 0", "0\n", "Number: Sum of digits: 0"),
-					io("1000 gives 1", "1000\n", "Number: Sum of digits: 1")
-				]
-			},
-			R`<p>עוד אחת: היפוך מספר. בכל סיבוב מזיזים את מה שכבר הפכנו מקום אחד שמאלה (כפול 10), ומוסיפים את הספרה האחרונה.</p>
+				{
+					id: "loops-digits-count",
+					title: "כמה ספרות",
+					code: DIGITS_COUNT,
+					tests: [io("1234 has 4 digits", "", "Digits: 4")]
+				},
+				R`<p>תורכם: אותה לולאה, ובכל סיבוב מוסיפים את הספרה האחרונה לסכום.</p>`,
+				{
+					id: "loops-digits-sum",
+					title: "סכום הספרות",
+					task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+					code: DIGIT_SUM_START,
+					solution: DIGIT_SUM_SOLVED,
+					tests: [
+						io("1234 gives 10", "1234\n", "Number: Sum of digits: 10"),
+						io("7 gives 7", "7\n", "Number: Sum of digits: 7"),
+						io("0 gives 0", "0\n", "Number: Sum of digits: 0"),
+						io("1000 gives 1", "1000\n", "Number: Sum of digits: 1")
+					]
+				},
+				R`<p>עוד אחת: היפוך מספר. בכל סיבוב מזיזים את מה שכבר הפכנו מקום אחד שמאלה (כפול 10), ומוסיפים את הספרה האחרונה.</p>
 <table class="tbl"><tr><th>סיבוב</th><th>n</th><th>reversed</th></tr>
 <tr><td>1</td><td class="mono">123</td><td class="mono">3</td></tr>
 <tr><td>2</td><td class="mono">12</td><td class="mono">32</td></tr>
 <tr><td>3</td><td class="mono">1</td><td class="mono">321</td></tr></table>`,
-			{
-				id: "loops-digits-reverse",
-				title: "היפוך מספר",
-				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
-				code: REVERSE_START,
-				solution: REVERSE_SOLVED,
-				tests: [
-					io("123 gives 321", "123\n", "Number: Reversed: 321"),
-					io("120 gives 21", "120\n", "Number: Reversed: 21"),
-					io("7 gives 7", "7\n", "Number: Reversed: 7"),
-					io("1000 gives 1", "1000\n", "Number: Reversed: 1")
-				]
-			}
-		],
-		quiz: [
-			{
-				s: "כמה הוא <code>1234 / 10</code>?",
-				o: [
-					"123.4",
-					"123",
-					"4"
-				],
-				a: 1,
-				w: "חילוק שלמים מוריד את הספרה האחרונה."
-			},
-			{
-				s: "כמה הוא <code>1234 % 10</code>?",
-				o: [
-					"4",
-					"123",
-					"1"
-				],
-				a: 0,
-				w: "<code>% 10</code> נותן את הספרה האחרונה."
-			},
-			{
-				s: "מריצים את \"כמה ספרות\" עם <code>n = 0</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
-				o: [
-					"הלולאה לא רצה בכלל",
-					"מודפס <code>Digits: 0</code>",
-					"מודפס <code>Digits: 1</code>"
-				],
-				a: 2,
-				w: "0 אינו גדול מ-0, ולכן הלולאה לא רצה ו-<code>count</code> נשאר 0."
-			}
-		]
-	}));
+				{
+					id: "loops-digits-reverse",
+					title: "היפוך מספר",
+					task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+					code: REVERSE_START,
+					solution: REVERSE_SOLVED,
+					tests: [
+						io("123 gives 321", "123\n", "Number: Reversed: 321"),
+						io("120 gives 21", "120\n", "Number: Reversed: 21"),
+						io("7 gives 7", "7\n", "Number: Reversed: 7"),
+						io("1000 gives 1", "1000\n", "Number: Reversed: 1")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "כמה הוא <code>1234 / 10</code>?",
+					o: [
+						"123.4",
+						"123",
+						"4"
+					],
+					a: 1,
+					w: "חילוק שלמים מוריד את הספרה האחרונה."
+				},
+				{
+					s: "כמה הוא <code>1234 % 10</code>?",
+					o: [
+						"4",
+						"123",
+						"1"
+					],
+					a: 0,
+					w: "<code>% 10</code> נותן את הספרה האחרונה."
+				},
+				{
+					s: "מריצים את \"כמה ספרות\" עם <code>n = 0</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
+					o: [
+						"הלולאה לא רצה בכלל",
+						"מודפס <code>Digits: 0</code>",
+						"מודפס <code>Digits: 1</code>"
+					],
+					a: 2,
+					w: "0 אינו גדול מ-0, ולכן הלולאה לא רצה ו-<code>count</code> נשאר 0."
+				}
+			]
+		}));
+	}
 	const BREAK_MAIN = R`#include <stdio.h>
 
 int main(void)
@@ -21744,7 +22046,8 @@ int main(void)
 			}
 		]
 	}));
-	const GRID_MAIN = R`#include <stdio.h>
+	{
+		const GRID_MAIN = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21758,7 +22061,7 @@ int main(void)
     }
     return 0;
 }`;
-	const TRIANGLE_MAIN = R`#include <stdio.h>
+		const TRIANGLE_MAIN = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21772,7 +22075,7 @@ int main(void)
     }
     return 0;
 }`;
-	const TABLE_START = R`#include <stdio.h>
+		const TABLE_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21785,7 +22088,7 @@ int main(void)
 
     return 0;
 }`;
-	const TABLE_SOLVED = R`#include <stdio.h>
+		const TABLE_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -21803,75 +22106,76 @@ int main(void)
 
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "loops-nested",
-		title: "לולאה בתוך לולאה",
-		body: [
-			R`<p>בתוך הגוף של לולאה אפשר לשים עוד לולאה. החיצונית עוברת על השורות, והפנימית מדפיסה את מה שבתוך כל שורה. אחרי הפנימית יורדים שורה.</p>
+		U.push(withOutputs({
+			id: "loops-nested",
+			title: "לולאה בתוך לולאה",
+			body: [
+				R`<p>בתוך הגוף של לולאה אפשר לשים עוד לולאה. החיצונית עוברת על השורות, והפנימית מדפיסה את מה שבתוך כל שורה. אחרי הפנימית יורדים שורה.</p>
 <table class="tbl"><tr><th>לולאה</th><th>רצה</th><th>עושה</th></tr>
 <tr><td class="mono">row</td><td>3 פעמים</td><td>שורה אחת בכל סיבוב</td></tr>
 <tr><td class="mono">col</td><td>4 פעמים בכל שורה</td><td>כוכבית אחת בכל סיבוב</td></tr></table>`,
-			{
-				id: "loops-nested-grid",
-				title: "רשת של כוכביות",
-				code: GRID_MAIN,
-				tests: [io("3 rows of 4", "", "****\n****\n****")]
-			},
-			R`<p>הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. כאן היא רצה עד <code>row</code>, ולכן בכל שורה יש כוכבית אחת יותר.</p>
+				{
+					id: "loops-nested-grid",
+					title: "רשת של כוכביות",
+					code: GRID_MAIN,
+					tests: [io("3 rows of 4", "", "****\n****\n****")]
+				},
+				R`<p>הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. כאן היא רצה עד <code>row</code>, ולכן בכל שורה יש כוכבית אחת יותר.</p>
 <p>לחצו <b>⏯ שורה אחר שורה</b> ועקבו אחרי <code>row</code> ו-<code>col</code> בטבלה: <code>col</code> מתחיל מ-1 מחדש בכל שורה.</p>`,
-			{
-				id: "loops-nested-triangle",
-				title: "משולש",
-				code: TRIANGLE_MAIN,
-				tests: [io("1, 2, 3 and 4 stars", "", "*\n**\n***\n****")]
-			},
-			R`<p>תורכם: לוח הכפל בגודל <code>n</code>. כל מספר תופס 4 מקומות (<code>%4d</code>, ראיתם ב"רוחב ודיוק בהדפסה"), ולכן הטורים מיושרים.</p>`,
-			{
-				id: "loops-nested-table",
-				title: "לוח הכפל",
-				task: "השלימו את שלושת ה-TODO. התוכנית קוראת את <code>n</code> בלי שאלה, ומדפיסה <code>n</code> שורות.",
-				code: TABLE_START,
-				solution: TABLE_SOLVED,
-				tests: [
-					io("a 3 by 3 table", "3\n", "   1   2   3\n   2   4   6\n   3   6   9"),
-					io("a 1 by 1 table", "1\n", "   1"),
-					io("a 4 by 4 table", "4\n", "   1   2   3   4\n   2   4   6   8\n   3   6   9  12\n   4   8  12  16")
-				]
-			}
-		],
-		quiz: [
-			{
-				s: "כמה כוכביות מדפיסה רשת של 3 שורות ו-4 טורים?",
-				o: [
-					"7",
-					"12",
-					"34"
-				],
-				a: 1,
-				w: "4 כוכביות בכל אחת מ-3 השורות."
-			},
-			{
-				s: "<code>for (r = 0; r &lt; 2; r++)</code> ובתוכה <code>for (c = 0; c &lt; 5; c++)</code>. כמה פעמים רץ הגוף של הפנימית?",
-				o: [
-					"7",
-					"10",
-					"5"
-				],
-				a: 1,
-				w: "5 פעמים בכל אחד מ-2 הסיבובים של החיצונית."
-			},
-			{
-				s: "איזה מהזוגות הבאים, חיצונית ובתוכה פנימית, <b>לא</b> מדפיס בדיוק 6 כוכביות?",
-				o: [
-					"<code>r &lt; 2</code> ובתוכה <code>c &lt; 3</code>",
-					"<code>r &lt; 3</code> ובתוכה <code>c &lt; 2</code>",
-					"<code>r &lt; 3</code> ובתוכה <code>c &lt; 3</code>"
-				],
-				a: 2,
-				w: "3 כפול 3 הם 9."
-			}
-		]
-	}));
+				{
+					id: "loops-nested-triangle",
+					title: "משולש",
+					code: TRIANGLE_MAIN,
+					tests: [io("1, 2, 3 and 4 stars", "", "*\n**\n***\n****")]
+				},
+				R`<p>תורכם: לוח הכפל בגודל <code>n</code>. כל מספר תופס 4 מקומות (<code>%4d</code>, ראיתם ב"רוחב ודיוק בהדפסה"), ולכן הטורים מיושרים.</p>`,
+				{
+					id: "loops-nested-table",
+					title: "לוח הכפל",
+					task: "השלימו את שלושת ה-TODO. התוכנית קוראת את <code>n</code> בלי שאלה, ומדפיסה <code>n</code> שורות.",
+					code: TABLE_START,
+					solution: TABLE_SOLVED,
+					tests: [
+						io("a 3 by 3 table", "3\n", "   1   2   3\n   2   4   6\n   3   6   9"),
+						io("a 1 by 1 table", "1\n", "   1"),
+						io("a 4 by 4 table", "4\n", "   1   2   3   4\n   2   4   6   8\n   3   6   9  12\n   4   8  12  16")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "כמה כוכביות מדפיסה רשת של 3 שורות ו-4 טורים?",
+					o: [
+						"7",
+						"12",
+						"34"
+					],
+					a: 1,
+					w: "4 כוכביות בכל אחת מ-3 השורות."
+				},
+				{
+					s: "<code>for (r = 0; r &lt; 2; r++)</code> ובתוכה <code>for (c = 0; c &lt; 5; c++)</code>. כמה פעמים רץ הגוף של הפנימית?",
+					o: [
+						"7",
+						"10",
+						"5"
+					],
+					a: 1,
+					w: "5 פעמים בכל אחד מ-2 הסיבובים של החיצונית."
+				},
+				{
+					s: "איזה מהזוגות הבאים, חיצונית ובתוכה פנימית, <b>לא</b> מדפיס בדיוק 6 כוכביות?",
+					o: [
+						"<code>r &lt; 2</code> ובתוכה <code>c &lt; 3</code>",
+						"<code>r &lt; 3</code> ובתוכה <code>c &lt; 2</code>",
+						"<code>r &lt; 3</code> ובתוכה <code>c &lt; 3</code>"
+					],
+					a: 2,
+					w: "3 כפול 3 הם 9."
+				}
+			]
+		}));
+	}
 	const UNTIL_ZERO_START = R`/* TODO: write the whole program here */
 `;
 	const UNTIL_ZERO_SOLVED = R`#include <stdio.h>
@@ -22803,7 +23107,8 @@ int main(void)
 			}
 		]
 	}));
-	const INC_MAIN = R`#include <stdio.h>
+	{
+		const INC_MAIN = R`#include <stdio.h>
 
 void inc(int n)
 {
@@ -22818,7 +23123,7 @@ int main(void)
     printf("outside: %d\n", a);
     return 0;
 }`;
-	const INC_RETURN_MAIN = R`#include <stdio.h>
+		const INC_RETURN_MAIN = R`#include <stdio.h>
 
 int incReturn(int n)
 {
@@ -22833,7 +23138,7 @@ int main(void)
     printf("%d\n", a);
     return 0;
 }`;
-	const DIGITS_FN_START = R`#include <stdio.h>
+		const DIGITS_FN_START = R`#include <stdio.h>
 
 int digitSum(int n)
 {
@@ -22853,7 +23158,7 @@ int main(void)
     printf("Sum of digits of %d: %d\n", n, digitSum(n));
     return 0;
 }`;
-	const DIGITS_FN_SOLVED = R`#include <stdio.h>
+		const DIGITS_FN_SOLVED = R`#include <stdio.h>
 
 int digitSum(int n)
 {
@@ -22879,33 +23184,33 @@ int main(void)
     printf("Sum of digits of %d: %d\n", n, digitSum(n));
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "func-byvalue",
-		title: "העברה לפי ערך",
-		body: [
-			R`<p>פרמטר הוא משתנה <b>חדש</b> של הפונקציה, שמקבל <b>עותק</b> של הערך. כש-<code>inc</code> משנה את <code>n</code>, היא משנה רק את העותק. ה-<code>a</code> של <code>main</code> נשאר 5.</p>`,
-			{
-				id: "func-byvalue-inc",
-				title: "העותק משתנה, המקור לא",
-				code: INC_MAIN,
-				tests: [io("6 inside, still 5 outside", "", "inside: 6\noutside: 5")]
-			},
-			R`<p>לחצו <b>⏯ שורה אחר שורה</b>. בתוך <code>incReturn</code> הטבלה מראה שתי פונקציות: <code>main</code> עם <code>a</code>, ו-<code>incReturn</code> עם <code>n</code> משלה.</p>
+		U.push(withOutputs({
+			id: "func-byvalue",
+			title: "העברה לפי ערך",
+			body: [
+				R`<p>פרמטר הוא משתנה <b>חדש</b> של הפונקציה, שמקבל <b>עותק</b> של הערך. כש-<code>inc</code> משנה את <code>n</code>, היא משנה רק את העותק. ה-<code>a</code> של <code>main</code> נשאר 5.</p>`,
+				{
+					id: "func-byvalue-inc",
+					title: "העותק משתנה, המקור לא",
+					code: INC_MAIN,
+					tests: [io("6 inside, still 5 outside", "", "inside: 6\noutside: 5")]
+				},
+				R`<p>לחצו <b>⏯ שורה אחר שורה</b>. בתוך <code>incReturn</code> הטבלה מראה שתי פונקציות: <code>main</code> עם <code>a</code>, ו-<code>incReturn</code> עם <code>n</code> משלה.</p>
 <p>כדי לשנות את <code>a</code>, מחזירים את הערך החדש ושמים אותו ב-<code>a</code>: <code>a = incReturn(a);</code></p>`,
-			{
-				id: "func-byvalue-return",
-				title: "מחזירים את הערך החדש",
-				code: INC_RETURN_MAIN,
-				tests: [io("a becomes 6", "", "6")]
-			},
-			R`<p>תורכם: סכום הספרות, כמו ב"ספרות של מספר", בתוך פונקציה. <code>digitSum</code> מורידה ספרות מ-<code>n</code>, אבל זה העותק שלה: <code>main</code> מדפיס אחריה את <code>n</code> שלו, שלא השתנה.</p>`,
-			{
-				id: "func-byvalue-digits",
-				title: "digitSum",
-				task: "השלימו את שלושת ה-TODO בתוך <code>digitSum</code>.",
-				code: DIGITS_FN_START,
-				solution: DIGITS_FN_SOLVED,
-				tests: [unit("digitSum", R`
+				{
+					id: "func-byvalue-return",
+					title: "מחזירים את הערך החדש",
+					code: INC_RETURN_MAIN,
+					tests: [io("a becomes 6", "", "6")]
+				},
+				R`<p>תורכם: סכום הספרות, כמו ב"ספרות של מספר", בתוך פונקציה. <code>digitSum</code> מורידה ספרות מ-<code>n</code>, אבל זה העותק שלה: <code>main</code> מדפיס אחריה את <code>n</code> שלו, שלא השתנה.</p>`,
+				{
+					id: "func-byvalue-digits",
+					title: "digitSum",
+					task: "השלימו את שלושת ה-TODO בתוך <code>digitSum</code>.",
+					code: DIGITS_FN_START,
+					solution: DIGITS_FN_SOLVED,
+					tests: [unit("digitSum", R`
 int digitSum(int n);
 int main(void)
 {
@@ -22915,41 +23220,42 @@ int main(void)
     T_INT("digitSum(-56) uses the digits of 56", digitSum(-56), 11);
     return 0;
 }`), io("main still has 1234 after the call", "1234\n", "Number: Sum of digits of 1234: 10")]
-			}
-		],
-		quiz: [
-			{
-				s: "למה <code>a</code> נשאר 5 אחרי <code>inc(a);</code>?",
-				o: [
-					"כי <code>inc</code> לא מחזירה כלום",
-					"כי <code>inc</code> שינתה עותק של <code>a</code>",
-					"כי <code>n++</code> לא עובד בפונקציה"
-				],
-				a: 1,
-				w: "הפרמטר מקבל עותק של הערך."
-			},
-			{
-				s: "<code>void twice(int n) { n = n * 2; }</code>. <code>x</code> הוא 7. כמה ב-<code>x</code> אחרי <code>twice(x);</code>?",
-				o: [
-					"14",
-					"7",
-					"0"
-				],
-				a: 1,
-				w: "<code>twice</code> הכפילה את העותק שלה בלבד."
-			},
-			{
-				s: "<code>int x = 5;</code>, <code>int incReturn(int n) { return n + 1; }</code> ו-<code>void inc(int n) { n++; }</code>. איזו מהשורות <b>לא</b> תשים 6 ב-<code>x</code>?",
-				o: [
-					"<code>x = incReturn(x);</code>",
-					"<code>x++;</code>",
-					"<code>inc(x);</code>"
-				],
-				a: 2,
-				w: "<code>inc</code> משנה עותק, ו-<code>x</code> נשאר 5."
-			}
-		]
-	}));
+				}
+			],
+			quiz: [
+				{
+					s: "למה <code>a</code> נשאר 5 אחרי <code>inc(a);</code>?",
+					o: [
+						"כי <code>inc</code> לא מחזירה כלום",
+						"כי <code>inc</code> שינתה עותק של <code>a</code>",
+						"כי <code>n++</code> לא עובד בפונקציה"
+					],
+					a: 1,
+					w: "הפרמטר מקבל עותק של הערך."
+				},
+				{
+					s: "<code>void twice(int n) { n = n * 2; }</code>. <code>x</code> הוא 7. כמה ב-<code>x</code> אחרי <code>twice(x);</code>?",
+					o: [
+						"14",
+						"7",
+						"0"
+					],
+					a: 1,
+					w: "<code>twice</code> הכפילה את העותק שלה בלבד."
+				},
+				{
+					s: "<code>int x = 5;</code>, <code>int incReturn(int n) { return n + 1; }</code> ו-<code>void inc(int n) { n++; }</code>. איזו מהשורות <b>לא</b> תשים 6 ב-<code>x</code>?",
+					o: [
+						"<code>x = incReturn(x);</code>",
+						"<code>x++;</code>",
+						"<code>inc(x);</code>"
+					],
+					a: 2,
+					w: "<code>inc</code> משנה עותק, ו-<code>x</code> נשאר 5."
+				}
+			]
+		}));
+	}
 	const LOCAL_MAIN = R`#include <stdio.h>
 
 void show(void)
@@ -23404,6 +23710,3386 @@ int main(void)
 			}
 		]
 	}));
+	const SPLIT_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("cube(3) = %d\n", cube(3));
+    printf("isEven(7) = %d\n", isEven(7));
+    return 0;
+}`;
+	const SPLIT_CALL_START = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    /* TODO 1: print the digit sum of n (digitSum), as in the example */
+    /* TODO 2: print n reversed (reverseNumber), as in the example */
+    return 0;
+}`;
+	const SPLIT_CALL_SOLVED = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("digit sum: %d\n", digitSum(n));
+    printf("reversed: %d\n", reverseNumber(n));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "build-split",
+		title: "למה לפצל לקבצים",
+		body: [
+			R`<p>תוכנית גדולה בקובץ אחד קשה לקרוא ולתקן. לכן מחלקים אותה לכמה קבצים קטנים, וכל קובץ עושה דבר אחד.</p>
+<table class="tbl"><tr><th>קובץ</th><th>מה יש בו</th></tr>
+<tr><td class="mono">main.c</td><td>רק <code>main</code>: קורא לפונקציות ומדפיס</td></tr>
+<tr><td class="mono">mathx.c</td><td>הגוף של כל פונקציה</td></tr>
+<tr><td class="mono">mathx.h</td><td>אב הטיפוס של כל פונקציה</td></tr></table>
+<p>עברו בין הלשוניות ליד הקוד. הלשונית <code>Makefile</code> מתארת איך בונים את התוכנית. נגיע אליה בהמשך הפרק. בינתיים ▶ מקמפל את כל קבצי ה-<code>.c</code> יחד.</p>`,
+			{
+				id: "build-split-tabs",
+				title: "פרויקט בשלוש לשוניות",
+				code: SPLIT_MAIN,
+				files: mathxProject(),
+				tests: [io("cube(3) and isEven(7)", "", "cube(3) = 27\nisEven(7) = 0")]
+			},
+			R`<p><code>main.c</code> כולל את <code>mathx.h</code>, ולכן הוא יכול לקרוא לכל פונקציה ש-<code>mathx.h</code> מצהיר עליה. את הגוף שלה הוא לא צריך לראות.</p>
+<p>ב-<code>mathx.h</code> יש עוד שתי פונקציות: <code>digitSum</code> ו-<code>reverseNumber</code>. ההערה מעל כל אחת אומרת מה היא מחזירה.</p>`,
+			{
+				id: "build-split-call",
+				title: "קוראים למודול",
+				task: "השלימו את שני ה-TODO ב-<code>main.c</code>: הדפיסו את סכום הספרות של <code>n</code> ואת <code>n</code> הפוך, בעזרת הפונקציות של <code>mathx.h</code>.",
+				code: SPLIT_CALL_START,
+				solution: SPLIT_CALL_SOLVED,
+				files: mathxProject(),
+				tests: [
+					io("2026", "2026\n", "Number: digit sum: 10\nreversed: 6202"),
+					io("120", "120\n", "Number: digit sum: 3\nreversed: 21"),
+					io("7", "7\n", "Number: digit sum: 7\nreversed: 7")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזה קובץ כותבים את הגוף של <code>cube</code>?",
+				o: [
+					"<code>mathx.h</code>",
+					"<code>mathx.c</code>",
+					"<code>main.c</code>"
+				],
+				a: 1,
+				w: "הגוף ב-<code>.c</code>, ואב הטיפוס ב-<code>.h</code>."
+			},
+			{
+				s: "מה צריך לכתוב ב-<code>main.c</code> כדי לקרוא ל-<code>digitSum</code>?",
+				o: [
+					"את הגוף של <code>digitSum</code>",
+					"את <code>#include \"mathx.h\"</code>",
+					"שום דבר"
+				],
+				a: 1,
+				w: "ה-include נותן ל-<code>main.c</code> את אב הטיפוס."
+			},
+			{
+				s: "איזה מהדברים הבאים <b>לא</b> כותבים בקובץ <code>.h</code>?",
+				o: [
+					"אב טיפוס של פונקציה",
+					"הערה שאומרת מה הפונקציה מחזירה",
+					"הגוף של הפונקציה"
+				],
+				a: 2,
+				w: "הגוף נמצא בקובץ ה-<code>.c</code>."
+			}
+		]
+	}));
+	const HEADER_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("power(2, 5) = %d\n", power(2, 5));
+    printf("digitSum(345) = %d\n", digitSum(345));
+    return 0;
+}`;
+	const AVG_PROTO = "/* returns the average of a and b */\ndouble average(int a, int b);";
+	const AVG_BODY = R`
+
+double average(int a, int b)
+{
+    return (a + b) / 2.0;
+}
+`;
+	const mathxAvg = (withPrototype) => ({
+		h: addPrototype(MATHX.h, "\n" + (withPrototype ? AVG_PROTO : "/* TODO: add the prototype of average here */")),
+		c: MATHX.c.replace(/\n$/, "") + AVG_BODY
+	});
+	const AVG_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    printf("Average: %.2f\n", average(a, b));
+    return 0;
+}`;
+	const MATHX_NO_EVEN = {
+		h: MATHX.h.replace("/* returns 1 when n is even, else 0 */\nint isEven(int n);\n\n", "/* TODO 2: the prototype of isEven goes here */\n\n"),
+		c: MATHX.c.replace("int isEven(int n)\n{\n    return n % 2 == 0;\n}\n\n", "/* TODO 3: the body of isEven goes here */\n\n")
+	};
+	const MOVE_START = R`#include <stdio.h>
+#include "mathx.h"
+
+/* TODO 1: move isEven (its prototype and its body) into the module */
+int isEven(int n);
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    if (isEven(n))
+    {
+        printf("%d is even, its cube is %d\n", n, cube(n));
+    }
+    else
+    {
+        printf("%d is odd, its cube is %d\n", n, cube(n));
+    }
+    return 0;
+}
+
+int isEven(int n)
+{
+    return n % 2 == 0;
+}`;
+	const MOVE_SOLVED = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    if (isEven(n))
+    {
+        printf("%d is even, its cube is %d\n", n, cube(n));
+    }
+    else
+    {
+        printf("%d is odd, its cube is %d\n", n, cube(n));
+    }
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "build-header",
+		title: "קובץ כותרת משלנו",
+		body: [
+			R`<p>קובץ <code>.h</code> נקרא <b>קובץ כותרת</b> (<bdi dir="ltr">header</bdi>). את קבצי הכותרת שלנו כוללים במירכאות, ואת אלה של המערכת בסוגריים משולשים:</p>
+<table class="tbl"><tr><th>השורה</th><th>איפה מחפשים את הקובץ</th></tr>
+<tr><td class="mono">#include &lt;stdio.h&gt;</td><td>בספריות של המערכת</td></tr>
+<tr><td class="mono">#include "mathx.h"</td><td>קודם בתיקייה של הפרויקט</td></tr></table>
+<p>פתחו את <code>mathx.h</code>: כל פונקציה היא שורה אחת עם <code>;</code>, ומעליה הערה שאומרת מה היא מחזירה.</p>`,
+			{
+				id: "build-header-quotes",
+				title: "include במירכאות",
+				code: HEADER_MAIN,
+				files: mathxProject(),
+				tests: [io("power(2, 5) and digitSum(345)", "", "power(2, 5) = 32\ndigitSum(345) = 12")]
+			},
+			R`<p>ב-<code>mathx.c</code> יש פונקציה חדשה, <code>average</code>, אבל ב-<code>mathx.h</code> אין לה אב טיפוס. בלעדיו <code>main.c</code> לא יודע שהיא מחזירה <code>double</code>, ו-gcc עוצר.</p>
+<p>אב הטיפוס הוא השורה הראשונה שלה ב-<code>mathx.c</code>, עם <code>;</code> בסוף.</p>`,
+			{
+				id: "build-header-proto",
+				title: "אב הטיפוס החסר",
+				task: "ב-<code>mathx.h</code>, במקום ה-TODO, כתבו את אב הטיפוס של <code>average</code>.",
+				code: taskIn("mathx.h", AVG_MAIN),
+				solution: AVG_MAIN,
+				files: mathxProject(mathxAvg(false)),
+				solutionFiles: { "mathx.h": mathxAvg(true).h },
+				tests: [
+					io("7 and 4", "7 4\n", "Two numbers: Average: 5.50"),
+					io("10 and 20", "10 20\n", "Two numbers: Average: 15.00"),
+					io("-3 and 0", "-3 0\n", "Two numbers: Average: -1.50")
+				]
+			},
+			R`<p>כאן <code>isEven</code> עוד כתובה ב-<code>main.c</code>. מקומה במודול: אב הטיפוס ב-<code>mathx.h</code>, והגוף ב-<code>mathx.c</code>.</p>`,
+			{
+				id: "build-header-move",
+				title: "מעבירים את isEven",
+				task: "העבירו את <code>isEven</code> למודול לפי שלושת ה-TODO: מחקו אותה מ-<code>main.c</code>, כתבו את אב הטיפוס ב-<code>mathx.h</code> ואת הגוף ב-<code>mathx.c</code>.",
+				code: MOVE_START,
+				solution: MOVE_SOLVED,
+				files: mathxProject(MATHX_NO_EVEN),
+				solutionFiles: {
+					"mathx.h": MATHX.h,
+					"mathx.c": MATHX.c
+				},
+				tests: [
+					{
+						type: "src",
+						name: "main.c has no body of isEven",
+						forbid: "isEven \\( [^)]*\\) \\{",
+						msg: "the body of isEven is still in main.c; move it to mathx.c"
+					},
+					unit("isEven", R`
+int isEven(int n);
+int main(void)
+{
+    T_INT("isEven(4)", isEven(4), 1);
+    T_INT("isEven(7)", isEven(7), 0);
+    T_INT("isEven(0)", isEven(0), 1);
+    T_INT("isEven(-6)", isEven(-6), 1);
+    return 0;
+}`),
+					io("4 is even", "4\n", "Number: 4 is even, its cube is 64"),
+					io("3 is odd", "3\n", "Number: 3 is odd, its cube is 27")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איך כוללים את קובץ הכותרת שכתבנו, <code>mathx.h</code>?",
+				o: [
+					"<code>#include &lt;mathx.h&gt;</code>",
+					"<code>#include \"mathx.h\"</code>",
+					"<code>#include mathx.h</code>"
+				],
+				a: 1,
+				w: "במירכאות: קודם מחפשים בתיקייה של הפרויקט."
+			},
+			{
+				s: "מה כתוב ב-<code>mathx.h</code> על כל פונקציה?",
+				o: [
+					"אב הטיפוס שלה, עם <code>;</code>",
+					"הגוף שלה",
+					"קריאה אליה"
+				],
+				a: 0,
+				w: "הגוף נמצא ב-<code>mathx.c</code>."
+			},
+			{
+				s: "<code>isEven</code> עברה למודול. איזה מהקבצים הבאים <b>לא</b> צריך להשתנות כדי ש-<code>main.c</code> ימשיך לקרוא לה?",
+				o: [
+					"<code>mathx.h</code>",
+					"<code>mathx.c</code>",
+					"הקריאה <code>isEven(n)</code> ב-<code>main.c</code>"
+				],
+				a: 2,
+				w: "הקריאה נשארת אותו דבר. רק המקום של אב הטיפוס והגוף השתנה."
+			}
+		]
+	}));
+	const guarded = (name, body) => "#ifndef " + name + "\n#define " + name + "\n\n" + body + "\n#endif\n";
+	const BOARD_BODY = R`#define BOARD_SIZE 8
+
+/* a type (section 13): it may be defined only once */
+struct Cell
+{
+    int row;
+    int col;
+};
+`;
+	const MOVES_H = guarded("MOVES_H", R`#include "board.h"
+
+/* returns 1 when (row, col) is on the board, else 0 */
+int isOnBoard(int row, int col);
+`);
+	const MOVES_C = R`#include "moves.h"
+
+int isOnBoard(int row, int col)
+{
+    return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+`;
+	const BOARD_MAIN = R`#include <stdio.h>
+#include "board.h"
+#include "moves.h"
+
+int main(void)
+{
+    printf("board: %d x %d\n", BOARD_SIZE, BOARD_SIZE);
+    printf("(3, 5) on the board: %d\n", isOnBoard(3, 5));
+    printf("(3, 9) on the board: %d\n", isOnBoard(3, 9));
+    return 0;
+}`;
+	const boardFiles = () => Object.assign(project({ moves: {
+		h: MOVES_H,
+		c: MOVES_C
+	} }, { makefile: plainMakefile(["moves"], {
+		main: ["board.h"],
+		moves: ["board.h"]
+	}) }), { "board.h": guarded("BOARD_H", BOARD_BODY) });
+	const PIECE_BODY = R`#define PIECES 16
+
+/* a type (section 13): it may be defined only once */
+struct Piece
+{
+    int row;
+    int col;
+};
+`;
+	const PIECE_START = "/* TODO: add the guard of this header */\n\n" + PIECE_BODY;
+	const TEAM_H = guarded("TEAM_H", R`#include "piece.h"
+
+/* returns how many pieces are left after losing lost of them */
+int piecesLeft(int lost);
+`);
+	const TEAM_C = R`#include "team.h"
+
+int piecesLeft(int lost)
+{
+    return PIECES - lost;
+}
+`;
+	const TEAM_MAIN = R`#include <stdio.h>
+#include "piece.h"
+#include "team.h"
+
+int main(void)
+{
+    int lost = 0;
+
+    printf("Pieces lost: ");
+    scanf("%d", &lost);
+    printf("%d of %d left\n", piecesLeft(lost), PIECES);
+    return 0;
+}`;
+	const teamFiles = (piece) => Object.assign(project({ team: {
+		h: TEAM_H,
+		c: TEAM_C
+	} }, { makefile: plainMakefile(["team"], {
+		main: ["piece.h"],
+		team: ["piece.h"]
+	}) }), { "piece.h": piece });
+	U.push(withOutputs({
+		id: "build-guards",
+		title: "שומרי כותרת",
+		body: [
+			R`<p><code>main.c</code> כולל את <code>board.h</code>, וגם את <code>moves.h</code>, שכולל בעצמו את <code>board.h</code>. כך <code>board.h</code> נכנס ל-<code>main.c</code> פעמיים.</p>
+<p>ב-<code>board.h</code> מוגדר טיפוס, <code>struct Cell</code> (נלמד בפרק 13), ומותר להגדיר אותו רק פעם אחת. בלי שומר, gcc עוצר:</p>
+<pre class="code-static"><span>board.h:4:8: error: redefinition of 'struct Cell'</span></pre>
+<p>כאן זה עובד, בזכות שלוש השורות שבראש <code>board.h</code>. נסו למחוק אותן ולהריץ.</p>`,
+			{
+				id: "build-guards-twice",
+				title: "קובץ כותרת שנכלל פעמיים",
+				code: BOARD_MAIN,
+				files: boardFiles(),
+				tests: [io("board size and two cells", "", "board: 8 x 8\n(3, 5) on the board: 1\n(3, 9) on the board: 0")]
+			},
+			R`<p>לכן כאן לכל קובץ כותרת יש <b>שומר</b> (<bdi dir="ltr">include guard</bdi>): שלוש שורות שנותנות לתוכן להיכנס רק בפעם הראשונה.</p>
+<table class="tbl"><tr><th>השורה</th><th>פירושה</th></tr>
+<tr><td class="mono">#ifndef BOARD_H</td><td>אם <code>BOARD_H</code> עוד לא הוגדר, קרא את מה שבא</td></tr>
+<tr><td class="mono">#define BOARD_H</td><td>הגדר אותו עכשיו, כך שבפעם הבאה ידלגו</td></tr>
+<tr><td class="mono">#endif</td><td>סוף הקטע, בשורה האחרונה של הקובץ</td></tr></table>
+<p>השם הוא שם הקובץ באותיות גדולות, ו-<code>_H</code> במקום הנקודה. לכל קובץ שם משלו.</p>`,
+			{
+				id: "build-guards-add",
+				title: "השומר של piece.h",
+				task: "הוסיפו ל-<code>piece.h</code> שומר, כמו ב-<code>team.h</code>. אחר כך התוכנית מתקמפלת.",
+				code: taskIn("piece.h", TEAM_MAIN),
+				solution: TEAM_MAIN,
+				files: teamFiles(PIECE_START),
+				solutionFiles: { "piece.h": guarded("PIECE_H", PIECE_BODY) },
+				tests: [io("3 lost", "3\n", "Pieces lost: 13 of 16 left"), io("none lost", "0\n", "Pieces lost: 16 of 16 left")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה עושה השורה <code>#ifndef BOARD_H</code>?",
+				o: [
+					"מגדירה את <code>BOARD_H</code>",
+					"קוראת את ההמשך רק אם <code>BOARD_H</code> עוד לא הוגדר",
+					"כוללת את <code>board.h</code>"
+				],
+				a: 1,
+				w: "<code>ifndef</code>: אם לא הוגדר."
+			},
+			{
+				s: "למה לכל קובץ כותרת שם שומר משלו?",
+				o: [
+					"כדי שקובץ אחד לא יגרום לדילוג על קובץ אחר",
+					"כדי ש-gcc ירוץ מהר יותר",
+					"כי שם ארוך אסור"
+				],
+				a: 0,
+				w: "אם לשניים אותו שם, השני ידולג כאילו כבר נכלל."
+			},
+			{
+				s: "<code>main.c</code> כולל את <code>board.h</code> פעמיים, ויש לו שומר. מה <b>לא</b> יקרה?",
+				o: [
+					"התוכן ייכנס פעם אחת",
+					"התוכנית תתקמפל",
+					"gcc יעצור על <code>redefinition</code>"
+				],
+				a: 2,
+				w: "השומר מדלג על הפעם השנייה, ולכן אין הגדרה כפולה."
+			}
+		]
+	}));
+	const STAGES_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("cube(4) = %d\n", cube(4));
+    printf("reverseNumber(512) = %d\n", reverseNumber(512));
+    return 0;
+}`;
+	const STAGES_FIX_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("%d cubed is %d\n", n, cube(n));
+    return 0;
+}`;
+	const MATHX_BROKEN = {
+		h: MATHX.h,
+		c: MATHX.c.replace("return x * x * x;", "return x * x * x")
+	};
+	U.push(withOutputs({
+		id: "build-stages",
+		title: "שלבי הבנייה",
+		body: [
+			R`<p>מקוד C לתוכנית שרצה יש שלושה שלבים. ▶ עושה את שלושתם בשבילכם.</p>
+<table class="tbl"><tr><th>שלב</th><th>מה קורה</th><th>מה יוצא</th></tr>
+<tr><td>קדם-מעבד (<bdi dir="ltr">preprocessor</bdi>)</td><td>מעתיק את תוכן כל <code>#include</code> לתוך הקובץ</td><td>קובץ <code>.c</code> אחד ארוך</td></tr>
+<tr><td>הידור (<bdi dir="ltr">compile</bdi>)</td><td>מתרגם קובץ <code>.c</code> אחד לקוד מכונה</td><td>קובץ <code>.o</code></td></tr>
+<tr><td>קישור (<bdi dir="ltr">link</bdi>)</td><td>מחבר את כל קבצי ה-<code>.o</code></td><td>התוכנית <code>prog</code></td></tr></table>`,
+			{
+				id: "build-stages-demo",
+				title: "שלושה שלבים",
+				code: STAGES_MAIN,
+				files: mathxProject(),
+				tests: [io("cube(4) and reverseNumber(512)", "", "cube(4) = 64\nreverseNumber(512) = 215")]
+			},
+			R`<p>בטרמינל של Linux בונים כך: <code>gcc -c</code> מהדר כל קובץ לבד, ופקודה אחרונה מקשרת:</p>
+<pre class="code-static"><span>$ gcc -c main.c                  # main.o</span><span>$ gcc -c mathx.c                 # mathx.o</span><span>$ gcc main.o mathx.o -o prog     # link</span><span>$ ./prog</span></pre>
+<p>שגיאת הידור שייכת לקובץ אחד. ההודעה מתחילה בשם הקובץ ובמספר השורה, למשל <code>mathx.c:10:21</code>.</p>`,
+			{
+				id: "build-stages-fix",
+				title: "השגיאה ב-mathx.c",
+				task: "הריצו וקראו את שם הקובץ בהודעה. תקנו את השגיאה ב-<code>mathx.c</code>.",
+				code: taskIn("mathx.c", STAGES_FIX_MAIN),
+				solution: STAGES_FIX_MAIN,
+				files: mathxProject(MATHX_BROKEN),
+				solutionFiles: { "mathx.c": MATHX.c },
+				tests: [io("3 cubed", "3\n", "Number: 3 cubed is 27"), io("-2 cubed", "-2\n", "Number: -2 cubed is -8")]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה שלב יוצר קובץ <code>.o</code>?",
+				o: [
+					"קדם-מעבד",
+					"הידור",
+					"קישור"
+				],
+				a: 1,
+				w: "<code>gcc -c</code> מהדר קובץ <code>.c</code> אחד לקובץ <code>.o</code>."
+			},
+			{
+				s: "מה עושה הקדם-מעבד עם <code>#include \"mathx.h\"</code>?",
+				o: [
+					"מעתיק את תוכן <code>mathx.h</code> לתוך הקובץ",
+					"מהדר את <code>mathx.c</code>",
+					"מקשר את <code>mathx.o</code>"
+				],
+				a: 0,
+				w: "אחרי הקדם-מעבד אב הטיפוס כתוב בתוך <code>main.c</code> עצמו."
+			},
+			{
+				s: "שגיאת ההידור היא ב-<code>mathx.c</code>. מה מהבאים <b>לא</b> נכון?",
+				o: [
+					"ההודעה מתחילה ב-<code>mathx.c</code>",
+					"<code>gcc -c main.c</code> עדיין עובר",
+					"הקישור יוצר את <code>prog</code> בכל זאת"
+				],
+				a: 2,
+				w: "בלי <code>mathx.o</code> אין מה לקשר, ולכן אין <code>prog</code>."
+			}
+		]
+	}));
+	const LINK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("cube(5) = %d\n", cube(5));
+    return 0;
+}`;
+	const LINK_FIX_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("The digits of %d add up to %d\n", n, digitSum(n));
+    return 0;
+}`;
+	const MATHX_MISSPELT = {
+		h: MATHX.h,
+		c: MATHX.c.replace("int digitSum(int n)", "int digitsum(int n)")
+	};
+	U.push(withOutputs({
+		id: "build-link-errors",
+		title: "שגיאות קישור",
+		body: [
+			R`<p>לפעמים כל קובץ עובר הידור, והשגיאה באה רק בקישור:</p>
+<pre class="code-static"><span>/usr/bin/ld: main.o: in function 'main':</span><span>main.c:(.text+0x13): undefined reference to 'cube'</span><span>collect2: error: ld returned 1 exit status</span></pre>
+<p><code>main.c</code> עבר, כי <code>mathx.h</code> הצהיר על <code>cube</code>. אבל ב-<code>mathx.c</code> הגוף נקרא <code>cub</code>, וה-<bdi dir="ltr">linker</bdi> לא מצא גוף בשם <code>cube</code>. התיקון: אותו שם בדיוק בשני הקבצים.</p>
+<p>כאן השם נכון. נסו לשנות אותו ב-<code>mathx.c</code> ל-<code>cub</code> ולהריץ.</p>`,
+			{
+				id: "build-link-errors-cube",
+				title: "שם בלי גוף",
+				code: LINK_MAIN,
+				files: mathxProject(),
+				tests: [io("cube(5)", "", "cube(5) = 125")]
+			},
+			R`<p>עוד שגיאת קישור, בשם אחר. <code>undefined reference</code> אומר איזה שם חסר. חפשו את הגוף שלו ב-<code>mathx.c</code> והשוו אות אחר אות.</p>`,
+			{
+				id: "build-link-errors-fix",
+				title: "השם שלא נמצא",
+				task: "הריצו, קראו איזה שם חסר, ותקנו את השגיאה ב-<code>mathx.c</code>.",
+				code: taskIn("mathx.c", LINK_FIX_MAIN),
+				solution: LINK_FIX_MAIN,
+				files: mathxProject(MATHX_MISSPELT),
+				solutionFiles: { "mathx.c": MATHX.c },
+				tests: [
+					io("1234", "1234\n", "Number: The digits of 1234 add up to 10"),
+					io("905", "905\n", "Number: The digits of 905 add up to 14"),
+					io("0", "0\n", "Number: The digits of 0 add up to 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה שלב כותב <code>undefined reference</code>?",
+				o: [
+					"הקדם-מעבד",
+					"ההידור",
+					"הקישור"
+				],
+				a: 2,
+				w: "ה-<bdi dir=\"ltr\">linker</bdi> מחפש את הגוף של כל שם, בכל קבצי ה-<code>.o</code>."
+			},
+			{
+				s: "<code>mathx.h</code> מצהיר על <code>int area(int w, int h);</code>, ואין לה גוף באף קובץ. מה יקרה?",
+				o: [
+					"<code>main.c</code> לא יעבור הידור",
+					"ההידור יעבור, והקישור ייכשל",
+					"התוכנית תרוץ ותחזיר 0"
+				],
+				a: 1,
+				w: "אב הטיפוס מספיק להידור. הגוף נדרש רק בקישור."
+			},
+			{
+				s: "יש <code>undefined reference to 'power'</code>. מה מהבאים <b>לא</b> יכול להיות הסיבה?",
+				o: [
+					"הגוף ב-<code>mathx.c</code> נקרא <code>Power</code>",
+					"<code>mathx.o</code> לא נכלל בקישור",
+					"חסר <code>;</code> בסוף שורה ב-<code>main.c</code>"
+				],
+				a: 2,
+				w: "<code>;</code> חסר עוצר כבר בהידור, לפני הקישור."
+			}
+		]
+	}));
+	const MK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("power(3, 4) = %d\n", power(3, 4));
+    printf("isEven(10) = %d\n", isEven(10));
+    return 0;
+}`;
+	const MK_LINK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("2 to the power 8 = %d\n", power(2, 8));
+    printf("8 cubed = %d\n", cube(8));
+    return 0;
+}`;
+	const MK_LINK_OUT = "2 to the power 8 = 256\n8 cubed = 512\n";
+	const MK_LINK_START = mk("# TODO: under the rule of prog, add the recipe line that links main.o and mathx.o into prog", "prog: main.o mathx.o", "", "main.o: main.c mathx.h", ">gcc -c main.c", "", "mathx.o: mathx.c mathx.h", ">gcc -c mathx.c");
+	U.push(withOutputs({
+		id: "build-makefile",
+		title: "בונים עם Makefile",
+		body: [
+			R`<p>את פקודות הבנייה לא מקלידים כל פעם מחדש. כותבים אותן פעם אחת בקובץ <code>Makefile</code>, והכלי <bdi dir="ltr">make</bdi> מריץ אותן.</p>
+<p>הדליקו עכשיו ב-<b>⚙ הגדרות</b> את <b>כל הרצה דרך <bdi dir="ltr">make</bdi></b>. מעכשיו ▶ מריץ קודם <code>make</code>, ואז <code>./prog</code>. לחצו ▶ פעמיים: בפעם השנייה אין מה לבנות.</p>`,
+			{
+				id: "build-makefile-demo",
+				title: "בונים ומריצים",
+				code: MK_MAIN,
+				files: mathxProject(),
+				tests: [io("power(3, 4) and isEven(10)", "", "power(3, 4) = 81\nisEven(10) = 1")]
+			},
+			R`<p>Makefile בנוי מ<b>כללים</b>. לכלל שלושה חלקים:</p>
+<pre class="code-static"><span>mathx.o: mathx.c mathx.h</span><span>	gcc -c mathx.c</span></pre>
+<table class="tbl"><tr><th>חלק</th><th>בדוגמה</th><th>פירושו</th></tr>
+<tr><td>target</td><td class="mono">mathx.o</td><td>מה בונים</td></tr>
+<tr><td>prerequisites</td><td class="mono">mathx.c mathx.h</td><td>ממה הוא בנוי</td></tr>
+<tr><td>recipe</td><td class="mono">gcc -c mathx.c</td><td>הפקודה. השורה מתחילה ב-TAB</td></tr></table>
+<p><bdi dir="ltr">make</bdi> מתחיל מהכלל הראשון, כאן <code>prog</code>. מקש Tab בקובץ <code>Makefile</code> מכניס TAB אמיתי.</p>`,
+			{
+				id: "build-makefile-link",
+				title: "שורת הקישור",
+				task: "ב-<code>Makefile</code>, מתחת לכלל של <code>prog</code>, כתבו את שורת ה-recipe שמקשרת את <code>main.o</code> ואת <code>mathx.o</code> ל-<code>prog</code>.",
+				code: "/* the task is in the Makefile tab */\n" + MK_LINK_MAIN,
+				solution: MK_LINK_MAIN,
+				files: mathxProject(MATHX, MK_LINK_START),
+				solutionFiles: { "Makefile": plainMakefile(["mathx"]) },
+				example: { output: MK_LINK_OUT },
+				tests: [
+					{
+						type: "make",
+						name: "make builds main.o, mathx.o and prog",
+						steps: [make([], { built: [
+							"main.o",
+							"mathx.o",
+							"prog"
+						] })]
+					},
+					{
+						type: "make",
+						name: "./prog prints the power and the cube",
+						steps: [make([], { run: { expect: MK_LINK_OUT } })]
+					},
+					{
+						type: "make",
+						name: "a second make says 'prog' is up to date",
+						steps: [make([]), make([], { out: "make: 'prog' is up to date." })]
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה <bdi dir=\"ltr\">make</bdi> בונה כשמריצים אותו בלי שם של target?",
+				o: [
+					"את ה-target של הכלל הראשון",
+					"את כל קבצי ה-<code>.c</code>",
+					"את ה-target של הכלל האחרון"
+				],
+				a: 0,
+				w: "הכלל הראשון בקובץ, כאן <code>prog</code>."
+			},
+			{
+				s: "בכלל <code>main.o: main.c mathx.h</code>, מה הם <code>main.c mathx.h</code>?",
+				o: [
+					"ה-recipe",
+					"ה-prerequisites: הקבצים ש-<code>main.o</code> בנוי מהם",
+					"שני targets"
+				],
+				a: 1,
+				w: "מה שאחרי הנקודתיים הוא ה-prerequisites."
+			},
+			{
+				s: "מה מהבאים <b>אינו</b> נכון לגבי שורת recipe?",
+				o: [
+					"היא מתחילה ב-TAB",
+					"היא פקודה ש-<bdi dir=\"ltr\">make</bdi> מריץ",
+					"היא חייבת להיות באותה שורה של ה-target"
+				],
+				a: 2,
+				w: "ה-recipe בשורה משלו, מתחת לכלל, ומתחיל ב-TAB."
+			}
+		]
+	}));
+	const RULES_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("reverseNumber(1234) = %d\n", reverseNumber(1234));
+    return 0;
+}`;
+	const RULES_TASK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("digitSum(9876) = %d\n", digitSum(9876));
+    printf("power(10, 3) = %d\n", power(10, 3));
+    return 0;
+}`;
+	const RULES_TASK_OUT = "digitSum(9876) = 30\npower(10, 3) = 1000\n";
+	const RULES_START = mk("prog: main.o mathx.o", ">gcc main.o mathx.o -o prog", "", "main.o: main.c mathx.h", ">gcc -c main.c", "", "# TODO: the rule of mathx.o (its prerequisites, then its recipe line)");
+	const TAB_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("%d reversed is %d\n", n, reverseNumber(n));
+    return 0;
+}`;
+	const SPACES_START = plainMakefile(["mathx"]).replace("	gcc -c mathx.c", "    gcc -c mathx.c");
+	U.push(withOutputs({
+		id: "build-rules",
+		title: "כלל לכל קובץ",
+		body: [
+			R`<p>לכל קובץ <code>.o</code> יש כלל משלו. ה-prerequisites שלו הם קובץ ה-<code>.c</code> שלו, וכל קובץ כותרת שהוא כולל:</p>
+<table class="tbl"><tr><th>target</th><th>prerequisites</th><th>למה</th></tr>
+<tr><td class="mono">prog</td><td class="mono">main.o mathx.o</td><td>מקשרים את שניהם</td></tr>
+<tr><td class="mono">main.o</td><td class="mono">main.c mathx.h</td><td><code>main.c</code> כולל את <code>mathx.h</code></td></tr>
+<tr><td class="mono">mathx.o</td><td class="mono">mathx.c mathx.h</td><td><code>mathx.c</code> כולל את <code>mathx.h</code></td></tr></table>
+<p>פתחו את <code>Makefile</code> ומצאו את שלושת הכללים.</p>`,
+			{
+				id: "build-rules-three",
+				title: "שלושה כללים",
+				code: RULES_MAIN,
+				files: mathxProject(),
+				tests: [io("reverseNumber(1234)", "", "reverseNumber(1234) = 4321")]
+			},
+			R`<p>כאן חסר הכלל של <code>mathx.o</code>. כתבו אותו כמו הכלל של <code>main.o</code>: שורת target ו-prerequisites, ומתחתיה שורת recipe שמתחילה ב-TAB.</p>`,
+			{
+				id: "build-rules-mathx",
+				title: "הכלל של mathx.o",
+				task: "ב-<code>Makefile</code>, במקום ה-TODO, כתבו את הכלל של <code>mathx.o</code>.",
+				code: "/* the task is in the Makefile tab */\n" + RULES_TASK_MAIN,
+				solution: RULES_TASK_MAIN,
+				files: mathxProject(MATHX, RULES_START),
+				solutionFiles: { "Makefile": plainMakefile(["mathx"]) },
+				example: { output: RULES_TASK_OUT },
+				tests: [{
+					type: "make",
+					name: "make builds main.o, mathx.o and prog, and ./prog prints",
+					steps: [make([], {
+						built: [
+							"main.o",
+							"mathx.o",
+							"prog"
+						],
+						run: { expect: RULES_TASK_OUT }
+					})]
+				}, {
+					type: "make",
+					name: "after mathx.h changes, main.o, mathx.o and prog are built again",
+					steps: [
+						make([]),
+						{ touch: "mathx.h" },
+						make([], { built: [
+							"main.o",
+							"mathx.o",
+							"prog"
+						] })
+					]
+				}]
+			},
+			R`<p>שורת recipe שמתחילה ברווחים במקום TAB עוצרת את <bdi dir="ltr">make</bdi>:</p>
+<pre class="code-static"><span>Makefile:8: *** missing separator.  Stop.</span></pre>
+<p>המספר הוא מספר השורה. מחקו את הרווחים בתחילתה, ולחצו Tab.</p>`,
+			{
+				id: "build-rules-tab",
+				title: "רווחים במקום TAB",
+				task: "הריצו (<bdi dir=\"ltr\">make</bdi> דולק), מצאו את השורה שבהודעה ב-<code>Makefile</code>, ותקנו אותה.",
+				code: "/* the task is in the Makefile tab */\n" + TAB_MAIN,
+				solution: TAB_MAIN,
+				files: mathxProject(MATHX, SPACES_START),
+				solutionFiles: { "Makefile": plainMakefile(["mathx"]) },
+				tests: [
+					io("main.c alone, input 250", "250\n", "Number: 250 reversed is 52\n"),
+					{
+						type: "make",
+						name: "make builds main.o, mathx.o and prog",
+						steps: [make([], { built: [
+							"main.o",
+							"mathx.o",
+							"prog"
+						] })]
+					},
+					{
+						type: "make",
+						name: "./prog reverses 250",
+						steps: [make([], { run: {
+							stdin: "250\n",
+							expect: "Number: 250 reversed is 52\n"
+						} })]
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>main.c</code> כולל את <code>mathx.h</code>. מה ה-prerequisites של <code>main.o</code>?",
+				o: [
+					"<code>main.c</code> בלבד",
+					"<code>main.c mathx.h</code>",
+					"<code>main.c mathx.c</code>"
+				],
+				a: 1,
+				w: "קובץ ה-<code>.c</code> שלו, וכל קובץ כותרת שהוא כולל."
+			},
+			{
+				s: "מה קורה כששורת recipe מתחילה ברווחים?",
+				o: [
+					"<bdi dir=\"ltr\">make</bdi> עוצר עם <code>missing separator</code>",
+					"השורה רצה כרגיל",
+					"<bdi dir=\"ltr\">make</bdi> מדלג עליה"
+				],
+				a: 0,
+				w: "שורת recipe חייבת להתחיל ב-TAB."
+			},
+			{
+				s: "מה <b>אינו</b> חלק מהכלל של <code>mathx.o</code>?",
+				o: [
+					"<code>mathx.c</code>",
+					"<code>mathx.h</code>",
+					"<code>main.c</code>"
+				],
+				a: 2,
+				w: "<code>mathx.o</code> נבנה מ-<code>mathx.c</code> ומקובץ הכותרת שהוא כולל."
+			}
+		]
+	}));
+	const REBUILD_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("cube(6) = %d\n", cube(6));
+    return 0;
+}`;
+	const FORGOT_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("isEven(%d) = %d\n", n, isEven(n));
+    return 0;
+}`;
+	const FORGOT_START = plainMakefile(["mathx"]).replace("main.o: main.c mathx.h\n", "# TODO: one prerequisite is missing in the rule below\nmain.o: main.c\n");
+	U.push(withOutputs({
+		id: "build-rebuild",
+		title: "מה make בונה מחדש",
+		body: [
+			R`<p><bdi dir="ltr">make</bdi> בונה target מחדש רק אם הוא לא קיים, או אם אחד ה-prerequisites שלו השתנה אחריו.</p>
+<table class="tbl"><tr><th>מה ערכתם</th><th>מה נבנה מחדש</th></tr>
+<tr><td class="mono">mathx.c</td><td class="mono">mathx.o, prog</td></tr>
+<tr><td class="mono">mathx.h</td><td class="mono">main.o, mathx.o, prog</td></tr>
+<tr><td class="mono">nothing</td><td class="mono">make: 'prog' is up to date.</td></tr></table>
+<p>עם <bdi dir="ltr">make</bdi> דולק, ⏯ עובר קודם על ההחלטות של <bdi dir="ltr">make</bdi>, אחת אחת. הוסיפו רווח ב-<code>mathx.c</code> ולחצו ⏯. אחר כך נסו את אותו דבר ב-<code>mathx.h</code>.</p>`,
+			{
+				id: "build-rebuild-steps",
+				title: "ההחלטות של make",
+				code: REBUILD_MAIN,
+				files: mathxProject(),
+				tests: [io("cube(6)", "", "cube(6) = 216")]
+			},
+			R`<p>כאן הכלל של <code>main.o</code> שכח את <code>mathx.h</code>. אחרי שינוי ב-<code>mathx.h</code>, <bdi dir="ltr">make</bdi> לא יבנה את <code>main.o</code> מחדש, ו-<code>prog</code> יקושר עם <code>main.o</code> ישן.</p>`,
+			{
+				id: "build-rebuild-header",
+				title: "קובץ הכותרת שנשכח",
+				task: "הוסיפו ל-<code>Makefile</code> את ה-prerequisite החסר, כך ששינוי ב-<code>mathx.h</code> יבנה מחדש גם את <code>main.o</code>.",
+				code: "/* the task is in the Makefile tab */\n" + FORGOT_MAIN,
+				solution: FORGOT_MAIN,
+				files: mathxProject(MATHX, FORGOT_START),
+				solutionFiles: { "Makefile": plainMakefile(["mathx"]) },
+				tests: [
+					io("main.c alone, input 7", "7\n", "Number: isEven(7) = 0\n"),
+					{
+						type: "make",
+						name: "the first make builds everything, and isEven(7) is 0",
+						steps: [make([], {
+							built: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							],
+							run: {
+								stdin: "7\n",
+								expect: "Number: isEven(7) = 0\n"
+							}
+						})]
+					},
+					{
+						type: "make",
+						name: "after mathx.h changes, main.o, mathx.o and prog are built again",
+						steps: [
+							make([]),
+							{ touch: "mathx.h" },
+							make([], { built: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							] })
+						]
+					},
+					{
+						type: "make",
+						name: "after mathx.c changes, only mathx.o and prog are built again",
+						steps: [
+							make([]),
+							{ touch: "mathx.c" },
+							make([], { built: ["mathx.o", "prog"] })
+						]
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "ערכתם רק את <code>mathx.c</code>. מה <bdi dir=\"ltr\">make</bdi> בונה מחדש?",
+				o: [
+					"<code>mathx.o</code> ו-<code>prog</code>",
+					"הכול",
+					"רק <code>prog</code>"
+				],
+				a: 0,
+				w: "<code>main.o</code> לא תלוי ב-<code>mathx.c</code>."
+			},
+			{
+				s: "ערכתם את <code>mathx.h</code>, ושני קבצי ה-<code>.c</code> כוללים אותו. מה נבנה מחדש?",
+				o: [
+					"רק <code>mathx.o</code>",
+					"<code>main.o</code>, <code>mathx.o</code> ו-<code>prog</code>",
+					"כלום"
+				],
+				a: 1,
+				w: "כל מי שכולל את <code>mathx.h</code> תלוי בו."
+			},
+			{
+				s: "הכלל הוא <code>main.o: main.c</code>, אבל <code>main.c</code> כולל את <code>mathx.h</code>. מה <b>לא</b> יקרה אחרי שינוי ב-<code>mathx.h</code>?",
+				o: [
+					"<code>mathx.o</code> ייבנה מחדש",
+					"<code>main.o</code> ייבנה מחדש",
+					"<code>prog</code> יקושר מחדש"
+				],
+				a: 1,
+				w: "<bdi dir=\"ltr\">make</bdi> לא יודע ש-<code>main.o</code> תלוי ב-<code>mathx.h</code>."
+			}
+		]
+	}));
+	const VARS_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("power(5, 3) = %d\n", power(5, 3));
+    printf("digitSum(2024) = %d\n", digitSum(2024));
+    return 0;
+}`;
+	const VARS_TASK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int base = 0;
+
+    printf("Base: ");
+    scanf("%d", &base);
+    printf("%d squared is %d, cubed is %d\n", base, power(base, 2), cube(base));
+    return 0;
+}`;
+	const VARS_START = mk("CC = gcc", "CFLAGS = -std=c11 -Wall -Wextra -g", "OBJS = main.o mathx.o", "", "# TODO: in each recipe line below, write $(CC) $(CFLAGS) instead of gcc", "prog: $(OBJS)", ">gcc $(OBJS) -o prog", "", "main.o: main.c mathx.h", ">gcc -c main.c", "", "mathx.o: mathx.c mathx.h", ">gcc -c mathx.c");
+	const HOUSE_NO_CLEAN = houseMakefile(["mathx"]).replace(/\nclean:[\s\S]*$/, "");
+	U.push(withOutputs({
+		id: "build-vars",
+		title: "משתנים ב-Makefile",
+		body: [
+			R`<p>ב-Makefile אפשר לתת שם לטקסט שחוזר, ולכתוב אותו פעם אחת. משתמשים בו בכתיב <code>$(NAME)</code>.</p>
+<table class="tbl"><tr><th>משתנה</th><th>מה יש בו</th></tr>
+<tr><td class="mono">CC</td><td>המהדר: <code>gcc</code></td></tr>
+<tr><td class="mono">CFLAGS</td><td>הדגלים לכל הידור: התקן <code>-std=c11</code>, האזהרות <code>-Wall -Wextra</code>, ו-<code>-g</code> לדיבוג</td></tr>
+<tr><td class="mono">OBJS</td><td>כל קבצי ה-<code>.o</code> של התוכנית</td></tr></table>
+<p>פתחו את <code>Makefile</code>: כל recipe מתחיל ב-<code>$(CC) $(CFLAGS)</code>. כדי להחליף דגל, משנים שורה אחת למעלה.</p>`,
+			{
+				id: "build-vars-house",
+				title: "Makefile עם משתנים",
+				code: VARS_MAIN,
+				files: mathxProject(MATHX, HOUSE_NO_CLEAN),
+				tests: [io("power(5, 3) and digitSum(2024)", "", "power(5, 3) = 125\ndigitSum(2024) = 8")]
+			},
+			R`<p>כאן המשתנים מוגדרים למעלה, אבל שורות ה-recipe עדיין כותבות <code>gcc</code> בלי דגלים. שנו כל אחת מהן כך שתתחיל ב-<code>$(CC) $(CFLAGS)</code>.</p>`,
+			{
+				id: "build-vars-use",
+				title: "הדגלים בכל recipe",
+				task: "ב-<code>Makefile</code>, כתבו בשלוש שורות ה-recipe <code>$(CC) $(CFLAGS)</code> במקום <code>gcc</code>.",
+				code: "/* the task is in the Makefile tab */\n" + VARS_TASK_MAIN,
+				solution: VARS_TASK_MAIN,
+				files: mathxProject(MATHX, VARS_START),
+				solutionFiles: { "Makefile": HOUSE_NO_CLEAN },
+				tests: [
+					io("main.c alone, input 4", "4\n", "Base: 4 squared is 16, cubed is 64\n"),
+					{
+						type: "make",
+						name: "make builds main.o, mathx.o and prog, and 4 gives 16 and 64",
+						steps: [make([], {
+							built: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							],
+							run: {
+								stdin: "4\n",
+								expect: "Base: 4 squared is 16, cubed is 64\n"
+							}
+						})]
+					},
+					{
+						type: "make",
+						name: "no recipe line starts with gcc",
+						steps: [make([])],
+						forbid: "^\\tgcc\\b",
+						msg: "a recipe line still starts with gcc; write $(CC) $(CFLAGS) instead"
+					},
+					{
+						type: "make",
+						name: "the recipes use $(CFLAGS)",
+						steps: [make([])],
+						require: "^\\t.*\\$[({]CFLAGS[)}]",
+						msg: "no recipe line uses $(CFLAGS)"
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איפה כותבים את <code>$(CFLAGS)</code>?",
+				o: [
+					"בשורות ה-recipe, אחרי <code>$(CC)</code>",
+					"ברשימת ה-prerequisites",
+					"בתוך <code>main.c</code>"
+				],
+				a: 0,
+				w: "הדגלים הולכים לפקודת ההידור."
+			},
+			{
+				s: "<code>OBJS = main.o mathx.o</code>. מה <bdi dir=\"ltr\">make</bdi> קורא בשורה <code>prog: $(OBJS)</code>?",
+				o: [
+					"<code>prog: OBJS</code>",
+					"<code>prog: main.o mathx.o</code>",
+					"<code>prog: $(OBJS)</code>, בלי שינוי"
+				],
+				a: 1,
+				w: "<code>$(OBJS)</code> מוחלף בערך של המשתנה."
+			},
+			{
+				s: "רוצים להוסיף את הדגל <code>-Werror</code> לכל ההידורים. מה <b>לא</b> צריך לעשות?",
+				o: [
+					"לשנות את השורה <code>CFLAGS = ...</code>",
+					"לשנות כל שורת recipe בנפרד",
+					"להשאיר <code>$(CFLAGS)</code> בכל recipe"
+				],
+				a: 1,
+				w: "כל ה-recipes משתמשים ב-<code>$(CFLAGS)</code>, אז מספיק לשנות שורה אחת."
+			}
+		]
+	}));
+	{
+		const CLEAN_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("reverseNumber(907) = %d\n", reverseNumber(907));
+    return 0;
+}`;
+		const CLEAN_TASK_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    printf("isEven(12) = %d\n", isEven(12));
+    printf("cube(-3) = %d\n", cube(-3));
+    return 0;
+}`;
+		const CLEAN_TASK_OUT = "isEven(12) = 1\ncube(-3) = -27\n";
+		const CLEAN_START = houseMakefile(["mathx"]).replace(/\nclean:[\s\S]*$/, "\n# TODO 1: a rule clean that removes every .o file and prog\n\n# TODO 2: mark clean as .PHONY\n");
+		U.push(withOutputs({
+			id: "build-clean",
+			title: "ניקוי הפרויקט",
+			body: [
+				R`<p>בסוף ה-Makefile של הקורס יש כלל בשם <code>clean</code>. אין לו prerequisites, וה-recipe שלו מוחק את כל מה ש-<bdi dir="ltr">make</bdi> בנה:</p>
+<pre class="code-static"><span>clean:</span><span>	rm -f *.o prog</span></pre>
+<p>מריצים אותו כך: <code>make clean</code>. כאן: ⏯ עם <bdi dir="ltr">make</bdi> דולק, ואז הכפתור <code>make clean</code> בחלונית של <bdi dir="ltr">make</bdi>.</p>`,
+				{
+					id: "build-clean-run",
+					title: "make clean",
+					code: CLEAN_MAIN,
+					files: mathxProject(MATHX, houseMakefile(["mathx"])),
+					tests: [io("reverseNumber(907)", "", "reverseNumber(907) = 709")]
+				},
+				R`<p>אם בתיקייה יש קובץ בשם <code>clean</code>, <bdi dir="ltr">make</bdi> חושב שה-target כבר קיים ולא מוחק כלום:</p>
+<pre class="code-static"><span>make: 'clean' is up to date.</span></pre>
+<p>השורה <code>.PHONY: clean</code> אומרת ש-<code>clean</code> הוא לא קובץ, ולכן ה-recipe שלו רץ תמיד.</p>`,
+				{
+					id: "build-clean-add",
+					title: "הכלל clean",
+					task: "הוסיפו ל-<code>Makefile</code> את הכלל <code>clean</code> ואת השורה <code>.PHONY</code>, לפי שני ה-TODO.",
+					code: "/* the task is in the Makefile tab */\n" + CLEAN_TASK_MAIN,
+					solution: CLEAN_TASK_MAIN,
+					files: mathxProject(MATHX, CLEAN_START),
+					solutionFiles: { "Makefile": houseMakefile(["mathx"]) },
+					example: { output: CLEAN_TASK_OUT },
+					tests: [
+						{
+							type: "make",
+							name: "make builds prog, and it prints",
+							steps: [make([], {
+								built: [
+									"main.o",
+									"mathx.o",
+									"prog"
+								],
+								run: { expect: CLEAN_TASK_OUT }
+							})]
+						},
+						{
+							type: "make",
+							name: "make clean removes main.o, mathx.o and prog",
+							steps: [make([]), make(["clean"], { gone: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							] })]
+						},
+						{
+							type: "make",
+							name: "clean is .PHONY",
+							steps: [make([])],
+							require: "^\\.PHONY\\s*:.*\\bclean\\b",
+							msg: "add the line .PHONY: clean"
+						}
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "מה עושה <code>make clean</code> ב-Makefile של הקורס?",
+					o: [
+						"מוחק את קבצי ה-<code>.o</code> ואת <code>prog</code>",
+						"מוחק את קבצי ה-<code>.c</code>",
+						"בונה הכול מחדש"
+					],
+					a: 0,
+					w: "ה-recipe הוא <code>rm -f *.o prog</code>."
+				},
+				{
+					s: "מה מונעת השורה <code>.PHONY: clean</code>?",
+					o: [
+						"שגיאה ב-<code>rm</code>",
+						"שקובץ בשם <code>clean</code> יעצור את הניקוי",
+						"את בניית <code>prog</code>"
+					],
+					a: 1,
+					w: "עם <code>.PHONY</code>, <bdi dir=\"ltr\">make</bdi> לא מחפש קובץ בשם <code>clean</code>."
+				},
+				{
+					s: "מריצים <code>make</code> בלי שם של target. למה <code>clean</code> <b>לא</b> רץ?",
+					o: [
+						"כי הוא לא הכלל הראשון",
+						"כי אין לו prerequisites",
+						"כי הוא <code>.PHONY</code>"
+					],
+					a: 0,
+					w: "<bdi dir=\"ltr\">make</bdi> בלי שם בונה רק את הכלל הראשון, <code>prog</code>, ומה שהוא צריך."
+				}
+			]
+		}));
+	}
+	const EXE_H = R`#ifndef EXE_H
+#define EXE_H
+
+/* question 1: reads a number and prints its digit sum */
+void q1(void);
+
+/* question 2: reads a number and prints it reversed */
+void q2(void);
+
+#endif
+`;
+	const EXE_C = R`#include <stdio.h>
+#include "exe.h"
+#include "mathx.h"
+
+void q1(void)
+{
+    int n = 0;
+
+    printf("q1 - a number: ");
+    scanf("%d", &n);
+    printf("digit sum: %d\n", digitSum(n));
+}
+
+void q2(void)
+{
+    int n = 0;
+
+    printf("q2 - a number: ");
+    scanf("%d", &n);
+    printf("reversed: %d\n", reverseNumber(n));
+}
+`;
+	const LAYOUT_MAIN = R`#include "exe.h"
+
+int main(void)
+{
+    q1();
+    q2();
+    return 0;
+}`;
+	const LAYOUT_MAKEFILE = mk("CC = gcc", "CFLAGS = -std=c11 -Wall -Wextra -g", "OBJS = main.o exe.o mathx.o", "", "prog: $(OBJS)", ">$(CC) $(CFLAGS) $(OBJS) -o prog", "", "main.o: main.c exe.h", ">$(CC) $(CFLAGS) -c main.c", "", "exe.o: exe.c exe.h mathx.h", ">$(CC) $(CFLAGS) -c exe.c", "", "mathx.o: mathx.c mathx.h", ">$(CC) $(CFLAGS) -c mathx.c", "", "clean:", ">rm -f *.o prog", "", ".PHONY: clean");
+	const CONVERT_H = R`#ifndef CONVERT_H
+#define CONVERT_H
+
+/* returns celsius in Fahrenheit: celsius * 9 / 5 + 32 */
+double toFahrenheit(double celsius);
+
+/* returns hours and minutes as minutes only: 2 and 30 give 150 */
+int toMinutes(int hours, int minutes);
+
+#endif
+`;
+	const CONVERT_START = R`#include "convert.h"
+
+double toFahrenheit(double celsius)
+{
+    /* TODO 1: return celsius in Fahrenheit */
+    return 0;
+}
+
+int toMinutes(int hours, int minutes)
+{
+    /* TODO 2: return the time in minutes */
+    return 0;
+}
+`;
+	const CONVERT_SOLVED = R`#include "convert.h"
+
+double toFahrenheit(double celsius)
+{
+    return celsius * 9 / 5 + 32;
+}
+
+int toMinutes(int hours, int minutes)
+{
+    return hours * 60 + minutes;
+}
+`;
+	const CONVERT_MAIN = R`#include <stdio.h>
+#include "convert.h"
+
+int main(void)
+{
+    double celsius = 0;
+    int hours = 0;
+    int minutes = 0;
+
+    printf("Celsius: ");
+    scanf("%lf", &celsius);
+    printf("%.1f C = %.1f F\n", celsius, toFahrenheit(celsius));
+    printf("Hours and minutes: ");
+    scanf("%d %d", &hours, &minutes);
+    printf("%d h %d min = %d minutes\n", hours, minutes, toMinutes(hours, minutes));
+    return 0;
+}`;
+	const convertMakefile = (isSolved) => mk("CC = gcc", "CFLAGS = -std=c11 -Wall -Wextra -g", ...isSolved ? ["OBJS = main.o convert.o"] : ["# TODO 3: add convert.o to OBJS", "OBJS = main.o"], "", "prog: $(OBJS)", ">$(CC) $(CFLAGS) $(OBJS) -o prog", "", "main.o: main.c convert.h", ">$(CC) $(CFLAGS) -c main.c", "", ...isSolved ? ["convert.o: convert.c convert.h", ">$(CC) $(CFLAGS) -c convert.c"] : ["# TODO 4: the rule of convert.o"], "", "clean:", ">rm -f *.o prog", "", ".PHONY: clean");
+	U.push(withOutputs({
+		id: "build-layout",
+		title: "מבנה של פרויקט",
+		body: [
+			R`<p>במעבדות של הקורס הפרויקט בנוי בשלוש שכבות. כל שכבה קוראת רק לשכבה שמתחתיה:</p>
+<table class="tbl"><tr><th>קובץ</th><th>תפקיד</th></tr>
+<tr><td class="mono">main.c</td><td>רק קורא ל-<code>q1()</code> ול-<code>q2()</code></td></tr>
+<tr><td class="mono">exe.c</td><td>שאלה בכל פונקציה: קורא קלט, קורא למודול, מדפיס</td></tr>
+<tr><td class="mono">mathx.c</td><td>מחשב ומחזיר ערך. בלי <code>printf</code> ובלי <code>scanf</code></td></tr></table>
+<p>פונקציה שלא מדפיסה אפשר לבדוק, ולהשתמש בה שוב בכל תוכנית.</p>`,
+			{
+				id: "build-layout-exe",
+				title: "main, exe ומודול",
+				code: LAYOUT_MAIN,
+				files: project({
+					exe: {
+						h: EXE_H,
+						c: EXE_C
+					},
+					mathx: MATHX
+				}, { makefile: LAYOUT_MAKEFILE }),
+				tests: [io("q1 with 1234, q2 with 120", "1234\n120\n", "q1 - a number: digit sum: 10\nq2 - a number: reversed: 21")]
+			},
+			R`<p>מודול חדש, מההתחלה: <code>convert</code>. אבות הטיפוס כבר ב-<code>convert.h</code>, וגם <code>main.c</code> מוכן.</p>
+<p>ב-<code>Makefile</code> חסרים <code>convert.o</code> ב-<code>OBJS</code> והכלל שלו. כתבו אותו כמו בשיעור "כלל לכל קובץ", עם <code>$(CC) $(CFLAGS)</code>.</p>`,
+			{
+				id: "build-layout-convert",
+				title: "מודול convert",
+				task: "כתבו ב-<code>convert.c</code> את שתי הפונקציות, וב-<code>Makefile</code> הוסיפו את <code>convert.o</code>, לפי ארבעת ה-TODO.",
+				code: taskIn("convert.c", CONVERT_MAIN),
+				solution: CONVERT_MAIN,
+				files: project({ convert: {
+					h: CONVERT_H,
+					c: CONVERT_START
+				} }, { makefile: convertMakefile(false) }),
+				solutionFiles: {
+					"convert.c": CONVERT_SOLVED,
+					"Makefile": convertMakefile(true)
+				},
+				tests: [
+					io("25 C and 2 h 30 min", "25\n2 30\n", "Celsius: 25.0 C = 77.0 F\nHours and minutes: 2 h 30 min = 150 minutes\n"),
+					io("-40 C and 0 h 45 min", "-40\n0 45\n", "Celsius: -40.0 C = -40.0 F\nHours and minutes: 0 h 45 min = 45 minutes"),
+					unit("toFahrenheit and toMinutes", R`
+double toFahrenheit(double celsius);
+int toMinutes(int hours, int minutes);
+int main(void)
+{
+    T_DBL("toFahrenheit(100)", toFahrenheit(100), 212);
+    T_DBL("toFahrenheit(0)", toFahrenheit(0), 32);
+    T_DBL("toFahrenheit(37.5)", toFahrenheit(37.5), 99.5);
+    T_INT("toMinutes(2, 30)", toMinutes(2, 30), 150);
+    T_INT("toMinutes(0, 0)", toMinutes(0, 0), 0);
+    T_INT("toMinutes(10, 5)", toMinutes(10, 5), 605);
+    return 0;
+}`),
+					{
+						type: "make",
+						name: "make builds main.o, convert.o and prog",
+						steps: [make([], { built: [
+							"main.o",
+							"convert.o",
+							"prog"
+						] })]
+					},
+					{
+						type: "make",
+						name: "after convert.h changes, main.o, convert.o and prog are built again",
+						steps: [
+							make([]),
+							{ touch: "convert.h" },
+							make([], { built: [
+								"main.o",
+								"convert.o",
+								"prog"
+							] })
+						]
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "האם פונקציה במודול <code>mathx.c</code> צריכה להדפיס?",
+				o: [
+					"כן, תמיד",
+					"לא: היא מחזירה ערך, ומי שקרא לה מדפיס",
+					"רק אם היא מחזירה <code>void</code>"
+				],
+				a: 1,
+				w: "כך אפשר לבדוק אותה ולהשתמש בה שוב."
+			},
+			{
+				s: "<code>exe.c</code> כולל את <code>exe.h</code> ואת <code>mathx.h</code>. מה ה-prerequisites של <code>exe.o</code>?",
+				o: [
+					"<code>exe.c exe.h</code>",
+					"<code>exe.c exe.h mathx.h</code>",
+					"<code>exe.c mathx.c</code>"
+				],
+				a: 1,
+				w: "קובץ ה-<code>.c</code> וכל קובץ כותרת שהוא כולל."
+			},
+			{
+				s: "הוספתם מודול <code>convert</code>. מה מהבאים <b>לא</b> צריך להוסיף ל-Makefile?",
+				o: [
+					"<code>convert.o</code> ב-<code>OBJS</code>",
+					"כלל ל-<code>convert.o</code>",
+					"כלל ל-<code>convert.h</code>"
+				],
+				a: 2,
+				w: "קובץ כותרת לא נבנה. הוא רק prerequisite."
+			}
+		]
+	}));
+	const REVIEW_EMPTY = R`/* TODO: write the whole program here */
+`;
+	const REVIEW_SOLVED = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("digit sum: %d\n", digitSum(n));
+    printf("reversed: %d\n", reverseNumber(n));
+    if (isEven(n))
+    {
+        printf("%d is even\n", n);
+    }
+    else
+    {
+        printf("%d is odd\n", n);
+    }
+    return 0;
+}`;
+	const BROKEN_MAIN = R`#include <stdio.h>
+#include "mathx.h"
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("%d reversed is %d, its cube is %d\n", n, reverseNumber(n), cube(n));
+    return 0;
+}`;
+	const MATHX_FAULTY = {
+		h: MATHX.h,
+		c: MATHX.c.replace("int reverseNumber(int n)", "int reverseNum(int n)")
+	};
+	const MAKEFILE_FAULTY = houseMakefile(["mathx"]).replace("main.o: main.c mathx.h\n", "main.o: main.c\n").replace("	$(CC) $(CFLAGS) -c mathx.c", "    $(CC) $(CFLAGS) -c mathx.c");
+	const BROKEN_OUT = "Number: 12 reversed is 21, its cube is 1728\n";
+	U.push(withOutputs({
+		id: "build-review",
+		title: "חזרה: בנייה",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. המודול <code>mathx</code> וה-<code>Makefile</code> מוכנים, ו-<code>main.c</code> ריק. כתבו בו תוכנית שלמה שקוראת מספר ומדפיסה שלוש שורות:</p>
+<table class="tbl"><tr><th>שורה</th><th>בעזרת</th></tr>
+<tr><td class="mono">digit sum: 13</td><td><code>digitSum</code></td></tr>
+<tr><td class="mono">reversed: 715</td><td><code>reverseNumber</code></td></tr>
+<tr><td class="mono">517 is odd</td><td><code>isEven</code>. למספר זוגי: <code>2040 is even</code></td></tr></table>`,
+			{
+				id: "build-review-whole",
+				title: "תוכנית שלמה מעל מודול",
+				task: "בקובץ הריק כתבו את <code>main.c</code> כולו. לפני הקלט הוא מדפיס <code>Number: </code>.",
+				code: REVIEW_EMPTY,
+				solution: REVIEW_SOLVED,
+				files: mathxProject(MATHX, houseMakefile(["mathx"])),
+				tests: [
+					io("517", "517\n", "Number: digit sum: 13\nreversed: 715\n517 is odd"),
+					io("2040", "2040\n", "Number: digit sum: 6\nreversed: 402\n2040 is even"),
+					io("8", "8\n", "Number: digit sum: 8\nreversed: 8\n8 is even")
+				]
+			},
+			R`<p>בפרויקט הזה שלוש תקלות, כל אחת מסוג שלמדנו בפרק:</p>
+<table class="tbl"><tr><th>סוג</th><th>איפה לחפש</th></tr>
+<tr><td>שגיאת קישור</td><td>שם שאין לו גוף</td></tr>
+<tr><td>prerequisite חסר</td><td>כלל ששכח קובץ כותרת</td></tr>
+<tr><td>רווחים במקום TAB</td><td>שורת recipe</td></tr></table>
+<p>הדליקו את <bdi dir="ltr">make</bdi> והריצו. כל הודעה מובילה לתקלה אחת.</p>`,
+			{
+				id: "build-review-faults",
+				title: "שלוש תקלות",
+				task: "תקנו את שלוש התקלות ב-<code>mathx.c</code> וב-<code>Makefile</code>.",
+				code: "/* the task is in mathx.c and the Makefile tab */\n" + BROKEN_MAIN,
+				solution: BROKEN_MAIN,
+				files: mathxProject(MATHX_FAULTY, MAKEFILE_FAULTY),
+				solutionFiles: {
+					"mathx.c": MATHX.c,
+					"Makefile": houseMakefile(["mathx"])
+				},
+				tests: [
+					io("12", "12\n", BROKEN_OUT),
+					io("305", "305\n", "Number: 305 reversed is 503, its cube is 28372625"),
+					{
+						type: "make",
+						name: "make builds main.o, mathx.o and prog, and ./prog prints",
+						steps: [make([], {
+							built: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							],
+							run: {
+								stdin: "12\n",
+								expect: BROKEN_OUT
+							}
+						})]
+					},
+					{
+						type: "make",
+						name: "after mathx.h changes, main.o, mathx.o and prog are built again",
+						steps: [
+							make([]),
+							{ touch: "mathx.h" },
+							make([], { built: [
+								"main.o",
+								"mathx.o",
+								"prog"
+							] })
+						]
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזה קובץ כותבים אב טיפוס של פונקציה של מודול?",
+				o: [
+					"בקובץ ה-<code>.c</code> של המודול",
+					"בקובץ ה-<code>.h</code> של המודול",
+					"ב-<code>Makefile</code>"
+				],
+				a: 1,
+				w: "מי שכולל את ה-<code>.h</code> יכול לקרוא לפונקציה."
+			},
+			{
+				s: "מה עושה <code>gcc -c mathx.c</code>?",
+				o: [
+					"יוצר את <code>mathx.o</code>",
+					"יוצר את <code>prog</code>",
+					"מריץ את התוכנית"
+				],
+				a: 0,
+				w: "<code>-c</code>: רק הידור, בלי קישור."
+			},
+			{
+				s: "ההודעה היא <code>undefined reference to 'cube'</code>. באיזה שלב היא נוצרה?",
+				o: [
+					"הקדם-מעבד",
+					"ההידור",
+					"הקישור"
+				],
+				a: 2,
+				w: "ה-<bdi dir=\"ltr\">linker</bdi> לא מצא גוף בשם הזה."
+			},
+			{
+				s: "למה צריך שומר בקובץ כותרת?",
+				o: [
+					"כדי שהקובץ ייכלל פעם אחת גם כשמגיעים אליו פעמיים",
+					"כדי שהקובץ ירוץ מהר יותר",
+					"כדי ש-<bdi dir=\"ltr\">make</bdi> יבנה אותו"
+				],
+				a: 0,
+				w: "בפעם השנייה השם כבר מוגדר, וכל התוכן מדולג."
+			},
+			{
+				s: "ערכתם רק את <code>main.c</code>. מה <bdi dir=\"ltr\">make</bdi> בונה מחדש?",
+				o: [
+					"הכול",
+					"<code>main.o</code> ו-<code>prog</code>",
+					"רק <code>prog</code>"
+				],
+				a: 1,
+				w: "רק מה שתלוי ב-<code>main.c</code>, ואחריו הקישור."
+			},
+			{
+				s: "מה מהבאים <b>אינו</b> נכון לגבי Makefile?",
+				o: [
+					"שורת recipe מתחילה ב-TAB",
+					"<bdi dir=\"ltr\">make</bdi> בלי שם בונה את הכלל הראשון",
+					"<bdi dir=\"ltr\">make</bdi> בונה מחדש כל target בכל הרצה"
+				],
+				a: 2,
+				w: "הוא בונה רק target שחסר או ש-prerequisite שלו חדש ממנו."
+			},
+			{
+				s: "<code>CC = gcc</code> ו-<code>CFLAGS = -Wall</code>. ה-recipe הוא <code>$(CC) $(CFLAGS) -c main.c</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
+				o: [
+					"<bdi dir=\"ltr\">make</bdi> מריץ <code>gcc -Wall -c main.c</code>",
+					"הפקודה יוצרת את <code>main.o</code>",
+					"<bdi dir=\"ltr\">make</bdi> מריץ את השורה כמו שהיא כתובה, עם <code>$(CC)</code>"
+				],
+				a: 2,
+				w: "<bdi dir=\"ltr\">make</bdi> מחליף כל <code>$(NAME)</code> בערך שלו לפני שהפקודה רצה."
+			}
+		]
+	}));
+	const DECLARE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int scores[5];
+
+    scores[0] = 70;
+    scores[1] = 85;
+    scores[2] = 90;
+    scores[3] = 65;
+    scores[4] = 100;
+    printf("first: %d\n", scores[0]);
+    printf("third: %d\n", scores[2]);
+    printf("fifth: %d\n", scores[4]);
+    return 0;
+}`;
+	const INDEX_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    double temps[4];
+
+    temps[0] = 18.5;
+    temps[1] = 21.0;
+    temps[2] = 24.5;
+    temps[3] = 19.0;
+    printf("temps[0] = %.1f (the first)\n", temps[0]);
+    printf("temps[3] = %.1f (the last)\n", temps[3]);
+    return 0;
+}`;
+	const LAPS_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int laps[4];
+
+    laps[0] = 40;
+    laps[1] = 42;
+    /* TODO: set the third lap to 45 */
+    laps[3] = 41;
+    printf("laps: %d %d %d %d\n", laps[0], laps[1], laps[2], laps[3]);
+    return 0;
+}`;
+	const LAPS_SOLVED = LAPS_START.replace("    /* TODO: set the third lap to 45 */\n", "    laps[2] = 45;\n");
+	U.push(withOutputs({
+		id: "arrays-declare",
+		title: "מערך",
+		body: [
+			R`<p><b>מערך</b> (<bdi dir="ltr">array</bdi>) הוא כמה משתנים מאותו טיפוס, בשם אחד, אחד אחרי השני בזיכרון.</p>
+<table class="tbl"><tr><th>בקוד</th><th>פירושו</th></tr>
+<tr><td class="mono">int scores[5];</td><td>חמישה תאים מסוג <code>int</code> בשם <code>scores</code></td></tr>
+<tr><td class="mono">scores[1] = 85;</td><td>כותבים לתא מספר 1</td></tr>
+<tr><td class="mono">scores[1]</td><td>קוראים את הערך שבתא</td></tr></table>
+<p>לחצו ⏯ שורה אחר שורה: <code>scores</code> מופיע בטבלה כשורה אחת של חמישה תאים, והם מתמלאים אחד אחד.</p>`,
+			{
+				id: "arrays-declare-scores",
+				title: "חמישה תאים",
+				code: DECLARE_MAIN,
+				files: project({}),
+				tests: [io("first, third and fifth", "", "first: 70\nthird: 90\nfifth: 100")]
+			},
+			R`<p>המספר שבסוגריים המרובעים הוא ה<b>אינדקס</b>, והוא מתחיל ב-0. במערך של 4 תאים האינדקסים הם 0, 1, 2, 3:</p>
+<table class="tbl"><tr><th>אינדקס</th><td class="mono">0</td><td class="mono">1</td><td class="mono">2</td><td class="mono">3</td></tr>
+<tr><th>ערך</th><td class="mono">18.5</td><td class="mono">21.0</td><td class="mono">24.5</td><td class="mono">19.0</td></tr></table>
+<p>התא הראשון הוא <code>temps[0]</code>, והאחרון <code>temps[3]</code>: אחד פחות מהגודל.</p>`,
+			{
+				id: "arrays-declare-index",
+				title: "מתחילים מ-0",
+				code: INDEX_MAIN,
+				files: project({}),
+				tests: [io("the first and the last", "", "temps[0] = 18.5 (the first)\ntemps[3] = 19.0 (the last)")]
+			},
+			R`<p>תורכם: בתוכנית חסרה הקפה השלישית.</p>`,
+			{
+				id: "arrays-declare-laps",
+				title: "הקפה שלישית",
+				task: "במקום ה-TODO כתבו שורה שמכניסה 45 לתא של ההקפה השלישית.",
+				code: LAPS_START,
+				solution: LAPS_SOLVED,
+				files: project({}),
+				tests: [io("the four laps", "", "laps: 40 42 45 41")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה האינדקס של התא האחרון ב-<code>int a[5];</code>?",
+				o: [
+					"5",
+					"4",
+					"6"
+				],
+				a: 1,
+				w: "האינדקסים הם 0 עד 4."
+			},
+			{
+				s: "איך כותבים 7 לתא הראשון של <code>int a[5];</code>?",
+				o: [
+					"<code>a[1] = 7;</code>",
+					"<code>a = 7;</code>",
+					"<code>a[0] = 7;</code>"
+				],
+				a: 2,
+				w: "התא הראשון הוא <code>a[0]</code>."
+			},
+			{
+				s: "<code>int b[3];</code>. איזה מהבאים <b>אינו</b> תא של <code>b</code>?",
+				o: [
+					"<code>b[0]</code>",
+					"<code>b[3]</code>",
+					"<code>b[2]</code>"
+				],
+				a: 1,
+				w: "יש שלושה תאים: <code>b[0]</code>, <code>b[1]</code>, <code>b[2]</code>."
+			}
+		]
+	}));
+	{
+		const INIT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int primes[4] = {2, 3, 5, 7};
+
+    printf("%d %d %d %d\n", primes[0], primes[1], primes[2], primes[3]);
+    return 0;
+}`;
+		const ZEROS_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int counts[5] = {4, 9};
+    int empty[3] = {0};
+
+    printf("counts: %d %d %d %d %d\n", counts[0], counts[1], counts[2], counts[3], counts[4]);
+    printf("empty: %d %d %d\n", empty[0], empty[1], empty[2]);
+    return 0;
+}`;
+		const PRICES_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: give prices the values 12, 7, 30, 5 and 18, in this order */
+    int prices[5] = {0};
+
+    printf("first: %d\n", prices[0]);
+    printf("middle: %d\n", prices[2]);
+    printf("last: %d\n", prices[4]);
+    return 0;
+}`;
+		const PRICES_SOLVED = PRICES_START.replace("    /* TODO: give prices the values 12, 7, 30, 5 and 18, in this order */\n", "").replace("int prices[5] = {0};", "int prices[5] = {12, 7, 30, 5, 18};");
+		U.push(withOutputs({
+			id: "arrays-init",
+			title: "אתחול מערך",
+			body: [
+				R`<p>אפשר לתת לתאים ערכים כבר בהגדרה: רשימה בסוגריים מסולסלים, מופרדת בפסיקים. הערך הראשון נכנס ל-<code>[0]</code>, השני ל-<code>[1]</code>, וכן הלאה.</p>
+<pre class="code-static"><span>int primes[4] = {2, 3, 5, 7};</span></pre>`,
+				{
+					id: "arrays-init-list",
+					title: "רשימת ערכים",
+					code: INIT_MAIN,
+					files: project({}),
+					tests: [io("the four primes", "", "2 3 5 7")]
+				},
+				R`<p>אם ברשימה פחות ערכים מתאים, שאר התאים מקבלים 0:</p>
+<table class="tbl"><tr><th>ההגדרה</th><th>התאים</th></tr>
+<tr><td class="mono">int counts[5] = {4, 9};</td><td class="mono">4 9 0 0 0</td></tr>
+<tr><td class="mono">int empty[3] = {0};</td><td class="mono">0 0 0</td></tr></table>
+<p>מערך בלי רשימה בכלל מתחיל בזבל, כמו כל משתנה שלא אותחל.</p>`,
+				{
+					id: "arrays-init-zeros",
+					title: "התאים שנשארו",
+					code: ZEROS_MAIN,
+					files: project({}),
+					tests: [io("counts and empty", "", "counts: 4 9 0 0 0\nempty: 0 0 0")]
+				},
+				R`<p>תורכם: כרגע כל המחירים 0.</p>`,
+				{
+					id: "arrays-init-prices",
+					title: "חמישה מחירים",
+					task: "שנו את ההגדרה של <code>prices</code> כך שיהיו בו 12, 7, 30, 5 ו-18, לפי הסדר.",
+					code: PRICES_START,
+					solution: PRICES_SOLVED,
+					files: project({}),
+					tests: [io("first, middle and last", "", "first: 12\nmiddle: 30\nlast: 18")]
+				}
+			],
+			quiz: [
+				{
+					s: "<code>int a[3] = {1};</code>. מה יש ב-<code>a[2]</code>?",
+					o: [
+						"1",
+						"זבל",
+						"0"
+					],
+					a: 2,
+					w: "תא שלא קיבל ערך מהרשימה מקבל 0."
+				},
+				{
+					s: "<code>int d[4] = {5, 6, 7, 8};</code>. מה יש ב-<code>d[1]</code>?",
+					o: [
+						"6",
+						"5",
+						"7"
+					],
+					a: 0,
+					w: "הערך השני נכנס לתא 1."
+				},
+				{
+					s: "איזו מההגדרות הבאות <b>לא</b> נותנת מערך שכל תאיו 0?",
+					o: [
+						"<code>int z[4] = {0};</code>",
+						"<code>int z[4] = {0, 0};</code>",
+						"<code>int z[4];</code>"
+					],
+					a: 2,
+					w: "בלי רשימה התאים לא מאותחלים."
+				}
+			]
+		}));
+	}
+	const READ_MAIN = R`#include <stdio.h>
+
+#define SIZE 5
+
+int main(void)
+{
+    int marks[SIZE];
+
+    printf("%d marks: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &marks[i]);
+    }
+    for (int i = 0; i < SIZE; i++)
+    {
+        printf("marks[%d] = %d\n", i, marks[i]);
+    }
+    return 0;
+}`;
+	const SUM_LOOP_START = R`#include <stdio.h>
+
+#define SIZE 4
+
+int main(void)
+{
+    int nums[SIZE];
+    int sum = 0;
+
+    printf("%d numbers: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &nums[i]);
+    }
+    for (int i = 0; i < SIZE; i++)
+    {
+        /* TODO: add nums[i] to sum */
+    }
+    printf("sum: %d\n", sum);
+    return 0;
+}`;
+	const SUM_LOOP_SOLVED = SUM_LOOP_START.replace("/* TODO: add nums[i] to sum */", "sum += nums[i];");
+	const SUM_ARRAY_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int prices[SIZE];
+
+    printf("%d prices: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &prices[i]);
+    }
+    printf("total: %d\n", sumArray(prices, SIZE));
+    return 0;
+}`;
+	const SUM_ARRAY_START = moduleOf("arrays", [starterOf(A_SUM, [
+		"TODO 1: start a sum at 0",
+		"TODO 2: loop over i from 0 while i < size",
+		"TODO 3: add arr[i] to the sum",
+		"TODO 4: return the sum instead of 0"
+	], "return 0;")]);
+	U.push(withOutputs({
+		id: "arrays-loop",
+		title: "לולאה על מערך",
+		body: [
+			R`<p>כדי לעבור על כל התאים, משתמשים בלולאת <code>for</code> על האינדקסים: <code>i</code> מתחיל ב-0, וממשיך כל עוד <code>i &lt; SIZE</code>.</p>
+<p>בתוכנית ליד יש שתי לולאות כאלה. הראשונה קוראת ערך לכל תא, <code>scanf("%d", &amp;marks[i])</code>, והשנייה מדפיסה אותם.</p>`,
+			{
+				id: "arrays-loop-read",
+				title: "לקרוא ולהדפיס",
+				code: READ_MAIN,
+				files: project({}),
+				tests: [io("five marks", "80 95 70 60 88\n", "5 marks: marks[0] = 80\nmarks[1] = 95\nmarks[2] = 70\nmarks[3] = 60\nmarks[4] = 88")]
+			},
+			R`<p>סכום של מערך הוא אותו דבר כמו הסכום בפרק הלולאות: משתנה שמתחיל ב-0, ובכל סיבוב מוסיפים לו ערך. כאן הערך הוא התא <code>nums[i]</code>.</p>`,
+			{
+				id: "arrays-loop-sum",
+				title: "גוף הלולאה",
+				task: "השלימו את גוף הלולאה השנייה: הוסיפו את <code>nums[i]</code> ל-<code>sum</code>.",
+				code: SUM_LOOP_START,
+				solution: SUM_LOOP_SOLVED,
+				files: project({}),
+				tests: [
+					io("1 2 3 4", "1 2 3 4\n", "4 numbers: sum: 10"),
+					io("with negatives", "10 -3 1 -7\n", "4 numbers: sum: 1"),
+					io("big numbers", "1000 2000 3000 4000\n", "4 numbers: sum: 10000")
+				]
+			},
+			R`<p>עכשיו אותה לולאה בפונקציה, במודול חדש: <code>arrays.c</code>. פונקציה מקבלת מערך כך:</p>
+<pre class="code-static"><span>int sumArray(int arr[], int size)</span></pre>
+<p><code>arr</code> הוא המערך, ו-<code>size</code> מספר התאים שלו. <code>main.c</code> קורא לה כך: <code>sumArray(prices, SIZE)</code>.</p>`,
+			{
+				id: "arrays-loop-sumarray",
+				title: "sumArray",
+				task: "כתבו ב-<code>arrays.c</code> את הגוף של <code>sumArray</code>, לפי ארבעת ה-TODO.",
+				code: taskIn("arrays.c", SUM_ARRAY_MAIN),
+				solution: SUM_ARRAY_MAIN,
+				files: project({ arrays: SUM_ARRAY_START }),
+				solutionFiles: { "arrays.c": moduleOf("arrays", [A_SUM]).c },
+				tests: [unit("sumArray", R`
+int sumArray(int arr[], int size);
+int main(void)
+{
+    int a[] = {3, 4, 5};
+    int b[] = {-2, 7, -5, 10};
+    int c[] = {42};
+    T_INT("sumArray of {3, 4, 5}", sumArray(a, 3), 12);
+    T_INT("sumArray of {-2, 7, -5, 10}", sumArray(b, 4), 10);
+    T_INT("sumArray of {42}, size 1", sumArray(c, 1), 42);
+    T_INT("size 0 gives 0", sumArray(a, 0), 0);
+    T_INT("only the first 2 of {3, 4, 5}", sumArray(a, 2), 7);
+    return 0;
+}`), io("five prices", "12 7 30 5 18\n", "5 prices: total: 72")]
+			}
+		],
+		quiz: [
+			{
+				s: "למה הלולאה היא <code>i &lt; SIZE</code> ולא <code>i &lt;= SIZE</code>?",
+				o: [
+					"כי התא האחרון הוא <code>SIZE - 1</code>",
+					"כי <code>&lt;=</code> אסור בלולאת <code>for</code>",
+					"כי כך הלולאה מהירה יותר"
+				],
+				a: 0,
+				w: "האינדקסים הם 0 עד <code>SIZE - 1</code>."
+			},
+			{
+				s: "איך קוראים מספר לתא <code>i</code> של <code>vals</code>?",
+				o: [
+					"<code>scanf(\"%d\", vals[i]);</code>",
+					"<code>scanf(\"%d\", &amp;vals[i]);</code>",
+					"<code>scanf(\"%d\", &amp;vals);</code>"
+				],
+				a: 1,
+				w: "כמו כל משתנה: <code>&amp;</code> לפני התא."
+			},
+			{
+				s: "<code>sumArray(nums, 3)</code>, ו-<code>nums</code> הוא <code>{2, 4, 6, 8}</code>. מה <b>לא</b> נכון?",
+				o: [
+					"התוצאה 12",
+					"הפונקציה עוברת על שלושה תאים",
+					"התוצאה 20"
+				],
+				a: 2,
+				w: "<code>size</code> הוא 3, ולכן נסכמים רק 2, 4 ו-6."
+			}
+		]
+	}));
+	const BOUNDS_MAIN = R`#include <stdio.h>
+
+#define SIZE 3
+
+int main(void)
+{
+    int steps[SIZE] = {500, 1200, 800};
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        printf("day %d: %d steps\n", i + 1, steps[i]);
+    }
+    return 0;
+}`;
+	const ONE_TOO_FAR_START = R`#include <stdio.h>
+
+#define COUNT 5
+
+int main(void)
+{
+    int codes[COUNT];
+
+    printf("%d codes: ", COUNT);
+    for (int i = 0; i < COUNT; i++)
+    {
+        scanf("%d", &codes[i]);
+    }
+    /* TODO: this loop prints one value too many; fix its condition */
+    for (int i = 0; i <= COUNT; i++)
+    {
+        printf("%d\n", codes[i]);
+    }
+    return 0;
+}`;
+	const ONE_TOO_FAR_SOLVED = ONE_TOO_FAR_START.replace("    /* TODO: this loop prints one value too many; fix its condition */\n", "").replace("i <= COUNT", "i < COUNT");
+	U.push(withOutputs({
+		id: "arrays-bounds",
+		title: "מחוץ לגבולות",
+		body: [
+			R`<p>C <b>לא בודקת</b> את האינדקס. במערך של 3 תאים, <code>steps[3]</code> הוא כבר מחוץ למערך, ובכל זאת התוכנית מתקמפלת ורצה:</p>
+<pre class="code-static"><span>for (int i = 0; i &lt;= SIZE; i++)    /* i reaches 3 */</span></pre>
+<table class="tbl"><tr><th>מה קורה</th><th>התיקון</th></tr>
+<tr><td>הסיבוב האחרון קורא זבל מהזיכרון שאחרי המערך</td><td><code>i &lt; SIZE</code></td></tr></table>
+<p>בתוכנית ליד התנאי נכון. נסו לשנות אותו ל-<code>&lt;=</code> ולהריץ.</p>`,
+			{
+				id: "arrays-bounds-right",
+				title: "התנאי הנכון",
+				code: BOUNDS_MAIN,
+				files: project({}),
+				tests: [io("three days", "", "day 1: 500 steps\nday 2: 1200 steps\nday 3: 800 steps")]
+			},
+			R`<p>כאן הלולאה השנייה מדפיסה שישה מספרים במקום חמישה. האחרון הוא זבל.</p>`,
+			{
+				id: "arrays-bounds-fix",
+				title: "מספר אחד יותר מדי",
+				task: "תקנו את התנאי של הלולאה השנייה, כך שתדפיס רק את חמשת הקודים.",
+				code: ONE_TOO_FAR_START,
+				solution: ONE_TOO_FAR_SOLVED,
+				files: project({}),
+				tests: [io("five codes", "11 22 33 44 55\n", "5 codes: 11\n22\n33\n44\n55"), io("zeros and negatives", "0 -1 0 -2 7\n", "5 codes: 0\n-1\n0\n-2\n7")]
+			}
+		],
+		quiz: [
+			{
+				s: "האם C בודקת שהאינדקס בתוך המערך?",
+				o: [
+					"כן, והתוכנית נעצרת",
+					"לא: התוכנית קוראת מה שיש בזיכרון שם",
+					"כן, gcc לא מקמפל"
+				],
+				a: 1,
+				w: "האחריות על האינדקס היא של מי שכותב את הקוד."
+			},
+			{
+				s: "<code>int v[6];</code>. מה התנאי הנכון ללולאה על כל התאים?",
+				o: [
+					"<code>i &lt;= 6</code>",
+					"<code>i &lt; 5</code>",
+					"<code>i &lt; 6</code>"
+				],
+				a: 2,
+				w: "האינדקסים הם 0 עד 5."
+			},
+			{
+				s: "<code>int w[4];</code>. איזו מהקריאות הבאות <b>לא</b> בטוחה?",
+				o: [
+					"<code>w[0]</code>",
+					"<code>w[4]</code>",
+					"<code>w[3]</code>"
+				],
+				a: 1,
+				w: "<code>w[4]</code> הוא כבר אחרי התא האחרון."
+			}
+		]
+	}));
+	{
+		const PARAMS_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int week[7] = {3, 0, 5, 2, 8, 1, 4};
+    int pair[2] = {10, 20};
+
+    printf("week: %d\n", sumArray(week, 7));
+    printf("pair: %d\n", sumArray(pair, 2));
+    return 0;
+}`;
+		const A_ADD_ALL = {
+			p: "/* adds amount to every value of arr */\nvoid addToAll(int arr[], int size, int amount);",
+			b: R`void addToAll(int arr[], int size, int amount)
+{
+    for (int i = 0; i < size; i++)
+    {
+        arr[i] += amount;
+    }
+}`
+		};
+		const ADD_ALL_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 3
+
+int main(void)
+{
+    int bonus[SIZE] = {10, 20, 30};
+
+    addToAll(bonus, SIZE, 5);
+    printf("after addToAll: %d %d %d\n", bonus[0], bonus[1], bonus[2]);
+    return 0;
+}`;
+		const REVERSE_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int line[SIZE];
+
+    printf("%d numbers: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &line[i]);
+    }
+    reverseArray(line, SIZE);
+    printf("reversed:");
+    for (int i = 0; i < SIZE; i++)
+    {
+        printf(" %d", line[i]);
+    }
+    printf("\n");
+    return 0;
+}`;
+		const REVERSE_START = starterOf(A_REVERSE, ["TODO 1: loop over i from 0 while i < size / 2", "TODO 2: swap arr[i] and arr[size - 1 - i] with a temp variable"]);
+		U.push(withOutputs({
+			id: "arrays-params",
+			title: "מערך כפרמטר",
+			body: [
+				R`<p>פונקציה שמקבלת מערך מקבלת גם את מספר התאים שלו. כך אותה פונקציה עובדת על מערך בכל גודל:</p>
+<table class="tbl"><tr><th>הקריאה</th><th>התאים שנסכמים</th></tr>
+<tr><td class="mono">sumArray(week, 7)</td><td>שבעה</td></tr>
+<tr><td class="mono">sumArray(pair, 2)</td><td>שניים</td></tr></table>
+<p>בקריאה כותבים רק את שם המערך, בלי <code>[ ]</code>.</p>`,
+				{
+					id: "arrays-params-size",
+					title: "כל גודל",
+					code: PARAMS_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM]) }),
+					tests: [io("week and pair", "", "week: 23\npair: 30")]
+				},
+				R`<p>בשיעור "העברה לפי ערך" (פרק 7) פונקציה קיבלה עותק של <code>int</code>, ושינוי שלו לא נשאר. מערך לא מועתק: הפונקציה עובדת על התאים של מי שקרא לה, ולכן שינוי נשאר.</p>
+<p>צעדו עם ⏯ לתוך <code>addToAll</code>, וראו את <code>bonus</code> משתנה.</p>`,
+				{
+					id: "arrays-params-change",
+					title: "השינוי נשאר",
+					code: ADD_ALL_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, A_ADD_ALL]) }),
+					tests: [io("10 20 30 plus 5", "", "after addToAll: 15 25 35")]
+				},
+				R`<p>תורכם: <code>reverseArray</code> הופכת את סדר התאים במקום, בלי מערך נוסף. מחליפים את הראשון עם האחרון, את השני עם הלפני אחרון, וכן הלאה עד האמצע.</p>`,
+				{
+					id: "arrays-params-reverse",
+					title: "reverseArray",
+					task: "כתבו ב-<code>arrays.c</code> את <code>reverseArray</code>, לפי שני ה-TODO.",
+					code: taskIn("arrays.c", REVERSE_MAIN),
+					solution: REVERSE_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, REVERSE_START]) }),
+					solutionFiles: { "arrays.c": moduleOf("arrays", [A_SUM, A_REVERSE]).c },
+					tests: [
+						unit("reverseArray", R`
+void reverseArray(int arr[], int size);
+int main(void)
+{
+    int odd[] = {1, 2, 3, 4, 5};
+    int oddWant[] = {5, 4, 3, 2, 1};
+    int even[] = {7, 8, 9, 10};
+    int evenWant[] = {10, 9, 8, 7};
+    int one[] = {42};
+    int oneWant[] = {42};
+    reverseArray(odd, 5);
+    T_ARR("reverseArray of {1, 2, 3, 4, 5}", odd, oddWant, 5);
+    reverseArray(even, 4);
+    T_ARR("reverseArray of {7, 8, 9, 10}", even, evenWant, 4);
+    reverseArray(one, 1);
+    T_ARR("reverseArray of {42}, size 1", one, oneWant, 1);
+    return 0;
+}`),
+						io("1 to 5", "1 2 3 4 5\n", "5 numbers: reversed: 5 4 3 2 1"),
+						io("with negatives", "-1 0 9 -9 3\n", "5 numbers: reversed: 3 -9 9 0 -1")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "פונקציה מאפסת את הפרמטר שלה. אחרי הקריאה, למי מהבאים השתנה הערך?",
+					o: [
+						"ל-<code>int</code> של מי שקרא",
+						"לתאי מערך של מי שקרא",
+						"לאף אחד"
+					],
+					a: 1,
+					w: "<code>int</code> מועתק. מערך לא מועתק."
+				},
+				{
+					s: "איך קוראים ל-<code>sumArray</code> עם המערך <code>prices</code> של 5 תאים?",
+					o: [
+						"<code>sumArray(prices[5], 5)</code>",
+						"<code>sumArray(prices[], 5)</code>",
+						"<code>sumArray(prices, 5)</code>"
+					],
+					a: 2,
+					w: "בקריאה רק שם המערך."
+				},
+				{
+					s: "למה <code>reverseArray</code> <b>לא</b> ממשיכה את הלולאה עד <code>size</code>?",
+					o: [
+						"כי אז כל זוג יוחלף פעמיים, והמערך יחזור לסדר המקורי",
+						"כי זה יקרא מחוץ למערך",
+						"כי <code>size</code> אינו מספר זוגי"
+					],
+					a: 0,
+					w: "עד האמצע כל זוג מוחלף פעם אחת."
+				}
+			]
+		}));
+	}
+	{
+		const COUNT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int digits[] = {3, 1, 4, 1, 5, 9};
+    int count = sizeof(digits) / sizeof(digits[0]);
+
+    printf("sizeof(digits) = %d bytes\n", (int)sizeof(digits));
+    printf("sizeof(digits[0]) = %d bytes\n", (int)sizeof(digits[0]));
+    printf("cells: %d\n", count);
+    return 0;
+}`;
+		const A_ZEROS = {
+			p: "/* returns how many values of arr are 0 */\nint countZeros(int arr[], int size);",
+			b: R`int countZeros(int arr[], int size)
+{
+    int zeros = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == 0)
+        {
+            zeros++;
+        }
+    }
+    return zeros;
+}`
+		};
+		const ZEROS_START = {
+			p: A_ZEROS.p,
+			b: R`int countZeros(int arr[], int size)
+{
+    /* TODO: this count is wrong inside a function; use size instead */
+    int count = sizeof(arr) / sizeof(arr[0]);
+    int zeros = 0;
+    for (int i = 0; i < count; i++)
+    {
+        if (arr[i] == 0)
+        {
+            zeros++;
+        }
+    }
+    return zeros;
+}`
+		};
+		const ZEROS_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int scores[] = {0, 5, 0, 0, 7, 3, 0};
+    int size = sizeof(scores) / sizeof(scores[0]);
+
+    printf("%d cells, %d of them 0\n", size, countZeros(scores, size));
+    return 0;
+}`;
+		U.push(withOutputs({
+			id: "arrays-sizeof",
+			title: "גודל מערך: sizeof",
+			body: [
+				R`<p>במקום שבו המערך מוגדר, <code>sizeof</code> נותן את גודלו בבתים. מחלקים בגודל של תא אחד, ומקבלים את מספר התאים:</p>
+<pre class="code-static"><span>int count = sizeof(digits) / sizeof(digits[0]);    /* 24 / 4 = 6 */</span></pre>
+<p>כשהרשימה קובעת את הגודל, <code>int digits[] = {...}</code>, כך לא צריך לספור לבד.</p>`,
+				{
+					id: "arrays-sizeof-count",
+					title: "כמה תאים",
+					code: COUNT_MAIN,
+					files: project({}),
+					tests: [io("6 cells", "", "sizeof(digits) = 24 bytes\nsizeof(digits[0]) = 4 bytes\ncells: 6")]
+				},
+				R`<p>בתוך פונקציה זה לא עובד. הפרמטר <code>arr</code> מחזיק רק את המקום של המערך בזיכרון, ו-<code>sizeof(arr)</code> הוא הגודל של מקום כזה: 8 בתים ב-gcc, בכל גודל של מערך. gcc גם מזהיר:</p>
+<pre class="code-static"><span>warning: 'sizeof' on array function parameter 'arr' will return size of 'int *'</span></pre>
+<p>לכן מחשבים את הגודל ב-<code>main</code>, ומעבירים אותו כפרמטר.</p>`,
+				{
+					id: "arrays-sizeof-fix",
+					title: "הגודל שעובר",
+					task: "תקנו את <code>countZeros</code> ב-<code>arrays.c</code>: שתספור לפי הפרמטר <code>size</code>.",
+					code: taskIn("arrays.c", ZEROS_MAIN),
+					solution: ZEROS_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, ZEROS_START]) }),
+					solutionFiles: { "arrays.c": moduleOf("arrays", [A_SUM, A_ZEROS]).c },
+					tests: [unit("countZeros", R`
+int countZeros(int arr[], int size);
+int main(void)
+{
+    int a[] = {0, 5, 0, 0, 7, 3, 0};
+    int b[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    int c[] = {0, 0, 0, 0, 0, 0};
+    T_INT("countZeros of {0, 5, 0, 0, 7, 3, 0}", countZeros(a, 7), 4);
+    T_INT("countZeros with no 0", countZeros(b, 8), 0);
+    T_INT("countZeros of six zeros", countZeros(c, 6), 6);
+    T_INT("only the first 3 of {0, 5, 0, ...}", countZeros(a, 3), 2);
+    return 0;
+}`), io("main prints 7 cells, 4 of them 0", "", "7 cells, 4 of them 0")]
+				}
+			],
+			quiz: [
+				{
+					s: "למה מעבירים לפונקציה את גודל המערך?",
+					o: [
+						"כי בתוך הפונקציה <code>sizeof</code> לא נותן את גודל המערך",
+						"כי פונקציה לא יכולה להשתמש ב-<code>sizeof</code>",
+						"כי כך המערך מועתק"
+					],
+					a: 0,
+					w: "בתוך הפונקציה <code>sizeof(arr)</code> הוא גודל של כתובת."
+				},
+				{
+					s: "<code>double d[5];</code>, ו-<code>double</code> הוא 8 בתים. כמה הוא <code>sizeof(d)</code> באותו מקום?",
+					o: [
+						"5",
+						"8",
+						"40"
+					],
+					a: 2,
+					w: "5 תאים של 8 בתים."
+				},
+				{
+					s: "<code>int s[] = {1, 2, 3};</code>. איזה מהבאים <b>לא</b> נותן 3?",
+					o: [
+						"<code>sizeof(s) / sizeof(s[0])</code>",
+						"<code>sizeof(s)</code>",
+						"מספר הערכים ברשימה"
+					],
+					a: 1,
+					w: "<code>sizeof(s)</code> הוא מספר הבתים, לא מספר התאים."
+				}
+			]
+		}));
+	}
+	{
+		const MAX_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 6
+
+int main(void)
+{
+    int sales[SIZE] = {14, 30, 9, 30, 22, 5};
+    int best = maxIndex(sales, SIZE);
+
+    printf("best day: %d, with %d sales\n", best, sales[best]);
+    return 0;
+}`;
+		const A_MIN = {
+			p: "/* returns the index of the smallest value (the first one on a tie); size > 0 */\nint minIndex(int arr[], int size);",
+			b: R`int minIndex(int arr[], int size)
+{
+    int best = 0;
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] < arr[best])
+        {
+            best = i;
+        }
+    }
+    return best;
+}`
+		};
+		const MIN_START = starterOf(A_MIN, [
+			"TODO 1: start with best = 0",
+			"TODO 2: loop over i from 1 while i < size",
+			"TODO 3: when arr[i] is smaller than arr[best], set best to i",
+			"TODO 4: return best instead of -1"
+		], "return -1;");
+		const MIN_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int times[SIZE];
+
+    printf("%d times: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &times[i]);
+    }
+    int fastest = minIndex(times, SIZE);
+    printf("fastest: runner %d, %d seconds\n", fastest, times[fastest]);
+    return 0;
+}`;
+		U.push(withOutputs({
+			id: "arrays-max",
+			title: "מקסימום ואינדקס",
+			body: [
+				R`<p><code>maxIndex</code> מחזירה את <b>האינדקס</b> של הערך הגדול, לא את הערך. את הערך מקבלים ממנו: <code>sales[best]</code>.</p>
+<table class="tbl"><tr><th>שלב</th><th>מה קורה</th></tr>
+<tr><td>התחלה</td><td><code>best = 0</code>: הכי טוב עד עכשיו הוא התא הראשון</td></tr>
+<tr><td>כל תא אחר</td><td>אם <code>arr[i] &gt; arr[best]</code>, אז <code>best = i</code></td></tr>
+<tr><td>סוף</td><td><code>return best;</code></td></tr></table>
+<p>צעדו עם ⏯ לתוך <code>maxIndex</code>. ב-30 השני <code>best</code> לא משתנה, כי <code>&gt;</code> ולא <code>&gt;=</code>.</p>`,
+				{
+					id: "arrays-max-index",
+					title: "maxIndex",
+					code: MAX_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, A_MAX]) }),
+					tests: [io("day 1 with 30", "", "best day: 1, with 30 sales")]
+				},
+				R`<p>תורכם: <code>minIndex</code> היא אותו דבר, עם הערך הקטן. בתיקו מחזירים את האינדקס הראשון.</p>`,
+				{
+					id: "arrays-max-min",
+					title: "minIndex",
+					task: "כתבו ב-<code>arrays.c</code> את <code>minIndex</code>, לפי ארבעת ה-TODO.",
+					code: taskIn("arrays.c", MIN_MAIN),
+					solution: MIN_MAIN,
+					files: project({ arrays: moduleOf("arrays", [
+						A_SUM,
+						A_MAX,
+						MIN_START
+					]) }),
+					solutionFiles: { "arrays.c": moduleOf("arrays", [
+						A_SUM,
+						A_MAX,
+						A_MIN
+					]).c },
+					tests: [
+						unit("minIndex", R`
+int minIndex(int arr[], int size);
+int main(void)
+{
+    int a[] = {8, 3, 9, 1, 4};
+    int b[] = {2, 5, 2, 7};
+    int c[] = {-1, -6, 0};
+    int d[] = {12};
+    T_INT("minIndex of {8, 3, 9, 1, 4}", minIndex(a, 5), 3);
+    T_INT("a tie gives the first: {2, 5, 2, 7}", minIndex(b, 4), 0);
+    T_INT("minIndex of {-1, -6, 0}", minIndex(c, 3), 1);
+    T_INT("one value: {12}", minIndex(d, 1), 0);
+    T_INT("only the first 4 of {8, 3, 9, 1, 4}", minIndex(a, 4), 3);
+    return 0;
+}`),
+						io("runner 2 is fastest", "61 58 49 70 55\n", "5 times: fastest: runner 2, 49 seconds"),
+						io("a tie", "50 50 52 51 53\n", "5 times: fastest: runner 0, 50 seconds")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "<code>{4, 9, 9, 2}</code>. מה מחזירה <code>maxIndex</code>?",
+					o: [
+						"1",
+						"2",
+						"9"
+					],
+					a: 0,
+					w: "בתיקו נשאר האינדקס הראשון, כי ההשוואה היא <code>&gt;</code>."
+				},
+				{
+					s: "<code>int i = maxIndex(arr, n);</code>. איך מדפיסים את הערך הגדול עצמו?",
+					o: [
+						"<code>printf(\"%d\", i);</code>",
+						"<code>printf(\"%d\", arr[i]);</code>",
+						"<code>printf(\"%d\", arr[n]);</code>"
+					],
+					a: 1,
+					w: "<code>i</code> הוא האינדקס, והערך הוא <code>arr[i]</code>."
+				},
+				{
+					s: "איזה מהמשפטים הבאים על <code>maxIndex</code> <b>אינו</b> נכון?",
+					o: [
+						"היא מחזירה אינדקס",
+						"בתיקו היא מחזירה את האינדקס הראשון",
+						"היא מחזירה את הערך הגדול עצמו"
+					],
+					a: 2,
+					w: "היא מחזירה את המקום שלו. הערך הוא <code>arr[best]</code>."
+				}
+			]
+		}));
+	}
+	{
+		const A_POSITIVE = {
+			p: "/* returns 1 when every value of arr is bigger than 0, else 0 */\nint allPositive(int arr[], int size);",
+			b: R`int allPositive(int arr[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] <= 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}`
+		};
+		const POSITIVE_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int stock[4] = {12, 3, 8, 1};
+    int empty[4] = {5, 0, 2, 9};
+
+    printf("stock: %d\n", allPositive(stock, 4));
+    printf("empty: %d\n", allPositive(empty, 4));
+    return 0;
+}`;
+		const INC_START = starterOf(A_INC, [
+			"TODO 1: loop over i from 1 while i < size",
+			"TODO 2: when arr[i] is not bigger than arr[i - 1], return 0",
+			"TODO 3: after the loop, return 1 instead of -1"
+		], "return -1;");
+		const INC_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int levels[SIZE];
+
+    printf("%d levels: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &levels[i]);
+    }
+    if (isIncreasing(levels, SIZE))
+    {
+        printf("always up\n");
+    }
+    else
+    {
+        printf("not always up\n");
+    }
+    return 0;
+}`;
+		const A_DIGIT_COUNT = {
+			p: "/* returns how many values of arr have a digit sum of n (digitSum of mathx) */\nint countDigitSum(int arr[], int size, int n);",
+			b: R`int countDigitSum(int arr[], int size, int n)
+{
+    int count = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (digitSum(arr[i]) == n)
+        {
+            count++;
+        }
+    }
+    return count;
+}`
+		};
+		const DIGIT_COUNT_START = starterOf(A_DIGIT_COUNT, ["TODO 2: count the values whose digitSum is n"], "return 0;");
+		const DIGIT_COUNT_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+#include "mathx.h"
+
+#define SIZE 6
+
+int main(void)
+{
+    int codes[SIZE] = {15, 42, 7, 60, 33, 106};
+    int n = 0;
+
+    printf("Digit sum: ");
+    scanf("%d", &n);
+    printf("%d of the codes have a digit sum of %d\n", countDigitSum(codes, SIZE, n), n);
+    return 0;
+}`;
+		const digitCountC = (isSolved) => {
+			const c = moduleOf("arrays", [A_SUM, isSolved ? A_DIGIT_COUNT : DIGIT_COUNT_START], { includes: isSolved ? ["mathx"] : [] }).c;
+			return isSolved ? c : "/* TODO 1: include mathx.h, so that digitSum can be called */\n" + c;
+		};
+		const DIGIT_COUNT_H = moduleOf("arrays", [A_SUM, A_DIGIT_COUNT]).h;
+		const digitCountMakefile = (isSolved) => {
+			const solved = houseMakefile(["mathx", "arrays"], { arrays: ["mathx.h"] });
+			return isSolved ? solved : solved.replace("arrays.o: arrays.c arrays.h mathx.h\n", "# TODO 3: arrays.c includes mathx.h now; add it to the rule below\narrays.o: arrays.c arrays.h\n");
+		};
+		U.push(withOutputs({
+			id: "arrays-check",
+			title: "בדיקה על כל המערך",
+			body: [
+				R`<p>כדי לבדוק שמשהו נכון לגבי <b>כל</b> התאים, מספיק תא אחד שנכשל כדי לענות 0:</p>
+<table class="tbl"><tr><th>איפה</th><th>מה מחזירים</th></tr>
+<tr><td>בתוך הלולאה, בתא הראשון שנכשל</td><td><code>return 0;</code> מיד</td></tr>
+<tr><td>אחרי הלולאה: אף תא לא נכשל</td><td><code>return 1;</code></td></tr></table>`,
+				{
+					id: "arrays-check-positive",
+					title: "allPositive",
+					code: POSITIVE_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, A_POSITIVE]) }),
+					tests: [io("stock and empty", "", "stock: 1\nempty: 0")]
+				},
+				R`<p>תורכם: <code>isIncreasing</code> בודקת שכל ערך גדול מזה שלפניו. לכן הלולאה מתחילה ב-1, ומשווה את <code>arr[i]</code> ל-<code>arr[i - 1]</code>. שני ערכים שווים זה כבר לא עלייה.</p>`,
+				{
+					id: "arrays-check-increasing",
+					title: "isIncreasing",
+					task: "כתבו ב-<code>arrays.c</code> את <code>isIncreasing</code>, לפי שלושת ה-TODO.",
+					code: taskIn("arrays.c", INC_MAIN),
+					solution: INC_MAIN,
+					files: project({ arrays: moduleOf("arrays", [A_SUM, INC_START]) }),
+					solutionFiles: { "arrays.c": moduleOf("arrays", [A_SUM, A_INC]).c },
+					tests: [
+						unit("isIncreasing", R`
+int isIncreasing(int arr[], int size);
+int main(void)
+{
+    int up[] = {1, 4, 7, 20};
+    int same[] = {1, 4, 4, 20};
+    int down[] = {9, 3, 1};
+    int late[] = {1, 2, 3, 0};
+    int one[] = {5};
+    T_INT("isIncreasing of {1, 4, 7, 20}", isIncreasing(up, 4), 1);
+    T_INT("two equal values: {1, 4, 4, 20}", isIncreasing(same, 4), 0);
+    T_INT("isIncreasing of {9, 3, 1}", isIncreasing(down, 3), 0);
+    T_INT("only the last one drops: {1, 2, 3, 0}", isIncreasing(late, 4), 0);
+    T_INT("one value: {5}", isIncreasing(one, 1), 1);
+    return 0;
+}`),
+						io("always up", "1 2 5 8 13\n", "5 levels: always up"),
+						io("not always up", "3 6 6 9 12\n", "5 levels: not always up")
+					]
+				},
+				R`<p>עכשיו פונקציה של מערך שמשתמשת במודול <code>mathx</code> מפרק 8. <code>countDigitSum</code> סופרת כמה ערכים במערך הם בעלי סכום ספרות <code>n</code>, בעזרת <code>digitSum</code>.</p>
+<p>מכיוון ש-<code>arrays.c</code> כולל עכשיו את <code>mathx.h</code>, גם הכלל של <code>arrays.o</code> ב-<code>Makefile</code> צריך אותו, כמו בשיעור "כלל לכל קובץ".</p>`,
+				{
+					id: "arrays-check-digits",
+					title: "countDigitSum",
+					task: "השלימו את שלושת ה-TODO: ה-include וגוף הפונקציה ב-<code>arrays.c</code>, וה-prerequisite ב-<code>Makefile</code>.",
+					code: taskIn("arrays.c", DIGIT_COUNT_MAIN),
+					solution: DIGIT_COUNT_MAIN,
+					files: project({
+						mathx: MATHX,
+						arrays: {
+							h: DIGIT_COUNT_H,
+							c: digitCountC(false)
+						}
+					}, { makefile: digitCountMakefile(false) }),
+					solutionFiles: {
+						"arrays.c": digitCountC(true),
+						"Makefile": digitCountMakefile(true)
+					},
+					tests: [
+						unit("countDigitSum", R`
+int countDigitSum(int arr[], int size, int n);
+int main(void)
+{
+    int a[] = {15, 42, 7, 60, 33, 106};
+    int b[] = {19, 91, 55, 1000};
+    T_INT("digit sum 6 in {15, 42, 7, 60, 33, 106}", countDigitSum(a, 6, 6), 4);
+    T_INT("digit sum 7 in {15, 42, 7, 60, 33, 106}", countDigitSum(a, 6, 7), 2);
+    T_INT("digit sum 10 in {19, 91, 55, 1000}", countDigitSum(b, 4, 10), 3);
+    T_INT("no value has digit sum 2", countDigitSum(b, 4, 2), 0);
+    return 0;
+}`),
+						io("digit sum 6", "6\n", "Digit sum: 4 of the codes have a digit sum of 6"),
+						{
+							type: "make",
+							name: "after mathx.h changes, arrays.o is built again too",
+							steps: [
+								make([]),
+								{ touch: "mathx.h" },
+								make([], { built: [
+									"main.o",
+									"mathx.o",
+									"arrays.o",
+									"prog"
+								] })
+							]
+						}
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "<code>allPositive</code> מגיעה לתא שערכו 0. מה היא עושה?",
+					o: [
+						"ממשיכה לתא הבא",
+						"מחזירה 0 מיד",
+						"מחזירה 1"
+					],
+					a: 1,
+					w: "תא אחד שנכשל מספיק כדי לענות 0."
+				},
+				{
+					s: "מה מחזירה <code>isIncreasing</code> על <code>{3, 5, 5}</code>?",
+					o: [
+						"1",
+						"0",
+						"2"
+					],
+					a: 1,
+					w: "5 אחרי 5 הוא לא עלייה."
+				},
+				{
+					s: "בפונקציה שבודקת את כל המערך, איפה <b>לא</b> כותבים <code>return 1;</code>?",
+					o: [
+						"בתוך הלולאה, אחרי תא אחד שעבר",
+						"אחרי הלולאה",
+						"בסוף הפונקציה"
+					],
+					a: 0,
+					w: "תא אחד שעבר לא אומר שכולם עברו."
+				}
+			]
+		}));
+	}
+	const A_SECOND = {
+		p: "/* returns the largest value that is smaller than the maximum; at least two different values */\nint secondLargest(int arr[], int size);",
+		b: R`int secondLargest(int arr[], int size)
+{
+    int max = arr[maxIndex(arr, size)];
+    int second = 0;
+    int found = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] < max && (!found || arr[i] > second))
+        {
+            second = arr[i];
+            found = 1;
+        }
+    }
+    return second;
+}`
+	};
+	const SECOND_START = starterOf(A_SECOND, ["TODO: write the function (you may call maxIndex)"], "return 0;");
+	const SECOND_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 6
+
+int main(void)
+{
+    int heights[SIZE];
+
+    printf("%d heights: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &heights[i]);
+    }
+    printf("tallest: %d, second: %d\n", heights[maxIndex(heights, SIZE)], secondLargest(heights, SIZE));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "arrays-review",
+		title: "חזרה: מערכים",
+		body: [R`<p>חצי הפרק יחד. <code>secondLargest</code> מחזירה את הערך השני בגודלו: הגדול ביותר מבין הערכים שקטנים מהמקסימום.</p>
+<table class="tbl"><tr><th>המערך</th><th>התשובה</th></tr>
+<tr><td class="mono">{4, 9, 7}</td><td class="mono">7</td></tr>
+<tr><td class="mono">{9, 9, 4}</td><td class="mono">4</td></tr>
+<tr><td class="mono">{-3, -8, -1}</td><td class="mono">-3</td></tr></table>
+<p>מותר לקרוא ל-<code>maxIndex</code>, שכבר נמצאת ב-<code>arrays.c</code>.</p>`, {
+			id: "arrays-review-second",
+			title: "secondLargest",
+			task: "כתבו ב-<code>arrays.c</code> את <code>secondLargest</code>.",
+			code: taskIn("arrays.c", SECOND_MAIN),
+			solution: SECOND_MAIN,
+			files: project({ arrays: moduleOf("arrays", [
+				A_SUM,
+				A_MAX,
+				SECOND_START
+			]) }),
+			solutionFiles: { "arrays.c": moduleOf("arrays", [
+				A_SUM,
+				A_MAX,
+				A_SECOND
+			]).c },
+			tests: [unit("secondLargest", R`
+int secondLargest(int arr[], int size);
+int main(void)
+{
+    int a[] = {4, 9, 7};
+    int b[] = {9, 9, 4};
+    int c[] = {-3, -8, -1};
+    int d[] = {5, 2};
+    int e[] = {1, 8, 3, 8, 6, 2};
+    T_INT("secondLargest of {4, 9, 7}", secondLargest(a, 3), 7);
+    T_INT("the maximum twice: {9, 9, 4}", secondLargest(b, 3), 4);
+    T_INT("negatives: {-3, -8, -1}", secondLargest(c, 3), -3);
+    T_INT("two values: {5, 2}", secondLargest(d, 2), 2);
+    T_INT("secondLargest of {1, 8, 3, 8, 6, 2}", secondLargest(e, 6), 6);
+    return 0;
+}`), io("tallest 190, second 182", "175 190 168 182 190 160\n", "6 heights: tallest: 190, second: 182")]
+		}],
+		quiz: [
+			{
+				s: "<code>int a[4] = {6};</code>. מה יש ב-<code>a[3]</code>?",
+				o: [
+					"6",
+					"0",
+					"זבל"
+				],
+				a: 1,
+				w: "תא שלא קיבל ערך מהרשימה מקבל 0."
+			},
+			{
+				s: "<code>for (int i = 0; i &lt;= 4; i++)</code> על <code>int a[4]</code>. מה הבעיה?",
+				o: [
+					"הסיבוב האחרון קורא את <code>a[4]</code>, מחוץ למערך",
+					"הלולאה מדלגת על <code>a[0]</code>",
+					"אין בעיה"
+				],
+				a: 0,
+				w: "האינדקסים הם 0 עד 3."
+			},
+			{
+				s: "פונקציה מקבלת <code>int arr[]</code> ומשנה את <code>arr[0]</code>. מה קורה במערך של מי שקרא?",
+				o: [
+					"כלום, היא שינתה עותק",
+					"גם בו <code>arr[0]</code> השתנה",
+					"התוכנית לא מתקמפלת"
+				],
+				a: 1,
+				w: "מערך לא מועתק: הפונקציה עובדת על אותם תאים."
+			},
+			{
+				s: "<code>maxIndex</code> על <code>{2, 8, 8}</code> מחזירה:",
+				o: [
+					"8",
+					"2",
+					"1"
+				],
+				a: 2,
+				w: "האינדקס הראשון של 8."
+			},
+			{
+				s: "מה מהבאים <b>לא</b> נותן את מספר התאים של המערך <code>v</code> בתוך פונקציה שקיבלה אותו?",
+				o: [
+					"<code>sizeof(v) / sizeof(v[0])</code>",
+					"פרמטר <code>size</code> שהועבר אליה",
+					"<code>SIZE</code> שהוגדר ב-<code>#define</code> לגודל של <code>v</code>"
+				],
+				a: 0,
+				w: "בתוך פונקציה <code>sizeof(v)</code> הוא גודל של כתובת."
+			},
+			{
+				s: "<code>allPositive</code> על <code>{3, 1, -2, 5}</code>. איזה תא היא <b>לא</b> בודקת?",
+				o: [
+					"<code>3</code>",
+					"<code>-2</code>",
+					"<code>5</code>"
+				],
+				a: 2,
+				w: "ב-<code>-2</code> היא כבר מחזירה 0."
+			}
+		]
+	}));
+	{
+		const GRID_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int grid[3][4] = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12}
+    };
+
+    printf("grid[0][0] = %d\n", grid[0][0]);
+    printf("grid[1][2] = %d\n", grid[1][2]);
+    printf("grid[2][3] = %d\n", grid[2][3]);
+    return 0;
+}`;
+		const PRINT_GRID_MAIN = R`#include <stdio.h>
+
+#define ROWS 3
+#define COLS 4
+
+int main(void)
+{
+    int grid[ROWS][COLS] = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12}
+    };
+
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            printf("%4d", grid[i][j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+		const SEATS_START = R`#include <stdio.h>
+
+#define ROWS 2
+#define COLS 5
+
+int main(void)
+{
+    int seats[ROWS][COLS] = {
+        {1, 0, 0, 1, 1},
+        {0, 1, 1, 1, 0}
+    };
+
+    for (int r = 0; r < ROWS; r++)
+    {
+        /* TODO: this loop prints only the first column; make it run over every column */
+        for (int c = 0; c < 1; c++)
+        {
+            printf("%d ", seats[r][c]);
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+		const SEATS_SOLVED = SEATS_START.replace("        /* TODO: this loop prints only the first column; make it run over every column */\n", "").replace("c < 1;", "c < COLS;");
+		const SUM_START = starterOf(M_SUM, [
+			"TODO 1: start a sum at 0",
+			"TODO 2: loop over the rows: i from 0 while i < rows",
+			"TODO 3: inside it, loop over the columns: j from 0 while j < COLS",
+			"TODO 4: add mat[i][j] to the sum",
+			"TODO 5: return the sum instead of 0"
+		], "return 0;");
+		const MATRIX_SUM_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+#define ROWS 3
+
+int main(void)
+{
+    int points[ROWS][COLS];
+
+    printf("%d x %d points: ", ROWS, COLS);
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            scanf("%d", &points[i][j]);
+        }
+    }
+    printf("total: %d\n", matrixSum(points, ROWS));
+    return 0;
+}`;
+		const matrixWith = (fns) => moduleOf(`matrix`, fns, { defines: ["#define COLS 4"] });
+		U.push(withOutputs({
+			id: "arrays-matrix",
+			title: "מטריצה",
+			body: [
+				R`<p><b>מטריצה</b> היא מערך של שורות. <code>int grid[3][4]</code> הוא 3 שורות, ובכל אחת 4 עמודות: 12 תאים.</p>
+<table class="tbl"><tr><th>בקוד</th><th>פירושו</th></tr>
+<tr><td class="mono">grid[1][2]</td><td>שורה 1, עמודה 2 (שתיהן מתחילות ב-0)</td></tr>
+<tr><td class="mono">{ {1, 2, 3, 4}, ... }</td><td>האתחול: רשימה לכל שורה</td></tr></table>`,
+				{
+					id: "arrays-matrix-grid",
+					title: "שורות ועמודות",
+					code: GRID_MAIN,
+					files: project({}),
+					tests: [io("three cells", "", "grid[0][0] = 1\ngrid[1][2] = 7\ngrid[2][3] = 12")]
+				},
+				R`<p>כדי לעבור על כל התאים, שתי לולאות: החיצונית על השורות (<code>i</code>), והפנימית על העמודות (<code>j</code>). אחרי כל שורה, ירידת שורה.</p>`,
+				{
+					id: "arrays-matrix-print",
+					title: "שתי לולאות",
+					code: PRINT_GRID_MAIN,
+					files: project({}),
+					tests: [io("the grid", "", "   1   2   3   4\n   5   6   7   8\n   9  10  11  12")]
+				},
+				R`<p>תורכם: כאן הלולאה הפנימית עוצרת אחרי העמודה הראשונה.</p>`,
+				{
+					id: "arrays-matrix-inner",
+					title: "הלולאה הפנימית",
+					task: "תקנו את התנאי של הלולאה הפנימית, כך שתעבור על כל העמודות.",
+					code: SEATS_START,
+					solution: SEATS_SOLVED,
+					files: project({}),
+					tests: [io("the two rows of seats", "", "1 0 0 1 1 \n0 1 1 1 0 ")]
+				},
+				R`<p>מטריצה כפרמטר: מספר העמודות כתוב בפרמטר עצמו, <code>int mat[][COLS]</code>, ומספר השורות עובר בנפרד. <code>COLS</code> מוגדר ב-<code>matrix.h</code>, המודול החדש.</p>`,
+				{
+					id: "arrays-matrix-sum",
+					title: "matrixSum",
+					task: "כתבו ב-<code>matrix.c</code> את <code>matrixSum</code>, לפי חמשת ה-TODO.",
+					code: taskIn("matrix.c", MATRIX_SUM_MAIN),
+					solution: MATRIX_SUM_MAIN,
+					files: project({ matrix: matrixWith([SUM_START]) }),
+					solutionFiles: { "matrix.c": matrixWith([M_SUM]).c },
+					tests: [unit("matrixSum", R`
+#define COLS 4
+int matrixSum(int mat[][COLS], int rows);
+int main(void)
+{
+    int a[2][COLS] = {{1, 2, 3, 4}, {5, 6, 7, 8}};
+    int b[3][COLS] = {{1, -1, 1, -1}, {0, 0, 0, 0}, {10, 20, 30, 40}};
+    T_INT("matrixSum of 2 rows 1..8", matrixSum(a, 2), 36);
+    T_INT("matrixSum with a row of zeros", matrixSum(b, 3), 100);
+    T_INT("only the first row", matrixSum(a, 1), 10);
+    return 0;
+}`), io("3 rows", "1 1 1 1 2 2 2 2 3 3 3 3\n", "3 x 4 points: total: 24")]
+				}
+			],
+			quiz: [
+				{
+					s: "כמה תאים יש ב-<code>int m[3][4]</code>?",
+					o: [
+						"7",
+						"12",
+						"34"
+					],
+					a: 1,
+					w: "3 שורות כפול 4 עמודות."
+				},
+				{
+					s: "ב-<code>m[2][0]</code>, מה זה 2?",
+					o: [
+						"העמודה",
+						"מספר התאים",
+						"השורה"
+					],
+					a: 2,
+					w: "קודם השורה, אחר כך העמודה."
+				},
+				{
+					s: "בלולאה על <code>int m[ROWS][COLS]</code>, מה <b>לא</b> נכון?",
+					o: [
+						"הלולאה הפנימית רצה <code>COLS</code> פעמים לכל שורה",
+						"הלולאה החיצונית רצה <code>COLS</code> פעמים",
+						"התא הוא <code>m[i][j]</code>"
+					],
+					a: 1,
+					w: "החיצונית רצה על השורות, <code>ROWS</code> פעמים."
+				}
+			]
+		}));
+	}
+	{
+		const M_ROW_SUM = {
+			p: "/* returns the sum of row row of mat */\nint rowSum(int mat[][COLS], int row);",
+			b: R`int rowSum(int mat[][COLS], int row)
+{
+    int sum = 0;
+    for (int j = 0; j < COLS; j++)
+    {
+        sum += mat[row][j];
+    }
+    return sum;
+}`
+		};
+		const ROW_SUM_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+int main(void)
+{
+    int week[2][COLS] = {
+        {3, 5, 2, 6},
+        {1, 0, 4, 4}
+    };
+
+    printf("row 0: %d\n", rowSum(week, 0));
+    printf("row 1: %d\n", rowSum(week, 1));
+    return 0;
+}`;
+		const ORDER_MAIN = R`#include <stdio.h>
+
+#define ROWS 3
+#define COLS 4
+
+int main(void)
+{
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            printf("%4d", COLS * i + j);
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+		const COUNT_START = starterOf(M_COUNT, ["TODO: count the cells of mat that are equal to value"], "return 0;");
+		const COUNT_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+#define ROWS 3
+
+int main(void)
+{
+    int board[ROWS][COLS] = {
+        {0, 2, 0, 1},
+        {1, 0, 2, 2},
+        {0, 0, 1, 0}
+    };
+    int value = 0;
+
+    printf("Value: ");
+    scanf("%d", &value);
+    printf("%d appears %d times\n", value, countInMatrix(board, ROWS, value));
+    return 0;
+}`;
+		const matrixOf = (fns) => moduleOf(`matrix`, fns, { defines: ["#define COLS 4"] });
+		U.push(withOutputs({
+			id: "arrays-matrix-params",
+			title: "מטריצה כפרמטר",
+			body: [
+				R`<p>בפרמטר של מטריצה חייבים לכתוב את מספר העמודות. בלעדיו gcc עוצר:</p>
+<pre class="code-static"><span>int rowSum(int mat[][], int row)</span><span>error: array type has incomplete element type 'int[]'</span></pre>
+<p>את מספר השורות מותר להשאיר ריק: <code>int mat[][COLS]</code>.</p>`,
+				{
+					id: "arrays-matrix-params-row",
+					title: "rowSum",
+					code: ROW_SUM_MAIN,
+					files: project({ matrix: matrixOf([M_SUM, M_ROW_SUM]) }),
+					tests: [io("two rows", "", "row 0: 16\nrow 1: 9")]
+				},
+				R`<p>למה? בזיכרון השורות שוכבות אחת אחרי השנייה, בשורה אחת ארוכה. התא <code>[i][j]</code> הוא התא מספר <code>COLS * i + j</code> מתחילת המטריצה. בלי <code>COLS</code> אי אפשר לדעת איפה מתחילה שורה 1.</p>
+<p>התוכנית ליד מדפיסה, לכל תא של מטריצה 3 על 4, את המספר שלו בזיכרון.</p>`,
+				{
+					id: "arrays-matrix-params-order",
+					title: "שורה אחרי שורה",
+					code: ORDER_MAIN,
+					files: project({}),
+					tests: [io("0 to 11", "", "   0   1   2   3\n   4   5   6   7\n   8   9  10  11")]
+				},
+				R`<p>תורכם: <code>countInMatrix</code> סופרת כמה תאים שווים ל-<code>value</code>. שתי לולאות, כמו ב-<code>matrixSum</code> בשיעור "מטריצה".</p>`,
+				{
+					id: "arrays-matrix-params-count",
+					title: "countInMatrix",
+					task: "כתבו ב-<code>matrix.c</code> את <code>countInMatrix</code>.",
+					code: taskIn("matrix.c", COUNT_MAIN),
+					solution: COUNT_MAIN,
+					files: project({ matrix: matrixOf([M_SUM, COUNT_START]) }),
+					solutionFiles: { "matrix.c": matrixOf([M_SUM, M_COUNT]).c },
+					tests: [
+						unit("countInMatrix", R`
+#define COLS 4
+int countInMatrix(int mat[][COLS], int rows, int value);
+int main(void)
+{
+    int a[2][COLS] = {{1, 2, 3, 4}, {4, 3, 2, 1}};
+    int b[3][COLS] = {{7, 7, 7, 7}, {7, 7, 7, 7}, {7, 7, 7, 7}};
+    T_INT("2 in a 2 x 4 matrix", countInMatrix(a, 2, 2), 2);
+    T_INT("9 is not there", countInMatrix(a, 2, 9), 0);
+    T_INT("every cell is 7", countInMatrix(b, 3, 7), 12);
+    T_INT("only the first row", countInMatrix(a, 1, 4), 1);
+    return 0;
+}`),
+						io("0 appears 6 times", "0\n", "Value: 0 appears 6 times"),
+						io("2 appears 3 times", "2\n", "Value: 2 appears 3 times")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "למה <code>int m[][]</code> לא מתקבל כפרמטר?",
+					o: [
+						"כי בלי מספר העמודות אי אפשר לדעת איפה מתחילה כל שורה",
+						"כי פרמטר לא יכול להיות מטריצה",
+						"כי חסר מספר השורות"
+					],
+					a: 0,
+					w: "התא <code>[i][j]</code> הוא <code>COLS * i + j</code>."
+				},
+				{
+					s: "ב-<code>int m[3][4]</code>, מה מספר התא <code>m[2][1]</code> בזיכרון, מתחילת המטריצה?",
+					o: [
+						"6",
+						"9",
+						"7"
+					],
+					a: 1,
+					w: "<code>4 * 2 + 1 = 9</code>."
+				},
+				{
+					s: "איזה מהפרמטרים הבאים <b>לא</b> נכון למטריצה עם 4 עמודות?",
+					o: [
+						"<code>int mat[][4]</code>",
+						"<code>int mat[3][4]</code>",
+						"<code>int mat[3][]</code>"
+					],
+					a: 2,
+					w: "מספר העמודות הוא החלק שחובה לכתוב."
+				}
+			]
+		}));
+	}
+	const STATS_EMPTY = R`/* TODO: write the whole program here */
+`;
+	const STATS_SOLVED = R`#include <stdio.h>
+#include "arrays.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int nums[SIZE];
+
+    printf("%d numbers: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &nums[i]);
+    }
+    int best = maxIndex(nums, SIZE);
+    printf("sum: %d\n", sumArray(nums, SIZE));
+    printf("largest: %d (index %d)\n", nums[best], best);
+    if (isIncreasing(nums, SIZE))
+    {
+        printf("increasing: yes\n");
+    }
+    else
+    {
+        printf("increasing: no\n");
+    }
+    return 0;
+}`;
+	const TRANSPOSE_START = starterOf(M_TRANSPOSE, ["TODO: swap mat[i][j] with mat[j][i], each pair once"]);
+	const TRANSPOSE_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+int main(void)
+{
+    int square[N][N];
+
+    printf("%d x %d numbers: ", N, N);
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            scanf("%d", &square[i][j]);
+        }
+    }
+    transposeSquare(square);
+    printf("\n");
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            printf("%4d", square[i][j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+	const matrixFull = (transpose) => moduleOf(`matrix`, [
+		M_SUM,
+		M_COUNT,
+		transpose
+	], { defines: MATRIX_DEFINES });
+	U.push(withOutputs({
+		id: "arrays-matrix-review",
+		title: "חזרה: מערכים ומטריצות",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. המודול <code>arrays</code> מוכן, עם <code>sumArray</code>, <code>maxIndex</code> ו-<code>isIncreasing</code>. ב-<code>main.c</code> הריק כתבו תוכנית שקוראת 5 מספרים למערך ומדפיסה:</p>
+<table class="tbl"><tr><th>שורה</th><th>עבור <code>3 9 4 9 1</code></th></tr>
+<tr><td>הסכום</td><td class="mono">sum: 26</td></tr>
+<tr><td>הגדול ביותר והאינדקס שלו</td><td class="mono">largest: 9 (index 1)</td></tr>
+<tr><td>האם כל ערך גדול מזה שלפניו</td><td class="mono">increasing: no</td></tr></table>
+<p>לפני הקלט היא מדפיסה <code>5 numbers: </code>.</p>`,
+			{
+				id: "arrays-matrix-review-stats",
+				title: "תוכנית שלמה",
+				task: "בקובץ הריק כתבו את <code>main.c</code> כולו, בעזרת שלוש הפונקציות של <code>arrays.h</code>.",
+				code: STATS_EMPTY,
+				solution: STATS_SOLVED,
+				files: project({ arrays: moduleOf("arrays", [
+					A_SUM,
+					A_MAX,
+					A_INC
+				]) }),
+				tests: [
+					io("3 9 4 9 1", "3 9 4 9 1\n", "5 numbers: sum: 26\nlargest: 9 (index 1)\nincreasing: no"),
+					io("1 to 5", "1 2 3 4 5\n", "5 numbers: sum: 15\nlargest: 5 (index 4)\nincreasing: yes"),
+					io("negatives", "-5 -4 -9 -1 -2\n", "5 numbers: sum: -21\nlargest: -1 (index 3)\nincreasing: no")
+				]
+			},
+			R`<p><code>transposeSquare</code> הופכת שורות לעמודות במטריצה ריבועית, במקום: התא <code>[i][j]</code> מתחלף עם <code>[j][i]</code>. כל זוג מתחלף פעם אחת, כמו ב-<code>reverseArray</code>. <code>N</code> מוגדר ב-<code>matrix.h</code>.</p>
+<table class="tbl"><tr><th>לפני</th><th>אחרי</th></tr>
+<tr><td class="mono">1 2 3<br>4 5 6<br>7 8 9</td><td class="mono">1 4 7<br>2 5 8<br>3 6 9</td></tr></table>`,
+			{
+				id: "arrays-matrix-review-transpose",
+				title: "transposeSquare",
+				task: "כתבו ב-<code>matrix.c</code> את <code>transposeSquare</code>.",
+				code: taskIn("matrix.c", TRANSPOSE_MAIN),
+				solution: TRANSPOSE_MAIN,
+				files: project({ matrix: matrixFull(TRANSPOSE_START) }),
+				solutionFiles: { "matrix.c": matrixFull(M_TRANSPOSE).c },
+				tests: [unit("transposeSquare", R`
+#define N 3
+void transposeSquare(int mat[][N]);
+int main(void)
+{
+    int m[N][N] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    int row0[] = {1, 4, 7};
+    int row1[] = {2, 5, 8};
+    int row2[] = {3, 6, 9};
+    int same[N][N] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    int sameRow[] = {0, 1, 0};
+    transposeSquare(m);
+    T_ARR("row 0 after transposeSquare", m[0], row0, 3);
+    T_ARR("row 1 after transposeSquare", m[1], row1, 3);
+    T_ARR("row 2 after transposeSquare", m[2], row2, 3);
+    transposeSquare(same);
+    T_ARR("a symmetric matrix stays as it was", same[1], sameRow, 3);
+    return 0;
+}`), io("1 to 9", "1 2 3 4 5 6 7 8 9\n", "3 x 3 numbers: \n   1   4   7\n   2   5   8\n   3   6   9")]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int t[2][5];</code>. מה האינדקס של התא האחרון?",
+				o: [
+					"<code>t[2][5]</code>",
+					"<code>t[1][4]</code>",
+					"<code>t[1][5]</code>"
+				],
+				a: 1,
+				w: "שורות 0 עד 1, עמודות 0 עד 4."
+			},
+			{
+				s: "<code>int a[] = {2, 4, 6, 8, 10};</code>. כמה הוא <code>sizeof(a) / sizeof(a[0])</code> באותו מקום?",
+				o: [
+					"5",
+					"20",
+					"4"
+				],
+				a: 0,
+				w: "20 בתים חלקי 4 בתים לתא."
+			},
+			{
+				s: "<code>matrixSum(m, 2)</code> כש-<code>m</code> היא <code>int m[3][COLS]</code>. על אילו תאים היא עוברת?",
+				o: [
+					"על כל 3 השורות",
+					"על 2 העמודות הראשונות",
+					"על 2 השורות הראשונות"
+				],
+				a: 2,
+				w: "הפרמטר השני הוא מספר השורות."
+			},
+			{
+				s: "מה <code>reverseArray</code> עושה עם <code>{1, 2, 3}</code> של מי שקרא לה?",
+				o: [
+					"הופכת אותו ל-<code>{3, 2, 1}</code>",
+					"משאירה אותו, והופכת עותק",
+					"מחזירה מערך חדש"
+				],
+				a: 0,
+				w: "מערך לא מועתק, ולכן השינוי נשאר."
+			},
+			{
+				s: "איזה מהבאים <b>לא</b> נכון לגבי <code>int g[3][4]</code>?",
+				o: [
+					"יש בה 12 תאים",
+					"בזיכרון השורות שוכבות אחת אחרי השנייה",
+					"בפרמטר אפשר לכתוב <code>int g[][]</code>"
+				],
+				a: 2,
+				w: "בפרמטר חובה לכתוב את מספר העמודות."
+			},
+			{
+				s: "לולאה <code>for (int i = 0; i &lt;= SIZE; i++)</code> על מערך של <code>SIZE</code> תאים. מה <b>לא</b> יקרה?",
+				o: [
+					"gcc יעצור עם שגיאה",
+					"הסיבוב האחרון יקרא מחוץ למערך",
+					"התוכנית תרוץ"
+				],
+				a: 0,
+				w: "C לא בודקת אינדקסים, והקוד מתקמפל."
+			}
+		]
+	}));
 	U.push({
 		id: "split",
 		title: "תוכנית בכמה קבצים",
@@ -23742,67 +27428,69 @@ int main(void)
 			]
 		}]
 	});
-	const CLEAN_START = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o $@", "", "%.o: %.c", ">$(CC) $(CFLAGS) -c $< -o $@", "", "main.o: calc.h", "calc.o: calc.h", "", "# TODO: clean");
-	const CLEAN_SOLVED = CLEAN_START.replace("# TODO: clean\n", mk(".PHONY: clean", "clean:", ">rm -f $(OBJS) prog"));
-	U.push({
-		id: "clean",
-		title: "clean ו-.PHONY",
-		body: [R`<p>לא כל target הוא קובץ. <code>clean</code> הוא שם של פעולה: הוא מוחק את מה שהבנייה יצרה, כדי שהבנייה הבאה תתחיל מאפס. מריצים אותו עם שם: <code>make clean</code>.</p>
+	{
+		const CLEAN_START = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o $@", "", "%.o: %.c", ">$(CC) $(CFLAGS) -c $< -o $@", "", "main.o: calc.h", "calc.o: calc.h", "", "# TODO: clean");
+		const CLEAN_SOLVED = CLEAN_START.replace("# TODO: clean\n", mk(".PHONY: clean", "clean:", ">rm -f $(OBJS) prog"));
+		U.push({
+			id: "clean",
+			title: "clean ו-.PHONY",
+			body: [R`<p>לא כל target הוא קובץ. <code>clean</code> הוא שם של פעולה: הוא מוחק את מה שהבנייה יצרה, כדי שהבנייה הבאה תתחיל מאפס. מריצים אותו עם שם: <code>make clean</code>.</p>
 <pre class="code-static"><span>.PHONY: clean</span><span>clean:</span><span>	rm -f $(OBJS) prog</span></pre>
 <p>ה-<code>-f</code> של <code>rm</code> אומר "אל תתלונן על קובץ שלא קיים": בלי זה, <code>make clean</code> פעמיים ברצף נכשל בפעם השנייה. <code>.PHONY</code> אומר ל-<bdi dir="ltr">make</bdi> ש-<code>clean</code> אינו קובץ. בלעדיו, אם יום אחד ייווצר קובץ בשם <code>clean</code>, <bdi dir="ltr">make</bdi> יחשוב שה-target קיים ועדכני, ולא ימחק כלום.</p>
 <div class="callout"><b>בקופסה כאן</b><p>הלחצנים <bdi dir="ltr">make clean</bdi> ו-<bdi dir="ltr">make</bdi> נמצאים באי <b>make</b> שנפתח ב-⏯. <code>rm</code> כאן מוחק רק קבצים ש-<bdi dir="ltr">make</bdi> בנה; קבצי הקוד של הקופסה נשארים.</p></div>`, {
-			id: "clean-target",
-			title: "make clean",
-			task: "הוסיפו target בשם <code>clean</code> שמוחק עם <code>rm -f</code> את <code>$(OBJS)</code> ואת <code>prog</code>, וסמנו אותו ב-<code>.PHONY</code>.",
-			code: IN_MAKEFILE(CALC_MAIN),
-			solution: CALC_MAIN,
-			files: {
-				"calc.c": CALC_C,
-				"calc.h": CALC_H,
-				"Makefile": CLEAN_START
-			},
-			solutionFiles: { "Makefile": CLEAN_SOLVED },
-			tests: [
-				{
-					type: "make",
-					name: "make clean removes the objects and prog",
-					steps: [make([]), make(["clean"], {
-						gone: [
-							"main.o",
-							"calc.o",
-							"prog"
-						],
-						exists: ["main.c", "calc.c"]
-					})]
+				id: "clean-target",
+				title: "make clean",
+				task: "הוסיפו target בשם <code>clean</code> שמוחק עם <code>rm -f</code> את <code>$(OBJS)</code> ואת <code>prog</code>, וסמנו אותו ב-<code>.PHONY</code>.",
+				code: IN_MAKEFILE(CALC_MAIN),
+				solution: CALC_MAIN,
+				files: {
+					"calc.c": CALC_C,
+					"calc.h": CALC_H,
+					"Makefile": CLEAN_START
 				},
-				{
-					type: "make",
-					name: "make clean twice in a row works (rm -f)",
-					steps: [make(["clean"]), make(["clean"])]
-				},
-				{
-					type: "make",
-					name: "clean is .PHONY",
-					steps: [make([])],
-					require: "^\\.PHONY\\s*:[^\\n]*\\bclean\\b",
-					msg: ".PHONY does not name clean"
-				},
-				{
-					type: "make",
-					name: "after make clean, make builds everything again",
-					steps: [
-						make([]),
-						make(["clean"]),
-						make([], { built: [
-							"main.o",
-							"calc.o",
-							"prog"
-						] })
-					]
-				}
-			]
-		}]
-	});
+				solutionFiles: { "Makefile": CLEAN_SOLVED },
+				tests: [
+					{
+						type: "make",
+						name: "make clean removes the objects and prog",
+						steps: [make([]), make(["clean"], {
+							gone: [
+								"main.o",
+								"calc.o",
+								"prog"
+							],
+							exists: ["main.c", "calc.c"]
+						})]
+					},
+					{
+						type: "make",
+						name: "make clean twice in a row works (rm -f)",
+						steps: [make(["clean"]), make(["clean"])]
+					},
+					{
+						type: "make",
+						name: "clean is .PHONY",
+						steps: [make([])],
+						require: "^\\.PHONY\\s*:[^\\n]*\\bclean\\b",
+						msg: ".PHONY does not name clean"
+					},
+					{
+						type: "make",
+						name: "after make clean, make builds everything again",
+						steps: [
+							make([]),
+							make(["clean"]),
+							make([], { built: [
+								"main.o",
+								"calc.o",
+								"prog"
+							] })
+						]
+					}
+				]
+			}]
+		});
+	}
 	U.push({
 		id: "make-quiz",
 		title: "חידון",
@@ -23931,6 +27619,30 @@ int main(void)
 		"c-func",
 		"c-func",
 		"c-func",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-build",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
+		"c-arrays",
 		"make",
 		"make",
 		"make",
@@ -23985,6 +27697,16 @@ window.LabCourse = {
 		{
 			id: "c-func",
 			title: "7. פונקציות",
+			public: true
+		},
+		{
+			id: "c-build",
+			title: "8. קבצים, gcc ו-make",
+			public: true
+		},
+		{
+			id: "c-arrays",
+			title: "9. מערכים",
 			public: true
 		},
 		{
@@ -44786,7 +48508,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 59d9c41 מ-2026-11-13 21:17"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 59d9c41</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0f78909 מ-2026-11-14 00:52"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0f78909</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
