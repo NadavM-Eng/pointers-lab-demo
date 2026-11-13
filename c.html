@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-fDPA5uWnycH1qVFvdn1jekyY89nSWTJ2Rz7SmQBXeCE=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-GysuRPubSwiv/Wl+1ovuLBi15yEG/MEMJLuIdueilCc=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -509,7 +509,7 @@ body.no-code .lesson-in{max-width:900px}
 table.tbl{border-collapse:collapse;margin:14px 0;font-size:14.5px;display:block;overflow-x:auto;max-width:100%}
 table.tbl th,table.tbl td{border:1px solid var(--line);padding:7px 12px;text-align:start}
 table.tbl th{background:var(--panel-2);font-weight:600}
-td.mono{font-family:var(--f-mono);direction:ltr;text-align:left}
+td.mono{font-family:var(--f-mono);font-variant-ligatures:none;direction:ltr;text-align:left}
 /* A code block wider than the column (a Makefile on a phone) scrolls sideways, and the edge that
    has more code shows it:
    - everywhere: a shade at that edge (the shades stay at the box's edges, the covers move with
@@ -15642,7 +15642,8 @@ int main(void)
 			}
 		]
 	}));
-	const STMT_SHOW = R`#include <stdio.h>
+	{
+		const STMT_SHOW = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15651,7 +15652,7 @@ int main(void)
     printf("Three\n");
     return 0;
 }`;
-	const SEMI_START = R`#include <stdio.h>
+		const SEMI_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15661,7 +15662,7 @@ int main(void)
     printf("C\n")
     return 0;
 }`;
-	const SEMI_SOLVED = R`#include <stdio.h>
+		const SEMI_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15670,7 +15671,7 @@ int main(void)
     printf("C\n");
     return 0;
 }`;
-	const ORDER_START = R`#include <stdio.h>
+		const ORDER_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15680,7 +15681,7 @@ int main(void)
     printf("2\n");
     return 0;
 }`;
-	const ORDER_SOLVED = R`#include <stdio.h>
+		const ORDER_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -15689,72 +15690,73 @@ int main(void)
     printf("3\n");
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "structure-statements",
-		title: "פקודות ונקודה-פסיק",
-		body: [
-			R`<p>כל שורה בתוך <code>main</code> היא <b>פקודה</b>, ובסוף כל פקודה יש <code>;</code>.</p>
+		U.push(withOutputs({
+			id: "structure-statements",
+			title: "פקודות ונקודה-פסיק",
+			body: [
+				R`<p>כל שורה בתוך <code>main</code> היא <b>פקודה</b>, ובסוף כל פקודה יש <code>;</code>.</p>
 <p>הפקודות רצות מלמעלה למטה. לחצו <b>⏯ שורה אחר שורה</b> ועקבו אחרי השורה המסומנת.</p>`,
-			{
-				id: "structure-statements-order",
-				title: "מלמעלה למטה",
-				code: STMT_SHOW,
-				tests: [io("prints One, Two, Three", "", "One\nTwo\nThree")]
-			},
-			R`<p>בלי <code>;</code> gcc לא יודע איפה הפקודה נגמרת:</p>
+				{
+					id: "structure-statements-order",
+					title: "מלמעלה למטה",
+					code: STMT_SHOW,
+					tests: [io("prints One, Two, Three", "", "One\nTwo\nThree")]
+				},
+				R`<p>בלי <code>;</code> gcc לא יודע איפה הפקודה נגמרת:</p>
 <pre class="code-static"><span>error: expected ';' before 'printf'</span></pre>
 <p>gcc מסמן את השורה <b>שאחרי</b> החסר, כי שם הוא הבין שמשהו חסר.</p>`,
-			{
-				id: "structure-statements-semi",
-				title: "ה-; החסרים",
-				task: "הוסיפו את שני ה-<code>;</code> החסרים. התוכנית מדפיסה <code>A</code>, <code>B</code> ו-<code>C</code>, כל אחת בשורה.",
-				code: SEMI_START,
-				solution: SEMI_SOLVED,
-				tests: [io("prints A, B, C", "", "A\nB\nC")]
-			},
-			R`<p>סדר השורות הוא סדר ההדפסה. בקוד ליד שתי שורות הפוכות.</p>`,
-			{
-				id: "structure-statements-swap",
-				title: "סדר השורות",
-				task: "החליפו את מקומן של שתי שורות, כך שיודפס <code>1</code>, <code>2</code>, <code>3</code>.",
-				code: ORDER_START,
-				solution: ORDER_SOLVED,
-				tests: [io("prints 1, 2, 3 in order", "", "1\n2\n3")]
-			}
-		],
-		quiz: [
-			{
-				s: "באיזה סדר רצות הפקודות בתוך <code>main</code>?",
-				o: [
-					"בסדר אקראי",
-					"מלמטה למעלה",
-					"מלמעלה למטה"
-				],
-				a: 2,
-				w: "הפקודות רצות אחת אחרי השנייה, מלמעלה למטה."
-			},
-			{
-				s: "gcc כותב <code>expected ';' before 'printf'</code> על שורה 6. איפה חסר ה-<code>;</code>?",
-				o: [
-					"בשורה 6",
-					"בסוף שורה 5, השורה שלפניה",
-					"בשורה 7"
-				],
-				a: 1,
-				w: "gcc מגלה את החסר רק בשורה שאחריו."
-			},
-			{
-				s: "איזו מהשורות הבאות <b>לא</b> תתקמפל כמו שהיא כתובה, בתוך <code>main</code>?",
-				o: [
-					"<code>printf(\"A\\n\");</code>",
-					"<code>return 0;</code>",
-					"<code>printf(\"B\\n\")</code>"
-				],
-				a: 2,
-				w: "בסוף כל פקודה חייב לבוא <code>;</code>."
-			}
-		]
-	}));
+				{
+					id: "structure-statements-semi",
+					title: "ה-; החסרים",
+					task: "הוסיפו את שני ה-<code>;</code> החסרים. התוכנית מדפיסה <code>A</code>, <code>B</code> ו-<code>C</code>, כל אחת בשורה.",
+					code: SEMI_START,
+					solution: SEMI_SOLVED,
+					tests: [io("prints A, B, C", "", "A\nB\nC")]
+				},
+				R`<p>סדר השורות הוא סדר ההדפסה. בקוד ליד שתי שורות הפוכות.</p>`,
+				{
+					id: "structure-statements-swap",
+					title: "סדר השורות",
+					task: "החליפו את מקומן של שתי שורות, כך שיודפס <code>1</code>, <code>2</code>, <code>3</code>.",
+					code: ORDER_START,
+					solution: ORDER_SOLVED,
+					tests: [io("prints 1, 2, 3 in order", "", "1\n2\n3")]
+				}
+			],
+			quiz: [
+				{
+					s: "באיזה סדר רצות הפקודות בתוך <code>main</code>?",
+					o: [
+						"בסדר אקראי",
+						"מלמטה למעלה",
+						"מלמעלה למטה"
+					],
+					a: 2,
+					w: "הפקודות רצות אחת אחרי השנייה, מלמעלה למטה."
+				},
+				{
+					s: "gcc כותב <code>expected ';' before 'printf'</code> על שורה 6. איפה חסר ה-<code>;</code>?",
+					o: [
+						"בשורה 6",
+						"בסוף שורה 5, השורה שלפניה",
+						"בשורה 7"
+					],
+					a: 1,
+					w: "gcc מגלה את החסר רק בשורה שאחריו."
+				},
+				{
+					s: "איזו מהשורות הבאות <b>לא</b> תתקמפל כמו שהיא כתובה, בתוך <code>main</code>?",
+					o: [
+						"<code>printf(\"A\\n\");</code>",
+						"<code>return 0;</code>",
+						"<code>printf(\"B\\n\")</code>"
+					],
+					a: 2,
+					w: "בסוף כל פקודה חייב לבוא <code>;</code>."
+				}
+			]
+		}));
+	}
 	const RET_ZERO = R`#include <stdio.h>
 
 int main(void)
@@ -16142,7 +16144,7 @@ int main(void)
 				tests: [io("prints My first C program", "", "My first C program"), {
 					type: "src",
 					name: "main ends with return 0",
-					require: "return\\s+0\\s*;",
+					require: "\\breturn (\\( )?0 (\\) )?;",
 					msg: "return 0; is missing."
 				}]
 			},
@@ -17145,8 +17147,8 @@ int main(void)
 				tests: [io("prints 10", "", "10"), {
 					type: "src",
 					name: "total starts at 0",
-					require: "int total = 0",
-					msg: "Give total its starting value where it is declared: int total = 0;"
+					require: "\\btotal = 0 ;",
+					msg: "Give total the starting value 0 before you add to it, for example int total = 0;"
 				}]
 			}
 		],
@@ -17344,7 +17346,7 @@ int main(void)
 					{
 						type: "src",
 						name: "the grade is a char",
-						require: "char \\w+ = '",
+						require: "\\bchar \\w+ [=;,]",
 						msg: "Keep the grade in a char, such as char grade = 'A';"
 					}
 				]
@@ -17429,6 +17431,4615 @@ int main(void)
 				],
 				a: 1,
 				w: "<code>%c</code> מדפיסה את התו שהמספר 20 מייצג, לא את המספר."
+			}
+		]
+	}));
+	const VALUES_ONE = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 20;
+    printf("I am %d years old\n", age);
+    return 0;
+}`;
+	const VALUES_ORDER = R`#include <stdio.h>
+
+int main(void)
+{
+    int apples = 3;
+    int pears = 5;
+    printf("%d apples, %d pears\n", apples, pears);
+    printf("%d apples, %d pears\n", pears, apples);
+    return 0;
+}`;
+	const VALUES_MIXED = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[] = "Dana";
+    int age = 21;
+    char grade = 'A';
+    double height = 1.68;
+    printf("%s is %d, grade %c, height %.2f\n", name, age, grade, height);
+    return 0;
+}`;
+	const VALUES_DATE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int day = 13;
+    int month = 11;
+    /* TODO: print "Today is 13/11" with day and month, in one printf */
+
+    return 0;
+}`;
+	const VALUES_DATE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int day = 13;
+    int month = 11;
+    printf("Today is %d/%d\n", day, month);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-printf-values",
+		title: "הדפסת ערכים",
+		body: [
+			R`<p>ב-<code>printf</code> אחד אפשר לשים גם טקסט וגם ערך. במקום שבו כתוב <code>%d</code> מודפס הערך שאחרי הפסיק.</p>
+<pre class="code-static"><span>printf("I am %d years old\n", age);</span></pre>`,
+			{
+				id: "io-printf-values-one",
+				title: "טקסט וערך",
+				code: VALUES_ONE,
+				tests: [io("prints I am 20 years old", "", "I am 20 years old")]
+			},
+			R`<p>כשיש כמה <code>%d</code>, הערכים נכנסים לפי הסדר: הראשון ל-<code>%d</code> הראשון, השני לשני.</p>
+<p>הריצו: אותה שורה, הערכים בסדר הפוך, והמשפט משתנה.</p>`,
+			{
+				id: "io-printf-values-order",
+				title: "הסדר קובע",
+				code: VALUES_ORDER,
+				tests: [io("the order of the values decides", "", "3 apples, 5 pears\n5 apples, 3 pears")]
+			},
+			R`<p>בשורה אחת אפשר לערבב טיפוסים. לכל ערך האות שלו, כמו בפרק הטיפוסים:</p>
+<table class="tbl"><tr><th>ערך</th><th>טיפוס</th><th>אות</th></tr>
+<tr><td class="mono">name</td><td>מילה</td><td class="mono">%s</td></tr>
+<tr><td class="mono">age</td><td class="mono">int</td><td class="mono">%d</td></tr>
+<tr><td class="mono">grade</td><td class="mono">char</td><td class="mono">%c</td></tr>
+<tr><td class="mono">height</td><td class="mono">double</td><td class="mono">%.2f</td></tr></table>`,
+			{
+				id: "io-printf-values-mixed",
+				title: "כמה טיפוסים בשורה אחת",
+				code: VALUES_MIXED,
+				tests: [io("prints the four values in one line", "", "Dana is 21, grade A, height 1.68")]
+			},
+			R`<p>תורכם: שני ערכים בשורה אחת, עם טקסט ביניהם.</p>`,
+			{
+				id: "io-printf-values-date",
+				title: "התאריך של היום",
+				task: "במקום ה-TODO כתבו <code>printf</code> אחד שמדפיס את המשפט עם <code>day</code> ו-<code>month</code>.",
+				code: VALUES_DATE_START,
+				solution: VALUES_DATE_SOLVED,
+				tests: [io("prints Today is 13/11", "", "Today is 13/11"), {
+					type: "src",
+					name: "the numbers come from day and month",
+					forbid: "printf \\( \"[^\"]*\\b(13|11)\\b",
+					msg: "Print day and month with %d, instead of typing 13 and 11 into the text."
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int a = 1;</code> ו-<code>int b = 2;</code>. מה מדפיסה <code>printf(\"%d-%d\\n\", b, a);</code>?",
+				o: [
+					"<code>1-2</code>",
+					"<code>2-1</code>",
+					"<code>b-a</code>"
+				],
+				a: 1,
+				w: "הערך הראשון אחרי הפסיק, <code>b</code>, נכנס ל-<code>%d</code> הראשון."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%d + %d = %d\\n\", 2, 3, 2 + 3);</code>?",
+				o: [
+					"<code>2 + 3 = 5</code>",
+					"<code>%d + %d = %d</code>",
+					"<code>2 + 3 = 2 + 3</code>"
+				],
+				a: 0,
+				w: "כל <code>%d</code> מתחלף בערך שלו, ו-<code>2 + 3</code> מחושב לפני ההדפסה."
+			},
+			{
+				s: "<code>int x = 5;</code> ו-<code>int y = 3;</code>. איזו מהשורות <b>לא</b> תדפיס <code>5 3</code>?",
+				o: [
+					"<code>printf(\"%d %d\\n\", x, y);</code>",
+					"<code>printf(\"%d %d\\n\", y, x);</code>",
+					"<code>printf(\"%d 3\\n\", x);</code>"
+				],
+				a: 1,
+				w: "הסדר של <code>y, x</code> מדפיס <code>3 5</code>."
+			}
+		]
+	}));
+	const WIDTH_INT = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("[%5d]\n", 42);
+    printf("[%-5d]\n", 42);
+    printf("[%d]\n", 42);
+    return 0;
+}`;
+	const WIDTH_FLOAT = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 3.14159;
+    printf("[%.2f]\n", price);
+    printf("[%8.2f]\n", price);
+    printf("[%.0f]\n", price);
+    return 0;
+}`;
+	const WIDTH_TABLE = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("%-6s%5d\n", "Dana", 90);
+    printf("%-6s%5d\n", "Avi", 100);
+    printf("%-6s%5d\n", "Noa", 7);
+    return 0;
+}`;
+	const WIDTH_PRICES_START = R`#include <stdio.h>
+
+int main(void)
+{
+    double a = 4.5;
+    double b = 12.25;
+    double c = 100;
+    /* TODO: print each price in 7 places, with 2 digits after the point */
+    printf("%f\n", a);
+    printf("%f\n", b);
+    printf("%f\n", c);
+    return 0;
+}`;
+	const WIDTH_PRICES_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double a = 4.5;
+    double b = 12.25;
+    double c = 100;
+    printf("%7.2f\n", a);
+    printf("%7.2f\n", b);
+    printf("%7.2f\n", c);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-printf-width",
+		title: "רוחב ודיוק בהדפסה",
+		body: [
+			R`<p>מספר בין ה-<code>%</code> לאות קובע <b>רוחב</b>: כמה מקומות תופס הערך. מה שחסר מתמלא ברווחים. מינוס מצמיד את הערך לשמאל.</p>
+<table class="tbl"><tr><th>כותבים</th><th>מודפס עבור 42</th></tr>
+<tr><td class="mono">%5d</td><td class="mono">[&nbsp;&nbsp;&nbsp;42]</td></tr>
+<tr><td class="mono">%-5d</td><td class="mono">[42&nbsp;&nbsp;&nbsp;]</td></tr>
+<tr><td class="mono">%d</td><td class="mono">[42]</td></tr></table>
+<p>הסוגריים המרובעים בקוד רק מראים איפה הרווחים.</p>`,
+			{
+				id: "io-printf-width-int",
+				title: "רוחב למספר שלם",
+				code: WIDTH_INT,
+				tests: [io("42 in 5 places, to the right and to the left", "", "[   42]\n[42   ]\n[42]")]
+			},
+			R`<p>במספר עשרוני, נקודה ומספר קובעים כמה ספרות אחרי הנקודה (ראיתם ב"מספר עשרוני: double"). מספר לפני הנקודה הוא הרוחב של כל הערך.</p>
+<table class="tbl"><tr><th>כותבים</th><th>פירושו</th><th>מודפס</th></tr>
+<tr><td class="mono">%.2f</td><td>2 ספרות אחרי הנקודה</td><td class="mono">[3.14]</td></tr>
+<tr><td class="mono">%8.2f</td><td>8 מקומות, מתוכם 2 אחרי הנקודה</td><td class="mono">[&nbsp;&nbsp;&nbsp;&nbsp;3.14]</td></tr>
+<tr><td class="mono">%.0f</td><td>בלי ספרות אחרי הנקודה</td><td class="mono">[3]</td></tr></table>`,
+			{
+				id: "io-printf-width-float",
+				title: "ספרות אחרי הנקודה",
+				code: WIDTH_FLOAT,
+				tests: [io("3.14159 as 3.14, in 8 places, and as 3", "", "[3.14]\n[    3.14]\n[3]")]
+			},
+			R`<p>בשביל זה יש רוחב: טבלה. כל שם תופס 6 מקומות מצד שמאל (<code>%-6s</code>), כל ציון 5 מקומות מצד ימין (<code>%5d</code>), ולכן הציונים יוצאים זה מתחת לזה.</p>`,
+			{
+				id: "io-printf-width-table",
+				title: "טבלה מיושרת",
+				code: WIDTH_TABLE,
+				tests: [io("names to the left, grades to the right", "", "Dana     90\nAvi     100\nNoa       7")]
+			},
+			R`<p>תורכם: שלושה מחירים, אחד מתחת לשני, עם הנקודות באותו טור.</p>`,
+			{
+				id: "io-printf-width-prices",
+				title: "מחירים בטור",
+				task: "שנו את שלוש שורות ה-<code>printf</code>: כל מחיר בתוך 7 מקומות, עם 2 ספרות אחרי הנקודה.",
+				code: WIDTH_PRICES_START,
+				solution: WIDTH_PRICES_SOLVED,
+				tests: [io("three prices in 7 places", "", "   4.50\n  12.25\n 100.00")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>printf(\"%.1f\\n\", 3.14159);</code>?",
+				o: [
+					"<code>3.1</code>",
+					"<code>3.14159</code>",
+					"<code>3</code>"
+				],
+				a: 0,
+				w: "<code>%.1f</code> משאירה ספרה אחת אחרי הנקודה."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"[%4d]\\n\", 7);</code>?",
+				o: [
+					"<code>[7&nbsp;&nbsp;&nbsp;]</code>",
+					"<code>[&nbsp;&nbsp;&nbsp;7]</code>",
+					"<code>[0007]</code>"
+				],
+				a: 1,
+				w: "רוחב 4 בלי מינוס: שלושה רווחים, ואז 7 בצד ימין."
+			},
+			{
+				s: "איזו מהשורות <b>לא</b> מדפיסה בדיוק שתי ספרות אחרי הנקודה? שימו לב איפה עומדת הנקודה.",
+				o: [
+					"<code>printf(\"%.2f\\n\", 2.5);</code>",
+					"<code>printf(\"%6.2f\\n\", 2.5);</code>",
+					"<code>printf(\"%2f\\n\", 2.5);</code>"
+				],
+				a: 2,
+				w: "בלי נקודה, 2 הוא רוחב. <code>%2f</code> מדפיסה שש ספרות: <code>2.500000</code>."
+			}
+		]
+	}));
+	const MIS_NEWLINE = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello");
+    printf("World\n");
+    return 0;
+}`;
+	const MIS_PERCENT = R`#include <stdio.h>
+
+int main(void)
+{
+    int sale = 50;
+    printf("Sale: %d%%\n", sale);
+    return 0;
+}`;
+	const MIS_FIX_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 4;
+    double weight = 2.5;
+    /* TODO: fix the two letters after % so it prints 4 and 2.50 */
+    printf("Items: %c\n", count);
+    printf("Weight: %d kg\n", weight);
+    return 0;
+}`;
+	const MIS_FIX_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 4;
+    double weight = 2.5;
+    printf("Items: %d\n", count);
+    printf("Weight: %.2f kg\n", weight);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-printf-mistakes",
+		title: "טעויות נפוצות בהדפסה",
+		body: [
+			R`<p><code>printf</code> לא יורדת שורה לבד. בלי <code>\n</code> בסוף, ההדפסה הבאה ממשיכה באותה שורה.</p>
+<div class="callout warn"><b>שתי מילים דבוקות</b><p>אחרי <code>Hello</code> אין <code>\n</code>, ולכן מודפס <code>HelloWorld</code>. התיקון: <code>printf("Hello\n");</code></p></div>`,
+			{
+				id: "io-printf-mistakes-newline",
+				title: "שכחו ירידת שורה",
+				code: MIS_NEWLINE,
+				tests: [io("prints HelloWorld in one line", "", "HelloWorld")]
+			},
+			R`<p>הסימן <code>%</code> פותח מקום לערך. כדי להדפיס את הסימן עצמו כותבים אותו פעמיים: <code>%%</code>.</p>`,
+			{
+				id: "io-printf-mistakes-percent",
+				title: "להדפיס את הסימן %",
+				code: MIS_PERCENT,
+				tests: [io("prints Sale: 50%", "", "Sale: 50%")]
+			},
+			R`<p>האות אחרי <code>%</code> חייבת להתאים לטיפוס של הערך. כשהיא לא מתאימה, gcc מזהיר, והתוכנית מדפיסה משהו אחר לגמרי:</p>
+<pre class="code-static"><span>warning: format '%d' expects argument of type 'int', but argument 2 has type 'double'</span></pre>
+<table class="tbl"><tr><th>טיפוס</th><th>אות</th></tr>
+<tr><td class="mono">int</td><td class="mono">%d</td></tr>
+<tr><td class="mono">double</td><td class="mono">%f</td></tr>
+<tr><td class="mono">char</td><td class="mono">%c</td></tr>
+<tr><td>מילה</td><td class="mono">%s</td></tr></table>`,
+			{
+				id: "io-printf-mistakes-fix",
+				title: "האות הנכונה",
+				task: "בשתי השורות האות אחרי <code>%</code> לא מתאימה לערך. תקנו אותן, כך שיודפסו <code>4</code> ו-<code>2.50</code>.",
+				code: MIS_FIX_START,
+				solution: MIS_FIX_SOLVED,
+				tests: [io("prints Items: 4 and Weight: 2.50 kg", "", "Items: 4\nWeight: 2.50 kg")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסות שתי השורות <code>printf(\"A\");</code> ו-<code>printf(\"B\\n\");</code>?",
+				o: [
+					"<code>A</code>, ובשורה הבאה <code>B</code>",
+					"<code>AB</code> בשורה אחת",
+					"<code>A B</code>"
+				],
+				a: 1,
+				w: "בלי <code>\\n</code> אחרי <code>A</code>, ה-<code>B</code> ממשיך באותה שורה."
+			},
+			{
+				s: "איך מדפיסים <code>100%</code>?",
+				o: [
+					"<code>printf(\"100%\\n\");</code>",
+					"<code>printf(\"100%%\\n\");</code>",
+					"<code>printf(\"100\\%\\n\");</code>"
+				],
+				a: 1,
+				w: "<code>%%</code> מדפיס סימן <code>%</code> אחד."
+			},
+			{
+				s: "כל השורות מתקמפלות ומדפיסות משהו. איזו מהן <b>לא</b> תדפיס את הספרה <code>7</code>?",
+				o: [
+					"<code>printf(\"%d\\n\", 7);</code>",
+					"<code>printf(\"7\\n\");</code>",
+					"<code>printf(\"%c\\n\", 7);</code>"
+				],
+				a: 2,
+				w: "<code>%c</code> מדפיסה את התו שהמספר שלו 7, וזה לא התו <code>'7'</code>."
+			}
+		]
+	}));
+	const AGE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int age;
+
+    printf("Your age: ");
+    scanf("%d", &age);
+    printf("Next year you will be %d\n", age + 1);
+    return 0;
+}`;
+	const TWICE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("A number: ");
+    scanf("%d", &n);
+    printf("Twice: %d\n", n * 2);
+    return 0;
+}`;
+	const YEAR_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int year = 0;
+
+    printf("Year of birth: ");
+    /* TODO: read the year into year */
+
+    printf("Age in 2026: %d\n", 2026 - year);
+    return 0;
+}`;
+	const YEAR_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int year = 0;
+
+    printf("Year of birth: ");
+    scanf("%d", &year);
+
+    printf("Age in 2026: %d\n", 2026 - year);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-scanf-int",
+		title: "קריאת מספר שלם",
+		body: [
+			R`<p>עד עכשיו התוכניות רק הדפיסו. <code>scanf</code> עוצרת את התוכנית ומחכה שתקלידו, ומה שמקלידים נכתב לתוך משתנה.</p>
+<pre class="code-static"><span>scanf("%d", &amp;age);</span></pre>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td class="mono">"%d"</td><td>מה קוראים: מספר שלם, אותה אות כמו ב-<code>printf</code></td></tr>
+<tr><td class="mono">&amp;age</td><td>לאן לכתוב: לתוך <code>age</code></td></tr></table>
+<p>הריצו, הקלידו מספר בטרמינל ולחצו <bdi dir="ltr">Enter</bdi>.</p>`,
+			{
+				id: "io-scanf-age",
+				title: "קוראים מספר שלם",
+				code: AGE_MAIN,
+				tests: [io("20 gives Next year you will be 21", "20\n", "Your age: Next year you will be 21")]
+			},
+			R`<p>ה-<code>&amp;</code> נותן ל-<code>scanf</code> את <b>המקום</b> של המשתנה, כדי שתכתוב לשם. בלי <code>&amp;</code> היא מקבלת רק את הערך, ולא יודעת לאן לכתוב.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b> והקלידו <code>21</code>: בטבלה <code>n</code> הופך מ-0 ל-21 מיד אחרי שורת ה-<code>scanf</code>.</p>`,
+			{
+				id: "io-scanf-int-twice",
+				title: "הערך נכתב למשתנה",
+				code: TWICE_MAIN,
+				tests: [io("21 gives Twice: 42", "21\n", "A number: Twice: 42")]
+			},
+			R`<p>תורכם: שורת <code>scanf</code> אחת, כמו בעמוד הראשון.</p>`,
+			{
+				id: "io-scanf-int-year",
+				title: "שנת לידה",
+				task: "במקום ה-TODO קראו את שנת הלידה לתוך <code>year</code>.",
+				code: YEAR_START,
+				solution: YEAR_SOLVED,
+				tests: [
+					io("2005 gives 21", "2005\n", "Year of birth: Age in 2026: 21"),
+					io("2026 gives 0", "2026\n", "Year of birth: Age in 2026: 0"),
+					io("1990 gives 36", "1990\n", "Year of birth: Age in 2026: 36")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה עושה ה-<code>&amp;</code> בשורה <code>scanf(\"%d\", &amp;age);</code>?",
+				o: [
+					"נותן ל-<code>scanf</code> את הערך של <code>age</code>",
+					"נותן ל-<code>scanf</code> את המקום של <code>age</code>, כדי לכתוב לשם",
+					"הופך את <code>age</code> למספר שלם"
+				],
+				a: 1,
+				w: "<code>scanf</code> כותבת לתוך המשתנה, ולכן היא צריכה את המקום שלו."
+			},
+			{
+				s: "בתוכנית שבעמוד השני מקלידים <code>5</code>. מה היא מדפיסה אחרי <code>A number: </code>?",
+				o: [
+					"<code>Twice: 5</code>",
+					"<code>Twice: 10</code>",
+					"<code>Twice: 0</code>"
+				],
+				a: 1,
+				w: "<code>n</code> מקבל 5, ו-<code>n * 2</code> הוא 10."
+			},
+			{
+				s: "<code>int n;</code> הוכרז. איזו מהקריאות הבאות <b>לא</b> תקרא נכון מספר לתוך <code>n</code>?",
+				o: [
+					"<code>scanf(\"%d\", &amp;n);</code>",
+					"<code>scanf(\" %d\", &amp;n);</code>",
+					"<code>scanf(\"%d\", n);</code>"
+				],
+				a: 2,
+				w: "בלי <code>&amp;</code>, <code>scanf</code> לא יודעת לאן לכתוב."
+			}
+		]
+	}));
+	const TOTAL_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int count;
+    double price;
+
+    printf("How many? ");
+    scanf("%d", &count);
+    printf("Price of one: ");
+    scanf("%lf", &price);
+    printf("Total: %.2f\n", count * price);
+    return 0;
+}`;
+	const FLOAT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    float weight = 0;
+
+    printf("Weight: ");
+    scanf("%f", &weight);
+    printf("You weigh %.1f kg\n", weight);
+    return 0;
+}`;
+	const HEIGHT_START = R`#include <stdio.h>
+
+int main(void)
+{
+    double height = 0;
+
+    printf("Height in meters: ");
+    /* TODO: read a decimal number into height */
+
+    printf("You are %.2f m tall\n", height);
+    return 0;
+}`;
+	const HEIGHT_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double height = 0;
+
+    printf("Height in meters: ");
+    scanf("%lf", &height);
+
+    printf("You are %.2f m tall\n", height);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-scanf-decimal",
+		title: "קריאת מספר עשרוני",
+		body: [
+			R`<p>ל-<code>double</code> כותבים ב-<code>scanf</code> את <code>%lf</code>: האות l והאות f. ב-<code>printf</code> מספיק <code>%f</code>, אבל ב-<code>scanf</code> צריך את ה-l.</p>
+<table class="tbl"><tr><th>טיפוס</th><th>ב-printf</th><th>ב-scanf</th></tr>
+<tr><td class="mono">int</td><td class="mono">%d</td><td class="mono">%d</td></tr>
+<tr><td class="mono">double</td><td class="mono">%f</td><td class="mono">%lf</td></tr></table>
+<p>הריצו: כמה פריטים, ואז מחיר עם נקודה, למשל <code>2.5</code>.</p>`,
+			{
+				id: "io-scanf-total",
+				title: "מחיר עם נקודה",
+				code: TOTAL_MAIN,
+				tests: [io("3 and 2.5 give Total: 7.50", "3\n2.5\n", "How many? Price of one: Total: 7.50")]
+			},
+			R`<p>ל-<code>float</code> כותבים <code>%f</code>, גם ב-<code>scanf</code>. בקורס עובדים עם <code>double</code>, אבל כדאי להכיר את שתיהן.</p>
+<table class="tbl"><tr><th>טיפוס</th><th>ב-scanf</th></tr>
+<tr><td class="mono">float</td><td class="mono">%f</td></tr>
+<tr><td class="mono">double</td><td class="mono">%lf</td></tr></table>`,
+			{
+				id: "io-scanf-decimal-float",
+				title: "קוראים float",
+				code: FLOAT_MAIN,
+				tests: [io("72.5 gives You weigh 72.5 kg", "72.5\n", "Weight: You weigh 72.5 kg")]
+			},
+			R`<p>תורכם. בקוד חסרה שורה אחת: הקריאה של הגובה. היא בנויה כמו הקריאה של <code>price</code> בעמוד הראשון.</p>`,
+			{
+				id: "io-scanf-height",
+				title: "קריאת double",
+				task: "במקום ה-TODO כתבו <b>שורה אחת</b> שקוראת מספר עשרוני לתוך <code>height</code>.",
+				code: HEIGHT_START,
+				solution: HEIGHT_SOLVED,
+				tests: [
+					io("1.8 prints 1.80", "1.8\n", "Height in meters: You are 1.80 m tall"),
+					io("a whole number: 2 prints 2.00", "2\n", "Height in meters: You are 2.00 m tall"),
+					io("1.234 is rounded to 1.23", "1.234\n", "Height in meters: You are 1.23 m tall")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזו אות קוראים <code>double</code> עם <code>scanf</code>?",
+				o: [
+					"<code>%d</code>",
+					"<code>%f</code>",
+					"<code>%lf</code>"
+				],
+				a: 2,
+				w: "ל-<code>double</code> כותבים ב-<code>scanf</code> את <code>%lf</code>."
+			},
+			{
+				s: "<code>double price;</code> נקרא עם <code>%lf</code>. באיזו אות מדפיסים אותו עם <code>printf</code>?",
+				o: [
+					"<code>%lf</code> בלבד",
+					"<code>%f</code>",
+					"<code>%d</code>"
+				],
+				a: 1,
+				w: "ב-<code>printf</code> מדפיסים <code>double</code> עם <code>%f</code>."
+			},
+			{
+				s: "<code>double d;</code> הוכרז. איזו מהקריאות הבאות <b>לא</b> תקרא נכון את <code>2.5</code> לתוך <code>d</code>?",
+				o: [
+					"<code>scanf(\"%lf\", &amp;d);</code>",
+					"<code>scanf(\" %lf\", &amp;d);</code>",
+					"<code>scanf(\"%d\", &amp;d);</code>"
+				],
+				a: 2,
+				w: "<code>%d</code> קוראת מספר שלם בלבד, ולא מתאימה ל-<code>double</code>."
+			}
+		]
+	}));
+	const CHAR_ONE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    char letter = '?';
+
+    printf("A letter: ");
+    scanf("%c", &letter);
+    printf("You typed [%c]\n", letter);
+    return 0;
+}`;
+	const ENTER_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int count;
+    char grade;
+
+    printf("How many? ");
+    scanf("%d", &count);
+    printf("Grade letter? ");
+    scanf("%c", &grade);
+    printf("count=%d grade=[%c]\n", count, grade);
+    return 0;
+}`;
+	const SPACE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int count;
+    char grade;
+
+    printf("How many? ");
+    scanf("%d", &count);
+    printf("Grade letter? ");
+    scanf(" %c", &grade);
+    printf("count=%d grade=[%c]\n", count, grade);
+    return 0;
+}`;
+	const SEAT_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int row = 0;
+    char seat = '?';
+
+    printf("Row: ");
+    scanf("%d", &row);
+    printf("Seat letter: ");
+    /* TODO: read the seat letter into seat (it comes after a number) */
+
+    printf("Seat %d%c\n", row, seat);
+    return 0;
+}`;
+	const SEAT_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int row = 0;
+    char seat = '?';
+
+    printf("Row: ");
+    scanf("%d", &row);
+    printf("Seat letter: ");
+    scanf(" %c", &seat);
+
+    printf("Seat %d%c\n", row, seat);
+    return 0;
+}`;
+	const SEAT_PROMPTS = "Row: Seat letter: ";
+	U.push(withOutputs({
+		id: "io-scanf-char",
+		title: "קריאת תו",
+		body: [
+			R`<p>תו אחד קוראים עם <code>%c</code>, כמו שמדפיסים אותו. הריצו והקלידו אות אחת.</p>`,
+			{
+				id: "io-scanf-char-one",
+				title: "קוראים אות",
+				code: CHAR_ONE_MAIN,
+				tests: [io("x gives You typed [x]", "x\n", "A letter: You typed [x]")]
+			},
+			R`<p>עכשיו קודם מספר, ואחריו אות. הריצו והקלידו <code>3</code>, <bdi dir="ltr">Enter</bdi>, <code>A</code>, <bdi dir="ltr">Enter</bdi>.</p>
+<div class="callout warn"><b>ה-Enter נקרא במקום האות</b><p><code>%c</code> קורא את ה-<bdi dir="ltr">Enter</bdi> שנשאר אחרי <code>3</code>, ולכן <code>grade</code> לא מקבל את <code>A</code>.</p></div>`,
+			{
+				id: "io-scanf-enter",
+				title: "התו שנשאר בקלט",
+				code: ENTER_MAIN,
+				tests: [io("the ENTER after 3 goes into grade", "3\nA\n", "How many? Grade letter? count=3 grade=[\n]")]
+			},
+			R`<p>התיקון הוא רווח לפני <code>%c</code>: <code>scanf(" %c", &amp;grade);</code>. הרווח מדלג על רווחים ועל <bdi dir="ltr">Enter</bdi>, ורק אז קורא את התו.</p>
+<p>הריצו עם אותו קלט: הפעם <code>grade</code> מקבל <code>A</code>.</p>`,
+			{
+				id: "io-scanf-char-space",
+				title: "רווח שמדלג על ה-Enter",
+				code: SPACE_MAIN,
+				tests: [io("the space skips the ENTER: grade gets A", "3\nA\n", "How many? Grade letter? count=3 grade=[A]")]
+			},
+			R`<p>תורכם: גם כאן האות באה אחרי מספר.</p>`,
+			{
+				id: "io-scanf-char-seat",
+				title: "מקום באולם",
+				task: "במקום ה-TODO קראו את אות המושב לתוך <code>seat</code>.",
+				code: SEAT_START,
+				solution: SEAT_SOLVED,
+				tests: [
+					io("12, Enter, C gives Seat 12C", "12\nC\n", SEAT_PROMPTS + "Seat 12C"),
+					io("both on one line: 7 A", "7 A\n", SEAT_PROMPTS + "Seat 7A"),
+					io("30, Enter, F gives Seat 30F", "30\nF\n", SEAT_PROMPTS + "Seat 30F")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "קוראים מספר, ואחריו <code>scanf(\"%c\", &amp;c);</code>. מה נכנס ל-<code>c</code>?",
+				o: [
+					"האות שהוקלדה אחרי המספר",
+					"ה-<bdi dir=\"ltr\">Enter</bdi> שנשאר אחרי המספר",
+					"שום דבר"
+				],
+				a: 1,
+				w: "<code>%c</code> קורא כל תו, גם <bdi dir=\"ltr\">Enter</bdi>."
+			},
+			{
+				s: "מה עושה הרווח שלפני <code>%c</code> ב-<code>scanf(\" %c\", &amp;c);</code>?",
+				o: [
+					"מדלג על רווחים ועל <bdi dir=\"ltr\">Enter</bdi> לפני התו",
+					"קורא רווח לתוך <code>c</code>",
+					"מדפיס רווח"
+				],
+				a: 0,
+				w: "רווח ב-<code>scanf</code> מדלג על כל הרווחים וה-<bdi dir=\"ltr\">Enter</bdi> שלפני התו."
+			},
+			{
+				s: "קראו קודם מספר עם <code>scanf(\"%d\", &amp;n);</code>. איזו מהקריאות הבאות <b>לא</b> תקרא את האות שהוקלדה אחריו?",
+				o: [
+					"<code>scanf(\" %c\", &amp;c);</code>",
+					"<code>scanf(\"%c\", &amp;c);</code>",
+					"<code>scanf(\"  %c\", &amp;c);</code>"
+				],
+				a: 1,
+				w: "בלי רווח, <code>%c</code> קורא את ה-<bdi dir=\"ltr\">Enter</bdi>. שני רווחים מדלגים בדיוק כמו אחד."
+			}
+		]
+	}));
+	const WORD_ONE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[20];
+
+    printf("Name: ");
+    scanf("%s", name);
+    printf("Hello, %s!\n", name);
+    return 0;
+}`;
+	const WORD_SPACE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    char first[20];
+    char rest[20];
+
+    printf("Full name: ");
+    scanf("%s", first);
+    scanf("%s", rest);
+    printf("first: %s\n", first);
+    printf("rest: %s\n", rest);
+    return 0;
+}`;
+	const CITY_START = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[20] = "?";
+    char city[20] = "?";
+
+    printf("Name: ");
+    /* TODO: read the name into name */
+
+    printf("City: ");
+    /* TODO: read the city into city */
+
+    printf("%s from %s\n", name, city);
+    return 0;
+}`;
+	const CITY_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[20] = "?";
+    char city[20] = "?";
+
+    printf("Name: ");
+    scanf("%s", name);
+
+    printf("City: ");
+    scanf("%s", city);
+
+    printf("%s from %s\n", name, city);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "io-scanf-word",
+		title: "קריאת מילה",
+		body: [
+			R`<p>מילה קוראים עם <code>%s</code> לתוך משתנה כמו <code>char name[20];</code>: מקום ל-19 אותיות לכל היותר.</p>
+<table class="tbl"><tr><th>קוראים</th><th>כותבים</th><th>&amp;</th></tr>
+<tr><td>מספר שלם</td><td class="mono">scanf("%d", &amp;age);</td><td>יש</td></tr>
+<tr><td>מילה</td><td class="mono">scanf("%s", name);</td><td>אין</td></tr></table>
+<p>במילה אין <code>&amp;</code>: השם <code>name</code> הוא כבר המקום שלה. למה, תראו בפרק המערכים.</p>`,
+			{
+				id: "io-scanf-word-one",
+				title: "קוראים מילה",
+				code: WORD_ONE_MAIN,
+				tests: [io("Dana gives Hello, Dana!", "Dana\n", "Name: Hello, Dana!")]
+			},
+			R`<p><code>%s</code> עוצר ברווח. הריצו והקלידו <code>Dana Levi</code> בשורה אחת: המילה הראשונה נכנסת ל-<code>first</code>, והשנייה מחכה ל-<code>scanf</code> הבא.</p>`,
+			{
+				id: "io-scanf-word-space",
+				title: "מילה עוצרת ברווח",
+				code: WORD_SPACE_MAIN,
+				tests: [io("Dana Levi is two words", "Dana Levi\n", "Full name: first: Dana\nrest: Levi")]
+			},
+			R`<p>תורכם: שתי מילים, כל אחת למשתנה משלה.</p>`,
+			{
+				id: "io-scanf-word-city",
+				title: "שם ועיר",
+				task: "במקום שני ה-TODO קראו שם לתוך <code>name</code> ועיר לתוך <code>city</code>.",
+				code: CITY_START,
+				solution: CITY_SOLVED,
+				tests: [
+					io("Noa, Enter, Haifa", "Noa\nHaifa\n", "Name: City: Noa from Haifa"),
+					io("both on one line: Avi Eilat", "Avi Eilat\n", "Name: City: Avi from Eilat"),
+					io("a city with a dash: Tel-Aviv", "Dana\nTel-Aviv\n", "Name: City: Dana from Tel-Aviv")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "למה אין <code>&amp;</code> ב-<code>scanf(\"%s\", name);</code>?",
+				o: [
+					"כי מילה לא צריכה מקום",
+					"כי השם <code>name</code> הוא כבר המקום של המילה",
+					"כי <code>%s</code> מוסיפה את ה-<code>&amp;</code> לבד"
+				],
+				a: 1,
+				w: "השם של <code>char name[20]</code> הוא המקום שלה בזיכרון."
+			},
+			{
+				s: "מקלידים <code>New York</code> לתוך <code>scanf(\"%s\", city);</code>. מה יש ב-<code>city</code>?",
+				o: [
+					"<code>New York</code>",
+					"<code>New</code>",
+					"<code>York</code>"
+				],
+				a: 1,
+				w: "<code>%s</code> עוצר ברווח הראשון."
+			},
+			{
+				s: "<code>char city[20];</code> הוכרז. איזו מהקריאות הבאות <b>לא</b> קוראת מילה שלמה לתוך <code>city</code>?",
+				o: [
+					"<code>scanf(\"%s\", city);</code>",
+					"<code>scanf(\" %s\", city);</code>",
+					"<code>scanf(\"%c\", city);</code>"
+				],
+				a: 2,
+				w: "<code>%c</code> קוראת תו אחד בלבד, לא מילה."
+			}
+		]
+	}));
+	{
+		const TWO_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    printf("Sum: %d\n", a + b);
+    return 0;
+}`;
+		const DATE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int day = 0;
+    int month = 0;
+
+    printf("Date (day/month): ");
+    scanf("%d/%d", &day, &month);
+    printf("day %d, month %d\n", day, month);
+    return 0;
+}`;
+		const SUM3_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+
+    printf("Three numbers: ");
+    /* TODO: read three whole numbers into a, b and c */
+
+    printf("Sum: %d\n", a + b + c);
+    return 0;
+}`;
+		const SUM3_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+
+    printf("Three numbers: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    printf("Sum: %d\n", a + b + c);
+    return 0;
+}`;
+		const ORDER_START = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 0;
+    char size = '?';
+
+    printf("Price: ");
+    /* TODO 1: read the price into price */
+
+    printf("Size (S/M/L): ");
+    /* TODO 2: read the size letter into size */
+
+    printf("price %.2f, size %c\n", price, size);
+    return 0;
+}`;
+		const ORDER_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 0;
+    char size = '?';
+
+    printf("Price: ");
+    scanf("%lf", &price);
+
+    printf("Size (S/M/L): ");
+    scanf(" %c", &size);
+
+    printf("price %.2f, size %c\n", price, size);
+    return 0;
+}`;
+		const ORDER_PROMPTS = "Price: Size (S/M/L): ";
+		U.push(withOutputs({
+			id: "io-scanf-many",
+			title: "כמה ערכים בפעם אחת",
+			body: [
+				R`<p><code>scanf</code> אחת יכולה לקרוא כמה ערכים. כמו ב-<code>printf</code>, הערכים נכנסים לפי הסדר, וכל אחד עם <code>&amp;</code> משלו.</p>
+<pre class="code-static"><span>scanf("%d %d", &amp;a, &amp;b);</span></pre>
+<p>בין הערכים מקלידים רווח או <bdi dir="ltr">Enter</bdi>, ושניהם עובדים. הריצו פעמיים: <code>3 4</code> בשורה אחת, ואז <code>3</code>, <bdi dir="ltr">Enter</bdi>, <code>4</code>.</p>`,
+				{
+					id: "io-scanf-many-two",
+					title: "שני מספרים",
+					code: TWO_MAIN,
+					tests: [io("3 4 in one line gives Sum: 7", "3 4\n", "Two numbers: Sum: 7"), io("3, Enter, 4 gives Sum: 7", "3\n4\n", "Two numbers: Sum: 7")]
+				},
+				R`<p>סימן אחר בתבנית, כמו <code>/</code>, צריך להקליד בדיוק כך. כאן מקלידים <code>13/11</code>.</p>
+<table class="tbl"><tr><th>בתבנית</th><th>מקלידים</th></tr>
+<tr><td class="mono">"%d %d"</td><td class="mono">13 11</td></tr>
+<tr><td class="mono">"%d/%d"</td><td class="mono">13/11</td></tr></table>`,
+				{
+					id: "io-scanf-many-date",
+					title: "תאריך עם לוכסן",
+					code: DATE_MAIN,
+					tests: [io("13/11 gives day 13, month 11", "13/11\n", "Date (day/month): day 13, month 11")]
+				},
+				R`<p>תורכם: שלושה מספרים. אפשר בשורת <code>scanf</code> אחת, כמו בעמוד הראשון.</p>`,
+				{
+					id: "io-scanf-many-sum",
+					title: "סכום של שלושה",
+					task: "במקום ה-TODO קראו שלושה מספרים שלמים לתוך <code>a</code>, <code>b</code> ו-<code>c</code>.",
+					code: SUM3_START,
+					solution: SUM3_SOLVED,
+					tests: [
+						io("3 4 5 gives Sum: 12", "3 4 5\n", "Three numbers: Sum: 12"),
+						io("one per line, with a negative: 10, -2, 0", "10\n-2\n0\n", "Three numbers: Sum: 8"),
+						io("1 1 1 gives Sum: 3", "1 1 1\n", "Three numbers: Sum: 3")
+					]
+				},
+				R`<p>המשימה משלבת שני שיעורים: <code>%lf</code> למחיר ("קריאת מספר עשרוני"), ו-<code>" %c"</code> לאות ("קריאת תו").</p>`,
+				{
+					id: "io-scanf-order",
+					title: "מחיר ומידה",
+					task: "השלימו את שתי שורות ה-TODO: מחיר לתוך <code>price</code>, אות מידה לתוך <code>size</code>.",
+					code: ORDER_START,
+					solution: ORDER_SOLVED,
+					tests: [
+						io("12.5, Enter, M gives price 12.50, size M", "12.5\nM\n", ORDER_PROMPTS + "price 12.50, size M"),
+						io("both on one line: 7 L", "7 L\n", ORDER_PROMPTS + "price 7.00, size L"),
+						io("a whole price: 30, Enter, S", "30\nS\n", ORDER_PROMPTS + "price 30.00, size S")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "מקלידים <code>5 8</code> לתוך <code>scanf(\"%d %d\", &amp;a, &amp;b);</code>. מה הערכים?",
+					o: [
+						"<code>a</code> הוא 8, <code>b</code> הוא 5",
+						"<code>a</code> הוא 5, <code>b</code> הוא 8",
+						"<code>a</code> הוא 58"
+					],
+					a: 1,
+					w: "הערכים נכנסים לפי הסדר: הראשון ל-<code>a</code>."
+				},
+				{
+					s: "מה מקלידים בין שני מספרים עבור <code>scanf(\"%d %d\", &amp;a, &amp;b);</code>?",
+					o: [
+						"רק רווח",
+						"רק <bdi dir=\"ltr\">Enter</bdi>",
+						"רווח או <bdi dir=\"ltr\">Enter</bdi>, שניהם עובדים"
+					],
+					a: 2,
+					w: "<code>%d</code> מדלג על רווחים ועל <bdi dir=\"ltr\">Enter</bdi> לפני מספר."
+				},
+				{
+					s: "<code>day</code> ו-<code>month</code> התחילו ב-0. מקלידים <code>13 11</code> (עם רווח) לתוך <code>scanf(\"%d/%d\", &amp;day, &amp;month);</code>. איזה מהמשפטים <b>אינו</b> נכון?",
+					o: [
+						"<code>day</code> מקבל 13",
+						"<code>month</code> מקבל 11",
+						"<code>month</code> נשאר 0"
+					],
+					a: 1,
+					w: "התבנית מחכה ל-<code>/</code> אחרי 13, ולכן <code>scanf</code> עוצרת ו-<code>month</code> לא נקרא."
+				}
+			]
+		}));
+	}
+	{
+		const LETTER_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("n = %d\n", n);
+    return 0;
+}`;
+		const COUNT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    int count = scanf("%d", &n);
+    printf("read %d values\n", count);
+
+    if (count == 0)
+    {
+        printf("that was not a number\n");
+    }
+    printf("n = %d\n", n);
+    return 0;
+}`;
+		const AGE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+
+    printf("Age: ");
+    int count = scanf("%d", &age);
+
+    /* TODO: when count is 0, print "please type digits" */
+
+    printf("age = %d\n", age);
+    return 0;
+}`;
+		const AGE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+
+    printf("Age: ");
+    int count = scanf("%d", &age);
+
+    if (count == 0)
+    {
+        printf("please type digits\n");
+    }
+
+    printf("age = %d\n", age);
+    return 0;
+}`;
+		U.push(withOutputs({
+			id: "io-scanf-bad",
+			title: "אות במקום מספר",
+			body: [
+				R`<p>מה קורה כשמקלידים אות ו-<code>scanf</code> מחכה למספר? הריצו והקלידו <code>a</code>.</p>
+<table class="tbl"><tr><th>מה קרה</th><th>למה</th></tr>
+<tr><td><code>scanf</code> לא קראה כלום</td><td>היא עוצרת באות, והאות נשארת ממתינה בקלט</td></tr>
+<tr><td><code>n</code> נשאר 0</td><td>לא נכתב לתוכו דבר, ולכן הוא שומר את הערך ההתחלתי</td></tr></table>
+<p>בגלל זה נותנים ל-<code>n</code> ערך התחלתי. בלעדיו היה בו מספר מקרי.</p>`,
+				{
+					id: "io-scanf-bad-letter",
+					title: "מקלידים אות",
+					code: LETTER_MAIN,
+					tests: [io("the letter a leaves n at 0", "a\n", "Number: n = 0")]
+				},
+				R`<p><code>scanf</code> מחזירה <b>כמה ערכים היא קראה</b>. את המספר הזה שומרים במשתנה ובודקים אותו.</p>
+<table class="tbl"><tr><th>מקלידים</th><th>count</th><th>n</th></tr>
+<tr><td class="mono">7</td><td class="mono">1</td><td class="mono">7</td></tr>
+<tr><td class="mono">a</td><td class="mono">0</td><td class="mono">0</td></tr></table>
+<p><code>if</code> מריץ את השורות שבסוגריים המסולסלים רק כשהתנאי נכון (שיעור שלם עליו בהמשך). הריצו פעמיים: פעם עם <code>7</code>, פעם עם <code>a</code>.</p>`,
+				{
+					id: "io-scanf-bad-count",
+					title: "כמה ערכים נקראו",
+					code: COUNT_MAIN,
+					tests: [io("7 is read: 1 value", "7\n", "Number: read 1 values\nn = 7"), io("a is not read: 0 values", "a\n", "Number: read 0 values\nthat was not a number\nn = 0")]
+				},
+				R`<p>תורכם: אותה בדיקה, עם הודעה משלכם.</p>`,
+				{
+					id: "io-scanf-bad-age",
+					title: "הודעה על קלט שגוי",
+					task: "במקום ה-TODO, כש-<code>count</code> הוא 0 הדפיסו <code>please type digits</code>. עבור <code>x</code> התוכנית מדפיסה <code>please type digits</code> ואז <code>age = 0</code>; עבור <code>30</code> רק <code>age = 30</code>.",
+					code: AGE_START,
+					solution: AGE_SOLVED,
+					tests: [
+						io("x prints please type digits, then age = 0", "x\n", "Age: please type digits\nage = 0"),
+						io("30 prints only age = 30", "30\n", "Age: age = 30"),
+						io("a word that starts with a letter: ab12", "ab12\n", "Age: please type digits\nage = 0")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "מקלידים <code>b</code> לתוך <code>scanf(\"%d\", &amp;n);</code>. מה <code>scanf</code> מחזירה?",
+					o: [
+						"1",
+						"0",
+						"האות <code>b</code>"
+					],
+					a: 1,
+					w: "היא לא קראה אף ערך, ולכן מחזירה 0."
+				},
+				{
+					s: "מקלידים <code>4 9</code> לתוך <code>int count = scanf(\"%d %d\", &amp;a, &amp;b);</code>. כמה יש ב-<code>count</code>?",
+					o: [
+						"1",
+						"2",
+						"13"
+					],
+					a: 1,
+					w: "<code>scanf</code> קראה שני ערכים, ולכן מחזירה 2."
+				},
+				{
+					s: "<code>n</code> התחיל ב-0, ומקלידים <code>a</code> לתוך <code>scanf(\"%d\", &amp;n);</code>. איזה מהמשפטים <b>אינו</b> נכון?",
+					o: [
+						"<code>scanf</code> מחזירה 0",
+						"<code>n</code> נשאר 0",
+						"<code>n</code> מקבל את האות <code>a</code>"
+					],
+					a: 2,
+					w: "<code>scanf</code> עוצרת באות ולא כותבת ל-<code>n</code> דבר."
+				}
+			]
+		}));
+	}
+	const RECEIPT_START = R`/* TODO: write the whole program here */
+`;
+	const RECEIPT_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    char name[20];
+    int count = 0;
+    double price = 0;
+
+    printf("Name: ");
+    scanf("%s", name);
+    printf("Count: ");
+    scanf("%d", &count);
+    printf("Price: ");
+    scanf("%lf", &price);
+
+    printf("%s bought %d x %.2f = %.2f\n", name, count, price, count * price);
+    return 0;
+}`;
+	const RECEIPT_PROMPTS = "Name: Count: Price: ";
+	const IO_FIX_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+    double height = 0;
+    char grade = '?';
+
+    /* TODO: there are three mistakes below; fix them */
+    printf("Age: ");
+    scanf("%d", &age);
+    printf("Height: ");
+    scanf("%d", &height);
+    printf("Grade: ");
+    scanf("%c", &grade);
+
+    printf("age %d, height %d, grade %c\n", age, height, grade);
+    return 0;
+}`;
+	const IO_FIX_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+    double height = 0;
+    char grade = '?';
+
+    printf("Age: ");
+    scanf("%d", &age);
+    printf("Height: ");
+    scanf("%lf", &height);
+    printf("Grade: ");
+    scanf(" %c", &grade);
+
+    printf("age %d, height %.2f, grade %c\n", age, height, grade);
+    return 0;
+}`;
+	const IO_FIX_PROMPTS = "Age: Height: Grade: ";
+	U.push(withOutputs({
+		id: "io-review",
+		title: "חזרה: קלט ופלט",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו "קבלה": התוכנית שואלת שלוש שאלות, ומדפיסה שורה אחת עם החשבון.</p>
+<table class="tbl"><tr><th>מה</th><th>שואלים</th><th>טיפוס</th></tr>
+<tr><td>שם הקונה</td><td><code>Name: </code></td><td>מילה</td></tr>
+<tr><td>כמה יחידות</td><td><code>Count: </code></td><td class="mono">int</td></tr>
+<tr><td>מחיר ליחידה</td><td><code>Price: </code></td><td class="mono">double</td></tr></table>
+<p>השורה בסוף: השם, <code>bought</code>, הכמות, <code>x</code>, המחיר, <code>=</code>, והסכום. המחיר והסכום עם שתי ספרות אחרי הנקודה.</p>`,
+			{
+				id: "io-review-receipt",
+				title: "קבלה",
+				task: "בקובץ הריק כתבו תוכנית שלמה ששואלת את שלוש השאלות שבטבלה, לפי הסדר, ומדפיסה את שורת הקבלה.",
+				code: RECEIPT_START,
+				solution: RECEIPT_SOLVED,
+				tests: [
+					io("Dana buys 3 x 4.50", "Dana\n3\n4.5\n", RECEIPT_PROMPTS + "Dana bought 3 x 4.50 = 13.50"),
+					io("all three answers in one line: Avi 10 1.25", "Avi 10 1.25\n", RECEIPT_PROMPTS + "Avi bought 10 x 1.25 = 12.50"),
+					io("a whole price: Noa buys 1 x 100", "Noa\n1\n100\n", RECEIPT_PROMPTS + "Noa bought 1 x 100.00 = 100.00")
+				]
+			},
+			R`<p>בתוכנית ליד יש שלוש טעויות מהפרק הזה: שתיים בקריאה ואחת בהדפסה. אם מקלידים <code>20</code>, <code>1.75</code> ו-<code>B</code>, הגובה והציון יוצאים שגויים.</p>`,
+			{
+				id: "io-review-fix",
+				title: "שלוש טעויות",
+				task: "מצאו ותקנו את שלוש הטעויות, כך שהתוכנית תדפיס את שלושת הערכים שהוקלדו. את הגובה הדפיסו עם שתי ספרות אחרי הנקודה.",
+				code: IO_FIX_START,
+				solution: IO_FIX_SOLVED,
+				tests: [io("20, 1.75 and B", "20\n1.75\nB\n", IO_FIX_PROMPTS + "age 20, height 1.75, grade B"), io("35, 1.6 and A", "35\n1.6\nA\n", IO_FIX_PROMPTS + "age 35, height 1.60, grade A")]
+			}
+		],
+		quiz: [
+			{
+				s: "באיזו אות קוראים <code>double</code> עם <code>scanf</code>?",
+				o: [
+					"<code>%f</code>",
+					"<code>%lf</code>",
+					"<code>%d</code>"
+				],
+				a: 1,
+				w: "ב-<code>scanf</code>, <code>double</code> נקרא עם <code>%lf</code>."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"[%-4d]\\n\", 7);</code>?",
+				o: [
+					"<code>[&nbsp;&nbsp;&nbsp;7]</code>",
+					"<code>[7]</code>",
+					"<code>[7&nbsp;&nbsp;&nbsp;]</code>"
+				],
+				a: 2,
+				w: "המינוס מצמיד את 7 לשמאל, והרווחים באים אחריו."
+			},
+			{
+				s: "מקלידים <code>x</code> לתוך <code>scanf(\"%d\", &amp;n);</code>. מה <code>scanf</code> מחזירה?",
+				o: [
+					"0",
+					"1",
+					"האות <code>x</code>"
+				],
+				a: 0,
+				w: "היא לא קראה אף ערך."
+			},
+			{
+				s: "מקלידים <code>Dana Levi</code> לתוך <code>scanf(\"%s\", name);</code>. מה יש ב-<code>name</code>?",
+				o: [
+					"<code>Dana Levi</code>",
+					"<code>Dana</code>",
+					"<code>Levi</code>"
+				],
+				a: 1,
+				w: "<code>%s</code> עוצר ברווח."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%d%%\\n\", 30);</code>?",
+				o: [
+					"<code>30%</code>",
+					"<code>30%%</code>",
+					"<code>%d%</code>"
+				],
+				a: 0,
+				w: "<code>%d</code> הוא 30, ו-<code>%%</code> הוא סימן <code>%</code> אחד."
+			},
+			{
+				s: "<code>int n; double d; char c; char w[20];</code>. איזו מהקריאות הבאות <b>לא</b> מתאימה למשתנה שלה?",
+				o: [
+					"<code>scanf(\" %c\", &amp;c);</code>",
+					"<code>scanf(\"%s\", w);</code>",
+					"<code>scanf(\"%f\", &amp;d);</code>"
+				],
+				a: 2,
+				w: "<code>d</code> הוא <code>double</code>, ולכן צריך <code>%lf</code>. <code>%f</code> מתאימה ל-<code>float</code>."
+			},
+			{
+				s: "<code>double x = 5;</code>. כל השורות מדפיסות את <code>x</code>. איזו מהן <b>לא</b> תדפיס בדיוק <code>5.0</code>?",
+				o: [
+					"<code>printf(\"%.1f\\n\", x);</code>",
+					"<code>printf(\"%3.1f\\n\", x);</code>",
+					"<code>printf(\"%1f\\n\", x);</code>"
+				],
+				a: 2,
+				w: "בלי נקודה, 1 הוא רוחב: <code>%1f</code> מדפיסה <code>5.000000</code>."
+			}
+		]
+	}));
+	const ARITH_INT = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 17;
+    int b = 5;
+    printf("%d + %d = %d\n", a, b, a + b);
+    printf("%d - %d = %d\n", a, b, a - b);
+    printf("%d * %d = %d\n", a, b, a * b);
+    printf("%d / %d = %d\n", a, b, a / b);
+    return 0;
+}`;
+	const ARITH_DOUBLE = R`#include <stdio.h>
+
+int main(void)
+{
+    double x = 7.5;
+    double y = 2.5;
+    printf("%.2f + %.2f = %.2f\n", x, y, x + y);
+    printf("%.2f - %.2f = %.2f\n", x, y, x - y);
+    printf("%.2f * %.2f = %.2f\n", x, y, x * y);
+    printf("%.2f / %.2f = %.2f\n", x, y, x / y);
+    return 0;
+}`;
+	const RECT_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int width = 0;
+    int height = 0;
+    int area = 0;
+    int perimeter = 0;
+
+    printf("Width and height: ");
+    scanf("%d %d", &width, &height);
+
+    /* TODO 1: area is width times height */
+    /* TODO 2: perimeter is twice width plus twice height */
+
+    printf("Area: %d\n", area);
+    printf("Perimeter: %d\n", perimeter);
+    return 0;
+}`;
+	const RECT_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int width = 0;
+    int height = 0;
+    int area = 0;
+    int perimeter = 0;
+
+    printf("Width and height: ");
+    scanf("%d %d", &width, &height);
+
+    area = width * height;
+    perimeter = 2 * width + 2 * height;
+
+    printf("Area: %d\n", area);
+    printf("Perimeter: %d\n", perimeter);
+    return 0;
+}`;
+	const RECT_PROMPT = "Width and height: ";
+	U.push(withOutputs({
+		id: "ops-arith",
+		title: "ארבע פעולות החשבון",
+		body: [
+			R`<p>ב-C יש ארבע פעולות חשבון, כמו במחשבון:</p>
+<table class="tbl"><tr><th>סימן</th><th>פעולה</th><th>עבור 17 ו-5</th></tr>
+<tr><td class="mono">+</td><td>חיבור</td><td class="mono">22</td></tr>
+<tr><td class="mono">-</td><td>חיסור</td><td class="mono">12</td></tr>
+<tr><td class="mono">*</td><td>כפל</td><td class="mono">85</td></tr>
+<tr><td class="mono">/</td><td>חילוק</td><td class="mono">3</td></tr></table>
+<p>בין שני <code>int</code>, החילוק נותן מספר שלם (ראיתם ב"מספר שלם: int").</p>`,
+			{
+				id: "ops-arith-int",
+				title: "חשבון במספרים שלמים",
+				code: ARITH_INT,
+				tests: [io("the four operations on 17 and 5", "", "17 + 5 = 22\n17 - 5 = 12\n17 * 5 = 85\n17 / 5 = 3")]
+			},
+			R`<p>אותן ארבע פעולות על <code>double</code>. כאן החילוק שומר את מה שאחרי הנקודה.</p>
+<p>כמו בחשבון, כפל וחילוק קודמים לחיבור ולחיסור. על זה יש שיעור שלם בהמשך הפרק.</p>`,
+			{
+				id: "ops-arith-double",
+				title: "חשבון במספרים עשרוניים",
+				code: ARITH_DOUBLE,
+				tests: [io("the four operations on 7.5 and 2.5", "", "7.50 + 2.50 = 10.00\n7.50 - 2.50 = 5.00\n7.50 * 2.50 = 18.75\n7.50 / 2.50 = 3.00")]
+			},
+			R`<p>תורכם: שני חישובים, כל אחד בשורה משלו.</p>
+<table class="tbl"><tr><th>מה</th><th>החישוב</th></tr>
+<tr><td>שטח</td><td>רוחב כפול גובה</td></tr>
+<tr><td>היקף</td><td>פעמיים הרוחב ועוד פעמיים הגובה</td></tr></table>`,
+			{
+				id: "ops-arith-rect",
+				title: "שטח והיקף",
+				task: "השלימו את שני ה-TODO: חשבו את <code>area</code> ואת <code>perimeter</code> מתוך <code>width</code> ו-<code>height</code>.",
+				code: RECT_START,
+				solution: RECT_SOLVED,
+				tests: [
+					io("4 by 3", "4 3\n", RECT_PROMPT + "Area: 12\nPerimeter: 14"),
+					io("10 by 1", "10 1\n", RECT_PROMPT + "Area: 10\nPerimeter: 22"),
+					io("a width of 0", "0 5\n", RECT_PROMPT + "Area: 0\nPerimeter: 10")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 2 + 3 * 4);</code>?",
+				o: [
+					"20",
+					"14",
+					"24"
+				],
+				a: 1,
+				w: "כפל קודם לחיבור: 3 כפול 4 הוא 12, ועוד 2."
+			},
+			{
+				s: "<code>int a = 17;</code> ו-<code>int b = 5;</code>. כמה הוא <code>a / b</code>?",
+				o: [
+					"3.4",
+					"3",
+					"4"
+				],
+				a: 1,
+				w: "בין שני <code>int</code> החילוק שומר רק את החלק השלם."
+			},
+			{
+				s: "איזה מהביטויים הבאים <b>לא</b> שווה 12?",
+				o: [
+					"<code>3 * 4</code>",
+					"<code>24 / 2</code>",
+					"<code>2 + 2 * 3</code>"
+				],
+				a: 2,
+				w: "כפל קודם: 2 כפול 3 הוא 6, ועוד 2 הם 8."
+			}
+		]
+	}));
+	const DIV_REMAINDER = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("%d\n", 7 / 2);
+    printf("%d\n", 7 % 2);
+    printf("%d\n", 17 / 5);
+    printf("%d\n", 17 % 5);
+    return 0;
+}`;
+	const DIV_DIGITS = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 1234;
+    printf("%d\n", n % 2);
+    printf("%d\n", n % 10);
+    printf("%d\n", n / 10);
+    return 0;
+}`;
+	const MINUTES_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int total = 0;
+    int minutes = 0;
+    int seconds = 0;
+
+    printf("Seconds: ");
+    scanf("%d", &total);
+
+    /* TODO 1: minutes is how many whole 60s fit in total */
+    /* TODO 2: seconds is what is left after them */
+
+    printf("%d minutes and %d seconds\n", minutes, seconds);
+    return 0;
+}`;
+	const MINUTES_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int total = 0;
+    int minutes = 0;
+    int seconds = 0;
+
+    printf("Seconds: ");
+    scanf("%d", &total);
+
+    minutes = total / 60;
+    seconds = total % 60;
+
+    printf("%d minutes and %d seconds\n", minutes, seconds);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-intdiv",
+		title: "חילוק שלמים ושארית",
+		body: [
+			R`<p>בחילוק של שלמים יש שתי תוצאות: כמה פעמים זה נכנס, ומה נשאר. לכל אחת סימן משלה.</p>
+<table class="tbl"><tr><th>כותבים</th><th>פירושו</th><th>7 ו-2</th><th>17 ו-5</th></tr>
+<tr><td class="mono">/</td><td>כמה פעמים נכנס</td><td class="mono">3</td><td class="mono">3</td></tr>
+<tr><td class="mono">%</td><td>השארית</td><td class="mono">1</td><td class="mono">2</td></tr></table>
+<p>הסימן <code>%</code> נקרא "מודולו".</p>`,
+			{
+				id: "ops-intdiv-remainder",
+				title: "חילוק ושארית",
+				code: DIV_REMAINDER,
+				tests: [io("7 / 2, 7 % 2, 17 / 5 and 17 % 5", "", "3\n1\n3\n2")]
+			},
+			R`<p>לשארית יש שני שימושים שחוזרים הרבה:</p>
+<table class="tbl"><tr><th>כותבים</th><th>נותן</th><th>עבור 1234</th></tr>
+<tr><td class="mono">n % 2</td><td>0 למספר זוגי, 1 לאי-זוגי</td><td class="mono">0</td></tr>
+<tr><td class="mono">n % 10</td><td>הספרה האחרונה</td><td class="mono">4</td></tr>
+<tr><td class="mono">n / 10</td><td>המספר בלי הספרה האחרונה</td><td class="mono">123</td></tr></table>`,
+			{
+				id: "ops-intdiv-digits",
+				title: "זוגי, והספרה האחרונה",
+				code: DIV_DIGITS,
+				tests: [io("1234: even, last digit 4, then 123", "", "0\n4\n123")]
+			},
+			R`<p>תורכם: בדקה יש 60 שניות. <code>/</code> נותן את הדקות, ו-<code>%</code> את השניות שנשארו.</p>`,
+			{
+				id: "ops-intdiv-minutes",
+				title: "דקות ושניות",
+				task: "השלימו את שני ה-TODO: חשבו את <code>minutes</code> ואת <code>seconds</code> מתוך <code>total</code>.",
+				code: MINUTES_START,
+				solution: MINUTES_SOLVED,
+				tests: [
+					io("125 seconds", "125\n", "Seconds: 2 minutes and 5 seconds"),
+					io("59 seconds: no whole minute", "59\n", "Seconds: 0 minutes and 59 seconds"),
+					io("3600 seconds: nothing left over", "3600\n", "Seconds: 60 minutes and 0 seconds")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 7 % 3);</code>?",
+				o: [
+					"2",
+					"1",
+					"2.33"
+				],
+				a: 1,
+				w: "3 נכנס ב-7 פעמיים, והשארית היא 1."
+			},
+			{
+				s: "<code>int n = 2026;</code>. כמה הוא <code>n % 10</code>?",
+				o: [
+					"202",
+					"6",
+					"2"
+				],
+				a: 1,
+				w: "<code>% 10</code> נותן את הספרה האחרונה."
+			},
+			{
+				s: "<code>int n = 15;</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
+				o: [
+					"<code>n % 2</code> הוא 1",
+					"<code>n / 2</code> הוא 7",
+					"<code>n % 5</code> הוא 3"
+				],
+				a: 2,
+				w: "5 נכנס ב-15 בדיוק שלוש פעמים, ולכן השארית היא 0."
+			}
+		]
+	}));
+	const CAST_ONE_DOUBLE = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("%d\n", 7 / 2);
+    printf("%.2f\n", 7 / 2.0);
+    return 0;
+}`;
+	const CAST_VARIABLE = R`#include <stdio.h>
+
+int main(void)
+{
+    int sum = 7;
+    int count = 2;
+
+    double wrong = sum / count;
+    double right = (double)sum / count;
+
+    printf("%.2f\n", wrong);
+    printf("%.2f\n", right);
+    return 0;
+}`;
+	const CAST_TO_INT = R`#include <stdio.h>
+
+int main(void)
+{
+    double price = 9.99;
+    int whole = (int)price;
+    printf("%d\n", whole);
+    return 0;
+}`;
+	const AVERAGE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    double average = 0;
+
+    printf("Three grades: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    /* TODO 1: add the three grades */
+    /* TODO 2: divide by 3 so the fraction is kept, and put it in average */
+
+    printf("Average: %.2f\n", average);
+    return 0;
+}`;
+	const AVERAGE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    double average = 0;
+
+    printf("Three grades: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    int sum = a + b + c;
+    average = (double)sum / 3;
+
+    printf("Average: %.2f\n", average);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-cast",
+		title: "המרה בין טיפוסים",
+		body: [
+			R`<p>חילוק של שני <code>int</code> זורק את השבר. מספיק שאחד מהם יהיה <code>double</code>, למשל <code>2.0</code>, והתוצאה היא <code>double</code>.</p>
+<table class="tbl"><tr><th>כותבים</th><th>התוצאה</th></tr>
+<tr><td class="mono">7 / 2</td><td class="mono">3</td></tr>
+<tr><td class="mono">7 / 2.0</td><td class="mono">3.50</td></tr></table>`,
+			{
+				id: "ops-cast-one-double",
+				title: "מספיק double אחד",
+				code: CAST_ONE_DOUBLE,
+				tests: [io("7 / 2 and 7 / 2.0", "", "3\n3.50")]
+			},
+			R`<p>כשהשניים משתנים, כותבים <code>(double)</code> לפני אחד מהם. זו <b>המרה</b>: הערך עובר ל-<code>double</code> לפני החילוק.</p>
+<div class="callout warn"><b>ההמרה מאוחרת מדי</b><p>ב-<code>double wrong = sum / count;</code> החילוק קורה עוד בין שני <code>int</code>. רק אחריו התוצאה, 3, נכנסת ל-<code>double</code>.</p></div>`,
+			{
+				id: "ops-cast-variable",
+				title: "המרה לפני החילוק",
+				code: CAST_VARIABLE,
+				tests: [io("3.00 without the cast, 3.50 with it", "", "3.00\n3.50")]
+			},
+			R`<p>גם בכיוון ההפוך: <code>(int)</code> לפני <code>double</code> חותך את מה שאחרי הנקודה. הוא לא מעגל: <code>9.99</code> הופך ל-<code>9</code>.</p>`,
+			{
+				id: "ops-cast-to-int",
+				title: "מעשרוני לשלם",
+				code: CAST_TO_INT,
+				tests: [io("(int)9.99 is 9", "", "9")]
+			},
+			R`<p>תורכם: ממוצע של שלושה ציונים, עם השבר.</p>`,
+			{
+				id: "ops-cast-average",
+				title: "ממוצע של שלושה",
+				task: "השלימו את שני ה-TODO: חברו את שלושת הציונים, וחלקו ב-3 כך שהשבר יישמר.",
+				code: AVERAGE_START,
+				solution: AVERAGE_SOLVED,
+				tests: [
+					io("90, 85 and 80", "90 85 80\n", "Three grades: Average: 85.00"),
+					io("1, 2 and 2: a fraction", "1 2 2\n", "Three grades: Average: 1.67"),
+					io("100, 100 and 99", "100 100 99\n", "Three grades: Average: 99.67")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה הערך של <code>(int)3.9</code>?",
+				o: [
+					"4",
+					"3",
+					"3.9"
+				],
+				a: 1,
+				w: "<code>(int)</code> חותך את מה שאחרי הנקודה ולא מעגל."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%.1f\\n\", 7 / 2.0);</code>?",
+				o: [
+					"<code>3.0</code>",
+					"<code>3.5</code>",
+					"<code>4.0</code>"
+				],
+				a: 1,
+				w: "<code>2.0</code> הוא <code>double</code>, ולכן החילוק שומר את השבר."
+			},
+			{
+				s: "איזה מהביטויים הבאים <b>לא</b> נותן 2.5? שימו לב לסוגריים.",
+				o: [
+					"<code>5 / 2.0</code>",
+					"<code>(double)5 / 2</code>",
+					"<code>(double)(5 / 2)</code>"
+				],
+				a: 2,
+				w: "בתוך הסוגריים מחלקים קודם <code>5 / 2</code> בין שלמים, ויוצא 2. רק אז ממירים, ל-2.0."
+			}
+		]
+	}));
+	const COMPOUND_SHORT = R`#include <stdio.h>
+
+int main(void)
+{
+    int x = 10;
+    x += 5;
+    printf("%d\n", x);
+    x -= 3;
+    printf("%d\n", x);
+    x *= 2;
+    printf("%d\n", x);
+    x /= 4;
+    printf("%d\n", x);
+    return 0;
+}`;
+	const COMPOUND_PLUS_PLUS = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 0;
+    count++;
+    count++;
+    printf("%d\n", count);
+    count--;
+    printf("%d\n", count);
+    return 0;
+}`;
+	const COUNTDOWN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Start: ");
+    scanf("%d", &n);
+
+    printf("%d\n", n);
+    /* TODO 1: make n one smaller with --, then print it */
+    /* TODO 2: once more: --, then print */
+
+    return 0;
+}`;
+	const COUNTDOWN_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Start: ");
+    scanf("%d", &n);
+
+    printf("%d\n", n);
+    n--;
+    printf("%d\n", n);
+    n--;
+    printf("%d\n", n);
+
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-compound",
+		title: "קיצורי כתיבה",
+		body: [
+			R`<p>שינוי של משתנה בעזרת הערך הקודם שלו חוזר כל כך הרבה, שיש לו קיצור:</p>
+<table class="tbl"><tr><th>הקיצור</th><th>זה בדיוק</th></tr>
+<tr><td><code>x += 5;</code></td><td><code>x = x + 5;</code></td></tr>
+<tr><td><code>x -= 3;</code></td><td><code>x = x - 3;</code></td></tr>
+<tr><td><code>x *= 2;</code></td><td><code>x = x * 2;</code></td></tr>
+<tr><td><code>x /= 4;</code></td><td><code>x = x / 4;</code></td></tr></table>
+<p>לחצו <b>⏯ שורה אחר שורה</b> ועקבו אחרי <code>x</code> בטבלה.</p>`,
+			{
+				id: "ops-compound-short",
+				title: "פלוס-שווה וחבריו",
+				code: COMPOUND_SHORT,
+				tests: [io("10, then 15, 12, 24 and 6", "", "15\n12\n24\n6")]
+			},
+			R`<p>הוספה של 1 והורדה של 1 קצרות עוד יותר:</p>
+<table class="tbl"><tr><th>הקיצור</th><th>זה בדיוק</th></tr>
+<tr><td><code>count++;</code></td><td><code>count = count + 1;</code></td></tr>
+<tr><td><code>count--;</code></td><td><code>count = count - 1;</code></td></tr></table>`,
+			{
+				id: "ops-compound-plus-plus",
+				title: "הוספה והורדה של 1",
+				code: COMPOUND_PLUS_PLUS,
+				tests: [io("two ++ give 2, one -- gives 1", "", "2\n1")]
+			},
+			R`<p>תורכם: ספירה לאחור של שלושה צעדים.</p>`,
+			{
+				id: "ops-compound-countdown",
+				title: "ספירה לאחור",
+				task: "השלימו את שני ה-TODO: בכל אחד הורידו 1 מ-<code>n</code> והדפיסו אותו.",
+				code: COUNTDOWN_START,
+				solution: COUNTDOWN_SOLVED,
+				tests: [
+					io("from 5", "5\n", "Start: 5\n4\n3"),
+					io("from 1 below zero", "1\n", "Start: 1\n0\n-1"),
+					io("from 10", "10\n", "Start: 10\n9\n8")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 3;</code> ואחריו <code>x += 2;</code> ו-<code>x++;</code>. כמה ב-<code>x</code>?",
+				o: [
+					"5",
+					"6",
+					"4"
+				],
+				a: 1,
+				w: "3 ועוד 2 הם 5, ועוד 1 הם 6."
+			},
+			{
+				s: "<code>int x = 4;</code> ואחריו <code>x *= 3;</code>. כמה ב-<code>x</code>?",
+				o: [
+					"7",
+					"12",
+					"43"
+				],
+				a: 1,
+				w: "<code>x *= 3</code> הוא <code>x = x * 3</code>."
+			},
+			{
+				s: "<code>int n = 5;</code>. איזו מהשורות הבאות <b>לא</b> משנה את <code>n</code>?",
+				o: [
+					"<code>n++;</code>",
+					"<code>n += 1;</code>",
+					"<code>n + 1;</code>"
+				],
+				a: 2,
+				w: "<code>n + 1</code> מחשב 6, אבל לא שם אותו בשום משתנה."
+			}
+		]
+	}));
+	const ORDER_EXAMPLES = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("%d\n", 2 + 3 * 4);
+    printf("%d\n", (2 + 3) * 4);
+    printf("%d\n", 10 - 4 / 2);
+    printf("%d\n", 20 / 2 * 5);
+    return 0;
+}`;
+	const MIDDLE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    /* TODO: the average is wrong: add parentheses so a + b is added first */
+    double average = a + b / 2.0;
+
+    printf("Average: %.2f\n", average);
+    return 0;
+}`;
+	const MIDDLE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    double average = (a + b) / 2.0;
+
+    printf("Average: %.2f\n", average);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-precedence",
+		title: "סדר פעולות",
+		body: [
+			R`<p>כמו בחשבון, לא מחשבים משמאל לימין סתם. יש סדר:</p>
+<table class="tbl"><tr><th>קודם</th><th>סימנים</th></tr>
+<tr><td>1</td><td>מה שבסוגריים <code>( )</code></td></tr>
+<tr><td>2</td><td class="mono">* / %</td></tr>
+<tr><td>3</td><td class="mono">+ -</td></tr></table>
+<p>שני סימנים מאותה שורה בטבלה מחושבים משמאל לימין. לכן <code>20 / 2 * 5</code> הוא 10 כפול 5.</p>`,
+			{
+				id: "ops-precedence-order",
+				title: "מה מחושב קודם",
+				code: ORDER_EXAMPLES,
+				tests: [io("14, 20, 8 and 50", "", "14\n20\n8\n50")]
+			},
+			R`<p>תורכם: הממוצע של שני מספרים הוא הסכום שלהם חלקי 2. בקוד ליד חסרים סוגריים, ולכן רק <code>b</code> מחולק ב-2.</p>`,
+			{
+				id: "ops-precedence-average",
+				title: "הסוגריים החסרים",
+				task: "הוסיפו סוגריים לשורת ה-<code>average</code>, כך שקודם מחברים את <code>a</code> ו-<code>b</code> ורק אחר כך מחלקים.",
+				code: MIDDLE_START,
+				solution: MIDDLE_SOLVED,
+				tests: [
+					io("4 and 6", "4 6\n", "Two numbers: Average: 5.00"),
+					io("1 and 2: a fraction", "1 2\n", "Two numbers: Average: 1.50"),
+					io("10 and 0", "10 0\n", "Two numbers: Average: 5.00")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה הוא <code>10 - 4 / 2</code>?",
+				o: [
+					"3",
+					"8",
+					"2"
+				],
+				a: 1,
+				w: "חילוק קודם: 4 חלקי 2 הוא 2, ו-10 פחות 2 הם 8."
+			},
+			{
+				s: "כמה הוא <code>(10 - 4) / 2</code>?",
+				o: [
+					"3",
+					"8",
+					"2"
+				],
+				a: 0,
+				w: "הסוגריים קודם: 6, ואז חלקי 2."
+			},
+			{
+				s: "איזה מהביטויים הבאים <b>לא</b> שווה 14?",
+				o: [
+					"<code>2 + 3 * 4</code>",
+					"<code>(2 + 3) * 4</code>",
+					"<code>2 + (3 * 4)</code>"
+				],
+				a: 1,
+				w: "הסוגריים מחברים קודם: 5 כפול 4 הם 20."
+			}
+		]
+	}));
+	const MATH_FUNCTIONS = R`#include <stdio.h>
+#include <math.h>
+
+int main(void)
+{
+    printf("%.2f\n", sqrt(16));
+    printf("%.2f\n", pow(2, 10));
+    printf("%.2f\n", fabs(-3.5));
+    return 0;
+}`;
+	const DISTANCE_START = R`#include <stdio.h>
+#include <math.h>
+
+int main(void)
+{
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+    double distance = 0;
+
+    printf("x1 y1 x2 y2: ");
+    scanf("%lf %lf %lf %lf", &x1, &y1, &x2, &y2);
+
+    /* TODO 1: dx is x2 minus x1 */
+    /* TODO 2: dy is y2 minus y1 */
+    /* TODO 3: distance is the square root of dx * dx + dy * dy */
+
+    printf("Distance: %.2f\n", distance);
+    return 0;
+}`;
+	const DISTANCE_SOLVED = R`#include <stdio.h>
+#include <math.h>
+
+int main(void)
+{
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+    double distance = 0;
+
+    printf("x1 y1 x2 y2: ");
+    scanf("%lf %lf %lf %lf", &x1, &y1, &x2, &y2);
+
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+    distance = sqrt(dx * dx + dy * dy);
+
+    printf("Distance: %.2f\n", distance);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-math",
+		title: "ספריית המתמטיקה",
+		body: [
+			R`<p>הספרייה <code>math.h</code> נותנת פעולות שאין להן סימן. כמו <code>stdio.h</code>, מוסיפים אותה בראש הקובץ עם <code>#include</code>.</p>
+<table class="tbl"><tr><th>כותבים</th><th>מחשב</th><th>התוצאה</th></tr>
+<tr><td class="mono">sqrt(16)</td><td>שורש ריבועי</td><td class="mono">4.00</td></tr>
+<tr><td class="mono">pow(2, 10)</td><td>2 בחזקת 10</td><td class="mono">1024.00</td></tr>
+<tr><td class="mono">fabs(-3.5)</td><td>ערך מוחלט</td><td class="mono">3.50</td></tr></table>
+<p>כולן מחזירות <code>double</code>, ולכן מדפיסים אותן עם <code>%f</code>.</p>`,
+			{
+				id: "ops-math-functions",
+				title: "שורש, חזקה וערך מוחלט",
+				code: MATH_FUNCTIONS,
+				tests: [io("sqrt(16), pow(2, 10) and fabs(-3.5)", "", "4.00\n1024.00\n3.50")]
+			},
+			R`<p>תורכם: המרחק בין שתי נקודות הוא השורש של <code>dx * dx + dy * dy</code>, כש-<code>dx</code> ו-<code>dy</code> הם ההפרשים בין הנקודות.</p>`,
+			{
+				id: "ops-math-distance",
+				title: "מרחק בין שתי נקודות",
+				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+				code: DISTANCE_START,
+				solution: DISTANCE_SOLVED,
+				tests: [
+					io("from (0, 0) to (3, 4)", "0 0 3 4\n", "x1 y1 x2 y2: Distance: 5.00"),
+					io("from (1, 1) to (4, 5)", "1 1 4 5\n", "x1 y1 x2 y2: Distance: 5.00"),
+					io("from (0, 0) to (1, 1)", "0 0 1 1\n", "x1 y1 x2 y2: Distance: 1.41"),
+					io("the same point twice", "2 3 2 3\n", "x1 y1 x2 y2: Distance: 0.00")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה טיפוס מחזירה <code>pow</code>?",
+				o: [
+					"<code>int</code>",
+					"<code>double</code>",
+					"<code>char</code>"
+				],
+				a: 1,
+				w: "כל הפעולות של <code>math.h</code> מחזירות <code>double</code>."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%.1f\\n\", sqrt(25));</code>?",
+				o: [
+					"<code>5.0</code>",
+					"<code>12.5</code>",
+					"<code>625.0</code>"
+				],
+				a: 0,
+				w: "השורש של 25 הוא 5."
+			},
+			{
+				s: "איזה מהביטויים הבאים <b>לא</b> מחשב 3 בריבוע? הוא מתקמפל, אבל לא נותן 9.",
+				o: [
+					"<code>pow(3, 2)</code>",
+					"<code>3 * 3</code>",
+					"<code>3 ^ 2</code>"
+				],
+				a: 2,
+				w: "ב-C הסימן <code>^</code> אינו חזקה. בשביל חזקה יש <code>pow</code>."
+			}
+		]
+	}));
+	const CLOCK_START = R`/* TODO: write the whole program here */
+`;
+	const CLOCK_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int total = 0;
+
+    printf("Seconds: ");
+    scanf("%d", &total);
+
+    int hours = total / 3600;
+    int minutes = total % 3600 / 60;
+    int seconds = total % 60;
+
+    printf("%d h %d min %d s\n", hours, minutes, seconds);
+    return 0;
+}`;
+	const CELSIUS_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int celsius = 0;
+
+    printf("Celsius: ");
+    scanf("%d", &celsius);
+
+    /* TODO: the result loses its fraction: fix the division */
+    double fahrenheit = celsius * 9 / 5 + 32;
+
+    printf("Fahrenheit: %.1f\n", fahrenheit);
+    return 0;
+}`;
+	const CELSIUS_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int celsius = 0;
+
+    printf("Celsius: ");
+    scanf("%d", &celsius);
+
+    double fahrenheit = celsius * 9 / 5.0 + 32;
+
+    printf("Fahrenheit: %.1f\n", fahrenheit);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ops-review",
+		title: "חזרה: חשבון ואופרטורים",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו תוכנית שקוראת מספר שניות, ומדפיסה כמה שעות, דקות ושניות הן.</p>
+<table class="tbl"><tr><th>מה</th><th>כמה שניות</th></tr>
+<tr><td>שעה</td><td class="mono">3600</td></tr>
+<tr><td>דקה</td><td class="mono">60</td></tr></table>
+<p>השאלה: <code>Seconds: </code>. התשובה בשורה אחת: השעות, <code>h</code>, הדקות, <code>min</code>, השניות ו-<code>s</code>, עם רווח בין כולם.</p>`,
+			{
+				id: "ops-review-clock",
+				title: "שעות, דקות ושניות",
+				task: "בקובץ הריק כתבו תוכנית שלמה שקוראת את מספר השניות ומדפיסה אותו כשעות, דקות ושניות.",
+				code: CLOCK_START,
+				solution: CLOCK_SOLVED,
+				tests: [
+					io("3665 seconds", "3665\n", "Seconds: 1 h 1 min 5 s"),
+					io("59 seconds", "59\n", "Seconds: 0 h 0 min 59 s"),
+					io("7200 seconds: exactly 2 hours", "7200\n", "Seconds: 2 h 0 min 0 s"),
+					io("86399 seconds: one second before a day", "86399\n", "Seconds: 23 h 59 min 59 s")
+				]
+			},
+			R`<p>כדי להמיר צלזיוס לפרנהייט כופלים ב-9, מחלקים ב-5 ומוסיפים 32. בתוכנית ליד, עבור 37 מודפס <code>98.0</code> במקום <code>98.6</code>.</p>`,
+			{
+				id: "ops-review-celsius",
+				title: "טמפרטורה",
+				task: "מצאו למה השבר הולך לאיבוד, ותקנו את שורת החישוב.",
+				code: CELSIUS_START,
+				solution: CELSIUS_SOLVED,
+				tests: [
+					io("37 is 98.6", "37\n", "Celsius: Fahrenheit: 98.6"),
+					io("0 is 32.0", "0\n", "Celsius: Fahrenheit: 32.0"),
+					io("-40 is -40.0", "-40\n", "Celsius: Fahrenheit: -40.0"),
+					io("21 is 69.8", "21\n", "Celsius: Fahrenheit: 69.8")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה הוא <code>17 % 5</code>?",
+				o: [
+					"3",
+					"2",
+					"3.4"
+				],
+				a: 1,
+				w: "5 נכנס ב-17 שלוש פעמים, ונשארים 2."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%.1f\\n\", (double)7 / 2);</code>?",
+				o: [
+					"<code>3.0</code>",
+					"<code>3.5</code>",
+					"<code>4.0</code>"
+				],
+				a: 1,
+				w: "7 הופך ל-<code>double</code> לפני החילוק."
+			},
+			{
+				s: "<code>int x = 5;</code> ואחריו <code>x *= 2;</code> ו-<code>x--;</code>. כמה ב-<code>x</code>?",
+				o: [
+					"9",
+					"10",
+					"11"
+				],
+				a: 0,
+				w: "5 כפול 2 הם 10, ופחות 1 הם 9."
+			},
+			{
+				s: "כמה הוא <code>2 + 6 / 2</code>?",
+				o: [
+					"4",
+					"5",
+					"8"
+				],
+				a: 1,
+				w: "חילוק קודם: 3, ועוד 2."
+			},
+			{
+				s: "מה מחזירה <code>pow(2, 3)</code>?",
+				o: [
+					"<code>8</code> כ-<code>int</code>",
+					"<code>8.0</code> כ-<code>double</code>",
+					"<code>6</code>"
+				],
+				a: 1,
+				w: "<code>pow</code> מחזירה <code>double</code>."
+			},
+			{
+				s: "<code>int n = 472;</code>. איזה מהביטויים הבאים <b>לא</b> נותן את הספרה האחרונה, 2?",
+				o: [
+					"<code>n % 10</code>",
+					"<code>n - n / 10 * 10</code>",
+					"<code>n / 10</code>"
+				],
+				a: 2,
+				w: "<code>n / 10</code> מוריד את הספרה האחרונה ונותן 47."
+			},
+			{
+				s: "<code>int a = 7, b = 2;</code>. איזו מהשורות <b>לא</b> תדפיס <code>3.50</code>?",
+				o: [
+					"<code>printf(\"%.2f\", (double)a / b);</code>",
+					"<code>printf(\"%.2f\", a / 2.0);</code>",
+					"<code>printf(\"%.2f\", (double)(a / b));</code>"
+				],
+				a: 2,
+				w: "<code>a / b</code> בתוך הסוגריים מחושב בין שלמים ונותן 3, ורק אז הופך ל-3.00."
+			}
+		]
+	}));
+	const IF_NEGATIVE = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    if (n < 0)
+    {
+        printf("negative\n");
+    }
+    printf("done\n");
+    return 0;
+}`;
+	const IF_SKIP = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 7;
+
+    if (n > 10)
+    {
+        printf("big\n");
+    }
+    printf("end\n");
+    return 0;
+}`;
+	const PASS_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int grade = 0;
+
+    printf("Grade: ");
+    scanf("%d", &grade);
+
+    /* TODO 1: check if grade is at least 56 */
+    /* TODO 2: when it is, print passed */
+
+    printf("Grade checked\n");
+    return 0;
+}`;
+	const PASS_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int grade = 0;
+
+    printf("Grade: ");
+    scanf("%d", &grade);
+
+    if (grade >= 56)
+    {
+        printf("passed\n");
+    }
+
+    printf("Grade checked\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-if",
+		title: "בודקים תנאי",
+		body: [
+			R`<p>עד עכשיו כל שורה רצה. <code>if</code> מריץ את השורות שבסוגריים המסולסלים שלו <b>רק</b> כשהתנאי שבסוגריים העגולים נכון.</p>
+<pre class="code-static"><span>if (n &lt; 0)</span><span>{</span><span>    printf("negative\n");</span><span>}</span></pre>
+<p>הריצו פעמיים: עם מספר שלילי, ועם חיובי. <code>done</code> מודפס בשתי הפעמים, כי הוא מחוץ לבלוק.</p>`,
+			{
+				id: "if-if-negative",
+				title: "רק למספר שלילי",
+				code: IF_NEGATIVE,
+				tests: [io("-3 is negative", "-3\n", "Number: negative\ndone"), io("5 skips the block", "5\n", "Number: done")]
+			},
+			R`<p>כאן <code>n</code> הוא 7, והתנאי <code>n &gt; 10</code> לא נכון. לחצו <b>⏯ שורה אחר שורה</b>: הצעד אחרי ה-<code>if</code> קופץ ישר אל <code>printf("end\n")</code>, מעל הבלוק.</p>`,
+			{
+				id: "if-if-skip",
+				title: "הבלוק שמדלגים עליו",
+				code: IF_SKIP,
+				tests: [io("7 is not above 10: only end", "", "end")]
+			},
+			R`<p>תורכם: ציון עובר הוא 56 ומעלה. הסימן "גדול או שווה" ב-C הוא <code>&gt;=</code>.</p>`,
+			{
+				id: "if-if-pass",
+				title: "ציון עובר",
+				task: "השלימו את שני ה-TODO: כשהציון 56 או יותר, הדפיסו <code>passed</code>.",
+				code: PASS_START,
+				solution: PASS_SOLVED,
+				tests: [
+					io("80 passes", "80\n", "Grade: passed\nGrade checked"),
+					io("56 just passes", "56\n", "Grade: passed\nGrade checked"),
+					io("40 does not", "40\n", "Grade: Grade checked")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "התנאי של <code>if</code> לא נכון. האם השורות שבבלוק שלו רצות?",
+				o: [
+					"כן, תמיד",
+					"לא, מדלגים עליהן",
+					"רק השורה הראשונה"
+				],
+				a: 1,
+				w: "הבלוק רץ רק כשהתנאי נכון."
+			},
+			{
+				s: "<code>int n = -1;</code>. מה מדפיסה התוכנית <code>if (n &gt; 0) { printf(\"A\"); } printf(\"B\");</code>?",
+				o: [
+					"<code>AB</code>",
+					"<code>B</code>",
+					"<code>A</code>"
+				],
+				a: 1,
+				w: "התנאי לא נכון, ולכן רק <code>B</code>, שמחוץ לבלוק, מודפס."
+			},
+			{
+				s: "<code>int n = 5;</code>. איזה מה-<code>if</code>-ים הבאים <b>לא</b> יריץ את הבלוק שלו?",
+				o: [
+					"<code>if (n &gt; 3)</code>",
+					"<code>if (n &gt;= 5)</code>",
+					"<code>if (n &lt; 5)</code>"
+				],
+				a: 2,
+				w: "5 אינו קטן מ-5."
+			}
+		]
+	}));
+	const COMPARE_VALUES = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 5;
+    int b = 3;
+    printf("5 == 3 is %d\n", a == b);
+    printf("5 != 3 is %d\n", a != b);
+    printf("5 < 3 is %d\n", a < b);
+    printf("5 > 3 is %d\n", a > b);
+    printf("5 <= 3 is %d\n", a <= b);
+    printf("5 >= 3 is %d\n", a >= b);
+    return 0;
+}`;
+	const ASSIGN_TRAP = R`#include <stdio.h>
+
+int main(void)
+{
+    int x = 3;
+
+    if (x = 5)
+    {
+        printf("x is %d\n", x);
+    }
+    return 0;
+}`;
+	const EVEN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    /* TODO: replace 0 with the condition "n is even" */
+    if (0)
+    {
+        printf("even\n");
+    }
+    printf("checked\n");
+    return 0;
+}`;
+	const EVEN_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    if (n % 2 == 0)
+    {
+        printf("even\n");
+    }
+    printf("checked\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-compare",
+		title: "השוואות",
+		body: [
+			R`<p>תנאי הוא בדרך כלל השוואה. יש שש:</p>
+<table class="tbl"><tr><th>כותבים</th><th>נכון כש</th></tr>
+<tr><td><code>a == b</code></td><td>שווים</td></tr>
+<tr><td><code>a != b</code></td><td>לא שווים</td></tr>
+<tr><td><code>a &lt; b</code></td><td>a קטן מ-b</td></tr>
+<tr><td><code>a &gt; b</code></td><td>a גדול מ-b</td></tr>
+<tr><td><code>a &lt;= b</code></td><td>קטן או שווה</td></tr>
+<tr><td><code>a &gt;= b</code></td><td>גדול או שווה</td></tr></table>
+<p>השוואה נותנת 1 כשהיא נכונה ו-0 כשלא. <code>if</code> מריץ את הבלוק כשהתנאי אינו 0.</p>`,
+			{
+				id: "if-compare-values",
+				title: "שש השוואות",
+				code: COMPARE_VALUES,
+				tests: [io("each comparison of 5 and 3 is 1 or 0", "", "5 == 3 is 0\n5 != 3 is 1\n5 < 3 is 0\n5 > 3 is 1\n5 <= 3 is 0\n5 >= 3 is 1")]
+			},
+			R`<p>השוואה כותבים עם <b>שני</b> סימני שוויון. סימן אחד הוא השמה.</p>
+<div class="callout warn"><b>שוויון אחד במקום שניים</b><p><code>if (x = 5)</code> שם 5 בתוך <code>x</code>, והתנאי הוא 5, כלומר תמיד נכון. gcc מזהיר על זה. התיקון: <code>if (x == 5)</code>.</p></div>
+<p>הריצו: <code>x</code> היה 3, ובכל זאת מודפס <code>x is 5</code>.</p>`,
+			{
+				id: "if-compare-assign",
+				title: "שוויון אחד או שניים",
+				code: ASSIGN_TRAP,
+				tests: [io("x = 5 changes x and is always true", "", "x is 5")]
+			},
+			R`<p>תורכם: מספר זוגי הוא מספר שהשארית שלו בחילוק ב-2 היא 0 (ראיתם ב"חילוק שלמים ושארית").</p>`,
+			{
+				id: "if-compare-even",
+				title: "מספר זוגי",
+				task: "החליפו את ה-<code>0</code> שבתוך ה-<code>if</code> בתנאי \"<code>n</code> זוגי\".",
+				code: EVEN_START,
+				solution: EVEN_SOLVED,
+				tests: [
+					io("4 is even", "4\n", "Number: even\nchecked"),
+					io("7 is not", "7\n", "Number: checked"),
+					io("0 is even", "0\n", "Number: even\nchecked"),
+					io("-2 is even", "-2\n", "Number: even\nchecked")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה עושה <code>if (x = 5)</code>?",
+				o: [
+					"בודק אם <code>x</code> שווה 5",
+					"שם 5 ב-<code>x</code>, והתנאי תמיד נכון",
+					"לא מתקמפל"
+				],
+				a: 1,
+				w: "סימן אחד הוא השמה. להשוואה כותבים <code>==</code>."
+			},
+			{
+				s: "מה מדפיסה <code>printf(\"%d\\n\", 4 &lt;= 4);</code>?",
+				o: [
+					"1",
+					"0",
+					"4"
+				],
+				a: 0,
+				w: "4 קטן או שווה ל-4, ולכן ההשוואה נכונה ונותנת 1."
+			},
+			{
+				s: "<code>int x = 7;</code>. איזו מההשוואות הבאות <b>אינה</b> נכונה?",
+				o: [
+					"<code>x &gt; 6</code>",
+					"<code>x != 7</code>",
+					"<code>x &lt;= 7</code>"
+				],
+				a: 1,
+				w: "<code>x</code> שווה 7, ולכן \"לא שווה ל-7\" לא נכון."
+			}
+		]
+	}));
+	const ADULT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+
+    printf("Age: ");
+    scanf("%d", &age);
+
+    if (age >= 18)
+    {
+        printf("adult\n");
+    }
+    else
+    {
+        printf("minor\n");
+    }
+    return 0;
+}`;
+	const PARITY_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    /* TODO 1: if n is even, print even */
+    /* TODO 2: else, print odd */
+
+    return 0;
+}`;
+	const PARITY_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    if (n % 2 == 0)
+    {
+        printf("even\n");
+    }
+    else
+    {
+        printf("odd\n");
+    }
+
+    return 0;
+}`;
+	const LARGER_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int larger = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    /* TODO 1: if a is at least b, larger is a */
+    /* TODO 2: else, larger is b */
+
+    printf("Larger: %d\n", larger);
+    return 0;
+}`;
+	const LARGER_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int larger = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    if (a >= b)
+    {
+        larger = a;
+    }
+    else
+    {
+        larger = b;
+    }
+
+    printf("Larger: %d\n", larger);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-else",
+		title: "שתי אפשרויות",
+		body: [
+			R`<p><code>else</code> בא מיד אחרי הבלוק של <code>if</code>, ורץ כשהתנאי <b>לא</b> נכון. כך תמיד רץ בדיוק אחד משני הבלוקים.</p>
+<table class="tbl"><tr><th>age</th><th>התנאי age &gt;= 18</th><th>רץ</th></tr>
+<tr><td class="mono">20</td><td>נכון</td><td>הבלוק של <code>if</code></td></tr>
+<tr><td class="mono">12</td><td>לא נכון</td><td>הבלוק של <code>else</code></td></tr></table>`,
+			{
+				id: "if-else-adult",
+				title: "מבוגר או קטין",
+				code: ADULT_MAIN,
+				tests: [io("20 is an adult", "20\n", "Age: adult"), io("12 is a minor", "12\n", "Age: minor")]
+			},
+			R`<p>תורכם: אותו תנאי כמו ב"מספר זוגי" מהשיעור הקודם, ועכשיו גם <code>else</code>.</p>`,
+			{
+				id: "if-else-parity",
+				title: "זוגי או אי-זוגי",
+				task: "השלימו את שני ה-TODO: הדפיסו <code>even</code> למספר זוגי, ו-<code>odd</code> לכל מספר אחר.",
+				code: PARITY_START,
+				solution: PARITY_SOLVED,
+				tests: [
+					io("4 is even", "4\n", "Number: even"),
+					io("7 is odd", "7\n", "Number: odd"),
+					io("0 is even", "0\n", "Number: even"),
+					io("-3 is odd", "-3\n", "Number: odd")
+				]
+			},
+			R`<p>עוד אחת: הגדול מבין שניים. כששניהם שווים, כל אחד מהם הוא הגדול.</p>`,
+			{
+				id: "if-else-larger",
+				title: "הגדול מבין שניים",
+				task: "השלימו את שני ה-TODO, כך ש-<code>larger</code> יקבל את הגדול מבין <code>a</code> ו-<code>b</code>.",
+				code: LARGER_START,
+				solution: LARGER_SOLVED,
+				tests: [
+					io("3 and 9", "3 9\n", "Two numbers: Larger: 9"),
+					io("9 and 3", "9 3\n", "Two numbers: Larger: 9"),
+					io("5 and 5", "5 5\n", "Two numbers: Larger: 5"),
+					io("two negatives", "-2 -7\n", "Two numbers: Larger: -2")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "בתוכנית עם <code>if</code> ו-<code>else</code>, כמה בלוקים רצים?",
+				o: [
+					"שניהם",
+					"בדיוק אחד",
+					"אולי אף אחד"
+				],
+				a: 1,
+				w: "כשהתנאי נכון רץ הבלוק של <code>if</code>, וכשלא, הבלוק של <code>else</code>."
+			},
+			{
+				s: "<code>int n = 5;</code>. מה מדפיסה <code>if (n &gt; 5) { printf(\"A\"); } else { printf(\"B\"); }</code>?",
+				o: [
+					"<code>A</code>",
+					"<code>B</code>",
+					"<code>AB</code>"
+				],
+				a: 1,
+				w: "5 אינו גדול מ-5, ולכן רץ ה-<code>else</code>."
+			},
+			{
+				s: "<code>int n = 0;</code>. איזו מהשורות <b>לא</b> תדפיס <code>zero</code>?",
+				o: [
+					"<code>if (n == 0) { printf(\"zero\"); } else { printf(\"other\"); }</code>",
+					"<code>if (n != 0) { printf(\"other\"); } else { printf(\"zero\"); }</code>",
+					"<code>if (n) { printf(\"zero\"); } else { printf(\"other\"); }</code>"
+				],
+				a: 2,
+				w: "<code>if (n)</code> נכון כש-<code>n</code> אינו 0. כאן הוא 0, ולכן רץ ה-<code>else</code>."
+			}
+		]
+	}));
+	const BANDS_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int grade = 0;
+
+    printf("Grade: ");
+    scanf("%d", &grade);
+
+    if (grade >= 90)
+    {
+        printf("excellent\n");
+    }
+    else if (grade >= 75)
+    {
+        printf("good\n");
+    }
+    else if (grade >= 56)
+    {
+        printf("pass\n");
+    }
+    else
+    {
+        printf("fail\n");
+    }
+    return 0;
+}`;
+	const SIGN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    /* TODO 1: if n is below 0, print negative */
+    /* TODO 2: else if n is 0, print zero */
+    /* TODO 3: else, print positive */
+
+    return 0;
+}`;
+	const SIGN_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    if (n < 0)
+    {
+        printf("negative\n");
+    }
+    else if (n == 0)
+    {
+        printf("zero\n");
+    }
+    else
+    {
+        printf("positive\n");
+    }
+
+    return 0;
+}`;
+	const LARGEST_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    int largest = 0;
+
+    printf("Three numbers: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    /* TODO 1: start with largest = a */
+    /* TODO 2: if b is larger than largest, largest = b */
+    /* TODO 3: if c is larger than largest, largest = c */
+
+    printf("Largest: %d\n", largest);
+    return 0;
+}`;
+	const LARGEST_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    int largest = 0;
+
+    printf("Three numbers: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    largest = a;
+    if (b > largest)
+    {
+        largest = b;
+    }
+    if (c > largest)
+    {
+        largest = c;
+    }
+
+    printf("Largest: %d\n", largest);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-elseif",
+		title: "כמה אפשרויות",
+		body: [
+			R`<p>כשיש יותר משתי אפשרויות, משרשרים <code>else if</code>. התנאים נבדקים מלמעלה למטה, ורץ הבלוק של <b>הראשון</b> שנכון. ה-<code>else</code> שבסוף רץ כשאף תנאי לא נכון.</p>
+<table class="tbl"><tr><th>ציון</th><th>התנאי הראשון שנכון</th><th>מודפס</th></tr>
+<tr><td class="mono">95</td><td><code>grade &gt;= 90</code></td><td class="mono">excellent</td></tr>
+<tr><td class="mono">85</td><td><code>grade &gt;= 75</code></td><td class="mono">good</td></tr>
+<tr><td class="mono">60</td><td><code>grade &gt;= 56</code></td><td class="mono">pass</td></tr>
+<tr><td class="mono">40</td><td>אף אחד</td><td class="mono">fail</td></tr></table>`,
+			{
+				id: "if-elseif-bands",
+				title: "טווחי ציונים",
+				code: BANDS_MAIN,
+				tests: [
+					io("95 is excellent", "95\n", "Grade: excellent"),
+					io("85 is good", "85\n", "Grade: good"),
+					io("60 is a pass", "60\n", "Grade: pass"),
+					io("40 fails", "40\n", "Grade: fail")
+				]
+			},
+			R`<p>תורכם: שלוש אפשרויות, כמו בדוגמה.</p>`,
+			{
+				id: "if-elseif-sign",
+				title: "הסימן של מספר",
+				task: "השלימו את שלושת ה-TODO: <code>negative</code>, <code>zero</code> או <code>positive</code>.",
+				code: SIGN_START,
+				solution: SIGN_SOLVED,
+				tests: [
+					io("-5 is negative", "-5\n", "Number: negative"),
+					io("0 is zero", "0\n", "Number: zero"),
+					io("7 is positive", "7\n", "Number: positive")
+				]
+			},
+			R`<p>עוד אחת: הגדול מבין שלושה. מתחילים מהראשון, ומחליפים כשמוצאים גדול ממנו.</p>`,
+			{
+				id: "if-elseif-largest",
+				title: "הגדול מבין שלושה",
+				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+				code: LARGEST_START,
+				solution: LARGEST_SOLVED,
+				tests: [
+					io("the largest is last", "1 2 3\n", "Three numbers: Largest: 3"),
+					io("the largest is first", "3 2 1\n", "Three numbers: Largest: 3"),
+					io("the largest is in the middle", "2 3 1\n", "Three numbers: Largest: 3"),
+					io("all three equal", "4 4 4\n", "Three numbers: Largest: 4"),
+					io("all negative", "-1 -5 -3\n", "Three numbers: Largest: -1")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "בתוכנית של טווחי הציונים מקלידים <code>85</code>. מה מודפס?",
+				o: [
+					"<code>excellent</code>",
+					"<code>good</code>",
+					"<code>good</code> ואחריו <code>pass</code>"
+				],
+				a: 1,
+				w: "הבלוק של התנאי הראשון שנכון רץ, והשאר מדלגים."
+			},
+			{
+				s: "בשרשרת של <code>if</code>, <code>else if</code> ו-<code>else</code>, כמה בלוקים רצים?",
+				o: [
+					"בדיוק אחד",
+					"כל הבלוקים שהתנאי שלהם נכון",
+					"אף אחד, אם אין תנאי נכון"
+				],
+				a: 0,
+				w: "רק הבלוק של התנאי הראשון שנכון. כשאין כזה, רץ ה-<code>else</code>."
+			},
+			{
+				s: "בתוכנית של טווחי הציונים, עבור איזה ציון היא <b>לא</b> תדפיס <code>good</code>?",
+				o: [
+					"75",
+					"89",
+					"90"
+				],
+				a: 2,
+				w: "90 עומד כבר בתנאי הראשון, <code>grade &gt;= 90</code>, ולכן מודפס <code>excellent</code>."
+			}
+		]
+	}));
+	const LOGIC_TABLE = R`#include <stdio.h>
+
+int main(void)
+{
+    int x = 5;
+    printf("x > 1 && x < 10 is %d\n", x > 1 && x < 10);
+    printf("x < 1 || x > 3 is %d\n", x < 1 || x > 3);
+    printf("!(x > 3) is %d\n", !(x > 3));
+    return 0;
+}`;
+	const RANGE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    if (n >= 1 && n <= 10)
+    {
+        printf("in range\n");
+    }
+    else
+    {
+        printf("out of range\n");
+    }
+    return 0;
+}`;
+	const LEAP_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int year = 0;
+
+    printf("Year: ");
+    scanf("%d", &year);
+
+    /* TODO 1: a leap year divides by 4 and not by 100, or it divides by 400 */
+    /* TODO 2: print leap for a leap year, and not leap for any other */
+
+    return 0;
+}`;
+	const LEAP_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int year = 0;
+
+    printf("Year: ");
+    scanf("%d", &year);
+
+    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+    {
+        printf("leap\n");
+    }
+    else
+    {
+        printf("not leap\n");
+    }
+
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-logic",
+		title: "וגם, או, לא",
+		body: [
+			R`<p>כדי לחבר כמה תנאים יש שלושה סימנים:</p>
+<table class="tbl"><tr><th>כותבים</th><th>שם</th><th>נכון כש</th></tr>
+<tr><td><code>a &amp;&amp; b</code></td><td>וגם</td><td>שניהם נכונים</td></tr>
+<tr><td><code>a || b</code></td><td>או</td><td>לפחות אחד נכון</td></tr>
+<tr><td><code>!a</code></td><td>לא</td><td><code>a</code> לא נכון</td></tr></table>
+<p>הריצו: כל שורה מדפיסה 1 או 0 עבור <code>x</code> ששווה 5.</p>`,
+			{
+				id: "if-logic-table",
+				title: "שלושת הסימנים",
+				code: LOGIC_TABLE,
+				tests: [io("three conditions on 5", "", "x > 1 && x < 10 is 1\nx < 1 || x > 3 is 1\n!(x > 3) is 0")]
+			},
+			R`<p>שימוש נפוץ ב-<code>&amp;&amp;</code>: לבדוק שמספר נמצא בטווח, כלומר גם לא קטן מדי וגם לא גדול מדי.</p>
+<pre class="code-static"><span>if (n &gt;= 1 &amp;&amp; n &lt;= 10)</span></pre>`,
+			{
+				id: "if-logic-range",
+				title: "בתוך טווח",
+				code: RANGE_MAIN,
+				tests: [
+					io("5 is in range", "5\n", "Number: in range"),
+					io("11 is out of range", "11\n", "Number: out of range"),
+					io("0 is out of range", "0\n", "Number: out of range")
+				]
+			},
+			R`<p>תורכם: שנה מעוברת מתחלקת ב-4 ולא ב-100, <b>או</b> מתחלקת ב-400.</p>
+<table class="tbl"><tr><th>שנה</th><th>ב-4</th><th>ב-100</th><th>ב-400</th><th>מעוברת</th></tr>
+<tr><td class="mono">2024</td><td>כן</td><td>לא</td><td>לא</td><td>כן</td></tr>
+<tr><td class="mono">1900</td><td>כן</td><td>כן</td><td>לא</td><td>לא</td></tr>
+<tr><td class="mono">2000</td><td>כן</td><td>כן</td><td>כן</td><td>כן</td></tr></table>`,
+			{
+				id: "if-logic-leap",
+				title: "שנה מעוברת",
+				task: "השלימו את שני ה-TODO: הדפיסו <code>leap</code> לשנה מעוברת, ו-<code>not leap</code> לכל שנה אחרת.",
+				code: LEAP_START,
+				solution: LEAP_SOLVED,
+				tests: [
+					io("2024 is a leap year", "2024\n", "Year: leap"),
+					io("2023 is not", "2023\n", "Year: not leap"),
+					io("1900 divides by 100: not", "1900\n", "Year: not leap"),
+					io("2000 divides by 400: leap", "2000\n", "Year: leap")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 5;</code>. כמה הוא <code>!(x &gt; 3)</code>?",
+				o: [
+					"1",
+					"0",
+					"5"
+				],
+				a: 1,
+				w: "<code>x &gt; 3</code> נכון, ו-<code>!</code> הופך אותו ללא נכון: 0."
+			},
+			{
+				s: "<code>int x = 3;</code>. כמה הוא <code>x &gt; 1 &amp;&amp; x &lt; 3</code>?",
+				o: [
+					"1",
+					"0",
+					"3"
+				],
+				a: 1,
+				w: "3 אינו קטן מ-3, ובשביל <code>&amp;&amp;</code> שני החלקים צריכים להיות נכונים."
+			},
+			{
+				s: "<code>int x = 0;</code>. איזה מהתנאים הבאים <b>אינו</b> נכון?",
+				o: [
+					"<code>!x</code>",
+					"<code>x == 0 || x &gt; 5</code>",
+					"<code>x &gt;= 0 &amp;&amp; x &gt; 0</code>"
+				],
+				a: 2,
+				w: "<code>x &gt; 0</code> לא נכון עבור 0, ולכן כל ה-<code>&amp;&amp;</code> לא נכון."
+			}
+		]
+	}));
+	const MENU_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int choice = 0;
+
+    printf("Choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1:
+            printf("Start\n");
+            break;
+        case 2:
+            printf("Settings\n");
+            break;
+        case 3:
+            printf("Exit\n");
+            break;
+        default:
+            printf("Unknown choice\n");
+            break;
+    }
+    return 0;
+}`;
+	const NO_BREAK_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int choice = 0;
+
+    printf("Choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1:
+            printf("Start\n");
+        case 2:
+            printf("Settings\n");
+            break;
+        default:
+            printf("Unknown choice\n");
+            break;
+    }
+    return 0;
+}`;
+	const DAY_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int day = 0;
+
+    printf("Day number: ");
+    scanf("%d", &day);
+
+    switch (day)
+    {
+        case 1:
+            printf("Sunday\n");
+            break;
+        /* TODO: cases 2 to 7: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday */
+        default:
+            printf("Invalid\n");
+            break;
+    }
+    return 0;
+}`;
+	const DAY_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int day = 0;
+
+    printf("Day number: ");
+    scanf("%d", &day);
+
+    switch (day)
+    {
+        case 1:
+            printf("Sunday\n");
+            break;
+        case 2:
+            printf("Monday\n");
+            break;
+        case 3:
+            printf("Tuesday\n");
+            break;
+        case 4:
+            printf("Wednesday\n");
+            break;
+        case 5:
+            printf("Thursday\n");
+            break;
+        case 6:
+            printf("Friday\n");
+            break;
+        case 7:
+            printf("Saturday\n");
+            break;
+        default:
+            printf("Invalid\n");
+            break;
+    }
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-switch",
+		title: "בחירה מתוך רשימה",
+		body: [
+			R`<p>כשבודקים משתנה אחד מול הרבה ערכים קבועים, <code>switch</code> קצר יותר משרשרת של <code>else if</code>.</p>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td class="mono">switch (choice)</td><td>המשתנה שבודקים</td></tr>
+<tr><td class="mono">case 2:</td><td>מכאן רצים כש-<code>choice</code> הוא 2</td></tr>
+<tr><td class="mono">break;</td><td>יוצאים מה-<code>switch</code></td></tr>
+<tr><td class="mono">default:</td><td>מכאן רצים כשאף <code>case</code> לא מתאים</td></tr></table>`,
+			{
+				id: "if-switch-menu",
+				title: "תפריט",
+				code: MENU_MAIN,
+				tests: [io("2 is Settings", "2\n", "Choice: Settings"), io("7 is unknown", "7\n", "Choice: Unknown choice")]
+			},
+			R`<p>כאן חסר <code>break</code> בסוף <code>case 1</code>. הריצו והקלידו <code>1</code>, או לחצו <b>⏯ שורה אחר שורה</b>.</p>
+<div class="callout warn"><b>בלי break ממשיכים הלאה</b><p>אחרי <code>Start</code> הריצה נופלת אל <code>case 2</code> ומדפיסה גם <code>Settings</code>. התיקון: <code>break;</code> בסוף כל <code>case</code>.</p></div>`,
+			{
+				id: "if-switch-no-break",
+				title: "כשחסר break",
+				code: NO_BREAK_MAIN,
+				tests: [io("1 runs into case 2", "1\n", "Choice: Start\nSettings")]
+			},
+			R`<p>תורכם: שבעה ימים. <code>case 1</code> ו-<code>default</code> כבר כתובים.</p>`,
+			{
+				id: "if-switch-day",
+				title: "ימי השבוע",
+				task: "במקום ה-TODO הוסיפו את המקרים 2 עד 7, כל יום בשמו באנגלית.",
+				code: DAY_START,
+				solution: DAY_SOLVED,
+				tests: [
+					io("1 is Sunday", "1\n", "Day number: Sunday"),
+					io("4 is Wednesday", "4\n", "Day number: Wednesday"),
+					io("7 is Saturday", "7\n", "Day number: Saturday"),
+					io("9 is invalid", "9\n", "Day number: Invalid")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "בתוכנית שבלי ה-<code>break</code> מקלידים <code>1</code>. מה מודפס?",
+				o: [
+					"רק <code>Start</code>",
+					"<code>Start</code> ואחריו <code>Settings</code>",
+					"רק <code>Settings</code>"
+				],
+				a: 1,
+				w: "בלי <code>break</code> הריצה ממשיכה אל ה-<code>case</code> הבא."
+			},
+			{
+				s: "מתי רץ <code>default</code>?",
+				o: [
+					"תמיד, בסוף",
+					"כשאף <code>case</code> לא מתאים",
+					"כשחסר <code>break</code>"
+				],
+				a: 1,
+				w: "<code>default</code> תופס כל ערך שאין לו <code>case</code>."
+			},
+			{
+				s: "<code>int x = 3;</code> הוכרז. איזו מהשורות הבאות <b>לא</b> יכולה לבוא בתוך <code>switch</code>?",
+				o: [
+					"<code>case 3:</code>",
+					"<code>case 'A':</code>",
+					"<code>case x:</code>"
+				],
+				a: 2,
+				w: "אחרי <code>case</code> בא ערך קבוע, לא משתנה."
+			}
+		]
+	}));
+	const CALC_START = R`/* TODO: write the whole program here */
+`;
+	const CALC_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    char op = '?';
+
+    printf("Expression: ");
+    scanf("%d %c %d", &a, &op, &b);
+
+    switch (op)
+    {
+        case '+':
+            printf("%d + %d = %d\n", a, b, a + b);
+            break;
+        case '-':
+            printf("%d - %d = %d\n", a, b, a - b);
+            break;
+        case '*':
+            printf("%d * %d = %d\n", a, b, a * b);
+            break;
+        case '/':
+            if (b == 0)
+            {
+                printf("Cannot divide by 0\n");
+            }
+            else
+            {
+                printf("%d / %d = %d\n", a, b, a / b);
+            }
+            break;
+        default:
+            printf("Unknown operator\n");
+            break;
+    }
+    return 0;
+}`;
+	const TICKET_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+    int price = 0;
+
+    printf("Age: ");
+    scanf("%d", &age);
+
+    /* TODO: two mistakes: 65 pays the senior price, and only a price of 40 is full price */
+    if (age < 12)
+    {
+        price = 20;
+    }
+    else if (age > 65)
+    {
+        price = 25;
+    }
+    else
+    {
+        price = 40;
+    }
+
+    printf("Price: %d\n", price);
+    if (price = 40)
+    {
+        printf("Full price\n");
+    }
+    return 0;
+}`;
+	const TICKET_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 0;
+    int price = 0;
+
+    printf("Age: ");
+    scanf("%d", &age);
+
+    if (age < 12)
+    {
+        price = 20;
+    }
+    else if (age >= 65)
+    {
+        price = 25;
+    }
+    else
+    {
+        price = 40;
+    }
+
+    printf("Price: %d\n", price);
+    if (price == 40)
+    {
+        printf("Full price\n");
+    }
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "if-review",
+		title: "חזרה: תנאים",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו מחשבון: הוא קורא מספר שלם, סימן ועוד מספר שלם, למשל <code>6 * 3</code>, ומדפיס את התוצאה.</p>
+<table class="tbl"><tr><th>מקלידים</th><th>מודפס</th></tr>
+<tr><td class="mono">6 * 3</td><td class="mono">6 * 3 = 18</td></tr>
+<tr><td class="mono">7 / 2</td><td class="mono">7 / 2 = 3</td></tr>
+<tr><td class="mono">4 / 0</td><td class="mono">Cannot divide by 0</td></tr>
+<tr><td class="mono">2 x 3</td><td class="mono">Unknown operator</td></tr></table>
+<p>השאלה: <code>Expression: </code>. הסימנים: <code>+</code>, <code>-</code>, <code>*</code> ו-<code>/</code>. את הסימן קוראים לתוך <code>char</code> עם <code>%c</code> (ראיתם ב"קריאת תו").</p>`,
+			{
+				id: "if-review-calc",
+				title: "מחשבון",
+				task: "בקובץ הריק כתבו תוכנית שלמה: קראו את התרגיל, חשבו אותו והדפיסו את השורה שבטבלה.",
+				code: CALC_START,
+				solution: CALC_SOLVED,
+				tests: [
+					io("6 * 3", "6 * 3\n", "Expression: 6 * 3 = 18"),
+					io("7 / 2 in whole numbers", "7 / 2\n", "Expression: 7 / 2 = 3"),
+					io("5 - 9 below zero", "5 - 9\n", "Expression: 5 - 9 = -4"),
+					io("10 + 15", "10 + 15\n", "Expression: 10 + 15 = 25"),
+					io("4 / 0 cannot be divided", "4 / 0\n", "Expression: Cannot divide by 0"),
+					io("x is not an operator", "2 x 3\n", "Expression: Unknown operator")
+				]
+			},
+			R`<p>כרטיס לילד עד גיל 12 עולה 20, לבן 65 ומעלה 25, ולכל השאר 40, שהוא "מחיר מלא". בתוכנית ליד יש שתי טעויות מהפרק הזה.</p>`,
+			{
+				id: "if-review-ticket",
+				title: "מחיר כרטיס",
+				task: "מצאו ותקנו את שתי הטעויות. רק מחיר של 40 מדפיס גם <code>Full price</code>.",
+				code: TICKET_START,
+				solution: TICKET_SOLVED,
+				tests: [
+					io("8 is a child", "8\n", "Age: Price: 20"),
+					io("65 is a senior", "65\n", "Age: Price: 25"),
+					io("30 pays full price", "30\n", "Age: Price: 40\nFull price"),
+					io("70 is a senior", "70\n", "Age: Price: 25")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 3;</code>. האם הבלוק של <code>if (x = 0)</code> רץ?",
+				o: [
+					"כן, כי זו השמה",
+					"לא: <code>x</code> מקבל 0, והתנאי הוא 0",
+					"כן, כי <code>x</code> היה 3"
+				],
+				a: 1,
+				w: "השמה נותנת את הערך שהושם. כאן הוא 0, כלומר לא נכון."
+			},
+			{
+				s: "כמה הוא <code>5 &gt; 3 &amp;&amp; 2 &gt; 4</code>?",
+				o: [
+					"1",
+					"0",
+					"2"
+				],
+				a: 1,
+				w: "<code>2 &gt; 4</code> לא נכון, ולכן כל ה-<code>&amp;&amp;</code> לא נכון."
+			},
+			{
+				s: "כמה הוא <code>!0</code>?",
+				o: [
+					"0",
+					"1",
+					"-1"
+				],
+				a: 1,
+				w: "0 הוא \"לא נכון\", ו-<code>!</code> הופך אותו ל-1."
+			},
+			{
+				s: "ב-<code>switch</code> עם <code>case 1:</code> ו-<code>case 2:</code>, בלי <code>break</code> בסוף <code>case 1</code>. מה רץ כשהערך 1?",
+				o: [
+					"רק <code>case 1</code>",
+					"<code>case 1</code> וגם <code>case 2</code>",
+					"רק <code>default</code>"
+				],
+				a: 1,
+				w: "בלי <code>break</code> הריצה ממשיכה אל ה-<code>case</code> הבא."
+			},
+			{
+				s: "<code>int n = 10;</code>. איזה מה-<code>if</code>-ים הבאים <b>לא</b> ידפיס <code>ok</code>?",
+				o: [
+					"<code>if (n % 2 == 0) { printf(\"ok\"); }</code>",
+					"<code>if (n &gt; 5 || n &lt; 0) { printf(\"ok\"); }</code>",
+					"<code>if (n &gt; 5 &amp;&amp; n &lt; 10) { printf(\"ok\"); }</code>"
+				],
+				a: 2,
+				w: "10 אינו קטן מ-10, ולכן ה-<code>&amp;&amp;</code> לא נכון."
+			},
+			{
+				s: "איזה מהמשפטים הבאים על <code>else</code> <b>אינו</b> נכון?",
+				o: [
+					"<code>else</code> רץ רק כשהתנאי של ה-<code>if</code> לא נכון",
+					"<code>else</code> בא מיד אחרי הבלוק של <code>if</code>",
+					"אפשר לכתוב תנאי בסוגריים מיד אחרי <code>else</code>, כמו <code>else (x &gt; 3)</code>"
+				],
+				a: 2,
+				w: "ל-<code>else</code> אין תנאי משלו. בשביל תנאי נוסף כותבים <code>else if</code>."
+			}
+		]
+	}));
+	const WHILE_UP = R`#include <stdio.h>
+
+int main(void)
+{
+    int i = 1;
+
+    while (i <= 5)
+    {
+        printf("%d\n", i);
+        i++;
+    }
+    return 0;
+}`;
+	const WHILE_DOWN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 3;
+
+    while (n > 0)
+    {
+        printf("n = %d\n", n);
+        n--;
+    }
+    printf("done\n");
+    return 0;
+}`;
+	const COUNTDOWN_LOOP_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Start: ");
+    scanf("%d", &n);
+
+    /* TODO 1: loop while n is above 0 */
+    /* TODO 2: inside the loop, print n */
+    /* TODO 3: inside the loop, make n one smaller */
+
+    printf("Go!\n");
+    return 0;
+}`;
+	const COUNTDOWN_LOOP_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Start: ");
+    scanf("%d", &n);
+
+    while (n > 0)
+    {
+        printf("%d\n", n);
+        n--;
+    }
+
+    printf("Go!\n");
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "loops-while",
+		title: "לולאה: while",
+		body: [
+			R`<p><code>while</code> נראה כמו <code>if</code>, אבל אחרי שהבלוק רץ הוא חוזר ובודק את התנאי שוב. הבלוק רץ שוב ושוב, כל עוד התנאי נכון.</p>
+<pre class="code-static"><span>while (i &lt;= 5)</span><span>{</span><span>    printf("%d\n", i);</span><span>    i++;</span><span>}</span></pre>
+<p>ה-<code>i++</code> חשוב: הוא מקרב את <code>i</code> לסוף. בלעדיו התנאי נשאר נכון, והלולאה לא נעצרת לעולם.</p>`,
+			{
+				id: "loops-while-up",
+				title: "סופרים עד 5",
+				code: WHILE_UP,
+				tests: [io("prints 1 to 5", "", "1\n2\n3\n4\n5")]
+			},
+			R`<p>לחצו <b>⏯ שורה אחר שורה</b> ועקבו: לפני כל סיבוב נבדק <code>n &gt; 0</code>. כש-<code>n</code> מגיע ל-0 התנאי לא נכון, והריצה עוברת אל <code>printf("done\n")</code>.</p>
+<table class="tbl"><tr><th>סיבוב</th><th>n בבדיקה</th><th>נכון?</th></tr>
+<tr><td>1</td><td class="mono">3</td><td>כן</td></tr>
+<tr><td>2</td><td class="mono">2</td><td>כן</td></tr>
+<tr><td>3</td><td class="mono">1</td><td>כן</td></tr>
+<tr><td>אין</td><td class="mono">0</td><td>לא: יוצאים</td></tr></table>`,
+			{
+				id: "loops-while-down",
+				title: "הבדיקה לפני כל סיבוב",
+				code: WHILE_DOWN,
+				tests: [io("3, 2, 1, then done", "", "n = 3\nn = 2\nn = 1\ndone")]
+			},
+			R`<p>תורכם: ספירה לאחור מכל מספר. בפרק הקודם הורדתם 1 פעמיים ביד ("קיצורי כתיבה"); עכשיו הלולאה עושה את זה כמה פעמים שצריך.</p>`,
+			{
+				id: "loops-while-countdown",
+				title: "ספירה לאחור מכל מספר",
+				task: "השלימו את שלושת ה-TODO: הדפיסו את <code>n</code> ואת כל המספרים שמתחתיו עד 1, כל אחד בשורה.",
+				code: COUNTDOWN_LOOP_START,
+				solution: COUNTDOWN_LOOP_SOLVED,
+				tests: [
+					io("from 3", "3\n", "Start: 3\n2\n1\nGo!"),
+					io("from 1", "1\n", "Start: 1\nGo!"),
+					io("from 0: the loop never runs", "0\n", "Start: Go!"),
+					io("from 6", "6\n", "Start: 6\n5\n4\n3\n2\n1\nGo!")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int i = 0; while (i &lt; 4) { i++; }</code>. כמה פעמים רץ הבלוק?",
+				o: [
+					"3",
+					"4",
+					"5"
+				],
+				a: 1,
+				w: "עבור 0, 1, 2 ו-3 התנאי נכון. כש-<code>i</code> הוא 4 יוצאים."
+			},
+			{
+				s: "מה קורה אם שוכחים את <code>i++</code> בלולאה של \"סופרים עד 5\"?",
+				o: [
+					"היא רצה פעם אחת",
+					"היא לא נעצרת",
+					"היא לא רצה בכלל"
+				],
+				a: 1,
+				w: "<code>i</code> נשאר 1, והתנאי <code>i &lt;= 5</code> נכון תמיד."
+			},
+			{
+				s: "איזו מהלולאות הבאות <b>לא</b> תדפיס כלום?",
+				o: [
+					"<code>int i = 5; while (i &gt; 0) { printf(\"*\"); i--; }</code>",
+					"<code>int i = 0; while (i &lt; 3) { printf(\"*\"); i++; }</code>",
+					"<code>int i = 5; while (i &lt; 3) { printf(\"*\"); i++; }</code>"
+				],
+				a: 2,
+				w: "5 אינו קטן מ-3, ולכן התנאי לא נכון כבר בבדיקה הראשונה."
+			}
+		]
+	}));
+	const FOR_COUNT = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 1; i <= 5; i++)
+    {
+        printf("%d\n", i);
+    }
+    return 0;
+}`;
+	const FOR_STEP = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 10; i >= 0; i -= 2)
+    {
+        printf("%d\n", i);
+    }
+    return 0;
+}`;
+	const FOR_HEADER_START = R`#include <stdio.h>
+
+int main(void)
+{
+    /* TODO: change the loop's header so i goes from 1 to 10 */
+    for (int i = 0; i < 0; i++)
+    {
+        printf("%d\n", i);
+    }
+    return 0;
+}`;
+	const FOR_HEADER_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 1; i <= 10; i++)
+    {
+        printf("%d\n", i);
+    }
+    return 0;
+}`;
+	const EVENS_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Up to: ");
+    scanf("%d", &n);
+
+    /* TODO 1: a for loop over i from 2 up to n, going up by 2 */
+    /* TODO 2: inside it, print i */
+
+    return 0;
+}`;
+	const EVENS_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Up to: ");
+    scanf("%d", &n);
+
+    for (int i = 2; i <= n; i += 2)
+    {
+        printf("%d\n", i);
+    }
+
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "loops-for",
+		title: "לולאה: for",
+		body: [
+			R`<p>ב-<code>while</code> של "סופרים עד 5" היו שלושה חלקים במקומות שונים: ההתחלה, התנאי וה-<code>i++</code>. <code>for</code> שם את שלושתם בשורה אחת. הלולאה הזאת עושה בדיוק אותו דבר.</p>`,
+			{
+				id: "loops-for-count",
+				title: "אותה ספירה עם for",
+				code: FOR_COUNT,
+				tests: [io("prints 1 to 5", "", "1\n2\n3\n4\n5")]
+			},
+			R`<p>שלושת החלקים בכותרת, מופרדים ב-<code>;</code>:</p>
+<table class="tbl"><tr><th>חלק</th><th>כאן</th><th>מתי</th></tr>
+<tr><td>התחלה</td><td><code>int i = 10</code></td><td>פעם אחת, לפני הכול</td></tr>
+<tr><td>תנאי</td><td><code>i &gt;= 0</code></td><td>לפני כל סיבוב</td></tr>
+<tr><td>צעד</td><td><code>i -= 2</code></td><td>אחרי כל סיבוב</td></tr></table>
+<p>הצעד לא חייב להיות <code>i++</code>. כאן הוא יורד ב-2.</p>`,
+			{
+				id: "loops-for-step",
+				title: "שלושת החלקים",
+				code: FOR_STEP,
+				tests: [io("10 down to 0 by 2", "", "10\n8\n6\n4\n2\n0")]
+			},
+			R`<p>תורכם: הגוף כבר כתוב. רק הכותרת לא נכונה.</p>`,
+			{
+				id: "loops-for-header",
+				title: "מ-1 עד 10",
+				task: "שנו את הכותרת של ה-<code>for</code>, כך ש-<code>i</code> ירוץ מ-1 עד 10.",
+				code: FOR_HEADER_START,
+				solution: FOR_HEADER_SOLVED,
+				tests: [io("prints 1 to 10", "", "1\n2\n3\n4\n5\n6\n7\n8\n9\n10")]
+			},
+			R`<p>עכשיו לולאה שלמה: המספרים הזוגיים מ-2 עד <code>n</code>. אפשר לעלות ב-2, כמו שבדוגמה ירדו ב-2.</p>`,
+			{
+				id: "loops-for-evens",
+				title: "מספרים זוגיים",
+				task: "השלימו את שני ה-TODO: הדפיסו את המספרים הזוגיים מ-2 עד <code>n</code>, כל אחד בשורה.",
+				code: EVENS_START,
+				solution: EVENS_SOLVED,
+				tests: [
+					io("up to 10", "10\n", "Up to: 2\n4\n6\n8\n10"),
+					io("up to 7: 7 itself is odd", "7\n", "Up to: 2\n4\n6"),
+					io("up to 2", "2\n", "Up to: 2")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>i</code> מתחיל ב-1. איזה תנאי מריץ את הלולאה עד 10, כולל 10?",
+				o: [
+					"<code>i &lt; 10</code>",
+					"<code>i &lt;= 10</code>",
+					"<code>i == 10</code>"
+				],
+				a: 1,
+				w: "<code>i &lt; 10</code> עוצר לפני 10. <code>&lt;=</code> כולל אותו."
+			},
+			{
+				s: "כמה פעמים רץ הגוף של <code>for (int i = 0; i &lt; 10; i++)</code>?",
+				o: [
+					"9",
+					"10",
+					"11"
+				],
+				a: 1,
+				w: "מ-0 עד 9: עשר פעמים."
+			},
+			{
+				s: "איזו מהכותרות הבאות <b>לא</b> מריצה את הגוף בדיוק 5 פעמים?",
+				o: [
+					"<code>for (int i = 0; i &lt; 5; i++)</code>",
+					"<code>for (int i = 1; i &lt;= 5; i++)</code>",
+					"<code>for (int i = 0; i &lt;= 5; i++)</code>"
+				],
+				a: 2,
+				w: "מ-0 עד 5, כולל: שש פעמים."
+			}
+		]
+	}));
+	const DO_ONCE = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 10;
+    do
+    {
+        printf("do: n = %d\n", n);
+        n++;
+    } while (n < 5);
+
+    int m = 10;
+    while (m < 5)
+    {
+        printf("while: m = %d\n", m);
+        m++;
+    }
+
+    printf("end\n");
+    return 0;
+}`;
+	const DO_RANGE = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    do
+    {
+        printf("1 to 10: ");
+        scanf("%d", &n);
+    } while (n < 1 || n > 10);
+
+    printf("You chose %d\n", n);
+    return 0;
+}`;
+	const POSITIVE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    /* TODO 1: put the next two lines inside a do-while */
+    printf("A positive number: ");
+    scanf("%d", &n);
+    /* TODO 2: repeat while n is not positive */
+
+    printf("Thanks, %d\n", n);
+    return 0;
+}`;
+	const POSITIVE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+
+    do
+    {
+        printf("A positive number: ");
+        scanf("%d", &n);
+    } while (n <= 0);
+
+    printf("Thanks, %d\n", n);
+    return 0;
+}`;
+	const ASK = "A positive number: ";
+	U.push(withOutputs({
+		id: "loops-do",
+		title: "לולאה שרצה לפחות פעם",
+		body: [
+			R`<p>ב-<code>do-while</code> הבדיקה באה <b>אחרי</b> הסיבוב. לכן הבלוק רץ לפחות פעם אחת, גם כשהתנאי לא נכון מההתחלה.</p>
+<pre class="code-static"><span>do</span><span>{</span><span>    ...</span><span>} while (n &lt; 5);</span></pre>
+<p>הריצו: שתי הלולאות מתחילות מ-10 עם אותו תנאי. ה-<code>do</code> מדפיס פעם אחת, וה-<code>while</code> לא מדפיס בכלל. שימו לב ל-<code>;</code> אחרי ה-<code>while</code> של <code>do</code>.</p>`,
+			{
+				id: "loops-do-once",
+				title: "פעם אחת לפחות",
+				code: DO_ONCE,
+				tests: [io("do runs once, while never", "", "do: n = 10\nend")]
+			},
+			R`<p>שימוש נפוץ: לשאול שוב ושוב, עד שהתשובה מתאימה. קודם שואלים, ורק אז יש מה לבדוק, ולכן <code>do-while</code> מתאים.</p>
+<p>הריצו והקלידו <code>0</code>, <code>15</code> ואז <code>7</code>.</p>`,
+			{
+				id: "loops-do-range",
+				title: "שואלים עד שמתאים",
+				code: DO_RANGE,
+				tests: [io("0 and 15 are asked again, 7 is taken", "0\n15\n7\n", "1 to 10: 1 to 10: 1 to 10: You chose 7"), io("4 is taken at once", "4\n", "1 to 10: You chose 4")]
+			},
+			R`<p>תורכם: אותו רעיון, עם תנאי משלכם.</p>`,
+			{
+				id: "loops-do-positive",
+				title: "עד שמגיע מספר חיובי",
+				task: "השלימו את שני ה-TODO: שאלו שוב ושוב, כל עוד <code>n</code> אינו חיובי.",
+				code: POSITIVE_START,
+				solution: POSITIVE_SOLVED,
+				tests: [
+					io("-3 and 0 are asked again, 8 is taken", "-3\n0\n8\n", ASK + ASK + ASK + "Thanks, 8"),
+					io("5 is taken at once", "5\n", ASK + "Thanks, 5"),
+					io("-1 is asked again, 2 is taken", "-1\n2\n", ASK + ASK + "Thanks, 2")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "התנאי של <code>do-while</code> לא נכון כבר מההתחלה. כמה פעמים רץ הבלוק?",
+				o: [
+					"0",
+					"1",
+					"בלי סוף"
+				],
+				a: 1,
+				w: "הבדיקה באה אחרי הסיבוב, ולכן יש סיבוב אחד."
+			},
+			{
+				s: "מתי נבדק התנאי של <code>do-while</code>?",
+				o: [
+					"לפני כל סיבוב",
+					"אחרי כל סיבוב",
+					"רק פעם אחת, בהתחלה"
+				],
+				a: 1,
+				w: "קודם הבלוק רץ, ורק אז נבדק התנאי."
+			},
+			{
+				s: "<code>int n = 0;</code>. איזו מהלולאות הבאות <b>לא</b> תדפיס כלום?",
+				o: [
+					"<code>do { printf(\"*\"); } while (n &gt; 0);</code>",
+					"<code>while (n &gt; 0) { printf(\"*\"); }</code>",
+					"<code>while (n == 0) { printf(\"*\"); n = 1; }</code>"
+				],
+				a: 1,
+				w: "<code>while</code> בודק קודם, ו-0 אינו גדול מ-0."
+			}
+		]
+	}));
+	{
+		const SUM_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int sum = 0;
+
+    for (int i = 1; i <= 5; i++)
+    {
+        sum += i;
+    }
+    printf("Sum: %d\n", sum);
+    return 0;
+}`;
+		const COUNT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 0;
+
+    for (int i = 1; i <= 20; i++)
+    {
+        if (i % 3 == 0)
+        {
+            count++;
+        }
+    }
+    printf("Count: %d\n", count);
+    return 0;
+}`;
+		const MAX_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int max = 0;
+
+    printf("Five numbers: ");
+    scanf("%d", &max);
+
+    for (int i = 1; i < 5; i++)
+    {
+        scanf("%d", &n);
+        if (n > max)
+        {
+            max = n;
+        }
+    }
+    printf("Largest: %d\n", max);
+    return 0;
+}`;
+		const MEAN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 0;
+    int x = 0;
+    int sum = 0;
+
+    printf("How many? ");
+    scanf("%d", &count);
+
+    /* TODO 1: repeat count times */
+    /* TODO 2: inside the loop, read a number into x */
+    /* TODO 3: inside the loop, add x to sum */
+
+    printf("Average: %.2f\n", (double)sum / count);
+    return 0;
+}`;
+		const MEAN_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int count = 0;
+    int x = 0;
+    int sum = 0;
+
+    printf("How many? ");
+    scanf("%d", &count);
+
+    for (int i = 0; i < count; i++)
+    {
+        scanf("%d", &x);
+        sum += x;
+    }
+
+    printf("Average: %.2f\n", (double)sum / count);
+    return 0;
+}`;
+		U.push(withOutputs({
+			id: "loops-sum",
+			title: "סכום, ספירה ומקסימום",
+			body: [
+				R`<p>סכום בלולאה: משתנה שמתחיל ב-0, ובכל סיבוב מוסיפים לו. הוא חייב להתחיל ב-0 ולפני הלולאה ("משתנה בלי ערך התחלתי").</p>
+<table class="tbl"><tr><th>אחרי סיבוב</th><th>i</th><th>sum</th></tr>
+<tr><td>1</td><td class="mono">1</td><td class="mono">1</td></tr>
+<tr><td>2</td><td class="mono">2</td><td class="mono">3</td></tr>
+<tr><td>3</td><td class="mono">3</td><td class="mono">6</td></tr>
+<tr><td>5</td><td class="mono">5</td><td class="mono">15</td></tr></table>`,
+				{
+					id: "loops-sum-total",
+					title: "סכום",
+					code: SUM_MAIN,
+					tests: [io("1 + 2 + 3 + 4 + 5", "", "Sum: 15")]
+				},
+				R`<p>ספירה: אותו רעיון, אבל מוסיפים 1, ורק כשמשהו מתאים. כאן סופרים את המספרים מ-1 עד 20 שמתחלקים ב-3.</p>`,
+				{
+					id: "loops-sum-count",
+					title: "ספירה",
+					code: COUNT_MAIN,
+					tests: [io("3, 6, 9, 12, 15 and 18", "", "Count: 6")]
+				},
+				R`<p>מקסימום: שומרים את הגדול שראינו עד עכשיו, ומחליפים כשמגיע גדול ממנו. מתחילים <b>מהמספר הראשון</b>, לא מ-0: אם כל המספרים שליליים, 0 היה נשאר "הגדול" בטעות.</p>
+<p>הריצו פעמיים: <code>4 9 2 9 1</code>, ואז חמישה מספרים שליליים.</p>`,
+				{
+					id: "loops-sum-max",
+					title: "הגדול ביותר",
+					code: MAX_MAIN,
+					tests: [io("4 9 2 9 1", "4 9 2 9 1\n", "Five numbers: Largest: 9"), io("all negative", "-5 -2 -9 -3 -7\n", "Five numbers: Largest: -2")]
+				},
+				R`<p>תורכם: ממוצע. קודם קוראים כמה מספרים יהיו, ואז כל אחד מהם. החילוק ב-<code>double</code> כבר כתוב ("המרה בין טיפוסים").</p>`,
+				{
+					id: "loops-sum-mean",
+					title: "ממוצע של n מספרים",
+					task: "השלימו את שלושת ה-TODO: קראו <code>count</code> מספרים, וחברו אותם לתוך <code>sum</code>.",
+					code: MEAN_START,
+					solution: MEAN_SOLVED,
+					tests: [
+						io("3 numbers: 4, 5 and 6", "3\n4 5 6\n", "How many? Average: 5.00"),
+						io("4 numbers: 1 to 4", "4\n1 2 3 4\n", "How many? Average: 2.50"),
+						io("1 number: -7", "1\n-7\n", "How many? Average: -7.00")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "בכמה מתחיל משתנה של סכום?",
+					o: [
+						"0",
+						"1",
+						"במספר הראשון שנקרא"
+					],
+					a: 0,
+					w: "0 לא משנה את הסכום, ולכן הוא ההתחלה."
+				},
+				{
+					s: "ובכמה מתחיל משתנה של <b>מכפלה</b>, שבכל סיבוב כופלים אותו?",
+					o: [
+						"0",
+						"1",
+						"10"
+					],
+					a: 1,
+					w: "כל מספר כפול 0 הוא 0. 1 לא משנה את המכפלה."
+				},
+				{
+					s: "מחפשים את הגדול מבין מספרים שנקראים, ויכולים להיות ביניהם שליליים. איזו התחלה <b>לא</b> טובה ל-<code>max</code>?",
+					o: [
+						"המספר הראשון שנקרא",
+						"<code>INT_MIN</code>, הקטן ביותר",
+						"0"
+					],
+					a: 2,
+					w: "אם כל המספרים שליליים, אף אחד מהם לא יחליף את ה-0."
+				}
+			]
+		}));
+	}
+	const DIGITS_COUNT = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 1234;
+    int count = 0;
+
+    while (n > 0)
+    {
+        count++;
+        n /= 10;
+    }
+    printf("Digits: %d\n", count);
+    return 0;
+}`;
+	const DIGIT_SUM_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    /* TODO 1: loop while n is above 0 */
+    /* TODO 2: inside the loop, add the last digit of n to sum */
+    /* TODO 3: inside the loop, remove the last digit of n */
+
+    printf("Sum of digits: %d\n", sum);
+    return 0;
+}`;
+	const DIGIT_SUM_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    while (n > 0)
+    {
+        sum += n % 10;
+        n /= 10;
+    }
+
+    printf("Sum of digits: %d\n", sum);
+    return 0;
+}`;
+	const REVERSE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int reversed = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    /* TODO 1: loop while n is above 0 */
+    /* TODO 2: inside the loop, reversed becomes reversed * 10 plus the last digit of n */
+    /* TODO 3: inside the loop, remove the last digit of n */
+
+    printf("Reversed: %d\n", reversed);
+    return 0;
+}`;
+	const REVERSE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int reversed = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+
+    while (n > 0)
+    {
+        reversed = reversed * 10 + n % 10;
+        n /= 10;
+    }
+
+    printf("Reversed: %d\n", reversed);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "loops-digits",
+		title: "ספרות של מספר",
+		body: [
+			R`<p>ב"חילוק שלמים ושארית" ראיתם ש-<code>n % 10</code> הוא הספרה האחרונה ו-<code>n / 10</code> מוריד אותה. בלולאה זה עובר על כל הספרות, מהסוף להתחלה:</p>
+<table class="tbl"><tr><th>סיבוב</th><th>n</th><th>n % 10</th><th>n / 10</th></tr>
+<tr><td>1</td><td class="mono">1234</td><td class="mono">4</td><td class="mono">123</td></tr>
+<tr><td>2</td><td class="mono">123</td><td class="mono">3</td><td class="mono">12</td></tr>
+<tr><td>3</td><td class="mono">12</td><td class="mono">2</td><td class="mono">1</td></tr>
+<tr><td>4</td><td class="mono">1</td><td class="mono">1</td><td class="mono">0</td></tr></table>
+<p>כש-<code>n</code> מגיע ל-0 נגמרו הספרות. הדוגמה סופרת אותן.</p>`,
+			{
+				id: "loops-digits-count",
+				title: "כמה ספרות",
+				code: DIGITS_COUNT,
+				tests: [io("1234 has 4 digits", "", "Digits: 4")]
+			},
+			R`<p>תורכם: אותה לולאה, ובכל סיבוב מוסיפים את הספרה האחרונה לסכום.</p>`,
+			{
+				id: "loops-digits-sum",
+				title: "סכום הספרות",
+				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+				code: DIGIT_SUM_START,
+				solution: DIGIT_SUM_SOLVED,
+				tests: [
+					io("1234 gives 10", "1234\n", "Number: Sum of digits: 10"),
+					io("7 gives 7", "7\n", "Number: Sum of digits: 7"),
+					io("0 gives 0", "0\n", "Number: Sum of digits: 0"),
+					io("1000 gives 1", "1000\n", "Number: Sum of digits: 1")
+				]
+			},
+			R`<p>עוד אחת: היפוך מספר. בכל סיבוב מזיזים את מה שכבר הפכנו מקום אחד שמאלה (כפול 10), ומוסיפים את הספרה האחרונה.</p>
+<table class="tbl"><tr><th>סיבוב</th><th>n</th><th>reversed</th></tr>
+<tr><td>1</td><td class="mono">123</td><td class="mono">3</td></tr>
+<tr><td>2</td><td class="mono">12</td><td class="mono">32</td></tr>
+<tr><td>3</td><td class="mono">1</td><td class="mono">321</td></tr></table>`,
+			{
+				id: "loops-digits-reverse",
+				title: "היפוך מספר",
+				task: "השלימו את שלושת ה-TODO, לפי הסדר.",
+				code: REVERSE_START,
+				solution: REVERSE_SOLVED,
+				tests: [
+					io("123 gives 321", "123\n", "Number: Reversed: 321"),
+					io("120 gives 21", "120\n", "Number: Reversed: 21"),
+					io("7 gives 7", "7\n", "Number: Reversed: 7"),
+					io("1000 gives 1", "1000\n", "Number: Reversed: 1")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה הוא <code>1234 / 10</code>?",
+				o: [
+					"123.4",
+					"123",
+					"4"
+				],
+				a: 1,
+				w: "חילוק שלמים מוריד את הספרה האחרונה."
+			},
+			{
+				s: "כמה הוא <code>1234 % 10</code>?",
+				o: [
+					"4",
+					"123",
+					"1"
+				],
+				a: 0,
+				w: "<code>% 10</code> נותן את הספרה האחרונה."
+			},
+			{
+				s: "מריצים את \"כמה ספרות\" עם <code>n = 0</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
+				o: [
+					"הלולאה לא רצה בכלל",
+					"מודפס <code>Digits: 0</code>",
+					"מודפס <code>Digits: 1</code>"
+				],
+				a: 2,
+				w: "0 אינו גדול מ-0, ולכן הלולאה לא רצה ו-<code>count</code> נשאר 0."
+			}
+		]
+	}));
+	const BREAK_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 1; i <= 10; i++)
+    {
+        if (i == 4)
+        {
+            break;
+        }
+        printf("%d\n", i);
+    }
+    printf("after the loop\n");
+    return 0;
+}`;
+	const CONTINUE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 1; i <= 6; i++)
+    {
+        if (i % 2 == 0)
+        {
+            continue;
+        }
+        printf("%d\n", i);
+    }
+    return 0;
+}`;
+	const STOP_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum = 0;
+
+    printf("Numbers: ");
+    for (int i = 0; i < 10; i++)
+    {
+        scanf("%d", &n);
+        /* TODO: leave the loop when n is negative */
+        sum += n;
+    }
+
+    printf("Sum: %d\n", sum);
+    return 0;
+}`;
+	const STOP_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum = 0;
+
+    printf("Numbers: ");
+    for (int i = 0; i < 10; i++)
+    {
+        scanf("%d", &n);
+        if (n < 0)
+        {
+            break;
+        }
+        sum += n;
+    }
+
+    printf("Sum: %d\n", sum);
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "loops-break",
+		title: "עצירה ודילוג",
+		body: [
+			R`<p><code>break</code> יוצא מהלולאה מיד, גם כשהתנאי שלה עוד נכון. הריצה ממשיכה בשורה שאחרי הלולאה.</p>
+<p>כאן הלולאה אמורה לרוץ עד 10, אבל ב-4 היא נעצרת. <code>break</code> מוכר לכם מ"בחירה מתוך רשימה": שם הוא יצא מה-<code>switch</code>.</p>`,
+			{
+				id: "loops-break-stop",
+				title: "יוצאים באמצע",
+				code: BREAK_MAIN,
+				tests: [io("stops at 4", "", "1\n2\n3\nafter the loop")]
+			},
+			R`<p><code>continue</code> מדלג רק על <b>שאר הסיבוב הזה</b>, ועובר לסיבוב הבא. כאן המספרים הזוגיים מדולגים.</p>
+<table class="tbl"><tr><th>כותבים</th><th>מה קורה</th></tr>
+<tr><td class="mono">break;</td><td>יוצאים מכל הלולאה</td></tr>
+<tr><td class="mono">continue;</td><td>עוברים לסיבוב הבא</td></tr></table>`,
+			{
+				id: "loops-break-skip",
+				title: "מדלגים על סיבוב",
+				code: CONTINUE_MAIN,
+				tests: [io("only the odd numbers", "", "1\n3\n5")]
+			},
+			R`<p>תורכם: הלולאה קוראת עד עשרה מספרים ומחברת אותם. מספר שלילי מסמן "זהו": עוצרים, והוא לא נכנס לסכום.</p>`,
+			{
+				id: "loops-break-negative",
+				title: "עד המספר השלילי",
+				task: "במקום ה-TODO צאו מהלולאה כש-<code>n</code> שלילי, לפני שהוא נוסף לסכום.",
+				code: STOP_START,
+				solution: STOP_SOLVED,
+				tests: [
+					io("4 and 5, then -1 stops", "4 5 -1 100\n", "Numbers: Sum: 9"),
+					io("-2 first: nothing is added", "-2\n", "Numbers: Sum: 0"),
+					io("ten numbers and no negative", "1 2 3 4 5 6 7 8 9 10\n", "Numbers: Sum: 55")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "על מה מדלג <code>continue</code>?",
+				o: [
+					"על כל הלולאה",
+					"על שאר הסיבוב הנוכחי",
+					"על הסיבוב הבא"
+				],
+				a: 1,
+				w: "הריצה עוברת ישר לסיבוב הבא."
+			},
+			{
+				s: "מה מדפיסה הלולאה <code>for (int i = 1; i &lt;= 5; i++) { if (i == 3) { break; } printf(\"%d\", i); }</code>?",
+				o: [
+					"<code>12</code>",
+					"<code>1245</code>",
+					"<code>123</code>"
+				],
+				a: 0,
+				w: "כש-<code>i</code> הוא 3 יוצאים, לפני ההדפסה."
+			},
+			{
+				s: "איזו מהשורות הבאות, בתוך לולאה ב-<code>main</code>, <b>לא</b> עוצרת את הלולאה?",
+				o: [
+					"<code>break;</code>",
+					"<code>return 0;</code>",
+					"<code>continue;</code>"
+				],
+				a: 2,
+				w: "<code>continue</code> ממשיך לסיבוב הבא. <code>return</code> יוצא מכל <code>main</code>, ולכן גם מהלולאה."
+			}
+		]
+	}));
+	const GRID_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int row = 0; row < 3; row++)
+    {
+        for (int col = 0; col < 4; col++)
+        {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+	const TRIANGLE_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    for (int row = 1; row <= 4; row++)
+    {
+        for (int col = 1; col <= row; col++)
+        {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+	const TABLE_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    scanf("%d", &n);
+
+    /* TODO 1: an outer loop over row from 1 to n */
+    /* TODO 2: inside it, an inner loop over col from 1 to n that prints row * col with %4d */
+    /* TODO 3: after the inner loop, still inside the outer one, end the line */
+
+    return 0;
+}`;
+	const TABLE_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    scanf("%d", &n);
+
+    for (int row = 1; row <= n; row++)
+    {
+        for (int col = 1; col <= n; col++)
+        {
+            printf("%4d", row * col);
+        }
+        printf("\n");
+    }
+
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "loops-nested",
+		title: "לולאה בתוך לולאה",
+		body: [
+			R`<p>בתוך הגוף של לולאה אפשר לשים עוד לולאה. החיצונית עוברת על השורות, והפנימית מדפיסה את מה שבתוך כל שורה. אחרי הפנימית יורדים שורה.</p>
+<table class="tbl"><tr><th>לולאה</th><th>רצה</th><th>עושה</th></tr>
+<tr><td class="mono">row</td><td>3 פעמים</td><td>שורה אחת בכל סיבוב</td></tr>
+<tr><td class="mono">col</td><td>4 פעמים בכל שורה</td><td>כוכבית אחת בכל סיבוב</td></tr></table>`,
+			{
+				id: "loops-nested-grid",
+				title: "רשת של כוכביות",
+				code: GRID_MAIN,
+				tests: [io("3 rows of 4", "", "****\n****\n****")]
+			},
+			R`<p>הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. כאן היא רצה עד <code>row</code>, ולכן בכל שורה יש כוכבית אחת יותר.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b> ועקבו אחרי <code>row</code> ו-<code>col</code> בטבלה: <code>col</code> מתחיל מ-1 מחדש בכל שורה.</p>`,
+			{
+				id: "loops-nested-triangle",
+				title: "משולש",
+				code: TRIANGLE_MAIN,
+				tests: [io("1, 2, 3 and 4 stars", "", "*\n**\n***\n****")]
+			},
+			R`<p>תורכם: לוח הכפל בגודל <code>n</code>. כל מספר תופס 4 מקומות (<code>%4d</code>, ראיתם ב"רוחב ודיוק בהדפסה"), ולכן הטורים מיושרים.</p>`,
+			{
+				id: "loops-nested-table",
+				title: "לוח הכפל",
+				task: "השלימו את שלושת ה-TODO. התוכנית קוראת את <code>n</code> בלי שאלה, ומדפיסה <code>n</code> שורות.",
+				code: TABLE_START,
+				solution: TABLE_SOLVED,
+				tests: [
+					io("a 3 by 3 table", "3\n", "   1   2   3\n   2   4   6\n   3   6   9"),
+					io("a 1 by 1 table", "1\n", "   1"),
+					io("a 4 by 4 table", "4\n", "   1   2   3   4\n   2   4   6   8\n   3   6   9  12\n   4   8  12  16")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה כוכביות מדפיסה רשת של 3 שורות ו-4 טורים?",
+				o: [
+					"7",
+					"12",
+					"34"
+				],
+				a: 1,
+				w: "4 כוכביות בכל אחת מ-3 השורות."
+			},
+			{
+				s: "<code>for (r = 0; r &lt; 2; r++)</code> ובתוכה <code>for (c = 0; c &lt; 5; c++)</code>. כמה פעמים רץ הגוף של הפנימית?",
+				o: [
+					"7",
+					"10",
+					"5"
+				],
+				a: 1,
+				w: "5 פעמים בכל אחד מ-2 הסיבובים של החיצונית."
+			},
+			{
+				s: "איזה מהזוגות הבאים, חיצונית ובתוכה פנימית, <b>לא</b> מדפיס בדיוק 6 כוכביות?",
+				o: [
+					"<code>r &lt; 2</code> ובתוכה <code>c &lt; 3</code>",
+					"<code>r &lt; 3</code> ובתוכה <code>c &lt; 2</code>",
+					"<code>r &lt; 3</code> ובתוכה <code>c &lt; 3</code>"
+				],
+				a: 2,
+				w: "3 כפול 3 הם 9."
+			}
+		]
+	}));
+	const UNTIL_ZERO_START = R`/* TODO: write the whole program here */
+`;
+	const UNTIL_ZERO_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int count = 0;
+    int sum = 0;
+
+    printf("Numbers (0 ends): ");
+    scanf("%d", &n);
+    while (n != 0)
+    {
+        count++;
+        sum += n;
+        scanf("%d", &n);
+    }
+
+    if (count == 0)
+    {
+        printf("No numbers\n");
+    }
+    else
+    {
+        printf("Count: %d\n", count);
+        printf("Sum: %d\n", sum);
+        printf("Average: %.2f\n", (double)sum / count);
+    }
+    return 0;
+}`;
+	const SUM_TO_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum;
+
+    printf("n: ");
+    scanf("%d", &n);
+
+    /* TODO: three mistakes here; fix them so it prints 1 + 2 + ... + n */
+    for (int i = 1; i < n; i++)
+    {
+        sum = i;
+    }
+
+    printf("Sum: %d\n", sum);
+    return 0;
+}`;
+	const SUM_TO_SOLVED = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 0;
+    int sum = 0;
+
+    printf("n: ");
+    scanf("%d", &n);
+
+    for (int i = 1; i <= n; i++)
+    {
+        sum += i;
+    }
+
+    printf("Sum: %d\n", sum);
+    return 0;
+}`;
+	const ZERO_PROMPT = "Numbers (0 ends): ";
+	U.push(withOutputs({
+		id: "loops-review",
+		title: "חזרה: לולאות",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו תוכנית שקוראת מספרים שלמים עד שמגיע 0. ה-0 רק מסמן את הסוף, והוא לא אחד המספרים.</p>
+<table class="tbl"><tr><th>מקלידים</th><th>מודפס</th></tr>
+<tr><td class="mono">4 8 6 0</td><td class="mono">Count: 3<br>Sum: 18<br>Average: 6.00</td></tr>
+<tr><td class="mono">0</td><td class="mono">No numbers</td></tr></table>
+<p>השאלה, פעם אחת בהתחלה: <code>Numbers (0 ends): </code>. הממוצע עם שתי ספרות אחרי הנקודה.</p>`,
+			{
+				id: "loops-review-until-zero",
+				title: "עד שמגיע 0",
+				task: "בקובץ הריק כתבו תוכנית שלמה שקוראת מספרים עד 0, ומדפיסה כמה היו, את הסכום ואת הממוצע, או <code>No numbers</code>.",
+				code: UNTIL_ZERO_START,
+				solution: UNTIL_ZERO_SOLVED,
+				tests: [
+					io("4, 8 and 6", "4 8 6 0\n", ZERO_PROMPT + "Count: 3\nSum: 18\nAverage: 6.00"),
+					io("0 at once", "0\n", ZERO_PROMPT + "No numbers"),
+					io("negatives count too", "-5 5 1 0\n", ZERO_PROMPT + "Count: 3\nSum: 1\nAverage: 0.33"),
+					io("one number, one per line", "7\n0\n", ZERO_PROMPT + "Count: 1\nSum: 7\nAverage: 7.00")
+				]
+			},
+			R`<p>התוכנית ליד צריכה להדפיס את הסכום <code>1 + 2 + ... + n</code>. יש בה שלוש טעויות מהפרק הזה ומהפרקים שלפניו.</p>`,
+			{
+				id: "loops-review-sum-to",
+				title: "שלוש טעויות",
+				task: "מצאו ותקנו את שלוש הטעויות. עבור <code>4</code> מודפס <code>Sum: 10</code>.",
+				code: SUM_TO_START,
+				solution: SUM_TO_SOLVED,
+				tests: [
+					io("n = 4", "4\n", "n: Sum: 10"),
+					io("n = 1", "1\n", "n: Sum: 1"),
+					io("n = 10", "10\n", "n: Sum: 55"),
+					io("n = 0: nothing to add", "0\n", "n: Sum: 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>for (int i = 0; i &lt; 3; i++) { printf(\"%d\", i); }</code>?",
+				o: [
+					"<code>123</code>",
+					"<code>012</code>",
+					"<code>0123</code>"
+				],
+				a: 1,
+				w: "מ-0, כל עוד קטן מ-3."
+			},
+			{
+				s: "התנאי של <code>do-while</code> לא נכון מההתחלה. כמה פעמים רץ הבלוק?",
+				o: [
+					"0",
+					"1",
+					"2"
+				],
+				a: 1,
+				w: "הבדיקה באה אחרי הסיבוב הראשון."
+			},
+			{
+				s: "כמה הוא <code>345 % 10</code>?",
+				o: [
+					"34",
+					"5",
+					"3"
+				],
+				a: 1,
+				w: "הספרה האחרונה."
+			},
+			{
+				s: "מה עושה <code>continue</code>?",
+				o: [
+					"יוצא מהלולאה",
+					"עובר לסיבוב הבא",
+					"מתחיל את הלולאה מחדש"
+				],
+				a: 1,
+				w: "הוא מדלג על שאר הסיבוב הנוכחי."
+			},
+			{
+				s: "<code>int i = 10; while (i &gt; 0) { i -= 3; }</code>. כמה ב-<code>i</code> אחרי הלולאה?",
+				o: [
+					"1",
+					"0",
+					"-2"
+				],
+				a: 2,
+				w: "10, 7, 4, 1, ואז -2, שכבר אינו גדול מ-0."
+			},
+			{
+				s: "איזו מהלולאות הבאות <b>לא</b> מדפיסה את 1, 2 ו-3?",
+				o: [
+					"<code>for (int i = 1; i &lt;= 3; i++)</code>",
+					"<code>int i = 1; while (i &lt;= 3) { ...; i++; }</code>",
+					"<code>for (int i = 1; i &lt; 3; i++)</code>"
+				],
+				a: 2,
+				w: "<code>i &lt; 3</code> עוצר אחרי 2."
+			},
+			{
+				s: "מחשבים סכום בלולאה. איפה <b>לא</b> נכון לכתוב <code>sum = 0;</code>?",
+				o: [
+					"לפני הלולאה, בהכרזה",
+					"בתוך הלולאה",
+					"לפני הלולאה, בשורה משלו"
+				],
+				a: 1,
+				w: "בתוך הלולאה הסכום מתאפס בכל סיבוב."
 			}
 		]
 	}));
@@ -17918,6 +22529,38 @@ int main(void)
 		"c-types",
 		"c-types",
 		"c-types",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-io",
+		"c-ops",
+		"c-ops",
+		"c-ops",
+		"c-ops",
+		"c-ops",
+		"c-ops",
+		"c-ops",
+		"c-if",
+		"c-if",
+		"c-if",
+		"c-if",
+		"c-if",
+		"c-if",
+		"c-if",
+		"c-loops",
+		"c-loops",
+		"c-loops",
+		"c-loops",
+		"c-loops",
+		"c-loops",
+		"c-loops",
+		"c-loops",
 		"make",
 		"make",
 		"make",
@@ -17947,6 +22590,26 @@ window.LabCourse = {
 		{
 			id: "c-types",
 			title: "2. משתנים וטיפוסים",
+			public: true
+		},
+		{
+			id: "c-io",
+			title: "3. קלט ופלט",
+			public: true
+		},
+		{
+			id: "c-ops",
+			title: "4. חשבון ואופרטורים",
+			public: true
+		},
+		{
+			id: "c-if",
+			title: "5. תנאים",
+			public: true
+		},
+		{
+			id: "c-loops",
+			title: "6. לולאות",
 			public: true
 		},
 		{
@@ -38748,7 +43411,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 864a42b מ-2026-11-13 19:41, ועוד שינויים בקוד שעוד לא נכנסו ל-commit"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 864a42b+</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 04f8c9f מ-2026-11-13 20:54"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 04f8c9f</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
