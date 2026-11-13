@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-GysuRPubSwiv/Wl+1ovuLBi15yEG/MEMJLuIdueilCc=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-p3qFF8jcvcP/r75BQKahMlHTfhacda7xoSxSm8S4b9M=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -15237,6 +15237,12 @@ installCourseDiagrams({});
 		stdin,
 		expect
 	});
+	const unit = (name, harness, stdin) => ({
+		type: "unit",
+		name,
+		harness,
+		stdin
+	});
 	const escapeText = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	const ioBlock = (label, text) => "<b>" + label + "</b><pre class=\"code-static\">" + String(text).replace(/\n$/, "").split("\n").map((line) => "<span>" + (escapeText(line) || " ") + "</span>").join("") + "</pre>";
 	const outputExample = (output, input) => "<br>" + (input ? ioBlock("קלט לדוגמה", input) : "") + ioBlock("פלט לדוגמה", output);
@@ -20638,9 +20644,10 @@ int main(void)
 			}
 		]
 	}));
-	const CALC_START = R`/* TODO: write the whole program here */
+	{
+		const CALC_START = R`/* TODO: write the whole program here */
 `;
-	const CALC_SOLVED = R`#include <stdio.h>
+		const CALC_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -20678,7 +20685,7 @@ int main(void)
     }
     return 0;
 }`;
-	const TICKET_START = R`#include <stdio.h>
+		const TICKET_START = R`#include <stdio.h>
 
 int main(void)
 {
@@ -20709,7 +20716,7 @@ int main(void)
     }
     return 0;
 }`;
-	const TICKET_SOLVED = R`#include <stdio.h>
+		const TICKET_SOLVED = R`#include <stdio.h>
 
 int main(void)
 {
@@ -20739,110 +20746,111 @@ int main(void)
     }
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "if-review",
-		title: "חזרה: תנאים",
-		body: [
-			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו מחשבון: הוא קורא מספר שלם, סימן ועוד מספר שלם, למשל <code>6 * 3</code>, ומדפיס את התוצאה.</p>
+		U.push(withOutputs({
+			id: "if-review",
+			title: "חזרה: תנאים",
+			body: [
+				R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו מחשבון: הוא קורא מספר שלם, סימן ועוד מספר שלם, למשל <code>6 * 3</code>, ומדפיס את התוצאה.</p>
 <table class="tbl"><tr><th>מקלידים</th><th>מודפס</th></tr>
 <tr><td class="mono">6 * 3</td><td class="mono">6 * 3 = 18</td></tr>
 <tr><td class="mono">7 / 2</td><td class="mono">7 / 2 = 3</td></tr>
 <tr><td class="mono">4 / 0</td><td class="mono">Cannot divide by 0</td></tr>
 <tr><td class="mono">2 x 3</td><td class="mono">Unknown operator</td></tr></table>
 <p>השאלה: <code>Expression: </code>. הסימנים: <code>+</code>, <code>-</code>, <code>*</code> ו-<code>/</code>. את הסימן קוראים לתוך <code>char</code> עם <code>%c</code> (ראיתם ב"קריאת תו").</p>`,
-			{
-				id: "if-review-calc",
-				title: "מחשבון",
-				task: "בקובץ הריק כתבו תוכנית שלמה: קראו את התרגיל, חשבו אותו והדפיסו את השורה שבטבלה.",
-				code: CALC_START,
-				solution: CALC_SOLVED,
-				tests: [
-					io("6 * 3", "6 * 3\n", "Expression: 6 * 3 = 18"),
-					io("7 / 2 in whole numbers", "7 / 2\n", "Expression: 7 / 2 = 3"),
-					io("5 - 9 below zero", "5 - 9\n", "Expression: 5 - 9 = -4"),
-					io("10 + 15", "10 + 15\n", "Expression: 10 + 15 = 25"),
-					io("4 / 0 cannot be divided", "4 / 0\n", "Expression: Cannot divide by 0"),
-					io("x is not an operator", "2 x 3\n", "Expression: Unknown operator")
-				]
-			},
-			R`<p>כרטיס לילד עד גיל 12 עולה 20, לבן 65 ומעלה 25, ולכל השאר 40, שהוא "מחיר מלא". בתוכנית ליד יש שתי טעויות מהפרק הזה.</p>`,
-			{
-				id: "if-review-ticket",
-				title: "מחיר כרטיס",
-				task: "מצאו ותקנו את שתי הטעויות. רק מחיר של 40 מדפיס גם <code>Full price</code>.",
-				code: TICKET_START,
-				solution: TICKET_SOLVED,
-				tests: [
-					io("8 is a child", "8\n", "Age: Price: 20"),
-					io("65 is a senior", "65\n", "Age: Price: 25"),
-					io("30 pays full price", "30\n", "Age: Price: 40\nFull price"),
-					io("70 is a senior", "70\n", "Age: Price: 25")
-				]
-			}
-		],
-		quiz: [
-			{
-				s: "<code>int x = 3;</code>. האם הבלוק של <code>if (x = 0)</code> רץ?",
-				o: [
-					"כן, כי זו השמה",
-					"לא: <code>x</code> מקבל 0, והתנאי הוא 0",
-					"כן, כי <code>x</code> היה 3"
-				],
-				a: 1,
-				w: "השמה נותנת את הערך שהושם. כאן הוא 0, כלומר לא נכון."
-			},
-			{
-				s: "כמה הוא <code>5 &gt; 3 &amp;&amp; 2 &gt; 4</code>?",
-				o: [
-					"1",
-					"0",
-					"2"
-				],
-				a: 1,
-				w: "<code>2 &gt; 4</code> לא נכון, ולכן כל ה-<code>&amp;&amp;</code> לא נכון."
-			},
-			{
-				s: "כמה הוא <code>!0</code>?",
-				o: [
-					"0",
-					"1",
-					"-1"
-				],
-				a: 1,
-				w: "0 הוא \"לא נכון\", ו-<code>!</code> הופך אותו ל-1."
-			},
-			{
-				s: "ב-<code>switch</code> עם <code>case 1:</code> ו-<code>case 2:</code>, בלי <code>break</code> בסוף <code>case 1</code>. מה רץ כשהערך 1?",
-				o: [
-					"רק <code>case 1</code>",
-					"<code>case 1</code> וגם <code>case 2</code>",
-					"רק <code>default</code>"
-				],
-				a: 1,
-				w: "בלי <code>break</code> הריצה ממשיכה אל ה-<code>case</code> הבא."
-			},
-			{
-				s: "<code>int n = 10;</code>. איזה מה-<code>if</code>-ים הבאים <b>לא</b> ידפיס <code>ok</code>?",
-				o: [
-					"<code>if (n % 2 == 0) { printf(\"ok\"); }</code>",
-					"<code>if (n &gt; 5 || n &lt; 0) { printf(\"ok\"); }</code>",
-					"<code>if (n &gt; 5 &amp;&amp; n &lt; 10) { printf(\"ok\"); }</code>"
-				],
-				a: 2,
-				w: "10 אינו קטן מ-10, ולכן ה-<code>&amp;&amp;</code> לא נכון."
-			},
-			{
-				s: "איזה מהמשפטים הבאים על <code>else</code> <b>אינו</b> נכון?",
-				o: [
-					"<code>else</code> רץ רק כשהתנאי של ה-<code>if</code> לא נכון",
-					"<code>else</code> בא מיד אחרי הבלוק של <code>if</code>",
-					"אפשר לכתוב תנאי בסוגריים מיד אחרי <code>else</code>, כמו <code>else (x &gt; 3)</code>"
-				],
-				a: 2,
-				w: "ל-<code>else</code> אין תנאי משלו. בשביל תנאי נוסף כותבים <code>else if</code>."
-			}
-		]
-	}));
+				{
+					id: "if-review-calc",
+					title: "מחשבון",
+					task: "בקובץ הריק כתבו תוכנית שלמה: קראו את התרגיל, חשבו אותו והדפיסו את השורה שבטבלה.",
+					code: CALC_START,
+					solution: CALC_SOLVED,
+					tests: [
+						io("6 * 3", "6 * 3\n", "Expression: 6 * 3 = 18"),
+						io("7 / 2 in whole numbers", "7 / 2\n", "Expression: 7 / 2 = 3"),
+						io("5 - 9 below zero", "5 - 9\n", "Expression: 5 - 9 = -4"),
+						io("10 + 15", "10 + 15\n", "Expression: 10 + 15 = 25"),
+						io("4 / 0 cannot be divided", "4 / 0\n", "Expression: Cannot divide by 0"),
+						io("x is not an operator", "2 x 3\n", "Expression: Unknown operator")
+					]
+				},
+				R`<p>כרטיס לילד עד גיל 12 עולה 20, לבן 65 ומעלה 25, ולכל השאר 40, שהוא "מחיר מלא". בתוכנית ליד יש שתי טעויות מהפרק הזה.</p>`,
+				{
+					id: "if-review-ticket",
+					title: "מחיר כרטיס",
+					task: "מצאו ותקנו את שתי הטעויות. רק מחיר של 40 מדפיס גם <code>Full price</code>.",
+					code: TICKET_START,
+					solution: TICKET_SOLVED,
+					tests: [
+						io("8 is a child", "8\n", "Age: Price: 20"),
+						io("65 is a senior", "65\n", "Age: Price: 25"),
+						io("30 pays full price", "30\n", "Age: Price: 40\nFull price"),
+						io("70 is a senior", "70\n", "Age: Price: 25")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "<code>int x = 3;</code>. האם הבלוק של <code>if (x = 0)</code> רץ?",
+					o: [
+						"כן, כי זו השמה",
+						"לא: <code>x</code> מקבל 0, והתנאי הוא 0",
+						"כן, כי <code>x</code> היה 3"
+					],
+					a: 1,
+					w: "השמה נותנת את הערך שהושם. כאן הוא 0, כלומר לא נכון."
+				},
+				{
+					s: "כמה הוא <code>5 &gt; 3 &amp;&amp; 2 &gt; 4</code>?",
+					o: [
+						"1",
+						"0",
+						"2"
+					],
+					a: 1,
+					w: "<code>2 &gt; 4</code> לא נכון, ולכן כל ה-<code>&amp;&amp;</code> לא נכון."
+				},
+				{
+					s: "כמה הוא <code>!0</code>?",
+					o: [
+						"0",
+						"1",
+						"-1"
+					],
+					a: 1,
+					w: "0 הוא \"לא נכון\", ו-<code>!</code> הופך אותו ל-1."
+				},
+				{
+					s: "ב-<code>switch</code> עם <code>case 1:</code> ו-<code>case 2:</code>, בלי <code>break</code> בסוף <code>case 1</code>. מה רץ כשהערך 1?",
+					o: [
+						"רק <code>case 1</code>",
+						"<code>case 1</code> וגם <code>case 2</code>",
+						"רק <code>default</code>"
+					],
+					a: 1,
+					w: "בלי <code>break</code> הריצה ממשיכה אל ה-<code>case</code> הבא."
+				},
+				{
+					s: "<code>int n = 10;</code>. איזה מה-<code>if</code>-ים הבאים <b>לא</b> ידפיס <code>ok</code>?",
+					o: [
+						"<code>if (n % 2 == 0) { printf(\"ok\"); }</code>",
+						"<code>if (n &gt; 5 || n &lt; 0) { printf(\"ok\"); }</code>",
+						"<code>if (n &gt; 5 &amp;&amp; n &lt; 10) { printf(\"ok\"); }</code>"
+					],
+					a: 2,
+					w: "10 אינו קטן מ-10, ולכן ה-<code>&amp;&amp;</code> לא נכון."
+				},
+				{
+					s: "איזה מהמשפטים הבאים על <code>else</code> <b>אינו</b> נכון?",
+					o: [
+						"<code>else</code> רץ רק כשהתנאי של ה-<code>if</code> לא נכון",
+						"<code>else</code> בא מיד אחרי הבלוק של <code>if</code>",
+						"אפשר לכתוב תנאי בסוגריים מיד אחרי <code>else</code>, כמו <code>else (x &gt; 3)</code>"
+					],
+					a: 2,
+					w: "ל-<code>else</code> אין תנאי משלו. בשביל תנאי נוסף כותבים <code>else if</code>."
+				}
+			]
+		}));
+	}
 	const WHILE_UP = R`#include <stdio.h>
 
 int main(void)
@@ -22043,6 +22051,1359 @@ int main(void)
 			}
 		]
 	}));
+	const REPEAT_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    printf("----------\n");
+    printf("Hello\n");
+    printf("----------\n");
+    printf("Bye\n");
+    printf("----------\n");
+    return 0;
+}`;
+	const LINE_MAIN = R`#include <stdio.h>
+
+void printLine(void)
+{
+    printf("----------\n");
+}
+
+int main(void)
+{
+    printLine();
+    printf("Hello\n");
+    printLine();
+    printf("Bye\n");
+    printLine();
+    return 0;
+}`;
+	const CARD_START = R`#include <stdio.h>
+
+void printLine(void)
+{
+    printf("----------\n");
+}
+
+int main(void)
+{
+    /* TODO 1: call printLine */
+    printf("Name: Dana\n");
+    /* TODO 2: call printLine */
+    printf("Age: 21\n");
+    /* TODO 3: call printLine */
+    return 0;
+}`;
+	const CARD_SOLVED = R`#include <stdio.h>
+
+void printLine(void)
+{
+    printf("----------\n");
+}
+
+int main(void)
+{
+    printLine();
+    printf("Name: Dana\n");
+    printLine();
+    printf("Age: 21\n");
+    printLine();
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-why",
+		title: "למה פונקציות",
+		body: [
+			R`<p>בתוכנית הזאת אותה שורה כתובה שלוש פעמים. אם רוצים קו אחר, צריך לתקן שלושה מקומות, ובתוכנית גדולה קל לפספס אחד.</p>`,
+			{
+				id: "func-why-repeat",
+				title: "אותה שורה שוב ושוב",
+				code: REPEAT_MAIN,
+				tests: [io("a line, Hello, a line, Bye, a line", "", "----------\nHello\n----------\nBye\n----------")]
+			},
+			R`<p><b>פונקציה</b> היא כמה שורות עם שם. כותבים אותן פעם אחת, מעל <code>main</code>, ו<b>קוראים</b> להן בשם ובסוגריים: <code>printLine();</code>.</p>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td><code>void printLine(void)</code></td><td>השם של הפונקציה (פירוט בשיעור הבא)</td></tr>
+<tr><td><code>{ ... }</code></td><td>השורות שרצות בכל קריאה</td></tr>
+<tr><td><code>printLine();</code></td><td>קריאה: מריצים את השורות האלה עכשיו</td></tr></table>
+<p>הפלט זהה לתוכנית הקודמת. כדי לשנות את הקו, משנים שורה אחת.</p>`,
+			{
+				id: "func-why-line",
+				title: "פונקציה שמציירת קו",
+				code: LINE_MAIN,
+				tests: [io("the same output with printLine", "", "----------\nHello\n----------\nBye\n----------")]
+			},
+			R`<p>תורכם: הפונקציה כבר כתובה. נשאר לקרוא לה.</p>`,
+			{
+				id: "func-why-card",
+				title: "שלוש קריאות",
+				task: "השלימו את שלושת ה-TODO: בכל אחד קראו ל-<code>printLine</code>.",
+				code: CARD_START,
+				solution: CARD_SOLVED,
+				tests: [io("lines around the name and the age", "", "----------\nName: Dana\n----------\nAge: 21\n----------")]
+			}
+		],
+		quiz: [
+			{
+				s: "כתבו פונקציה, אבל אף פעם לא קראו לה. מה קורה?",
+				o: [
+					"היא רצה פעם אחת בהתחלה",
+					"השורות שלה לא רצות",
+					"gcc לא מקמפל את התוכנית"
+				],
+				a: 1,
+				w: "פונקציה רצה רק כשקוראים לה."
+			},
+			{
+				s: "איך קוראים לפונקציה <code>printLine</code>?",
+				o: [
+					"<code>printLine();</code>",
+					"<code>void printLine;</code>",
+					"<code>call printLine;</code>"
+				],
+				a: 0,
+				w: "השם, סוגריים ונקודה-פסיק."
+			},
+			{
+				s: "איזו מהשורות הבאות <b>לא</b> קוראת ל-<code>printLine</code>? היא מתקמפלת, אבל לא מריצה כלום.",
+				o: [
+					"<code>printLine();</code>",
+					"<code>printLine( );</code>",
+					"<code>printLine;</code>"
+				],
+				a: 2,
+				w: "בלי סוגריים זו לא קריאה. רק השם לבד לא מריץ את הפונקציה."
+			}
+		]
+	}));
+	const GREET_MAIN = R`#include <stdio.h>
+
+void greet(void)
+{
+    printf("Hello!\n");
+    printf("Welcome to C\n");
+}
+
+int main(void)
+{
+    printf("Start\n");
+    greet();
+    printf("End\n");
+    return 0;
+}`;
+	const CALLS_MAIN = R`#include <stdio.h>
+
+void sayA(void)
+{
+    printf("A\n");
+}
+
+void sayB(void)
+{
+    printf("B\n");
+    sayA();
+}
+
+int main(void)
+{
+    sayB();
+    sayA();
+    return 0;
+}`;
+	const BOX_START = R`#include <stdio.h>
+
+void printBox(void)
+{
+    /* TODO 1: print +---+ */
+    /* TODO 2: print |   | */
+    /* TODO 3: print +---+ */
+}
+
+int main(void)
+{
+    printBox();
+    printBox();
+    return 0;
+}`;
+	const BOX_SOLVED = R`#include <stdio.h>
+
+void printBox(void)
+{
+    printf("+---+\n");
+    printf("|   |\n");
+    printf("+---+\n");
+}
+
+int main(void)
+{
+    printBox();
+    printBox();
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-void",
+		title: "פונקציה בלי ערך מוחזר",
+		body: [
+			R`<p>השורה הראשונה של פונקציה אומרת מה היא מקבלת ומה היא מחזירה:</p>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td><code>void</code> בהתחלה</td><td>הפונקציה לא מחזירה ערך</td></tr>
+<tr><td><code>greet</code></td><td>השם שלה</td></tr>
+<tr><td><code>(void)</code></td><td>היא לא מקבלת כלום</td></tr></table>
+<p>הריצו: <code>Start</code>, השורות של <code>greet</code>, ואז <code>End</code>.</p>`,
+			{
+				id: "func-void-greet",
+				title: "greet",
+				code: GREET_MAIN,
+				tests: [io("Start, the greeting, End", "", "Start\nHello!\nWelcome to C\nEnd")]
+			},
+			R`<p>בסוף פונקציה, הריצה חוזרת לשורה <b>שאחרי</b> הקריאה. גם פונקציה יכולה לקרוא לפונקציה אחרת.</p>
+<p>לחצו <b>⏯ שורה אחר שורה</b>: <code>sayB</code> נכנסת אל <code>sayA</code>, חוזרת ל-<code>sayB</code>, ומשם ל-<code>main</code>. בטבלת המשתנים רואים את הפונקציה שרצה עכשיו.</p>`,
+			{
+				id: "func-void-calls",
+				title: "הלוך וחזור",
+				code: CALLS_MAIN,
+				tests: [io("B, then A from inside sayB, then A again", "", "B\nA\nA")]
+			},
+			R`<p>תורכם: הפעם כותבים את הגוף של הפונקציה. <code>main</code> כבר קורא לה פעמיים.</p>`,
+			{
+				id: "func-void-box",
+				title: "printBox",
+				task: "השלימו את שלושת ה-TODO בתוך <code>printBox</code>, שורה בכל אחד.",
+				code: BOX_START,
+				solution: BOX_SOLVED,
+				tests: [io("two boxes", "", "+---+\n|   |\n+---+\n+---+\n|   |\n+---+")]
+			}
+		],
+		quiz: [
+			{
+				s: "לאן חוזרת הריצה בסוף פונקציה?",
+				o: [
+					"להתחלה של <code>main</code>",
+					"לשורה שאחרי הקריאה",
+					"לסוף התוכנית"
+				],
+				a: 1,
+				w: "היא ממשיכה מהמקום שבו קראו לפונקציה."
+			},
+			{
+				s: "מה אומר ה-<code>void</code> שבתחילת <code>void greet(void)</code>?",
+				o: [
+					"שהפונקציה ריקה",
+					"שהיא לא מחזירה ערך",
+					"שאסור לקרוא לה"
+				],
+				a: 1,
+				w: "<code>void</code> לפני השם: אין ערך מוחזר."
+			},
+			{
+				s: "איזה מהמשפטים הבאים על פונקציית <code>void</code> <b>אינו</b> נכון?",
+				o: [
+					"אפשר לקרוא לה כמה פעמים",
+					"היא יכולה להדפיס",
+					"היא מחזירה מספר למי שקרא לה"
+				],
+				a: 2,
+				w: "<code>void</code> פירושו שאין ערך מוחזר."
+			}
+		]
+	}));
+	const STARS_MAIN = R`#include <stdio.h>
+
+void printStars(int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf("*");
+    }
+    printf("\n");
+}
+
+int main(void)
+{
+    printStars(3);
+    printStars(5);
+    printStars(1);
+    return 0;
+}`;
+	const SUM_TWO_MAIN = R`#include <stdio.h>
+
+void printSum(int a, int b)
+{
+    printf("%d + %d = %d\n", a, b, a + b);
+}
+
+int main(void)
+{
+    printSum(2, 3);
+    printSum(10, -4);
+    return 0;
+}`;
+	const ROW_START = R`#include <stdio.h>
+
+void printRow(char c, int n)
+{
+    /* TODO 1: repeat n times */
+    /* TODO 2: inside the loop, print c */
+    /* TODO 3: after the loop, end the line */
+}
+
+int main(void)
+{
+    char c = '?';
+    int n = 0;
+
+    printf("Character and count: ");
+    scanf(" %c %d", &c, &n);
+    printRow(c, n);
+    return 0;
+}`;
+	const ROW_SOLVED = R`#include <stdio.h>
+
+void printRow(char c, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf("%c", c);
+    }
+    printf("\n");
+}
+
+int main(void)
+{
+    char c = '?';
+    int n = 0;
+
+    printf("Character and count: ");
+    scanf(" %c %d", &c, &n);
+    printRow(c, n);
+    return 0;
+}`;
+	const ROW_PROMPT = "Character and count: ";
+	U.push(withOutputs({
+		id: "func-params",
+		title: "פרמטרים",
+		body: [
+			R`<p>פונקציה יכולה לקבל ערכים. <code>int n</code> בסוגריים הוא <b>פרמטר</b>: משתנה של הפונקציה, שמי שקורא לה ממלא.</p>
+<table class="tbl"><tr><th>קריאה</th><th>n בתוך הפונקציה</th><th>מודפס</th></tr>
+<tr><td><code>printStars(3);</code></td><td class="mono">3</td><td class="mono">***</td></tr>
+<tr><td><code>printStars(5);</code></td><td class="mono">5</td><td class="mono">*****</td></tr></table>`,
+			{
+				id: "func-params-stars",
+				title: "כמה כוכביות",
+				code: STARS_MAIN,
+				tests: [io("3, 5 and 1 stars", "", "***\n*****\n*")]
+			},
+			R`<p>כמה פרמטרים מפרידים בפסיק. בקריאה, הערכים נכנסים לפי הסדר: הראשון ל-<code>a</code>, השני ל-<code>b</code>, כמו ב-<code>printf</code>.</p>`,
+			{
+				id: "func-params-two",
+				title: "שני פרמטרים",
+				code: SUM_TWO_MAIN,
+				tests: [io("2 + 3 and 10 + -4", "", "2 + 3 = 5\n10 + -4 = 6")]
+			},
+			R`<p>תורכם: כמו <code>printStars</code>, אבל גם התו מגיע כפרמטר.</p>`,
+			{
+				id: "func-params-row",
+				title: "printRow",
+				task: "השלימו את שלושת ה-TODO בתוך <code>printRow</code>: הדפיסו את <code>c</code> בדיוק <code>n</code> פעמים, ואז ירידת שורה.",
+				code: ROW_START,
+				solution: ROW_SOLVED,
+				tests: [
+					io("# four times", "# 4\n", ROW_PROMPT + "####"),
+					io("= six times", "= 6\n", ROW_PROMPT + "======"),
+					io("x once", "x 1\n", ROW_PROMPT + "x")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה נכנס לפרמטר של פונקציה?",
+				o: [
+					"הערך שמי שקרא לה נתן",
+					"תמיד 0",
+					"מה שהמשתמש מקליד"
+				],
+				a: 0,
+				w: "הקריאה ממלאת את הפרמטרים, לפי הסדר."
+			},
+			{
+				s: "מה מדפיסה <code>printSum(4, 1);</code>?",
+				o: [
+					"<code>4 + 1 = 5</code>",
+					"<code>1 + 4 = 5</code>",
+					"<code>a + b = 5</code>"
+				],
+				a: 0,
+				w: "4 נכנס ל-<code>a</code> ו-1 ל-<code>b</code>."
+			},
+			{
+				s: "הפונקציה היא <code>void printSum(int a, int b)</code>, ו-<code>x</code> הוא <code>int</code>. איזו מהקריאות הבאות <b>לא</b> תתקמפל?",
+				o: [
+					"<code>printSum(1, 2);</code>",
+					"<code>printSum(x, 3);</code>",
+					"<code>printSum(5);</code>"
+				],
+				a: 2,
+				w: "הפונקציה צריכה שני ערכים, וכאן יש רק אחד."
+			}
+		]
+	}));
+	const SQUARE_MAIN = R`#include <stdio.h>
+
+int square(int x)
+{
+    return x * x;
+}
+
+int main(void)
+{
+    int s = square(4);
+    printf("%d\n", s);
+    printf("%d\n", square(9));
+    printf("%d\n", square(2) + square(3));
+    return 0;
+}`;
+	const PRINT_OR_RETURN = R`#include <stdio.h>
+
+void printSquare(int x)
+{
+    printf("%d\n", x * x);
+}
+
+int square(int x)
+{
+    return x * x;
+}
+
+int main(void)
+{
+    printSquare(5);
+    int y = square(5) + 1;
+    printf("%d\n", y);
+    return 0;
+}`;
+	const SEVEN_START = R`#include <stdio.h>
+
+int square(int x)
+{
+    return x * x;
+}
+
+int main(void)
+{
+    /* TODO: print square(7) */
+
+    return 0;
+}`;
+	const SEVEN_SOLVED = R`#include <stdio.h>
+
+int square(int x)
+{
+    return x * x;
+}
+
+int main(void)
+{
+    printf("%d\n", square(7));
+
+    return 0;
+}`;
+	const MAX2_START = R`#include <stdio.h>
+
+int maxOf2(int a, int b)
+{
+    /* TODO 1: if a is at least b, return a */
+    /* TODO 2: otherwise, return b */
+    return 0;
+}
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    printf("Larger: %d\n", maxOf2(a, b));
+    return 0;
+}`;
+	const MAX2_SOLVED = R`#include <stdio.h>
+
+int maxOf2(int a, int b)
+{
+    if (a >= b)
+    {
+        return a;
+    }
+    return b;
+}
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    printf("Larger: %d\n", maxOf2(a, b));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-return",
+		title: "ערך מוחזר",
+		body: [
+			R`<p>פונקציה יכולה גם <b>להחזיר</b> ערך. הטיפוס שלפני השם אומר איזה, ו-<code>return</code> מחזיר אותו. במקום הקריאה מופיע הערך שחזר.</p>
+<table class="tbl"><tr><th>קריאה</th><th>שווה ל</th></tr>
+<tr><td><code>square(4)</code></td><td class="mono">16</td></tr>
+<tr><td><code>square(2) + square(3)</code></td><td class="mono">4 + 9</td></tr></table>`,
+			{
+				id: "func-return-square",
+				title: "square",
+				code: SQUARE_MAIN,
+				tests: [io("16, 81 and 13", "", "16\n81\n13")]
+			},
+			R`<p><code>printf</code> בתוך פונקציה רק מראה את הערך במסך. <code>return</code> נותן אותו למי שקרא, שיכול להמשיך לחשב איתו.</p>
+<table class="tbl"><tr><th>פונקציה</th><th>מה מי שקרא מקבל</th></tr>
+<tr><td><code>printSquare(5)</code></td><td>כלום: 25 רק מודפס</td></tr>
+<tr><td><code>square(5)</code></td><td>25, שאפשר להוסיף לו 1</td></tr></table>`,
+			{
+				id: "func-return-print",
+				title: "להדפיס או להחזיר",
+				code: PRINT_OR_RETURN,
+				tests: [io("25 printed, then 26 computed", "", "25\n26")]
+			},
+			R`<p>תורכם: שורה אחת שקוראת ל-<code>square</code> ומדפיסה את מה שחזר.</p>`,
+			{
+				id: "func-return-seven",
+				title: "הריבוע של 7",
+				task: "במקום ה-TODO הדפיסו את <code>square(7)</code>.",
+				code: SEVEN_START,
+				solution: SEVEN_SOLVED,
+				tests: [io("prints 49", "", "49"), {
+					type: "src",
+					name: "the 49 comes from square",
+					forbid: "\\b49\\b",
+					msg: "Print square(7) instead of typing 49."
+				}]
+			},
+			R`<p>עוד אחת: פונקציה שמחזירה את הגדול מבין שניים. <code>return</code> יוצא מהפונקציה מיד, כמו ב-<code>main</code> ("קוד היציאה ו-return 0").</p>`,
+			{
+				id: "func-return-max",
+				title: "maxOf2",
+				task: "השלימו את שני ה-TODO בתוך <code>maxOf2</code>.",
+				code: MAX2_START,
+				solution: MAX2_SOLVED,
+				tests: [unit("maxOf2", R`
+int maxOf2(int a, int b);
+int main(void)
+{
+    T_INT("maxOf2(3, 9)", maxOf2(3, 9), 9);
+    T_INT("maxOf2(9, 3)", maxOf2(9, 3), 9);
+    T_INT("maxOf2(5, 5)", maxOf2(5, 5), 5);
+    T_INT("maxOf2(-2, -7)", maxOf2(-2, -7), -2);
+    return 0;
+}`), io("main prints the larger", "3 9\n", "Two numbers: Larger: 9")]
+			}
+		],
+		quiz: [
+			{
+				s: "פונקציה מדפיסה ערך עם <code>printf</code>, ולא כתוב בה <code>return</code> עם ערך. מה מקבל מי שקרא לה?",
+				o: [
+					"את הערך שהודפס",
+					"כלום",
+					"תמיד 0"
+				],
+				a: 1,
+				w: "<code>printf</code> רק מדפיס. ערך חוזר רק עם <code>return</code>."
+			},
+			{
+				s: "כמה הוא <code>square(3) + 1</code>?",
+				o: [
+					"10",
+					"16",
+					"7"
+				],
+				a: 0,
+				w: "<code>square(3)</code> הוא 9, ועוד 1."
+			},
+			{
+				s: "<code>int y;</code> הוכרז. איזו מהשורות הבאות <b>לא</b> תשים 25 ב-<code>y</code>?",
+				o: [
+					"<code>y = square(5);</code>",
+					"<code>y = 5 * 5;</code>",
+					"<code>y = printSquare(5);</code>"
+				],
+				a: 2,
+				w: "<code>printSquare</code> היא <code>void</code>: אין לה ערך לשים ב-<code>y</code>, ו-gcc לא מקמפל את השורה."
+			}
+		]
+	}));
+	const PROTO_MAIN = R`#include <stdio.h>
+
+int cube(int x);
+
+int main(void)
+{
+    printf("%d\n", cube(3));
+    printf("%d\n", cube(-2));
+    return 0;
+}
+
+int cube(int x)
+{
+    return x * x * x;
+}`;
+	const HALF_START = R`#include <stdio.h>
+
+/* TODO: add the prototype of half here */
+
+int main(void)
+{
+    printf("%.2f\n", half(10));
+    printf("%.2f\n", half(7));
+    return 0;
+}
+
+double half(int n)
+{
+    return n / 2.0;
+}`;
+	const HALF_SOLVED = R`#include <stdio.h>
+
+double half(int n);
+
+int main(void)
+{
+    printf("%.2f\n", half(10));
+    printf("%.2f\n", half(7));
+    return 0;
+}
+
+double half(int n)
+{
+    return n / 2.0;
+}`;
+	const POWER_START = R`#include <stdio.h>
+
+int power(int base, int exp);
+
+int main(void)
+{
+    int base = 0;
+    int exp = 0;
+
+    printf("Base and exponent: ");
+    scanf("%d %d", &base, &exp);
+    printf("Result: %d\n", power(base, exp));
+    return 0;
+}
+
+int power(int base, int exp)
+{
+    /* TODO 1: start a result at 1 */
+    /* TODO 2: multiply it by base, exp times */
+    /* TODO 3: return the result */
+    return 0;
+}`;
+	const POWER_SOLVED = R`#include <stdio.h>
+
+int power(int base, int exp);
+
+int main(void)
+{
+    int base = 0;
+    int exp = 0;
+
+    printf("Base and exponent: ");
+    scanf("%d %d", &base, &exp);
+    printf("Result: %d\n", power(base, exp));
+    return 0;
+}
+
+int power(int base, int exp)
+{
+    int result = 1;
+    for (int i = 0; i < exp; i++)
+    {
+        result *= base;
+    }
+    return result;
+}`;
+	U.push(withOutputs({
+		id: "func-proto",
+		title: "אב טיפוס",
+		body: [
+			R`<p>gcc קורא את הקובץ מלמעלה למטה. כש-<code>main</code> קורא לפונקציה שמוגדרת רק <b>אחריו</b>, gcc עוד לא מכיר אותה ועוצר:</p>
+<pre class="code-static"><span>error: implicit declaration of function 'cube'</span></pre>
+<p>התיקון הוא <b>אב טיפוס</b>: השורה הראשונה של הפונקציה, עם <code>;</code> בסוף, מעל <code>main</code>. היא מספרת ל-gcc את השם, הפרמטרים והטיפוס המוחזר. הגוף יכול לבוא אחר כך.</p>`,
+			{
+				id: "func-proto-cube",
+				title: "השורה שלמעלה",
+				code: PROTO_MAIN,
+				tests: [io("cube(3) and cube(-2)", "", "27\n-8")]
+			},
+			R`<p>תורכם: כאן חסר אב הטיפוס של <code>half</code>. העתיקו את השורה הראשונה שלה, והוסיפו <code>;</code>.</p>`,
+			{
+				id: "func-proto-half",
+				title: "אב הטיפוס החסר",
+				task: "במקום ה-TODO כתבו את אב הטיפוס של <code>half</code>.",
+				code: HALF_START,
+				solution: HALF_SOLVED,
+				tests: [io("half(10) and half(7)", "", "5.00\n3.50")]
+			},
+			R`<p>עוד אחת: אב הטיפוס כבר למעלה, והגוף למטה. חזקה היא כפל חוזר: 2 בחזקת 3 הוא 2 כפול 2 כפול 2. כל מספר בחזקת 0 הוא 1.</p>`,
+			{
+				id: "func-proto-power",
+				title: "power",
+				task: "השלימו את שלושת ה-TODO בתוך <code>power</code>, למטה.",
+				code: POWER_START,
+				solution: POWER_SOLVED,
+				tests: [unit("power", R`
+int power(int base, int exp);
+int main(void)
+{
+    T_INT("power(2, 10)", power(2, 10), 1024);
+    T_INT("power(5, 0)", power(5, 0), 1);
+    T_INT("power(7, 1)", power(7, 1), 7);
+    T_INT("power(0, 3)", power(0, 3), 0);
+    T_INT("power(-2, 3)", power(-2, 3), -8);
+    return 0;
+}`), io("main prints 2 to the power 10", "2 10\n", "Base and exponent: Result: 1024")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה עושה אב טיפוס?",
+				o: [
+					"מריץ את הפונקציה מוקדם",
+					"מספר ל-gcc את השם, הפרמטרים והטיפוס המוחזר לפני השימוש",
+					"מחליף את הגוף של הפונקציה"
+				],
+				a: 1,
+				w: "הגוף עצמו בא אחר כך."
+			},
+			{
+				s: "איפה כותבים את אב הטיפוס?",
+				o: [
+					"מעל <code>main</code>",
+					"בתוך <code>main</code>",
+					"בסוף הקובץ"
+				],
+				a: 0,
+				w: "לפני הקריאה הראשונה, כלומר מעל <code>main</code>."
+			},
+			{
+				s: "הפונקציה היא <code>int add(int a, int b) { ... }</code>. איזו מהשורות הבאות <b>אינה</b> אב טיפוס נכון שלה?",
+				o: [
+					"<code>int add(int a, int b);</code>",
+					"<code>int add(int, int);</code>",
+					"<code>int add(int a, int b)</code>"
+				],
+				a: 2,
+				w: "אב טיפוס נגמר ב-<code>;</code>. השמות של הפרמטרים לא חובה."
+			}
+		]
+	}));
+	const INC_MAIN = R`#include <stdio.h>
+
+void inc(int n)
+{
+    n++;
+    printf("inside: %d\n", n);
+}
+
+int main(void)
+{
+    int a = 5;
+    inc(a);
+    printf("outside: %d\n", a);
+    return 0;
+}`;
+	const INC_RETURN_MAIN = R`#include <stdio.h>
+
+int incReturn(int n)
+{
+    n++;
+    return n;
+}
+
+int main(void)
+{
+    int a = 5;
+    a = incReturn(a);
+    printf("%d\n", a);
+    return 0;
+}`;
+	const DIGITS_FN_START = R`#include <stdio.h>
+
+int digitSum(int n)
+{
+    int sum = 0;
+    /* TODO 1: if n is negative, make it positive */
+    /* TODO 2: while n is above 0, add its last digit to sum and remove that digit */
+    /* TODO 3: return sum */
+    return 0;
+}
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("Sum of digits of %d: %d\n", n, digitSum(n));
+    return 0;
+}`;
+	const DIGITS_FN_SOLVED = R`#include <stdio.h>
+
+int digitSum(int n)
+{
+    int sum = 0;
+    if (n < 0)
+    {
+        n = -n;
+    }
+    while (n > 0)
+    {
+        sum += n % 10;
+        n /= 10;
+    }
+    return sum;
+}
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Number: ");
+    scanf("%d", &n);
+    printf("Sum of digits of %d: %d\n", n, digitSum(n));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-byvalue",
+		title: "העברה לפי ערך",
+		body: [
+			R`<p>פרמטר הוא משתנה <b>חדש</b> של הפונקציה, שמקבל <b>עותק</b> של הערך. כש-<code>inc</code> משנה את <code>n</code>, היא משנה רק את העותק. ה-<code>a</code> של <code>main</code> נשאר 5.</p>`,
+			{
+				id: "func-byvalue-inc",
+				title: "העותק משתנה, המקור לא",
+				code: INC_MAIN,
+				tests: [io("6 inside, still 5 outside", "", "inside: 6\noutside: 5")]
+			},
+			R`<p>לחצו <b>⏯ שורה אחר שורה</b>. בתוך <code>incReturn</code> הטבלה מראה שתי פונקציות: <code>main</code> עם <code>a</code>, ו-<code>incReturn</code> עם <code>n</code> משלה.</p>
+<p>כדי לשנות את <code>a</code>, מחזירים את הערך החדש ושמים אותו ב-<code>a</code>: <code>a = incReturn(a);</code></p>`,
+			{
+				id: "func-byvalue-return",
+				title: "מחזירים את הערך החדש",
+				code: INC_RETURN_MAIN,
+				tests: [io("a becomes 6", "", "6")]
+			},
+			R`<p>תורכם: סכום הספרות, כמו ב"ספרות של מספר", בתוך פונקציה. <code>digitSum</code> מורידה ספרות מ-<code>n</code>, אבל זה העותק שלה: <code>main</code> מדפיס אחריה את <code>n</code> שלו, שלא השתנה.</p>`,
+			{
+				id: "func-byvalue-digits",
+				title: "digitSum",
+				task: "השלימו את שלושת ה-TODO בתוך <code>digitSum</code>.",
+				code: DIGITS_FN_START,
+				solution: DIGITS_FN_SOLVED,
+				tests: [unit("digitSum", R`
+int digitSum(int n);
+int main(void)
+{
+    T_INT("digitSum(1234)", digitSum(1234), 10);
+    T_INT("digitSum(9)", digitSum(9), 9);
+    T_INT("digitSum(0)", digitSum(0), 0);
+    T_INT("digitSum(-56) uses the digits of 56", digitSum(-56), 11);
+    return 0;
+}`), io("main still has 1234 after the call", "1234\n", "Number: Sum of digits of 1234: 10")]
+			}
+		],
+		quiz: [
+			{
+				s: "למה <code>a</code> נשאר 5 אחרי <code>inc(a);</code>?",
+				o: [
+					"כי <code>inc</code> לא מחזירה כלום",
+					"כי <code>inc</code> שינתה עותק של <code>a</code>",
+					"כי <code>n++</code> לא עובד בפונקציה"
+				],
+				a: 1,
+				w: "הפרמטר מקבל עותק של הערך."
+			},
+			{
+				s: "<code>void twice(int n) { n = n * 2; }</code>. <code>x</code> הוא 7. כמה ב-<code>x</code> אחרי <code>twice(x);</code>?",
+				o: [
+					"14",
+					"7",
+					"0"
+				],
+				a: 1,
+				w: "<code>twice</code> הכפילה את העותק שלה בלבד."
+			},
+			{
+				s: "<code>int x = 5;</code>, <code>int incReturn(int n) { return n + 1; }</code> ו-<code>void inc(int n) { n++; }</code>. איזו מהשורות <b>לא</b> תשים 6 ב-<code>x</code>?",
+				o: [
+					"<code>x = incReturn(x);</code>",
+					"<code>x++;</code>",
+					"<code>inc(x);</code>"
+				],
+				a: 2,
+				w: "<code>inc</code> משנה עותק, ו-<code>x</code> נשאר 5."
+			}
+		]
+	}));
+	const LOCAL_MAIN = R`#include <stdio.h>
+
+void show(void)
+{
+    int count = 1;
+    printf("show: %d\n", count);
+}
+
+int main(void)
+{
+    int count = 5;
+    show();
+    printf("main: %d\n", count);
+    return 0;
+}`;
+	const GLOBAL_MAIN = R`#include <stdio.h>
+
+int total = 0;
+
+void add(int x)
+{
+    total += x;
+}
+
+int main(void)
+{
+    add(3);
+    add(4);
+    printf("%d\n", total);
+    return 0;
+}`;
+	const DOUBLED_START = R`#include <stdio.h>
+
+/* TODO: doubled cannot see main's number: give it a parameter, and pass number in the call */
+int doubled(void)
+{
+    return number * 2;
+}
+
+int main(void)
+{
+    int number = 0;
+
+    printf("Number: ");
+    scanf("%d", &number);
+    printf("Doubled: %d\n", doubled());
+    return 0;
+}`;
+	const DOUBLED_SOLVED = R`#include <stdio.h>
+
+int doubled(int n)
+{
+    return n * 2;
+}
+
+int main(void)
+{
+    int number = 0;
+
+    printf("Number: ");
+    scanf("%d", &number);
+    printf("Doubled: %d\n", doubled(number));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-scope",
+		title: "משתנים מקומיים וגלובליים",
+		body: [
+			R`<p>משתנה שהוכרז בתוך פונקציה הוא <b>מקומי</b>: רק היא רואה אותו, והוא קיים רק בזמן שהיא רצה. לכן ל-<code>show</code> ול-<code>main</code> יכול להיות <code>count</code> בשם זהה, ואלה שני משתנים נפרדים.</p>`,
+			{
+				id: "func-scope-local",
+				title: "לכל פונקציה משלה",
+				code: LOCAL_MAIN,
+				tests: [io("two different count variables", "", "show: 1\nmain: 5")]
+			},
+			R`<p>משתנה שהוכרז מחוץ לכל הפונקציות הוא <b>גלובלי</b>: כולן רואות אותו ויכולות לשנות אותו.</p>
+<div class="callout warn"><b>קשה לדעת מי שינה אותו</b><p>כשכל פונקציה יכולה לשנות משתנה גלובלי, טעות בו יכולה לבוא מכל מקום בתוכנית. עדיף להעביר ערכים כפרמטרים ולהחזיר תוצאות.</p></div>`,
+			{
+				id: "func-scope-global",
+				title: "משתנה גלובלי",
+				code: GLOBAL_MAIN,
+				tests: [io("3 + 4 in the global total", "", "7")]
+			},
+			R`<p>תורכם: התוכנית ליד לא מתקמפלת. gcc כותב:</p>
+<pre class="code-static"><span>error: 'number' undeclared (first use in this function)</span></pre>
+<p><code>number</code> מקומי של <code>main</code>, ו-<code>doubled</code> לא רואה אותו. העבירו אותו כפרמטר, כמו בשיעור "פרמטרים".</p>`,
+			{
+				id: "func-scope-pass",
+				title: "להעביר במקום להציץ",
+				task: "תנו ל-<code>doubled</code> פרמטר מסוג <code>int</code>, השתמשו בו במקום <code>number</code>, ובקריאה העבירו את <code>number</code>.",
+				code: DOUBLED_START,
+				solution: DOUBLED_SOLVED,
+				tests: [
+					io("4 doubled", "4\n", "Number: Doubled: 8"),
+					io("-3 doubled", "-3\n", "Number: Doubled: -6"),
+					io("0 doubled", "0\n", "Number: Doubled: 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איפה קיים משתנה מקומי?",
+				o: [
+					"בכל התוכנית",
+					"רק בתוך הפונקציה שלו, בזמן שהיא רצה",
+					"רק ב-<code>main</code>"
+				],
+				a: 1,
+				w: "הוא נוצר כשהפונקציה מתחילה ונעלם כשהיא נגמרת."
+			},
+			{
+				s: "בשתי פונקציות יש משתנה בשם <code>i</code>. מה נכון?",
+				o: [
+					"זה אותו משתנה",
+					"אלה שני משתנים נפרדים",
+					"gcc לא מקמפל"
+				],
+				a: 1,
+				w: "לכל פונקציה יש את המשתנים המקומיים שלה."
+			},
+			{
+				s: "איזה מהמשפטים הבאים על משתנה גלובלי <b>אינו</b> נכון?",
+				o: [
+					"כל הפונקציות רואות אותו",
+					"הוא שומר את הערך שלו בין קריאות",
+					"כל פונקציה מקבלת עותק משלה שלו"
+				],
+				a: 2,
+				w: "יש רק משתנה גלובלי אחד, וכולן משנות את אותו אחד."
+			}
+		]
+	}));
+	{
+		const COUNTER_MAIN = R`#include <stdio.h>
+
+int counterStatic(void)
+{
+    static int count = 0;
+    count++;
+    return count;
+}
+
+int counterPlain(void)
+{
+    int count = 0;
+    count++;
+    return count;
+}
+
+int main(void)
+{
+    printf("static: %d\n", counterStatic());
+    printf("static: %d\n", counterStatic());
+    printf("static: %d\n", counterStatic());
+    printf("plain: %d\n", counterPlain());
+    printf("plain: %d\n", counterPlain());
+    printf("plain: %d\n", counterPlain());
+    return 0;
+}`;
+		const TICKET_START = R`#include <stdio.h>
+
+int nextTicket(void)
+{
+    /* TODO 1: a static int ticket that starts at 100 */
+    /* TODO 2: add 1 to it */
+    /* TODO 3: return it */
+    return 0;
+}
+
+int main(void)
+{
+    printf("Ticket %d\n", nextTicket());
+    printf("Ticket %d\n", nextTicket());
+    printf("Ticket %d\n", nextTicket());
+    return 0;
+}`;
+		const TICKET_SOLVED = R`#include <stdio.h>
+
+int nextTicket(void)
+{
+    static int ticket = 100;
+    ticket++;
+    return ticket;
+}
+
+int main(void)
+{
+    printf("Ticket %d\n", nextTicket());
+    printf("Ticket %d\n", nextTicket());
+    printf("Ticket %d\n", nextTicket());
+    return 0;
+}`;
+		U.push(withOutputs({
+			id: "func-static",
+			title: "משתנה static",
+			body: [
+				R`<p>משתנה מקומי רגיל נוצר מחדש בכל קריאה. <code>static</code> לפניו משנה את זה: הוא מקבל את הערך ההתחלתי <b>פעם אחת</b>, ושומר את הערך שלו בין קריאות. עדיין רק הפונקציה שלו רואה אותו.</p>
+<table class="tbl"><tr><th>קריאה</th><th>counterStatic</th><th>counterPlain</th></tr>
+<tr><td>1</td><td class="mono">1</td><td class="mono">1</td></tr>
+<tr><td>2</td><td class="mono">2</td><td class="mono">1</td></tr>
+<tr><td>3</td><td class="mono">3</td><td class="mono">1</td></tr></table>`,
+				{
+					id: "func-static-counter",
+					title: "סופר בין קריאות",
+					code: COUNTER_MAIN,
+					tests: [io("static counts 1, 2, 3; plain stays 1", "", "static: 1\nstatic: 2\nstatic: 3\nplain: 1\nplain: 1\nplain: 1")]
+				},
+				R`<p>תורכם: מכונת מספרים בתור. כל קריאה נותנת את המספר הבא, מ-101.</p>`,
+				{
+					id: "func-static-ticket",
+					title: "nextTicket",
+					task: "השלימו את שלושת ה-TODO בתוך <code>nextTicket</code>.",
+					code: TICKET_START,
+					solution: TICKET_SOLVED,
+					tests: [io("three calls give 101, 102 and 103", "", "Ticket 101\nTicket 102\nTicket 103")]
+				}
+			],
+			quiz: [
+				{
+					s: "מה מדפיסות שלוש קריאות ל-<code>counterStatic</code>?",
+					o: [
+						"1, 1, 1",
+						"1, 2, 3",
+						"0, 1, 2"
+					],
+					a: 1,
+					w: "<code>count</code> שומר את הערך שלו בין הקריאות."
+				},
+				{
+					s: "מתי מקבל משתנה <code>static</code> מקומי את הערך ההתחלתי שלו?",
+					o: [
+						"בכל קריאה",
+						"פעם אחת בלבד",
+						"אף פעם"
+					],
+					a: 1,
+					w: "השורה <code>static int count = 0;</code> לא מאפסת אותו שוב."
+				},
+				{
+					s: "איזה מהמשפטים הבאים על משתנה <code>static</code> מקומי <b>אינו</b> נכון?",
+					o: [
+						"הוא שומר את הערך שלו בין קריאות",
+						"רק הפונקציה שלו רואה אותו",
+						"הוא חוזר לערך ההתחלתי בכל קריאה"
+					],
+					a: 2,
+					w: "זה בדיוק ההבדל ממשתנה מקומי רגיל."
+				}
+			]
+		}));
+	}
+	const PRIMES_START = R`/* TODO: write the whole program here */
+`;
+	const PRIMES_SOLVED = R`#include <stdio.h>
+
+int isPrime(int n);
+int countPrimes(int n);
+
+int main(void)
+{
+    int n = 0;
+
+    printf("Up to: ");
+    scanf("%d", &n);
+    printf("Primes up to %d: %d\n", n, countPrimes(n));
+    return 0;
+}
+
+int isPrime(int n)
+{
+    if (n < 2)
+    {
+        return 0;
+    }
+    for (int d = 2; d * d <= n; d++)
+    {
+        if (n % d == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int countPrimes(int n)
+{
+    int count = 0;
+    for (int i = 2; i <= n; i++)
+    {
+        if (isPrime(i))
+        {
+            count++;
+        }
+    }
+    return count;
+}`;
+	const AVG_FN_START = R`#include <stdio.h>
+
+/* TODO: three mistakes below; fix them so it prints the average with its fraction */
+double average(int a, int b)
+{
+    double result = (a + b) / 2;
+}
+
+int main(void)
+{
+    int x = 0;
+    int y = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &x, &y);
+    printf("Average: %d\n", average(x, y));
+    return 0;
+}`;
+	const AVG_FN_SOLVED = R`#include <stdio.h>
+
+double average(int a, int b)
+{
+    double result = (a + b) / 2.0;
+    return result;
+}
+
+int main(void)
+{
+    int x = 0;
+    int y = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &x, &y);
+    printf("Average: %.2f\n", average(x, y));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "func-review",
+		title: "חזרה: פונקציות",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. בקובץ ריק כתבו תוכנית עם שתי פונקציות, בדיוק בשמות האלה:</p>
+<table class="tbl"><tr><th>פונקציה</th><th>מחזירה</th></tr>
+<tr><td><code>int isPrime(int n)</code></td><td>1 כש-<code>n</code> ראשוני, אחרת 0. ראשוני: לפחות 2, ומתחלק רק ב-1 ובעצמו</td></tr>
+<tr><td><code>int countPrimes(int n)</code></td><td>כמה ראשוניים יש מ-2 עד <code>n</code>, בעזרת <code>isPrime</code></td></tr></table>
+<p><code>main</code> שואל <code>Up to: </code>, ומדפיס <code>Primes up to 10: 4</code>.</p>`,
+			{
+				id: "func-review-primes",
+				title: "מספרים ראשוניים",
+				task: "בקובץ הריק כתבו תוכנית שלמה: שתי הפונקציות שבטבלה ו-<code>main</code> שקורא להן.",
+				code: PRIMES_START,
+				solution: PRIMES_SOLVED,
+				tests: [
+					unit("isPrime and countPrimes", R`
+int isPrime(int n);
+int countPrimes(int n);
+int main(void)
+{
+    T_INT("isPrime(0)", isPrime(0), 0);
+    T_INT("isPrime(1)", isPrime(1), 0);
+    T_INT("isPrime(2)", isPrime(2), 1);
+    T_INT("isPrime(9)", isPrime(9), 0);
+    T_INT("isPrime(97)", isPrime(97), 1);
+    T_INT("countPrimes(10)", countPrimes(10), 4);
+    T_INT("countPrimes(1)", countPrimes(1), 0);
+    T_INT("countPrimes(100)", countPrimes(100), 25);
+    return 0;
+}`),
+					io("up to 10", "10\n", "Up to: Primes up to 10: 4"),
+					io("up to 30", "30\n", "Up to: Primes up to 30: 10")
+				]
+			},
+			R`<p>הפונקציה ליד צריכה להחזיר את הממוצע של שני מספרים, עם השבר. יש בתוכנית שלוש טעויות: שתיים בפונקציה ואחת בקריאה לה.</p>`,
+			{
+				id: "func-review-average",
+				title: "שלוש טעויות",
+				task: "מצאו ותקנו את שלוש הטעויות. עבור <code>3 4</code> מודפס <code>Average: 3.50</code>.",
+				code: AVG_FN_START,
+				solution: AVG_FN_SOLVED,
+				tests: [
+					io("3 and 4", "3 4\n", "Two numbers: Average: 3.50"),
+					io("10 and 0", "10 0\n", "Two numbers: Average: 5.00"),
+					io("-1 and -2", "-1 -2\n", "Two numbers: Average: -1.50")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מחזירה פונקציה שמתחילה ב-<code>void</code>?",
+				o: [
+					"0",
+					"כלום",
+					"את הערך האחרון שחושב"
+				],
+				a: 1,
+				w: "<code>void</code>: אין ערך מוחזר."
+			},
+			{
+				s: "<code>int twice(int n) { return 2 * n; }</code>. כמה הוא <code>twice(twice(3))</code>?",
+				o: [
+					"6",
+					"12",
+					"9"
+				],
+				a: 1,
+				w: "קודם <code>twice(3)</code> נותן 6, ואז <code>twice(6)</code> נותן 12."
+			},
+			{
+				s: "במה נגמר אב טיפוס?",
+				o: [
+					"<code>;</code>",
+					"<code>}</code>",
+					"בלי כלום"
+				],
+				a: 0,
+				w: "אב טיפוס הוא השורה הראשונה של הפונקציה, ואחריה <code>;</code>."
+			},
+			{
+				s: "<code>void reset(int n) { n = 0; }</code>. <code>x</code> הוא 7. כמה ב-<code>x</code> אחרי <code>reset(x);</code>?",
+				o: [
+					"0",
+					"7",
+					"לא ידוע"
+				],
+				a: 1,
+				w: "<code>reset</code> איפסה עותק."
+			},
+			{
+				s: "<code>counter</code> מחזירה משתנה <code>static</code> שמתחיל ב-0 וגדל ב-1 בכל קריאה. מה מחזירה הקריאה הרביעית?",
+				o: [
+					"1",
+					"4",
+					"0"
+				],
+				a: 1,
+				w: "הערך נשמר בין הקריאות: 1, 2, 3, 4."
+			},
+			{
+				s: "איזו מהסיבות הבאות <b>אינה</b> סיבה לכתוב פונקציה?",
+				o: [
+					"לא לכתוב אותן שורות שוב ושוב",
+					"לתת שם לחלק של העבודה",
+					"לתת לכל הפונקציות לראות את המשתנים של <code>main</code>"
+				],
+				a: 2,
+				w: "פונקציה לא רואה את המשתנים המקומיים של <code>main</code>. ערכים עוברים כפרמטרים."
+			},
+			{
+				s: "<code>int sq(int x) { printf(\"%d\", x * x); }</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
+				o: [
+					"היא מדפיסה את הריבוע",
+					"היא מחזירה את הריבוע למי שקרא לה",
+					"gcc מזהיר שחסר בה <code>return</code>"
+				],
+				a: 1,
+				w: "בלי <code>return</code> עם ערך, מי שקרא לא מקבל את הריבוע."
+			}
+		]
+	}));
 	U.push({
 		id: "split",
 		title: "תוכנית בכמה קבצים",
@@ -22561,6 +23922,15 @@ int main(void)
 		"c-loops",
 		"c-loops",
 		"c-loops",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
+		"c-func",
 		"make",
 		"make",
 		"make",
@@ -22610,6 +23980,11 @@ window.LabCourse = {
 		{
 			id: "c-loops",
 			title: "6. לולאות",
+			public: true
+		},
+		{
+			id: "c-func",
+			title: "7. פונקציות",
 			public: true
 		},
 		{
@@ -43411,7 +44786,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 04f8c9f מ-2026-11-13 20:54"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 04f8c9f</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 59d9c41 מ-2026-11-13 21:17"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 59d9c41</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
