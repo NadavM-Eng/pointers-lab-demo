@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-B7nGJxV0Bip2iPa7J7cbOjXcpZ+soQ2op9uL8bXAWlQ=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-JXHv6N3EEgnGJ6PH0tkCPx4KgqqgC1GYNf3L2PdAj9Y=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -15371,7 +15371,8 @@ int power(int base, int exp)
 	};
 	const mathxProject = (mathx = MATHX, makefile = plainMakefile(["mathx"])) => project({ mathx }, { makefile });
 	const addPrototype = (h, line) => h.replace("\n#endif", line + "\n\n#endif");
-	R`#ifndef ARRAYS_H
+	const ARRAYS = {
+		h: R`#ifndef ARRAYS_H
 #define ARRAYS_H
 
 /* returns the sum of the size values of arr */
@@ -15387,7 +15388,8 @@ int maxIndex(int arr[], int size);
 int isIncreasing(int arr[], int size);
 
 #endif
-`, R`#include "arrays.h"
+`,
+		c: R`#include "arrays.h"
 
 int sumArray(int arr[], int size)
 {
@@ -15433,7 +15435,8 @@ int isIncreasing(int arr[], int size)
     }
     return 1;
 }
-`;
+`
+	};
 	const moduleOf = (name, fns, opts = {}) => {
 		const guard = name.toUpperCase() + "_H";
 		const defs = (opts.defines || []).map((line) => line + "\n\n").join("");
@@ -15556,6 +15559,46 @@ int isIncreasing(int arr[], int size)
 		M_COUNT,
 		M_TRANSPOSE
 	], { defines: MATRIX_DEFINES });
+	const C_SAFE = {
+		p: "/* returns *p, or fallback when p is NULL */\nint safeValue(const int *p, int fallback);",
+		b: R`int safeValue(const int *p, int fallback)
+{
+    if (p == NULL)
+    {
+        return fallback;
+    }
+    return *p;
+}`
+	};
+	const C_DIVIDE = {
+		p: "/* writes a / b into *q and a % b into *r; b is not 0 */\nvoid divide(int a, int b, int *q, int *r);",
+		b: R`void divide(int a, int b, int *q, int *r)
+{
+    *q = a / b;
+    *r = a % b;
+}`
+	};
+	const C_DIVIDE_SAFE = {
+		p: "/* when b is 0 returns 0 and writes nothing; else writes a / b into *q, a % b into *r, returns 1 */\nint divideSafe(int a, int b, int *q, int *r);",
+		b: R`int divideSafe(int a, int b, int *q, int *r)
+{
+    if (b == 0)
+    {
+        return 0;
+    }
+    *q = a / b;
+    *r = a % b;
+    return 1;
+}`
+	};
+	const calcOf = (fns) => {
+		const m = moduleOf("calc", fns);
+		return {
+			h: m.h,
+			c: "#include <stdio.h>\n" + m.c
+		};
+	};
+	const contractOf = (fn, ret) => starterOf(fn, ["TODO: write the function"], ret);
 	const CALC_H = R`#ifndef CALC_H
 #define CALC_H
 
@@ -17491,7 +17534,8 @@ int main(void)
 			}
 		]
 	}));
-	const CONST_SHOW = R`#include <stdio.h>
+	{
+		const CONST_SHOW = R`#include <stdio.h>
 
 #define MAX_SCORE 100
 
@@ -17502,7 +17546,7 @@ int main(void)
     printf("%d\n", PASS_MARK);
     return 0;
 }`;
-	const CONST_START = R`#include <stdio.h>
+		const CONST_START = R`#include <stdio.h>
 
 /* TODO: add #define DAYS 7 here, and use DAYS instead of 7 below */
 
@@ -17512,7 +17556,7 @@ int main(void)
     printf("%d\n", 5 * 7);
     return 0;
 }`;
-	const CONST_SOLVED = R`#include <stdio.h>
+		const CONST_SOLVED = R`#include <stdio.h>
 
 #define DAYS 7
 
@@ -17522,71 +17566,72 @@ int main(void)
     printf("%d\n", 5 * DAYS);
     return 0;
 }`;
-	U.push(withOutputs({
-		id: "types-const",
-		title: "שמות לקבועים",
-		body: [
-			R`<p>ערך שלא משתנה אף פעם מקבל שם. יש שתי דרכים, ושמות הקבועים כתובים באותיות גדולות:</p>
+		U.push(withOutputs({
+			id: "types-const",
+			title: "שמות לקבועים",
+			body: [
+				R`<p>ערך שלא משתנה אף פעם מקבל שם. יש שתי דרכים, ושמות הקבועים כתובים באותיות גדולות:</p>
 <table class="tbl"><tr><th>כותבים</th><th>איפה</th></tr>
 <tr><td class="mono">#define MAX_SCORE 100</td><td>בראש הקובץ, בלי <code>=</code> ובלי <code>;</code></td></tr>
 <tr><td class="mono">const int PASS_MARK = 56;</td><td>כמו משתנה, עם <code>const</code> לפני הטיפוס</td></tr></table>`,
-			{
-				id: "types-const-show",
-				title: "שני קבועים",
-				code: CONST_SHOW,
-				tests: [io("prints 100 and 56", "", "100\n56")]
-			},
-			R`<p>אי אפשר לשנות קבוע. השורה <code>PASS_MARK = 60;</code> עוצרת את gcc:</p>
+				{
+					id: "types-const-show",
+					title: "שני קבועים",
+					code: CONST_SHOW,
+					tests: [io("prints 100 and 56", "", "100\n56")]
+				},
+				R`<p>אי אפשר לשנות קבוע. השורה <code>PASS_MARK = 60;</code> עוצרת את gcc:</p>
 <pre class="code-static"><span>error: assignment of read-only variable 'PASS_MARK'</span></pre>
 <p>תורכם: המספר 7 חוזר בקוד פעמיים. תנו לו שם.</p>`,
-			{
-				id: "types-const-days",
-				title: "שם למספר שחוזר",
-				task: "הוסיפו בראש הקובץ <code>#define DAYS 7</code>, והחליפו בו את שני ה-7 בתוך <code>main</code>.",
-				code: CONST_START,
-				solution: CONST_SOLVED,
-				tests: [io("prints 21 and 35", "", "21\n35"), {
-					type: "src",
-					name: "main uses DAYS instead of 7",
-					require: "\\bDAYS\\b",
-					forbid: "\\b7\\b",
-					msg: "Use DAYS in main wherever 7 was (3 * DAYS or DAYS * 3 are both fine)."
-				}]
-			}
-		],
-		quiz: [
-			{
-				s: "אפשר לשנות את הערך של <code>const int LIMIT = 5;</code> בהמשך התוכנית?",
-				o: [
-					"כן, עם <code>LIMIT = 6;</code>",
-					"לא: gcc עוצר בשגיאה",
-					"רק בתוך <code>main</code>"
-				],
-				a: 1,
-				w: "קבוע הוא לקריאה בלבד."
-			},
-			{
-				s: "איזו שורת <code>#define</code> כתובה נכון?",
-				o: [
-					"<code>#define DAYS = 7;</code>",
-					"<code>#define DAYS 7</code>",
-					"<code>define DAYS 7;</code>"
-				],
-				a: 1,
-				w: "<code>#define</code> בא בלי <code>=</code> ובלי <code>;</code>."
-			},
-			{
-				s: "בתוכנית כתוב <code>const int LIMIT = 5;</code>. איזו מהשורות הבאות <b>לא</b> תתקמפל?",
-				o: [
-					"<code>printf(\"%d\\n\", LIMIT);</code>",
-					"<code>LIMIT = 6;</code>",
-					"<code>int x = LIMIT;</code>"
-				],
-				a: 1,
-				w: "מותר לקרוא קבוע, אסור לכתוב אליו."
-			}
-		]
-	}));
+				{
+					id: "types-const-days",
+					title: "שם למספר שחוזר",
+					task: "הוסיפו בראש הקובץ <code>#define DAYS 7</code>, והחליפו בו את שני ה-7 בתוך <code>main</code>.",
+					code: CONST_START,
+					solution: CONST_SOLVED,
+					tests: [io("prints 21 and 35", "", "21\n35"), {
+						type: "src",
+						name: "main uses DAYS instead of 7",
+						require: "\\bDAYS\\b",
+						forbid: "\\b7\\b",
+						msg: "Use DAYS in main wherever 7 was (3 * DAYS or DAYS * 3 are both fine)."
+					}]
+				}
+			],
+			quiz: [
+				{
+					s: "אפשר לשנות את הערך של <code>const int LIMIT = 5;</code> בהמשך התוכנית?",
+					o: [
+						"כן, עם <code>LIMIT = 6;</code>",
+						"לא: gcc עוצר בשגיאה",
+						"רק בתוך <code>main</code>"
+					],
+					a: 1,
+					w: "קבוע הוא לקריאה בלבד."
+				},
+				{
+					s: "איזו שורת <code>#define</code> כתובה נכון?",
+					o: [
+						"<code>#define DAYS = 7;</code>",
+						"<code>#define DAYS 7</code>",
+						"<code>define DAYS 7;</code>"
+					],
+					a: 1,
+					w: "<code>#define</code> בא בלי <code>=</code> ובלי <code>;</code>."
+				},
+				{
+					s: "בתוכנית כתוב <code>const int LIMIT = 5;</code>. איזו מהשורות הבאות <b>לא</b> תתקמפל?",
+					o: [
+						"<code>printf(\"%d\\n\", LIMIT);</code>",
+						"<code>LIMIT = 6;</code>",
+						"<code>int x = LIMIT;</code>"
+					],
+					a: 1,
+					w: "מותר לקרוא קבוע, אסור לכתוב אליו."
+				}
+			]
+		}));
+	}
 	const REV_CARD_START = R`/* TODO: write the whole program here */
 `;
 	const REV_CARD_SOLVED = R`#include <stdio.h>
@@ -27090,6 +27135,2616 @@ int main(void)
 			}
 		]
 	}));
+	const ADDRESS_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int age = 21;
+    double height = 1.75;
+
+    printf("age = %d, at %p\n", age, (void *)&age);
+    printf("height = %.2f, at %p\n", height, (void *)&height);
+    return 0;
+}`;
+	const TOTAL_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int total = 50;
+
+    printf("total = %d\n", total);
+    /* TODO: print the address of total, as in the example */
+    return 0;
+}`;
+	const TOTAL_SOLVED = TOTAL_START.replace("    /* TODO: print the address of total, as in the example */\n", "    printf(\"&total = %p\\n\", (void *)&total);\n");
+	U.push(withOutputs({
+		id: "ptr-address",
+		title: "כתובת",
+		body: [
+			R`<p>הזיכרון הוא שורה ארוכה של תאים, ולכל תא מספר: ה<b>כתובת</b> שלו. כל משתנה יושב בכתובת משלו:</p>
+<table class="tbl"><tr><th>כתובת</th><th>משתנה</th><th>ערך</th></tr>
+<tr><td class="mono">0x7ffc10</td><td class="mono">age</td><td class="mono">21</td></tr>
+<tr><td class="mono">0x7ffc18</td><td class="mono">height</td><td class="mono">1.75</td></tr></table>
+<p><code>&amp;age</code> נותן את הכתובת של <code>age</code>. מדפיסים כתובת עם <code>%p</code>, ו-<code>(void *)</code> לפניה, כמו בקוד ליד. בכל הרצה הכתובות יכולות להיות אחרות.</p>`,
+			{
+				id: "ptr-address-print",
+				title: "הכתובות של שני משתנים",
+				code: ADDRESS_MAIN,
+				files: project({}),
+				tests: [{
+					type: "src",
+					name: "prints addresses with %p",
+					require: "%p"
+				}]
+			},
+			R`<p>תורכם: הדפיסו גם את הכתובת של <code>total</code>, בשורה <code>&amp;total = </code> ואחריה הכתובת.</p>`,
+			{
+				id: "ptr-address-total",
+				title: "הכתובת של total",
+				task: "במקום ה-TODO הדפיסו את הכתובת של <code>total</code> עם <code>%p</code>. הכתובת שלכם תהיה אחרת מזו שבדוגמה.",
+				code: TOTAL_START,
+				solution: TOTAL_SOLVED,
+				files: project({}),
+				example: { output: "total = 50\n&total = 0x7ffc3a1c" },
+				tests: [{
+					type: "src",
+					name: "takes the address of total",
+					require: "& total",
+					msg: "use &total to get the address of total"
+				}, {
+					type: "src",
+					name: "prints it with %p",
+					require: "%p",
+					msg: "print an address with %p"
+				}]
+			}
+		],
+		quiz: [
+			{
+				s: "מה נותן <code>&amp;x</code>?",
+				o: [
+					"את הערך של <code>x</code>",
+					"את הכתובת של <code>x</code>",
+					"את הגודל של <code>x</code>"
+				],
+				a: 1,
+				w: "<code>&amp;</code> לפני משתנה נותן את המקום שלו בזיכרון."
+			},
+			{
+				s: "איך מדפיסים כתובת ב-<code>printf</code>?",
+				o: [
+					"<code>%d</code>",
+					"<code>%a</code>",
+					"<code>%p</code>"
+				],
+				a: 2,
+				w: "<code>%p</code>, עם <code>(void *)</code> לפני הכתובת."
+			},
+			{
+				s: "מריצים את אותה תוכנית פעמיים. מה <b>לא</b> בהכרח יודפס שוב אותו דבר?",
+				o: [
+					"הכתובת של משתנה",
+					"הערך של משתנה שאותחל",
+					"טקסט קבוע"
+				],
+				a: 0,
+				w: "מערכת ההפעלה יכולה לשים את המשתנים בכל הרצה במקום אחר."
+			}
+		]
+	}));
+	const DECLARE_PTR_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int coins = 4;
+    int *p = &coins;
+
+    printf("coins = %d\n", coins);
+    printf("p == &coins: %d\n", p == &coins);
+    return 0;
+}`;
+	const LEVEL_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int bonus = 3;
+    int level = 7;
+    /* TODO: make q point at level instead of bonus */
+    int *q = &bonus;
+
+    printf("q points at level: %d\n", q == &level);
+    return 0;
+}`;
+	const LEVEL_SOLVED = LEVEL_START.replace("    /* TODO: make q point at level instead of bonus */\n", "").replace("int *q = &bonus;", "int *q = &level;");
+	U.push(withOutputs({
+		id: "ptr-declare",
+		title: "משתנה מצביע",
+		body: [
+			R`<p><b>מצביע</b> (<bdi dir="ltr">pointer</bdi>) הוא משתנה שמחזיק כתובת.</p>
+<table class="tbl"><tr><th>חלק</th><th>פירושו</th></tr>
+<tr><td class="mono">int *p</td><td><code>p</code> מחזיק כתובת של <code>int</code></td></tr>
+<tr><td class="mono">= &amp;coins</td><td>הכתובת של <code>coins</code></td></tr></table>
+<p>לחצו ⏯ שורה אחר שורה: ליד <code>p</code> כתוב <code>→ coins</code>, כלומר <code>p</code> מצביע על <code>coins</code>.</p>`,
+			{
+				id: "ptr-declare-p",
+				title: "p מצביע על coins",
+				code: DECLARE_PTR_MAIN,
+				files: project({}),
+				tests: [io("p holds the address of coins", "", "coins = 4\np == &coins: 1")]
+			},
+			R`<p>תורכם: כאן <code>q</code> מצביע על המשתנה הלא נכון.</p>`,
+			{
+				id: "ptr-declare-q",
+				title: "q מצביע על level",
+				task: "שנו את ההגדרה של <code>q</code> כך שיצביע על <code>level</code>.",
+				code: LEVEL_START,
+				solution: LEVEL_SOLVED,
+				files: project({}),
+				tests: [io("q points at level", "", "q points at level: 1")]
+			}
+		],
+		quiz: [
+			{
+				s: "אחרי <code>int *p = &amp;x;</code>, מה יש ב-<code>p</code>?",
+				o: [
+					"הערך של <code>x</code>",
+					"הכתובת של <code>x</code>",
+					"עותק של <code>x</code>"
+				],
+				a: 1,
+				w: "מצביע מחזיק כתובת."
+			},
+			{
+				s: "מה הטיפוס של <code>p</code> ב-<code>double *p;</code>?",
+				o: [
+					"<code>double*</code>: כתובת של <code>double</code>",
+					"<code>double</code>",
+					"<code>int*</code>"
+				],
+				a: 0,
+				w: "הכוכבית בהגדרה אומרת \"כתובת של\"."
+			},
+			{
+				s: "<code>int a = 1, b = 2; int *p = &amp;a;</code>. מה <b>לא</b> נכון?",
+				o: [
+					"<code>p == &amp;a</code> הוא 1",
+					"<code>p == &amp;b</code> הוא 1",
+					"ב-⏯ ליד <code>p</code> כתוב <code>→ a</code>"
+				],
+				a: 1,
+				w: "<code>p</code> מצביע על <code>a</code>, לא על <code>b</code>."
+			}
+		]
+	}));
+	const READ_PTR_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int lives = 3;
+    int *p = &lives;
+
+    printf("lives = %d\n", lives);
+    printf("*p = %d\n", *p);
+    return 0;
+}`;
+	const WRITE_PTR_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int lives = 3;
+    int *p = &lives;
+
+    *p = 7;
+    printf("lives = %d\n", lives);
+    return 0;
+}`;
+	const ADD_TEN_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int level = 0;
+    int *q = &level;
+
+    printf("Level: ");
+    scanf("%d", &level);
+    /* TODO: add 10 to level through q, without writing level here */
+    printf("new level: %d\n", level);
+    return 0;
+}`;
+	const ADD_TEN_SOLVED = ADD_TEN_START.replace("    /* TODO: add 10 to level through q, without writing level here */\n", "    *q += 10;\n");
+	U.push(withOutputs({
+		id: "ptr-deref",
+		title: "גישה דרך המצביע",
+		body: [
+			R`<p><code>*p</code> הוא המשתנה ש-<code>p</code> מצביע עליו. כאן <code>*p</code> הוא <code>lives</code>, ולכן שתי השורות מדפיסות 3.</p>
+<table class="tbl"><tr><th>בקוד</th><th>פירושו</th></tr>
+<tr><td class="mono">int *p</td><td>בהגדרה: <code>p</code> הוא מצביע</td></tr>
+<tr><td class="mono">*p</td><td>בשימוש: המשתנה ש-<code>p</code> מצביע עליו</td></tr></table>`,
+			{
+				id: "ptr-deref-read",
+				title: "קוראים דרך p",
+				code: READ_PTR_MAIN,
+				files: project({}),
+				tests: [io("lives and *p are both 3", "", "lives = 3\n*p = 3")]
+			},
+			R`<p>אפשר גם לכתוב דרך המצביע. <code>*p = 7;</code> משנה את <code>lives</code> עצמו, בלי לכתוב את השם שלו. צעדו עם ⏯ וראו את <code>lives</code> משתנה.</p>`,
+			{
+				id: "ptr-deref-write",
+				title: "כותבים דרך p",
+				code: WRITE_PTR_MAIN,
+				files: project({}),
+				tests: [io("lives becomes 7", "", "lives = 7")]
+			},
+			R`<p>תורכם: הוסיפו 10 ל-<code>level</code>, אבל רק דרך <code>q</code>.</p>`,
+			{
+				id: "ptr-deref-add",
+				title: "עוד 10 דרך q",
+				task: "במקום ה-TODO הוסיפו 10 ל-<code>level</code> דרך <code>q</code>. אל תכתבו שם <code>level</code>.",
+				code: ADD_TEN_START,
+				solution: ADD_TEN_SOLVED,
+				files: project({}),
+				tests: [
+					io("5 becomes 15", "5\n", "Level: new level: 15"),
+					io("-10 becomes 0", "-10\n", "Level: new level: 0"),
+					{
+						type: "src",
+						name: "level is changed only through q",
+						forbid: "(?<!int )\\blevel (\\+=|-=|=(?!=)|\\+\\+)|\\+\\+ level\\b",
+						msg: "change level through q (*q), not by its name"
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 5; int *p = &amp;x; *p = *p + 2;</code>. כמה ב-<code>x</code>?",
+				o: [
+					"5",
+					"7",
+					"2"
+				],
+				a: 1,
+				w: "<code>*p</code> הוא <code>x</code>, ולכן <code>x</code> גדל ב-2."
+			},
+			{
+				s: "<code>int *p = &amp;x;</code>. מה מדפיס <code>printf(\"%d\", *p);</code>?",
+				o: [
+					"את הערך של <code>x</code>",
+					"את הכתובת של <code>x</code>",
+					"את הכתובת של <code>p</code>"
+				],
+				a: 0,
+				w: "<code>*p</code> הולך לכתובת וקורא את מה שיש שם."
+			},
+			{
+				s: "<code>int a = 1, b = 9; int *p = &amp;a;</code>. איזו שורה <b>לא</b> משנה את <code>a</code>?",
+				o: [
+					"<code>*p = 4;</code>",
+					"<code>a = 4;</code>",
+					"<code>p = &amp;b;</code>"
+				],
+				a: 2,
+				w: "היא משנה את <code>p</code> עצמו, ו-<code>a</code> נשאר 1."
+			}
+		]
+	}));
+	const TRAP_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int n = 3;
+    int* a, b;
+
+    a = &n;
+    b = 8;
+    printf("*a = %d, b = %d\n", *a, b);
+    return 0;
+}`;
+	const TRAP_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int x = 10;
+    int y = 20;
+    /* TODO: second should be a pointer too; fix this line */
+    int* first, second;
+
+    first = &x;
+    second = &y;
+    *first += 1;
+    *second += 2;
+    printf("x = %d, y = %d\n", x, y);
+    return 0;
+}`;
+	const TRAP_SOLVED = TRAP_START.replace("    /* TODO: second should be a pointer too; fix this line */\n", "").replace("int* first, second;", "int *first, *second;");
+	U.push(withOutputs({
+		id: "ptr-decl-trap",
+		title: "שני מצביעים בשורה אחת",
+		body: [
+			R`<p>הכוכבית שייכת לשם שאחריה, לא לטיפוס. בשורה <code>int* a, b;</code> רק <code>a</code> הוא מצביע, ו-<code>b</code> הוא <code>int</code> רגיל.</p>
+<table class="tbl"><tr><th>מה קורה</th><th>התיקון</th></tr>
+<tr><td>כתובת שנכנסת ל-<code>b</code> היא שגיאה</td><td>כוכבית לכל מצביע: <code>int *a, *b;</code></td></tr></table>
+<p>ב-⏯ רואים את זה בעמודת הטיפוס: <code>a</code> הוא <code>int*</code>, ו-<code>b</code> הוא <code>int</code>.</p>`,
+			{
+				id: "ptr-decl-trap-show",
+				title: "a מצביע, b לא",
+				code: TRAP_MAIN,
+				files: project({}),
+				tests: [io("*a is 3, b is 8", "", "*a = 3, b = 8")]
+			},
+			R`<p>תורכם: כאן gcc עוצר, כי <code>second</code> הוא <code>int</code> ולא מצביע.</p>`,
+			{
+				id: "ptr-decl-trap-fix",
+				title: "גם second מצביע",
+				task: "תקנו את שורת ההגדרה כך ששני המשתנים יהיו מצביעים.",
+				code: TRAP_START,
+				solution: TRAP_SOLVED,
+				files: project({}),
+				tests: [io("x and y change through the pointers", "", "x = 11, y = 22")]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int* a, b;</code>. מה הוא <code>b</code>?",
+				o: [
+					"<code>int*</code>",
+					"<code>int</code>",
+					"שגיאה"
+				],
+				a: 1,
+				w: "הכוכבית שייכת רק ל-<code>a</code>."
+			},
+			{
+				s: "איך מגדירים שני מצביעים ל-<code>int</code> בשורה אחת?",
+				o: [
+					"<code>int* p, q;</code>",
+					"<code>int *p, q;</code>",
+					"<code>int *p, *q;</code>"
+				],
+				a: 2,
+				w: "כוכבית לפני כל שם."
+			},
+			{
+				s: "איזו מההגדרות הבאות <b>לא</b> נותנת שני מצביעים?",
+				o: [
+					"<code>int *p, *q;</code>",
+					"<code>int* p; int* q;</code>",
+					"<code>int* p, q;</code>"
+				],
+				a: 2,
+				w: "שם <code>q</code> הוא <code>int</code>."
+			}
+		]
+	}));
+	const NULL_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int *target = NULL;
+
+    printf("target == NULL: %d\n", target == NULL);
+    return 0;
+}`;
+	const CHECK_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int gold = 12;
+    int *chest = &gold;
+    int *empty = NULL;
+
+    if (chest != NULL)
+    {
+        printf("chest: %d\n", *chest);
+    }
+    if (empty == NULL)
+    {
+        printf("empty points nowhere\n");
+    }
+    return 0;
+}`;
+	const SAFE_MAIN = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int score = 0;
+    int *found = &score;
+    int *missing = NULL;
+
+    printf("Score: ");
+    scanf("%d", &score);
+    printf("found: %d, missing: %d\n", safeValue(found, -1), safeValue(missing, -1));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ptr-null",
+		title: "מצביע ריק: NULL",
+		body: [
+			R`<p><code>NULL</code> הוא כתובת מיוחדת שאומרת "לא מצביע על שום דבר". נותנים אותה למצביע שעוד אין לו על מה להצביע, ובודקים אותה עם <code>==</code>.</p>`,
+			{
+				id: "ptr-null-value",
+				title: "מצביע לשום מקום",
+				code: NULL_MAIN,
+				files: project({}),
+				tests: [io("target is NULL", "", "target == NULL: 1")]
+			},
+			R`<p>כתיבה דרך <code>NULL</code> מפילה את התוכנית:</p>
+<pre class="code-static"><span>int *p = NULL;</span><span>*p = 5;              /* crash */</span></pre>
+<p>ב-Linux מודפס <code>Segmentation fault</code>, וב-Windows התוכנית נגמרת בקוד שגיאה. לכן בודקים לפני ש-<code>*p</code>: <code>if (p != NULL)</code>.</p>`,
+			{
+				id: "ptr-null-check",
+				title: "בודקים לפני",
+				code: CHECK_MAIN,
+				files: project({}),
+				tests: [io("the chest and the empty one", "", "chest: 12\nempty points nowhere")]
+			},
+			R`<p>מודול חדש: <code>calc</code>. ב-<code>calc.h</code> כתוב מה <code>safeValue</code> צריכה לעשות. מעכשיו יש רק את החוזה, בלי שלבים.</p>
+<p>הפרמטר הוא <code>const int *p</code>: הפונקציה רק קוראת דרכו. בשיעור "מצביע לקריאה בלבד" נחזור לזה.</p>`,
+			{
+				id: "ptr-null-safe",
+				title: "safeValue",
+				task: "כתבו ב-<code>calc.c</code> את <code>safeValue</code> לפי ההערה ב-<code>calc.h</code>.",
+				code: taskIn("calc.c", SAFE_MAIN),
+				solution: SAFE_MAIN,
+				files: project({ calc: calcOf([contractOf(C_SAFE, "return 0;")]) }),
+				solutionFiles: { "calc.c": calcOf([C_SAFE]).c },
+				tests: [unit("safeValue", R`
+#include <stdio.h>
+int safeValue(const int *p, int fallback);
+int main(void)
+{
+    int x = 42;
+    int zero = 0;
+    T_INT("safeValue(&x, -1) with x = 42", safeValue(&x, -1), 42);
+    T_INT("safeValue(NULL, -1)", safeValue(NULL, -1), -1);
+    T_INT("safeValue(NULL, 7)", safeValue(NULL, 7), 7);
+    T_INT("safeValue(&zero, 5) is 0, not 5", safeValue(&zero, 5), 0);
+    return 0;
+}`), io("score 42", "42\n", "Score: found: 42, missing: -1")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה קורה בכתיבה <code>*p = 5;</code> כש-<code>p</code> הוא <code>NULL</code>?",
+				o: [
+					"התוכנית קורסת",
+					"שום דבר",
+					"5 נכתב לכתובת 0 בהצלחה"
+				],
+				a: 0,
+				w: "אין שם משתנה, ומערכת ההפעלה עוצרת את התוכנית."
+			},
+			{
+				s: "איך בודקים שמצביע <code>p</code> מצביע על משהו?",
+				o: [
+					"<code>if (*p != NULL)</code>",
+					"<code>if (p != NULL)</code>",
+					"<code>if (&amp;p != NULL)</code>"
+				],
+				a: 1,
+				w: "בודקים את המצביע עצמו, לפני שהולכים דרכו."
+			},
+			{
+				s: "<code>int *p = NULL;</code>. איזו מהשורות הבאות <b>לא</b> מפילה את התוכנית?",
+				o: [
+					"<code>printf(\"%d\", *p);</code>",
+					"<code>*p = 1;</code>",
+					"<code>printf(\"%d\", p == NULL);</code>"
+				],
+				a: 2,
+				w: "השוואה של המצביע לא הולכת לכתובת שלו."
+			}
+		]
+	}));
+	const TARGET_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int steps = 0;
+    int *counter = &steps;
+
+    *counter = 250;
+    printf("steps = %d\n", steps);
+    return 0;
+}`;
+	const CURSOR_START = R`#include <stdio.h>
+
+int main(void)
+{
+    int value = 0;
+    int saved = 0;
+    /* TODO: cursor points nowhere known; give it the address of saved */
+    int *cursor;
+
+    printf("Value: ");
+    scanf("%d", &value);
+    *cursor = value;
+    printf("saved = %d\n", saved);
+    return 0;
+}`;
+	const CURSOR_SOLVED = CURSOR_START.replace("    /* TODO: cursor points nowhere known; give it the address of saved */\n", "").replace("int *cursor;", "int *cursor = &saved;");
+	U.push(withOutputs({
+		id: "ptr-uninit",
+		title: "מצביע לא מאותחל",
+		body: [
+			R`<p>מצביע שלא קיבל כתובת מחזיק זבל, כמו כל משתנה לא מאותחל. הוא מצביע למקום אקראי:</p>
+<pre class="code-static"><span>int *p;</span><span>*p = 5;     /* writes 5 somewhere: a crash, or worse */</span></pre>
+<table class="tbl"><tr><th>מה קורה</th><th>התיקון</th></tr>
+<tr><td>הכתיבה הולכת לכתובת אקראית</td><td>לתת לכל מצביע כתובת כבר בהגדרה, או <code>NULL</code></td></tr></table>
+<p>gcc עם <code>-Wall</code> מזהיר: <code>'p' is used uninitialized</code>. בתוכנית ליד <code>counter</code> מקבל כתובת בהגדרה.</p>`,
+			{
+				id: "ptr-uninit-target",
+				title: "מצביע עם מטרה",
+				code: TARGET_MAIN,
+				files: project({}),
+				tests: [io("steps becomes 250", "", "steps = 250")]
+			},
+			R`<p>תורכם: <code>cursor</code> מוגדר בלי כתובת, ואז כותבים דרכו.</p>`,
+			{
+				id: "ptr-uninit-fix",
+				title: "כתובת ל-cursor",
+				task: "תנו ל-<code>cursor</code> בהגדרה את הכתובת של <code>saved</code>.",
+				code: CURSOR_START,
+				solution: CURSOR_SOLVED,
+				files: project({}),
+				tests: [io("saves 64", "64\n", "Value: saved = 64"), io("saves -3", "-3\n", "Value: saved = -3")]
+			}
+		],
+		quiz: [
+			{
+				s: "לאן מצביע <code>int *p;</code> שלא אותחל?",
+				o: [
+					"ל-<code>NULL</code>",
+					"למקום אקראי",
+					"למשתנה הקודם"
+				],
+				a: 1,
+				w: "יש בו זבל, כמו בכל משתנה מקומי שלא אותחל."
+			},
+			{
+				s: "מה עדיף, אם עוד אין למצביע על מה להצביע?",
+				o: [
+					"להשאיר אותו בלי ערך",
+					"לתת לו <code>NULL</code>",
+					"לתת לו 0 דרך <code>*p = 0</code>"
+				],
+				a: 1,
+				w: "את <code>NULL</code> אפשר לבדוק. זבל אי אפשר."
+			},
+			{
+				s: "<code>int *p;</code> ואחריו <code>*p = 5;</code>. מה <b>לא</b> יכול לקרות?",
+				o: [
+					"התוכנית קורסת",
+					"משתנה אחר משתנה בלי שרואים",
+					"gcc מסרב לקמפל"
+				],
+				a: 2,
+				w: "gcc רק מזהיר. התוכנית מתקמפלת, והבאג נשאר."
+			}
+		]
+	}));
+	const SWAP_COPY = R`void swapCopy(int a, int b)
+{
+    int temp = a;
+    a = b;
+    b = temp;
+}`;
+	const ADD_TEN = R`void addTen(int *p)
+{
+    *p += 10;
+}`;
+	const SWAP_SOLVED = R`void swap(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}`;
+	const calcH = (lines) => R`#ifndef CALC_H
+#define CALC_H
+
+` + lines.join("\n\n") + R`
+
+#endif
+`;
+	const P_COPY = "/* tries to swap a and b (it gets copies) */\nvoid swapCopy(int a, int b);";
+	const P_ADD = "/* adds 10 to the int p points to */\nvoid addTen(int *p);";
+	const P_SWAP = "/* swaps the two ints a and b point to */\nvoid swap(int *a, int *b);";
+	const P_SORT = "/* sorts the three ints so that *a <= *b <= *c */\nvoid sort3(int *a, int *b, int *c);";
+	const calcC = (parts) => "#include \"calc.h\"\n\n" + parts.join("\n\n") + "\n";
+	const SWAP_START = R`void swap(int *a, int *b)
+{
+    /* TODO 1: save the first value (*a) in temp */
+
+    /* TODO 2: copy the second value (*b) into *a */
+
+    /* TODO 3: copy temp into *b */
+}`;
+	const SORT_START = R`void sort3(int *a, int *b, int *c)
+{
+    /* TODO: sort the three values, smallest first, using swap */
+}`;
+	const SORT_SOLVED = R`void sort3(int *a, int *b, int *c)
+{
+    if (*a > *b)
+    {
+        swap(a, b);
+    }
+    if (*b > *c)
+    {
+        swap(b, c);
+    }
+    if (*a > *b)
+    {
+        swap(a, b);
+    }
+}`;
+	const COPY_MAIN = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int x = 4;
+    int y = 9;
+
+    swapCopy(x, y);
+    printf("x = %d, y = %d\n", x, y);
+    return 0;
+}`;
+	const ADD_MAIN = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int x = 5;
+
+    addTen(&x);
+    printf("x = %d\n", x);
+    return 0;
+}`;
+	const SWAP_MAIN_START = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int x = 4;
+    int y = 9;
+
+    /* TODO 4: swap x and y using swap */
+
+    printf("x = %d, y = %d\n", x, y);
+    return 0;
+}`;
+	const SWAP_MAIN_SOLVED = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int x = 4;
+    int y = 9;
+
+    swap(&x, &y);
+
+    printf("x = %d, y = %d\n", x, y);
+    return 0;
+}`;
+	const SORT_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+#include "calc.h"
+
+int main(void)
+{
+    int a;
+    int b;
+    int c;
+
+    printf("Three numbers: ");
+    scanf("%d %d %d", &a, &b, &c);
+    sort3(&a, &b, &c);
+
+    int values[3] = {a, b, c};
+    printf("sorted: %d %d %d (sum %d)\n", a, b, c, sumArray(values, 3));
+    return 0;
+}`;
+	const sorted3 = (a, b, c, want) => {
+		const [x, y, z] = want.split(" ");
+		return R`    x = ${a}; y = ${b}; z = ${c};
+    sort3(&x, &y, &z);
+    T_TRUE("sort3 on ${a} ${b} ${c} gives ${want}", x == ${x} && y == ${y} && z == ${z});`;
+	};
+	U.push(withOutputs({
+		id: "ptr-swap",
+		title: "לשנות משתנה של מי שקרא",
+		body: [
+			R`<p><code>swapCopy</code> ב-<code>calc.c</code> מנסה להחליף בין שני מספרים.</p>
+<p>הריצו: <code>x</code> ו-<code>y</code> לא התחלפו. עכשיו לחצו <b>⏯ שורה אחר שורה</b> והיכנסו לתוך <code>swapCopy</code>. יש לה <code>a</code> ו-<code>b</code> משלה, עותקים של 4 ו-9, והיא מחליפה רק אותם.</p>`,
+			{
+				id: "ptr-swap-copy",
+				title: "swapCopy",
+				code: COPY_MAIN,
+				files: project({ calc: {
+					h: calcH([P_COPY]),
+					c: calcC([SWAP_COPY])
+				} }),
+				tests: [io("x and y are not swapped", "", "x = 4, y = 9")]
+			},
+			R`<p>כדי שפונקציה תשנה משתנה של <code>main</code>, נותנים לה את <b>הכתובת</b> שלו, והיא כותבת דרכה.</p>
+<table class="tbl"><tr><th>בקוד</th><th>פירושו</th></tr>
+<tr><td class="mono">addTen(&amp;x)</td><td>שולחים את הכתובת של <code>x</code></td></tr>
+<tr><td class="mono">int *p</td><td><code>p</code> מחזיק כתובת</td></tr>
+<tr><td><code>*p += 10</code></td><td>מוסיפים 10 ל-<code>x</code> עצמו</td></tr></table>
+<p>הריצו וצעדו. בטבלת המשתנים, ליד <code>p</code> מופיע <code>→ x</code>.</p>`,
+			{
+				id: "ptr-swap-addten",
+				title: "addTen",
+				code: ADD_MAIN,
+				files: project({ calc: {
+					h: calcH([P_COPY, P_ADD]),
+					c: calcC([SWAP_COPY, ADD_TEN])
+				} }),
+				tests: [io("x becomes 15", "", "x = 15")]
+			},
+			R`<p>תורכם. <code>swap</code> עובדת כמו <code>addTen</code>, אבל עם שתי כתובות. ההערות ב-<code>calc.c</code> מראות את שלושת הצעדים.</p>`,
+			{
+				id: "ptr-swap-ptr",
+				title: "swap(&x, &y)",
+				task: "השלימו ב-<code>calc.c</code> את <code>swap</code> לפי ההערות, וב-<code>main.c</code> קראו לה עם הכתובות של <code>x</code> ו-<code>y</code>. התוכנית מדפיסה <code>x = 9, y = 4</code>.",
+				code: SWAP_MAIN_START,
+				solution: SWAP_MAIN_SOLVED,
+				files: project({ calc: {
+					h: calcH([
+						P_COPY,
+						P_ADD,
+						P_SWAP
+					]),
+					c: calcC([
+						SWAP_COPY,
+						ADD_TEN,
+						SWAP_START
+					])
+				} }),
+				solutionFiles: { "calc.c": calcC([
+					SWAP_COPY,
+					ADD_TEN,
+					SWAP_SOLVED
+				]) },
+				tests: [unit("swap on three pairs", R`
+void swap(int *a, int *b);
+int main(void)
+{
+    int a = 1, b = 9, c = 5, d = 5, e = -3;
+    swap(&a, &b);
+    T_INT("after swap(&a, &b) on 1 and 9: a", a, 9);
+    T_INT("after swap(&a, &b) on 1 and 9: b", b, 1);
+    swap(&c, &d);
+    T_TRUE("two equal values stay 5 and 5", c == 5 && d == 5);
+    swap(&e, &e);
+    T_INT("swap(&e, &e) leaves e as it was", e, -3);
+    return 0;
+}`), io("main prints x = 9, y = 4", "", "x = 9, y = 4")]
+			},
+			R`<p><code>sort3</code> מסדרת שלושה מספרים מהקטן לגדול, בעזרת <code>swap</code>. בתוך <code>sort3</code>, <code>a</code> כבר כתובת, ולכן מעבירים אותה כמו שהיא:</p>
+<pre class="code-static"><span>if (*a &gt; *b)</span><span>{</span><span>    swap(a, b);</span><span>}</span></pre>
+<p>שלוש השוואות כאלה מספיקות.</p>`,
+			{
+				id: "ptr-swap-sort3",
+				title: "sort3",
+				task: "כתבו ב-<code>calc.c</code> את <code>sort3</code> בעזרת <code>swap</code>. עבור <code>9 2 5</code> התוכנית מדפיסה <code>sorted: 2 5 9 (sum 16)</code>.",
+				code: taskIn("calc.c", SORT_MAIN),
+				solution: SORT_MAIN,
+				files: project({
+					arrays: ARRAYS,
+					calc: {
+						h: calcH([
+							P_COPY,
+							P_ADD,
+							P_SWAP,
+							P_SORT
+						]),
+						c: calcC([
+							SWAP_COPY,
+							ADD_TEN,
+							SWAP_SOLVED,
+							SORT_START
+						])
+					}
+				}),
+				solutionFiles: { "calc.c": calcC([
+					SWAP_COPY,
+					ADD_TEN,
+					SWAP_SOLVED,
+					SORT_SOLVED
+				]) },
+				tests: [unit("sort3", R`
+void sort3(int *a, int *b, int *c);
+int main(void)
+{
+    int x, y, z;
+` + [
+					[
+						"1",
+						"2",
+						"3"
+					],
+					[
+						"3",
+						"2",
+						"1"
+					],
+					[
+						"2",
+						"3",
+						"1"
+					],
+					[
+						"3",
+						"1",
+						"2"
+					],
+					[
+						"1",
+						"3",
+						"2"
+					],
+					[
+						"2",
+						"1",
+						"3"
+					]
+				].map(([a, b, c]) => sorted3(a, b, c, "1 2 3")).join("\n") + "\n" + sorted3("2", "1", "2", "1 2 2") + "\n" + sorted3("-4", "0", "-9", "-9 -4 0") + R`
+    return 0;
+}`), io("9 2 5 prints sorted: 2 5 9 (sum 16)", "9 2 5\n", "Three numbers: sorted: 2 5 9 (sum 16)")]
+			}
+		],
+		quiz: [
+			{
+				s: "למה <code>swapCopy(x, y)</code> לא החליפה את <code>x</code> ו-<code>y</code>?",
+				o: [
+					"כי <code>temp</code> נמחק בסוף הפונקציה",
+					"כי <code>a</code> ו-<code>b</code> הם עותקים של <code>x</code> ו-<code>y</code>",
+					"כי הפונקציה מחזירה <code>void</code>"
+				],
+				a: 1,
+				w: "הפונקציה קיבלה עותקים והחליפה רק אותם."
+			},
+			{
+				s: "<code>x</code> הוא 5. כמה הוא אחרי <code>addTen(&amp;x);</code>?",
+				o: [
+					"5",
+					"10",
+					"15"
+				],
+				a: 2,
+				w: "<code>addTen</code> כתבה לתוך <code>x</code> דרך הכתובת שלו."
+			},
+			{
+				s: "בתוך <code>sort3(int *a, int *b, int *c)</code>, איך קוראים ל-<code>swap</code>?",
+				o: [
+					"<code>swap(a, b);</code>",
+					"<code>swap(&amp;a, &amp;b);</code>",
+					"<code>swap(*a, *b);</code>"
+				],
+				a: 0,
+				w: "<code>a</code> כבר מחזיק כתובת, ו-<code>swap</code> מצפה לכתובת."
+			},
+			{
+				s: "<code>x</code> הוא 4 ו-<code>y</code> הוא 9. איזו מהקריאות הבאות <b>לא</b> תחליף ביניהם?",
+				o: [
+					"<code>swap(&amp;x, &amp;y);</code>",
+					"<code>swapCopy(x, y);</code>",
+					"<code>swap(&amp;y, &amp;x);</code>"
+				],
+				a: 1,
+				w: "<code>swapCopy</code> מקבלת עותקים, ולכן <code>x</code> ו-<code>y</code> לא זזים."
+			}
+		]
+	}));
+	const C_MINMAX = {
+		p: "/* writes the smallest value of arr into *min and the largest into *max; size > 0 */\nvoid minMax(int arr[], int size, int *min, int *max);",
+		b: R`void minMax(int arr[], int size, int *min, int *max)
+{
+    *min = arr[0];
+    *max = arr[0];
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] < *min)
+        {
+            *min = arr[i];
+        }
+        if (arr[i] > *max)
+        {
+            *max = arr[i];
+        }
+    }
+}`
+	};
+	const MINMAX_MAIN = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int temps[5] = {18, 25, 12, 30, 21};
+    int low = 0;
+    int high = 0;
+
+    minMax(temps, 5, &low, &high);
+    printf("low: %d, high: %d\n", low, high);
+    return 0;
+}`;
+	const DIVIDE_START = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int q = 0;
+    int r = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    /* TODO: call divide, so that q gets a / b and r gets a % b */
+    printf("%d / %d = %d, remainder %d\n", a, b, q, r);
+    return 0;
+}`;
+	const DIVIDE_SOLVED = DIVIDE_START.replace("    /* TODO: call divide, so that q gets a / b and r gets a % b */\n", "    divide(a, b, &q, &r);\n");
+	U.push(withOutputs({
+		id: "ptr-outparams",
+		title: "כמה תוצאות מפונקציה",
+		body: [
+			R`<p>פונקציה מחזירה ב-<code>return</code> ערך אחד. כדי לתת יותר, היא מקבלת כתובות, וכותבת לתוכן. פרמטר כזה נקרא <b>פרמטר פלט</b> (<bdi dir="ltr">out-parameter</bdi>).</p>
+<table class="tbl"><tr><th>איפה</th><th>מה כתוב</th></tr>
+<tr><td>הקריאה ב-<code>main</code></td><td class="mono">minMax(temps, 5, &amp;low, &amp;high);</td></tr>
+<tr><td>בתוך <code>minMax</code></td><td class="mono">*min = arr[i];</td></tr></table>`,
+			{
+				id: "ptr-outparams-minmax",
+				title: "minMax",
+				code: MINMAX_MAIN,
+				files: project({ calc: calcOf([C_SAFE, C_MINMAX]) }),
+				tests: [io("low 12, high 30", "", "low: 12, high: 30")]
+			},
+			R`<p>תורכם: <code>divide</code> נותנת שתי תוצאות, המנה והשארית. כתבו אותה לפי החוזה ב-<code>calc.h</code>, וקראו לה ב-<code>main.c</code>.</p>`,
+			{
+				id: "ptr-outparams-divide",
+				title: "divide: מנה ושארית",
+				task: "כתבו ב-<code>calc.c</code> את <code>divide</code>, ובמקום ה-TODO ב-<code>main.c</code> קראו לה.",
+				code: DIVIDE_START,
+				solution: DIVIDE_SOLVED,
+				files: project({ calc: calcOf([
+					C_SAFE,
+					C_MINMAX,
+					contractOf(C_DIVIDE)
+				]) }),
+				solutionFiles: { "calc.c": calcOf([
+					C_SAFE,
+					C_MINMAX,
+					C_DIVIDE
+				]).c },
+				tests: [
+					unit("divide on four pairs", R`
+void divide(int a, int b, int *q, int *r);
+int main(void)
+{
+    int q = -99, r = -99;
+    divide(17, 5, &q, &r);
+    T_INT("divide(17, 5): q", q, 3);
+    T_INT("divide(17, 5): r", r, 2);
+    divide(20, 4, &q, &r);
+    T_TRUE("divide(20, 4) gives 5 and 0", q == 5 && r == 0);
+    divide(3, 7, &q, &r);
+    T_TRUE("divide(3, 7) gives 0 and 3", q == 0 && r == 3);
+    divide(-7, 2, &q, &r);
+    T_TRUE("divide(-7, 2) gives -3 and -1", q == -3 && r == -1);
+    return 0;
+}`),
+					io("17 and 5", "17 5\n", "Two numbers: 17 / 5 = 3, remainder 2"),
+					io("100 and 10", "100 10\n", "Two numbers: 100 / 10 = 10, remainder 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מי כותב את הערך לתוך פרמטר פלט?",
+				o: [
+					"מי שקרא, לפני הקריאה",
+					"הפונקציה, דרך הכתובת שקיבלה",
+					"ה-<code>return</code>"
+				],
+				a: 1,
+				w: "הפונקציה כותבת <code>*min = ...</code>, ומי שקרא רואה את זה במשתנה שלו."
+			},
+			{
+				s: "איך קוראים ל-<code>void half(int n, int *out)</code> כדי שהתוצאה תיכנס ל-<code>h</code>?",
+				o: [
+					"<code>half(10, h);</code>",
+					"<code>half(10, *h);</code>",
+					"<code>half(10, &amp;h);</code>"
+				],
+				a: 2,
+				w: "פרמטר פלט מקבל כתובת."
+			},
+			{
+				s: "<code>minMax(temps, 5, low, high);</code> בלי <code>&amp;</code>. מה <b>לא</b> נכון?",
+				o: [
+					"gcc עוצר: <code>low</code> הוא <code>int</code>, לא כתובת",
+					"<code>low</code> ו-<code>high</code> יקבלו את התוצאות",
+					"צריך לכתוב <code>&amp;low</code> ו-<code>&amp;high</code>"
+				],
+				a: 1,
+				w: "בלי הכתובות הפונקציה לא יכולה לכתוב למשתנים של <code>main</code>."
+			}
+		]
+	}));
+	const C_FIND = {
+		p: "/* when value is in arr returns 1 and writes its first index into *index; else returns 0 */\nint findIndex(int arr[], int size, int value, int *index);",
+		b: R`int findIndex(int arr[], int size, int value, int *index)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == value)
+        {
+            *index = i;
+            return 1;
+        }
+    }
+    return 0;
+}`
+	};
+	const FIND_MAIN = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int seats[6] = {12, 7, 33, 7, 50, 21};
+    int where = 0;
+
+    if (findIndex(seats, 6, 33, &where))
+    {
+        printf("33 is at index %d\n", where);
+    }
+    if (!findIndex(seats, 6, 99, &where))
+    {
+        printf("99 is not there\n");
+    }
+    return 0;
+}`;
+	const SAFE_DIV_START = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int a = 0;
+    int b = 0;
+    int q = 0;
+    int r = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &a, &b);
+    /* TODO: call divideSafe; print the result as in the example, or "cannot divide by 0" */
+    return 0;
+}`;
+	const SAFE_DIV_SOLVED = SAFE_DIV_START.replace("    /* TODO: call divideSafe; print the result as in the example, or \"cannot divide by 0\" */\n", R`    if (divideSafe(a, b, &q, &r))
+    {
+        printf("%d / %d = %d, remainder %d\n", a, b, q, r);
+    }
+    else
+    {
+        printf("cannot divide by 0\n");
+    }
+`);
+	U.push(withOutputs({
+		id: "ptr-status",
+		title: "ערך החזרה של הצלחה",
+		body: [
+			R`<p>לפעמים אין תוצאה: הערך לא נמצא, או שאי אפשר לחשב. אז הפונקציה מחזירה <b>האם הצליחה</b>, והתוצאה עצמה יוצאת דרך מצביע:</p>
+<table class="tbl"><tr><th>מחזירה</th><th>פירושו</th><th>במצביע</th></tr>
+<tr><td class="mono">1</td><td>הצליחה</td><td>התוצאה</td></tr>
+<tr><td class="mono">0</td><td>לא הצליחה</td><td>לא נכתב כלום</td></tr></table>
+<p>מי שקרא בודק את הערך המוחזר, ורק אחרי הצלחה משתמש בתוצאה.</p>`,
+			{
+				id: "ptr-status-find",
+				title: "findIndex",
+				code: FIND_MAIN,
+				files: project({ calc: calcOf([
+					C_SAFE,
+					C_DIVIDE,
+					C_FIND
+				]) }),
+				tests: [io("33 found, 99 not", "", "33 is at index 2\n99 is not there")]
+			},
+			R`<p>תורכם: <code>divideSafe</code> היא <code>divide</code> מהשיעור הקודם, עם ערך החזרה. כש-<code>b</code> הוא 0 היא מחזירה 0 ולא כותבת כלום.</p>`,
+			{
+				id: "ptr-status-divide",
+				title: "divideSafe",
+				task: "כתבו ב-<code>calc.c</code> את <code>divideSafe</code>, ובמקום ה-TODO ב-<code>main.c</code> קראו לה והדפיסו לפי הדוגמה.",
+				code: SAFE_DIV_START,
+				solution: SAFE_DIV_SOLVED,
+				files: project({ calc: calcOf([
+					C_SAFE,
+					C_DIVIDE,
+					contractOf(C_DIVIDE_SAFE, "return -1;")
+				]) }),
+				solutionFiles: { "calc.c": calcOf([
+					C_SAFE,
+					C_DIVIDE,
+					C_DIVIDE_SAFE
+				]).c },
+				tests: [
+					unit("divideSafe", R`
+int divideSafe(int a, int b, int *q, int *r);
+int main(void)
+{
+    int q = -99, r = -99;
+    T_INT("divideSafe(17, 5) returns 1", divideSafe(17, 5, &q, &r), 1);
+    T_TRUE("divideSafe(17, 5) gives 3 and 2", q == 3 && r == 2);
+    q = -99;
+    r = -99;
+    T_INT("divideSafe(8, 0) returns 0", divideSafe(8, 0, &q, &r), 0);
+    T_TRUE("divideSafe(8, 0) writes nothing", q == -99 && r == -99);
+    T_INT("divideSafe(0, 4) returns 1", divideSafe(0, 4, &q, &r), 1);
+    T_TRUE("divideSafe(0, 4) gives 0 and 0", q == 0 && r == 0);
+    return 0;
+}`),
+					io("17 and 5", "17 5\n", "Two numbers: 17 / 5 = 3, remainder 2"),
+					io("8 and 0", "8 0\n", "Two numbers: cannot divide by 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "למה <code>findIndex</code> מחזירה 1 או 0, ולא את האינדקס עצמו?",
+				o: [
+					"כי כל אינדקס, גם 0, יכול להיות תשובה נכונה, וצריך דרך לומר \"לא נמצא\"",
+					"כי פונקציה לא יכולה להחזיר אינדקס",
+					"כי כך היא מהירה יותר"
+				],
+				a: 0,
+				w: "הערך המוחזר אומר אם הצליחה, והאינדקס יוצא דרך המצביע."
+			},
+			{
+				s: "<code>if (divideSafe(9, 0, &amp;q, &amp;r))</code>. מה קורה?",
+				o: [
+					"התנאי נכון, ו-<code>q</code> הוא 0",
+					"התוכנית קורסת",
+					"התנאי לא נכון, ו-<code>q</code> לא השתנה"
+				],
+				a: 2,
+				w: "חלוקה ב-0: מחזירה 0 ולא כותבת."
+			},
+			{
+				s: "<code>findIndex</code> החזירה 0. מה <b>לא</b> כדאי לעשות?",
+				o: [
+					"להשתמש בערך שב-<code>*index</code>",
+					"להדפיס שהערך לא נמצא",
+					"לבדוק את הערך המוחזר לפני השימוש"
+				],
+				a: 0,
+				w: "אחרי 0 לא נכתב שם כלום."
+			}
+		]
+	}));
+	{
+		const READ_ONLY_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int gold = 3;
+    int silver = 8;
+    const int *p = &gold;
+
+    printf("*p = %d\n", *p);
+    p = &silver;
+    printf("*p = %d\n", *p);
+    return 0;
+}`;
+		const FIXED_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int gold = 3;
+    int *const p = &gold;
+
+    *p = 10;
+    printf("gold = %d\n", gold);
+    return 0;
+}`;
+		const CONST_START = R`#include <stdio.h>
+
+/* TODO: add const where a function only reads through its pointer */
+int larger(int *a, int *b);
+int isPositive(int *p);
+void reset(int *p);
+
+int main(void)
+{
+    int x = 0;
+    int y = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &x, &y);
+    printf("larger: %d\n", larger(&x, &y));
+    printf("x positive: %d\n", isPositive(&x));
+    reset(&x);
+    printf("x after reset: %d\n", x);
+    return 0;
+}
+
+int larger(int *a, int *b)
+{
+    if (*a > *b)
+    {
+        return *a;
+    }
+    return *b;
+}
+
+int isPositive(int *p)
+{
+    return *p > 0;
+}
+
+void reset(int *p)
+{
+    *p = 0;
+}`;
+		const CONST_SOLVED = CONST_START.replace("/* TODO: add const where a function only reads through its pointer */\n", "").split("int larger(int *a, int *b)").join("int larger(const int *a, const int *b)").split("int isPositive(int *p)").join("int isPositive(const int *p)");
+		const CONST_PTR = "(const int|int const) \\* \\w+";
+		U.push(withOutputs({
+			id: "ptr-const",
+			title: "מצביע לקריאה בלבד: const",
+			body: [
+				R`<p><code>const int *p</code>: אפשר לקרוא דרך <code>p</code>, אבל לא לכתוב. את <code>p</code> עצמו מותר להזיז למשתנה אחר. כתיבה דרכו עוצרת את gcc:</p>
+<pre class="code-static"><span>*p = 5;</span><span>error: assignment of read-only location '*p'</span></pre>`,
+				{
+					id: "ptr-const-read",
+					title: "קוראים בלבד",
+					code: READ_ONLY_MAIN,
+					files: project({}),
+					tests: [io("reads gold, then silver", "", "*p = 3\n*p = 8")]
+				},
+				R`<p>כש-<code>const</code> בא אחרי הכוכבית, ההפך: <code>int *const p</code> כותב דרכו, אבל תמיד מצביע על אותו משתנה.</p>
+<table class="tbl"><tr><th>הגדרה</th><th>לכתוב דרכו</th><th>להזיז אותו</th></tr>
+<tr><td class="mono">const int *p</td><td>✗</td><td>✓</td></tr>
+<tr><td class="mono">int *const p</td><td>✓</td><td>✗</td></tr>
+<tr><td class="mono">const int *const p</td><td>✗</td><td>✗</td></tr></table>`,
+				{
+					id: "ptr-const-fixed",
+					title: "מצביע שלא זז",
+					code: FIXED_MAIN,
+					files: project({}),
+					tests: [io("gold becomes 10", "", "gold = 10")]
+				},
+				R`<p>בפרמטר, <code>const int *</code> מבטיח למי שקרא: "אני רק קורא". gcc עוצר אם הפונקציה בכל זאת כותבת. ב-<code>safeValue</code> משיעור "מצביע ריק" הפרמטר כבר כזה.</p>`,
+				{
+					id: "ptr-const-params",
+					title: "const בפרמטרים",
+					task: "הוסיפו <code>const</code> לפרמטרים של שתי הפונקציות שרק קוראות, באבות הטיפוס ובהגדרות. אל תשנו את <code>reset</code>.",
+					code: CONST_START,
+					solution: CONST_SOLVED,
+					files: project({}),
+					tests: [
+						io("4 and 9", "4 9\n", "Two numbers: larger: 9\nx positive: 1\nx after reset: 0"),
+						io("-3 and -8", "-3 -8\n", "Two numbers: larger: -3\nx positive: 0\nx after reset: 0"),
+						{
+							type: "src",
+							name: "larger takes two const pointers",
+							require: "larger \\( " + CONST_PTR + " , " + CONST_PTR + " \\)",
+							msg: "larger only reads: both of its pointers can be const int *"
+						},
+						{
+							type: "src",
+							name: "isPositive takes a const pointer",
+							require: "isPositive \\( " + CONST_PTR + " \\)",
+							msg: "isPositive only reads: its pointer can be const int *"
+						}
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "<code>const int *p = &amp;x;</code>. איזו שורה לא תתקמפל?",
+					o: [
+						"<code>printf(\"%d\", *p);</code>",
+						"<code>*p = 1;</code>",
+						"<code>p = &amp;y;</code>"
+					],
+					a: 1,
+					w: "דרך <code>const int *</code> אפשר רק לקרוא."
+				},
+				{
+					s: "<code>int *const p = &amp;x;</code>. מה מותר?",
+					o: [
+						"<code>*p = 1;</code>",
+						"<code>p = &amp;y;</code>",
+						"שניהם"
+					],
+					a: 0,
+					w: "המצביע עצמו קבוע, והמשתנה שהוא מצביע עליו לא."
+				},
+				{
+					s: "לאיזו פונקציה <b>לא</b> מתאים פרמטר <code>const int *p</code>?",
+					o: [
+						"פונקציה שמחזירה <code>*p * 2</code>",
+						"פונקציה שבודקת אם <code>*p</code> זוגי",
+						"פונקציה שמאפסת את <code>*p</code>"
+					],
+					a: 2,
+					w: "איפוס כותב דרך המצביע."
+				}
+			]
+		}));
+	}
+	{
+		const C_SWAP = {
+			p: "/* swaps the two ints a and b point to */\nvoid swap(int *a, int *b);",
+			b: R`void swap(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}`
+		};
+		const C_SWAP_IF = {
+			p: "/* when *a > *b swaps them and returns 1; else changes nothing and returns 0 */\nint swapIfGreater(int *a, int *b);",
+			b: R`int swapIfGreater(int *a, int *b)
+{
+    if (*a > *b)
+    {
+        swap(a, b);
+        return 1;
+    }
+    return 0;
+}`
+		};
+		const ORDER_START = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int first = 0;
+    int second = 0;
+
+    printf("Two numbers: ");
+    scanf("%d %d", &first, &second);
+    /* TODO: call swapIfGreater, then print as in the example */
+    return 0;
+}`;
+		const ORDER_SOLVED = ORDER_START.replace("    /* TODO: call swapIfGreater, then print as in the example */\n", R`    int changed = swapIfGreater(&first, &second);
+    printf("sorted: %d %d\n", first, second);
+    printf("swapped: %d\n", changed);
+`);
+		U.push(withOutputs({
+			id: "ptr-review1",
+			title: "חזרה: מצביעים 1",
+			body: [R`<p>חצי הפרק יחד. <code>swapIfGreater</code> מחליפה בין שני מספרים רק כשהראשון גדול מהשני, ומחזירה אם החליפה. בתוכה מותר לקרוא ל-<code>swap</code>, שכבר נמצאת ב-<code>calc.c</code>.</p>
+<p>ב-<code>main.c</code> קוראים לה, ומדפיסים את שני המספרים מהקטן לגדול, ואם הייתה החלפה.</p>`, {
+				id: "ptr-review1-order",
+				title: "swapIfGreater",
+				task: "כתבו ב-<code>calc.c</code> את <code>swapIfGreater</code> לפי החוזה, ובמקום ה-TODO ב-<code>main.c</code> קראו לה והדפיסו.",
+				code: ORDER_START,
+				solution: ORDER_SOLVED,
+				files: project({ calc: calcOf([
+					C_SAFE,
+					C_SWAP,
+					contractOf(C_SWAP_IF, "return -1;")
+				]) }),
+				solutionFiles: { "calc.c": calcOf([
+					C_SAFE,
+					C_SWAP,
+					C_SWAP_IF
+				]).c },
+				tests: [
+					unit("swapIfGreater", R`
+int swapIfGreater(int *a, int *b);
+int main(void)
+{
+    int a = 9, b = 4;
+    T_INT("swapIfGreater on 9 and 4 returns 1", swapIfGreater(&a, &b), 1);
+    T_TRUE("9 and 4 become 4 and 9", a == 4 && b == 9);
+    T_INT("again on 4 and 9 returns 0", swapIfGreater(&a, &b), 0);
+    T_TRUE("4 and 9 stay", a == 4 && b == 9);
+    int c = 5, d = 5;
+    T_INT("equal values return 0", swapIfGreater(&c, &d), 0);
+    return 0;
+}`),
+					io("9 and 4", "9 4\n", "Two numbers: sorted: 4 9\nswapped: 1"),
+					io("2 and 6", "2 6\n", "Two numbers: sorted: 2 6\nswapped: 0")
+				]
+			}],
+			quiz: [
+				{
+					s: "<code>int *p = &amp;x;</code>. מה הוא <code>*p</code>?",
+					o: [
+						"הכתובת של <code>x</code>",
+						"המשתנה <code>x</code> עצמו",
+						"עותק של <code>p</code>"
+					],
+					a: 1,
+					w: "<code>*p</code> הולך לכתובת ש-<code>p</code> מחזיק."
+				},
+				{
+					s: "<code>int* a, b;</code>. מה הטיפוס של <code>b</code>?",
+					o: [
+						"<code>int</code>",
+						"<code>int*</code>",
+						"<code>int**</code>"
+					],
+					a: 0,
+					w: "הכוכבית שייכת רק לשם שאחריה."
+				},
+				{
+					s: "איך בודקים שמצביע מצביע על משהו לפני <code>*p</code>?",
+					o: [
+						"<code>if (*p)</code>",
+						"<code>if (p != NULL)</code>",
+						"אי אפשר"
+					],
+					a: 1,
+					w: "משווים את המצביע עצמו ל-<code>NULL</code>."
+				},
+				{
+					s: "בתוך <code>swapIfGreater(int *a, int *b)</code>, איך קוראים ל-<code>swap</code>?",
+					o: [
+						"<code>swap(&amp;a, &amp;b);</code>",
+						"<code>swap(*a, *b);</code>",
+						"<code>swap(a, b);</code>"
+					],
+					a: 2,
+					w: "<code>a</code> ו-<code>b</code> כבר כתובות."
+				},
+				{
+					s: "פונקציה מחזירה 0 כשלא הצליחה. מה עושה מי שקרא לה?",
+					o: [
+						"בודק את הערך המוחזר לפני שהוא משתמש בתוצאה",
+						"משתמש בתוצאה בכל מקרה",
+						"קורא לה שוב"
+					],
+					a: 0,
+					w: "אחרי 0 התוצאה לא נכתבה."
+				},
+				{
+					s: "איזה מהבאים <b>לא</b> מותר כש-<code>const int *p = &amp;x;</code>?",
+					o: [
+						"<code>p = &amp;y;</code>",
+						"<code>*p = 3;</code>",
+						"<code>int v = *p;</code>"
+					],
+					a: 1,
+					w: "דרך <code>const int *</code> אי אפשר לכתוב."
+				},
+				{
+					s: "<code>int *p;</code> בלי ערך, ואחריו <code>*p = 1;</code>. מה <b>לא</b> נכון?",
+					o: [
+						"<code>p</code> מצביע למקום אקראי",
+						"gcc עוצר ולא מקמפל",
+						"התוכנית יכולה לקרוס"
+					],
+					a: 1,
+					w: "gcc רק מזהיר. הבאג נשאר בתוכנית."
+				}
+			]
+		}));
+	}
+	const PLUS_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int nums[4] = {10, 20, 30, 40};
+    int *p = &nums[0];
+
+    printf("*p = %d\n", *p);
+    printf("*(p + 1) = %d\n", *(p + 1));
+    printf("*(p + 3) = %d\n", *(p + 3));
+    return 0;
+}`;
+	const MINUS_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int nums[6] = {4, 8, 15, 16, 23, 42};
+    int *start = &nums[1];
+    int *end = &nums[5];
+
+    printf("end - start = %d\n", (int)(end - start));
+    return 0;
+}`;
+	const C_BETWEEN = {
+		p: "/* returns how many elements there are from from up to (not including) to; both point into one array */\nint countBetween(const int *from, const int *to);",
+		b: R`int countBetween(const int *from, const int *to)
+{
+    return to - from;
+}`
+	};
+	const BETWEEN_START = R`#include <stdio.h>
+#include "calc.h"
+
+int main(void)
+{
+    int line[8] = {7, 1, 9, 3, 3, 8, 2, 6};
+    int a = 0;
+    int b = 0;
+
+    printf("Two indices: ");
+    scanf("%d %d", &a, &b);
+    /* TODO: print countBetween of the addresses of line[a] and line[b], as in the example */
+    return 0;
+}`;
+	const BETWEEN_SOLVED = BETWEEN_START.replace("    /* TODO: print countBetween of the addresses of line[a] and line[b], as in the example */\n", "    printf(\"between: %d\\n\", countBetween(&line[a], &line[b]));\n");
+	U.push(withOutputs({
+		id: "ptr-arith",
+		title: "חשבון מצביעים",
+		body: [
+			R`<p>מצביע לתא במערך אפשר לקדם. <code>p + 1</code> הוא <b>התא הבא</b>, לא הבית הבא: עם <code>int</code> הכתובת גדלה ב-4, הגודל של תא אחד.</p>
+<table class="tbl"><tr><th>ביטוי</th><th>התא</th><th>ערך</th></tr>
+<tr><td class="mono">*p</td><td class="mono">nums[0]</td><td class="mono">10</td></tr>
+<tr><td class="mono">*(p + 1)</td><td class="mono">nums[1]</td><td class="mono">20</td></tr>
+<tr><td class="mono">*(p + 3)</td><td class="mono">nums[3]</td><td class="mono">40</td></tr></table>`,
+			{
+				id: "ptr-arith-plus",
+				title: "p + 1",
+				code: PLUS_MAIN,
+				files: project({}),
+				tests: [io("10, 20 and 40", "", "*p = 10\n*(p + 1) = 20\n*(p + 3) = 40")]
+			},
+			R`<p>הפרש של שני מצביעים לאותו מערך הוא <b>מספר התאים</b> ביניהם. כאן <code>start</code> על תא 1 ו-<code>end</code> על תא 5, ולכן <code>end - start</code> הוא 4.</p>`,
+			{
+				id: "ptr-arith-minus",
+				title: "end - start",
+				code: MINUS_MAIN,
+				files: project({}),
+				tests: [io("4 cells", "", "end - start = 4")]
+			},
+			R`<p>תורכם: <code>countBetween</code> מקבלת שני מצביעים לאותו מערך ומחזירה כמה תאים ביניהם. ב-<code>main.c</code> שלחו לה את הכתובות של <code>line[a]</code> ו-<code>line[b]</code>.</p>`,
+			{
+				id: "ptr-arith-between",
+				title: "countBetween",
+				task: "כתבו ב-<code>calc.c</code> את <code>countBetween</code>, ובמקום ה-TODO ב-<code>main.c</code> הדפיסו את התוצאה.",
+				code: BETWEEN_START,
+				solution: BETWEEN_SOLVED,
+				files: project({ calc: calcOf([C_SAFE, contractOf(C_BETWEEN, "return -1;")]) }),
+				solutionFiles: { "calc.c": calcOf([C_SAFE, C_BETWEEN]).c },
+				tests: [
+					unit("countBetween", R`
+int countBetween(const int *from, const int *to);
+int main(void)
+{
+    int a[10] = {0};
+    T_INT("from a[2] to a[7]", countBetween(&a[2], &a[7]), 5);
+    T_INT("the same pointer gives 0", countBetween(&a[4], &a[4]), 0);
+    T_INT("the whole array: a[0] to a[10]", countBetween(&a[0], &a[10]), 10);
+    return 0;
+}`),
+					io("1 and 6", "1 6\n", "Two indices: between: 5"),
+					io("3 and 3", "3 3\n", "Two indices: between: 0")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>p</code> מצביע על <code>int</code> בכתובת 1000. מה הכתובת של <code>p + 1</code>?",
+				o: [
+					"1001",
+					"1004",
+					"1008"
+				],
+				a: 1,
+				w: "<code>p + 1</code> מתקדם בתא שלם, 4 בתים."
+			},
+			{
+				s: "<code>p = &amp;a[2]</code> ו-<code>q = &amp;a[9]</code>. כמה הוא <code>q - p</code>?",
+				o: [
+					"7",
+					"28",
+					"9"
+				],
+				a: 0,
+				w: "מספר התאים, לא מספר הבתים."
+			},
+			{
+				s: "<code>int *p = &amp;a[0];</code>. איזה מהביטויים הבאים <b>אינו</b> <code>a[2]</code>?",
+				o: [
+					"<code>*(p + 2)</code>",
+					"<code>*p + 2</code>",
+					"<code>p[2]</code>"
+				],
+				a: 1,
+				w: "<code>*p + 2</code> הוא הערך של <code>a[0]</code> ועוד 2."
+			}
+		]
+	}));
+	const INCR_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int vals[3] = {5, 10, 15};
+    int *p = &vals[0];
+
+    int a = *p++;
+    printf("a = %d, now *p = %d\n", a, *p);
+    (*p)++;
+    printf("vals: %d %d %d\n", vals[0], vals[1], vals[2]);
+    return 0;
+}`;
+	const ADD_ONE_START = R`#include <stdio.h>
+
+void addOneToAll(int *p, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        /* TODO: this moves p but adds nothing; add 1 to the value, then move p */
+        *p++;
+    }
+}
+
+int main(void)
+{
+    int marks[4] = {0};
+
+    printf("4 marks: ");
+    for (int i = 0; i < 4; i++)
+    {
+        scanf("%d", &marks[i]);
+    }
+    addOneToAll(&marks[0], 4);
+    printf("%d %d %d %d\n", marks[0], marks[1], marks[2], marks[3]);
+    return 0;
+}`;
+	const ADD_ONE_SOLVED = ADD_ONE_START.replace("        /* TODO: this moves p but adds nothing; add 1 to the value, then move p */\n        *p++;\n", "        (*p)++;\n        p++;\n");
+	U.push(withOutputs({
+		id: "ptr-incr",
+		title: "קידום: *p++ מול (*p)++",
+		body: [
+			R`<p>שני ביטויים שנראים דומים, ועושים דברים שונים:</p>
+<table class="tbl"><tr><th>ביטוי</th><th>מה קורה</th></tr>
+<tr><td class="mono">*p++</td><td>קורא את <code>*p</code>, ואז מזיז את <code>p</code> לתא הבא. הערך לא משתנה</td></tr>
+<tr><td class="mono">(*p)++</td><td>מוסיף 1 לערך ש-<code>p</code> מצביע עליו. <code>p</code> לא זז</td></tr></table>
+<p>צעדו עם ⏯ ועקבו אחרי החץ של <code>p</code> ואחרי <code>vals</code>.</p>`,
+			{
+				id: "ptr-incr-both",
+				title: "שני הביטויים",
+				code: INCR_MAIN,
+				files: project({}),
+				tests: [io("a is 5, vals[1] becomes 11", "", "a = 5, now *p = 10\nvals: 5 11 15")]
+			},
+			R`<p>תורכם: <code>addOneToAll</code> צריכה להוסיף 1 לכל ציון, אבל הלולאה רק מזיזה את <code>p</code>. gcc אפילו מזהיר: <code>value computed is not used</code>.</p>`,
+			{
+				id: "ptr-incr-fix",
+				title: "גם להוסיף, גם לזוז",
+				task: "תקנו את גוף הלולאה ב-<code>addOneToAll</code>: הוסיפו 1 לערך, ואז הזיזו את <code>p</code>.",
+				code: ADD_ONE_START,
+				solution: ADD_ONE_SOLVED,
+				files: project({}),
+				tests: [io("70 80 90 100", "70 80 90 100\n", "4 marks: 71 81 91 101"), io("negatives and zero", "-1 0 -5 9\n", "4 marks: 0 1 -4 10")]
+			}
+		],
+		quiz: [
+			{
+				s: "איזה מהשניים משנה את הערך שבמערך?",
+				o: [
+					"<code>*p++</code>",
+					"<code>(*p)++</code>",
+					"שניהם"
+				],
+				a: 1,
+				w: "<code>(*p)++</code> מוסיף 1 לערך עצמו."
+			},
+			{
+				s: "<code>p</code> מצביע על <code>a[0]</code>. איפה הוא אחרי <code>x = *p++;</code>?",
+				o: [
+					"על <code>a[0]</code>",
+					"על <code>a[1]</code>",
+					"ב-<code>NULL</code>"
+				],
+				a: 1,
+				w: "<code>p++</code> מזיז אותו לתא הבא, ו-<code>x</code> קיבל את <code>a[0]</code>."
+			},
+			{
+				s: "<code>int v = 4; int *p = &amp;v; (*p)++;</code>. מה <b>לא</b> נכון אחרי זה?",
+				o: [
+					"<code>v</code> הוא 5",
+					"<code>p</code> עדיין מצביע על <code>v</code>",
+					"<code>p</code> זז לכתובת הבאה"
+				],
+				a: 2,
+				w: "הסוגריים גורמים להוסיף לערך, לא למצביע."
+			}
+		]
+	}));
+	const NAME_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int days[3] = {12, 7, 30};
+    int *p = days;
+
+    printf("days == &days[0]: %d\n", days == &days[0]);
+    printf("*p = %d\n", *p);
+    return 0;
+}`;
+	const SAME_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int days[3] = {12, 7, 30};
+
+    for (int i = 0; i < 3; i++)
+    {
+        printf("days[%d] = %d, *(days + %d) = %d\n", i, days[i], i, *(days + i));
+    }
+    return 0;
+}`;
+	const WALK_START = R`#include <stdio.h>
+
+int sumWalk(const int *arr, int size)
+{
+    /* TODO: return the sum of the size values, moving a pointer; no [ ] in this function */
+    return 0;
+}
+
+int main(void)
+{
+    int bills[5] = {0};
+
+    printf("5 bills: ");
+    for (int i = 0; i < 5; i++)
+    {
+        scanf("%d", &bills[i]);
+    }
+    printf("sum: %d\n", sumWalk(bills, 5));
+    return 0;
+}`;
+	const WALK_SOLVED = WALK_START.replace("    /* TODO: return the sum of the size values, moving a pointer; no [ ] in this function */\n    return 0;\n", R`    int sum = 0;
+    const int *end = arr + size;
+    for (const int *p = arr; p < end; p++)
+    {
+        sum += *p;
+    }
+    return sum;
+`);
+	U.push(withOutputs({
+		id: "ptr-array",
+		title: "מערך ומצביע",
+		body: [
+			R`<p>שם של מערך הוא הכתובת של התא הראשון שלו: <code>days</code> שווה ל-<code>&amp;days[0]</code>. לכן אפשר לכתוב <code>int *p = days;</code> בלי <code>&amp;</code>.</p>
+<p>כך גם פונקציה שמקבלת מערך: היא מקבלת את הכתובת הזאת. לכן ב-<code>sumArray</code> מפרק 9 המערך לא הועתק.</p>`,
+			{
+				id: "ptr-array-name",
+				title: "השם הוא כתובת",
+				code: NAME_MAIN,
+				files: project({}),
+				tests: [io("days is &days[0]", "", "days == &days[0]: 1\n*p = 12")]
+			},
+			R`<p>מכאן ש-<code>days[i]</code> ו-<code>*(days + i)</code> הם אותו תא: הולכים <code>i</code> תאים מההתחלה, וקוראים.</p>
+<table class="tbl"><tr><th>עם סוגריים</th><th>עם מצביע</th></tr>
+<tr><td class="mono">days[0]</td><td class="mono">*days</td></tr>
+<tr><td class="mono">days[i]</td><td class="mono">*(days + i)</td></tr></table>`,
+			{
+				id: "ptr-array-same",
+				title: "שתי דרכים לאותו תא",
+				code: SAME_MAIN,
+				files: project({}),
+				tests: [io("both ways print the same", "", "days[0] = 12, *(days + 0) = 12\ndays[1] = 7, *(days + 1) = 7\ndays[2] = 30, *(days + 2) = 30")]
+			},
+			R`<p>תורכם: <code>sumWalk</code> סוכמת מערך בלי סוגריים מרובעים. מצביע מתחיל ב-<code>arr</code> ומתקדם עם <code>p++</code> עד <code>arr + size</code>.</p>`,
+			{
+				id: "ptr-array-walk",
+				title: "sumWalk",
+				task: "כתבו את <code>sumWalk</code> ב-<code>main.c</code>, בלי <code>[ ]</code> בתוכה.",
+				code: WALK_START,
+				solution: WALK_SOLVED,
+				files: project({}),
+				tests: [
+					io("five bills", "20 35 15 50 5\n", "5 bills: sum: 125"),
+					io("with negatives", "10 -10 7 -2 0\n", "5 bills: sum: 5"),
+					{
+						type: "src",
+						name: "sumWalk has no [ ]",
+						fn: "sumWalk",
+						forbid: "\\[",
+						msg: "walk with a pointer: no [ ] inside sumWalk"
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int a[5];</code>. למה שווה <code>a</code>?",
+				o: [
+					"ל-<code>a[0]</code>",
+					"ל-<code>&amp;a[0]</code>",
+					"ל-5"
+				],
+				a: 1,
+				w: "שם המערך הוא הכתובת של התא הראשון."
+			},
+			{
+				s: "מה הוא <code>*(a + 3)</code>?",
+				o: [
+					"<code>a[3]</code>",
+					"<code>a[0] + 3</code>",
+					"הכתובת של <code>a[3]</code>"
+				],
+				a: 0,
+				w: "הולכים 3 תאים וקוראים."
+			},
+			{
+				s: "<code>int a[5]; int *p = a;</code>. איזו שורה <b>לא</b> תתקמפל?",
+				o: [
+					"<code>p++;</code>",
+					"<code>a++;</code>",
+					"<code>p = a + 2;</code>"
+				],
+				a: 1,
+				w: "שם של מערך אינו משתנה שאפשר להזיז."
+			}
+		]
+	}));
+	const A_FIND_VALUE = {
+		p: "/* returns a pointer to the first cell equal to value, or NULL */\nint *findValue(int *arr, int size, int value);",
+		b: R`int *findValue(int *arr, int size, int value)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == value)
+        {
+            return &arr[i];
+        }
+    }
+    return NULL;
+}`
+	};
+	const A_FIND_LAST = {
+		p: "/* returns a pointer to the last cell equal to value, or NULL */\nint *findLast(int *arr, int size, int value);",
+		b: R`int *findLast(int *arr, int size, int value)
+{
+    for (int i = size - 1; i >= 0; i--)
+    {
+        if (arr[i] == value)
+        {
+            return &arr[i];
+        }
+    }
+    return NULL;
+}`
+	};
+	const A_MAX_PTR = {
+		p: "/* returns a pointer to the largest value (the first one on a tie); size > 0 */\nint *maxPtr(int *arr, int size);",
+		b: R`int *maxPtr(int *arr, int size)
+{
+    int *best = arr;
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] > *best)
+        {
+            best = &arr[i];
+        }
+    }
+    return best;
+}`
+	};
+	const ptrArrays = (fns) => {
+		const m = moduleOf("arrays", fns);
+		return {
+			h: m.h,
+			c: "#include <stdio.h>\n" + m.c
+		};
+	};
+	const FIND_VALUE_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int tickets[5] = {104, 230, 517, 230, 88};
+    int *hit = findValue(tickets, 5, 230);
+
+    if (hit != NULL)
+    {
+        *hit = 0;
+    }
+    printf("%d %d %d %d %d\n", tickets[0], tickets[1], tickets[2], tickets[3], tickets[4]);
+    printf("999 found: %d\n", findValue(tickets, 5, 999) != NULL);
+    return 0;
+}`;
+	const LAST_MAIN = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int rolls[6] = {3, 6, 2, 6, 1, 6};
+    int *last = findLast(rolls, 6, 6);
+
+    if (last != NULL)
+    {
+        printf("the last 6 is at index %d\n", (int)(last - rolls));
+    }
+    if (findLast(rolls, 6, 5) == NULL)
+    {
+        printf("no 5\n");
+    }
+    return 0;
+}`;
+	const MAX_PTR_START = R`#include <stdio.h>
+#include "arrays.h"
+
+int main(void)
+{
+    int stock[5] = {0};
+
+    printf("5 amounts: ");
+    for (int i = 0; i < 5; i++)
+    {
+        scanf("%d", &stock[i]);
+    }
+    /* TODO: write 0 into the largest amount, through the pointer maxPtr returns */
+    printf("%d %d %d %d %d\n", stock[0], stock[1], stock[2], stock[3], stock[4]);
+    return 0;
+}`;
+	const MAX_PTR_SOLVED = MAX_PTR_START.replace("    /* TODO: write 0 into the largest amount, through the pointer maxPtr returns */\n", "    *maxPtr(stock, 5) = 0;\n");
+	U.push(withOutputs({
+		id: "ptr-return",
+		title: "החזרת מצביע",
+		body: [
+			R`<p>פונקציה יכולה להחזיר מצביע: <code>int *findValue(...)</code>. היא מחזירה את הכתובת של התא שמצאה, או <code>NULL</code> כשלא מצאה.</p>
+<p>מי שקרא בודק <code>NULL</code>, ואז יכול גם לכתוב דרך המצביע לתוך המערך שלו. כאן ה-230 הראשון הופך ל-0.</p>`,
+			{
+				id: "ptr-return-find",
+				title: "findValue",
+				code: FIND_VALUE_MAIN,
+				files: project({ arrays: ptrArrays([A_SUM, A_FIND_VALUE]) }),
+				tests: [io("the first 230 becomes 0", "", "104 0 517 230 88\n999 found: 0")]
+			},
+			R`<p>תורכם: <code>findLast</code> מחזירה מצביע ל<b>אחרון</b> שווה ל-<code>value</code>, או <code>NULL</code>. <code>main.c</code> מוכן: הוא מחשב את האינדקס עם <code>last - rolls</code>, כמו בשיעור "חשבון מצביעים".</p>`,
+			{
+				id: "ptr-return-last",
+				title: "findLast",
+				task: "כתבו ב-<code>arrays.c</code> את <code>findLast</code> לפי החוזה.",
+				code: taskIn("arrays.c", LAST_MAIN),
+				solution: LAST_MAIN,
+				files: project({ arrays: ptrArrays([
+					A_SUM,
+					A_FIND_VALUE,
+					contractOf(A_FIND_LAST, "return NULL;")
+				]) }),
+				solutionFiles: { "arrays.c": ptrArrays([
+					A_SUM,
+					A_FIND_VALUE,
+					A_FIND_LAST
+				]).c },
+				tests: [unit("findLast", R`
+#include <stdio.h>
+int *findLast(int *arr, int size, int value);
+int main(void)
+{
+    int a[6] = {3, 6, 2, 6, 1, 6};
+    int b[3] = {7, 8, 9};
+    T_TRUE("the last 6 of {3, 6, 2, 6, 1, 6} is a[5]", findLast(a, 6, 6) == &a[5]);
+    T_TRUE("only one 2: a[2]", findLast(a, 6, 2) == &a[2]);
+    T_TRUE("the first cell: b[0]", findLast(b, 3, 7) == &b[0]);
+    T_TRUE("not found gives NULL", findLast(b, 3, 5) == NULL);
+    T_TRUE("size 0 gives NULL", findLast(a, 0, 3) == NULL);
+    return 0;
+}`), io("the last 6 is at index 5", "", "the last 6 is at index 5\nno 5")]
+			},
+			R`<p>עכשיו הכול יחד: <code>maxPtr</code> מחזירה מצביע לערך הגדול, ו-<code>main</code> כותב 0 דרכו. אם יש תיקו, הראשון.</p>`,
+			{
+				id: "ptr-return-max",
+				title: "maxPtr",
+				task: "כתבו ב-<code>arrays.c</code> את <code>maxPtr</code>, ובמקום ה-TODO ב-<code>main.c</code> כתבו 0 דרך המצביע שהיא מחזירה.",
+				code: MAX_PTR_START,
+				solution: MAX_PTR_SOLVED,
+				files: project({ arrays: ptrArrays([
+					A_SUM,
+					A_FIND_VALUE,
+					A_FIND_LAST,
+					contractOf(A_MAX_PTR, "return NULL;")
+				]) }),
+				solutionFiles: { "arrays.c": ptrArrays([
+					A_SUM,
+					A_FIND_VALUE,
+					A_FIND_LAST,
+					A_MAX_PTR
+				]).c },
+				tests: [
+					unit("maxPtr", R`
+int *maxPtr(int *arr, int size);
+int main(void)
+{
+    int a[5] = {4, 9, 2, 9, 1};
+    int b[3] = {-5, -2, -8};
+    int c[1] = {6};
+    T_TRUE("the first 9 of {4, 9, 2, 9, 1} is a[1]", maxPtr(a, 5) == &a[1]);
+    T_TRUE("negatives: b[1]", maxPtr(b, 3) == &b[1]);
+    T_TRUE("one value: c[0]", maxPtr(c, 1) == &c[0]);
+    return 0;
+}`),
+					io("the 90 becomes 0", "30 90 40 10 20\n", "5 amounts: 30 0 40 10 20"),
+					io("a tie: the first 7", "7 3 7 1 2\n", "5 amounts: 0 3 7 1 2")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה מחזירה פונקציית חיפוש שמחזירה מצביע, כשהיא לא מוצאת?",
+				o: [
+					"0 כערך",
+					"<code>NULL</code>",
+					"מצביע לתא האחרון"
+				],
+				a: 1,
+				w: "<code>NULL</code>: אין תא כזה."
+			},
+			{
+				s: "<code>int *p = findValue(a, 5, 7);</code>. מה בודקים לפני <code>*p = 0;</code>?",
+				o: [
+					"<code>if (p != NULL)</code>",
+					"<code>if (*p == 7)</code>",
+					"כלום"
+				],
+				a: 0,
+				w: "אם לא נמצא, <code>p</code> הוא <code>NULL</code>."
+			},
+			{
+				s: "<code>maxPtr</code> החזירה מצביע ל-<code>a[3]</code>. מה <b>לא</b> נכון?",
+				o: [
+					"<code>*maxPtr(a, n) = 0;</code> מאפס את <code>a[3]</code>",
+					"ההפרש בינו לבין <code>a</code> הוא 3",
+					"הוא מצביע על עותק של המערך"
+				],
+				a: 2,
+				w: "המערך לא מועתק, והמצביע הוא לתא של מי שקרא."
+			}
+		]
+	}));
+	const FILL_MAIN = R`#include <stdio.h>
+
+void fillCountdown(int out[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        out[i] = size - i;
+    }
+}
+
+int main(void)
+{
+    int launch[4];
+
+    fillCountdown(launch, 4);
+    printf("%d %d %d %d\n", launch[0], launch[1], launch[2], launch[3]);
+    return 0;
+}`;
+	const SQUARES_START = R`#include <stdio.h>
+
+#define COUNT 5
+
+/* TODO: squares disappears when this function returns; take the array from the caller instead */
+int *makeSquares(void)
+{
+    int squares[COUNT];
+    for (int i = 0; i < COUNT; i++)
+    {
+        squares[i] = (i + 1) * (i + 1);
+    }
+    return squares;
+}
+
+int main(void)
+{
+    int *result = makeSquares();
+
+    for (int i = 0; i < COUNT; i++)
+    {
+        printf("%d\n", result[i]);
+    }
+    return 0;
+}`;
+	const SQUARES_SOLVED = R`#include <stdio.h>
+
+#define COUNT 5
+
+void makeSquares(int out[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        out[i] = (i + 1) * (i + 1);
+    }
+}
+
+int main(void)
+{
+    int result[COUNT];
+
+    makeSquares(result, COUNT);
+    for (int i = 0; i < COUNT; i++)
+    {
+        printf("%d\n", result[i]);
+    }
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ptr-dangling",
+		title: "מצביע לכתובת שנמחקה",
+		body: [
+			R`<p>משתנה מקומי, גם מערך, נמחק כשהפונקציה שלו חוזרת. מצביע אליו מצביע אחר כך על כלום:</p>
+<pre class="code-static"><span>int *makeSquares(void)</span><span>{</span><span>    int squares[5];</span><span>    ...</span><span>    return squares;</span><span>}</span><span>warning: function returns address of local variable</span></pre>
+<table class="tbl"><tr><th>מה קורה</th><th>התיקון</th></tr>
+<tr><td>gcc מחזיר <code>NULL</code> במקום הכתובת, והתוכנית קורסת</td><td>מי שקרא נותן את המערך, והפונקציה ממלאת אותו</td></tr></table>`,
+			{
+				id: "ptr-dangling-fill",
+				title: "ממלאים מערך של מי שקרא",
+				code: FILL_MAIN,
+				files: project({}),
+				tests: [io("4 3 2 1", "", "4 3 2 1")]
+			},
+			R`<p>תורכם: כאן <code>makeSquares</code> מחזירה כתובת של מערך מקומי. שנו אותה כך שתקבל מערך ואת הגודל שלו, כמו <code>fillCountdown</code>, ותקנו את <code>main</code>.</p>`,
+			{
+				id: "ptr-dangling-fix",
+				title: "makeSquares",
+				task: "תקנו את <code>makeSquares</code> ואת הקריאה אליה, כך שהמערך יהיה של <code>main</code>.",
+				code: SQUARES_START,
+				solution: SQUARES_SOLVED,
+				files: project({}),
+				tests: [io("1 4 9 16 25", "", "1\n4\n9\n16\n25")]
+			}
+		],
+		quiz: [
+			{
+				s: "למה אסור להחזיר כתובת של משתנה מקומי?",
+				o: [
+					"כי המשתנה נמחק כשהפונקציה חוזרת",
+					"כי כתובת לא יכולה לחזור מפונקציה",
+					"כי gcc לא מקמפל את זה"
+				],
+				a: 0,
+				w: "אחרי החזרה אין שם משתנה."
+			},
+			{
+				s: "איך פונקציה נותנת מערך של תוצאות בצורה בטוחה?",
+				o: [
+					"מחזירה מערך מקומי",
+					"ממלאת מערך שמי שקרא נתן לה",
+					"מחזירה <code>&amp;</code> של משתנה מקומי"
+				],
+				a: 1,
+				w: "המערך של מי שקרא קיים גם אחרי החזרה."
+			},
+			{
+				s: "איזו מהפונקציות הבאות <b>לא</b> בטוחה?",
+				o: [
+					"<code>int *first(int *arr) { return arr; }</code>",
+					"<code>int *local(void) { int x = 1; return &amp;x; }</code>",
+					"<code>int *at(int *arr, int i) { return &amp;arr[i]; }</code>"
+				],
+				a: 1,
+				w: "<code>x</code> מקומי, ונמחק בחזרה."
+			}
+		]
+	}));
+	const BLOCK_MAIN = R`#include <stdio.h>
+
+#define ROWS 2
+#define COLS 3
+
+int main(void)
+{
+    int grid[ROWS][COLS] = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+    int *p = &grid[0][0];
+
+    for (int i = 0; i < ROWS * COLS; i++)
+    {
+        printf("%d ", *(p + i));
+    }
+    printf("\n");
+    return 0;
+}`;
+	const MX_BLOCK_MAX = {
+		p: "/* returns the largest of the total values that start at m; total > 0 */\nint blockMax(const int *m, int total);",
+		b: R`int blockMax(const int *m, int total)
+{
+    int best = *m;
+    for (int i = 1; i < total; i++)
+    {
+        if (*(m + i) > best)
+        {
+            best = *(m + i);
+        }
+    }
+    return best;
+}`
+	};
+	const MX_SUM_ROWS = {
+		p: "/* returns the sum of n rows; row i has lens[i] values and starts at rows[i] */\nint sumRows(int *rows[], const int lens[], int n);",
+		b: R`int sumRows(int *rows[], const int lens[], int n)
+{
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < lens[i]; j++)
+        {
+            sum += rows[i][j];
+        }
+    }
+    return sum;
+}`
+	};
+	const matrixPtr = (fns) => moduleOf(`matrix`, [M_SUM].concat(fns), { defines: ["#define COLS 4"] });
+	const BLOCK_MAX_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+#define ROWS 3
+
+int main(void)
+{
+    int heights[ROWS][COLS];
+
+    printf("%d x %d heights: ", ROWS, COLS);
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            scanf("%d", &heights[i][j]);
+        }
+    }
+    printf("highest: %d\n", blockMax(&heights[0][0], ROWS * COLS));
+    return 0;
+}`;
+	const JAGGED_MAIN = R`#include <stdio.h>
+
+int main(void)
+{
+    int monday[2] = {5, 8};
+    int tuesday[4] = {1, 2, 3, 4};
+    int wednesday[1] = {9};
+    int *week[3] = {monday, tuesday, wednesday};
+    int lens[3] = {2, 4, 1};
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < lens[i]; j++)
+        {
+            printf("%d ", week[i][j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}`;
+	const SUM_ROWS_MAIN = R`#include <stdio.h>
+#include "matrix.h"
+
+int main(void)
+{
+    int first[3] = {10, 20, 30};
+    int second[1] = {5};
+    int third[2] = {7, 8};
+    int *rows[3] = {first, second, third};
+    int lens[3] = {3, 1, 2};
+
+    printf("all rows: %d\n", sumRows(rows, lens, 3));
+    printf("first two: %d\n", sumRows(rows, lens, 2));
+    return 0;
+}`;
+	U.push(withOutputs({
+		id: "ptr-matrix",
+		title: "מטריצות ומצביעים",
+		body: [
+			R`<p>בפרק 9 ראינו שהשורות של מטריצה שוכבות אחת אחרי השנייה. לכן מצביע לתא הראשון, <code>&amp;grid[0][0]</code>, יכול לעבור על כל המטריצה כמו על מערך אחד ארוך, <code>ROWS * COLS</code> תאים.</p>`,
+			{
+				id: "ptr-matrix-block",
+				title: "מטריצה כבלוק אחד",
+				code: BLOCK_MAIN,
+				files: project({}),
+				tests: [io("1 to 6 in one line", "", "1 2 3 4 5 6")]
+			},
+			R`<p>תורכם: <code>blockMax</code> מקבלת מצביע לתא הראשון ואת מספר התאים, ולא יודעת שזו מטריצה.</p>`,
+			{
+				id: "ptr-matrix-max",
+				title: "blockMax",
+				task: "כתבו ב-<code>matrix.c</code> את <code>blockMax</code> לפי החוזה.",
+				code: taskIn("matrix.c", BLOCK_MAX_MAIN),
+				solution: BLOCK_MAX_MAIN,
+				files: project({ matrix: matrixPtr([contractOf(MX_BLOCK_MAX, "return 0;")]) }),
+				solutionFiles: { "matrix.c": matrixPtr([MX_BLOCK_MAX]).c },
+				tests: [unit("blockMax", R`
+int blockMax(const int *m, int total);
+int main(void)
+{
+    int a[3][4] = {{1, 2, 3, 4}, {5, 60, 7, 8}, {9, 10, 11, 12}};
+    int b[2][4] = {{-4, -9, -1, -7}, {-3, -8, -2, -6}};
+    T_INT("blockMax of a 3 x 4 matrix", blockMax(&a[0][0], 12), 60);
+    T_INT("negatives", blockMax(&b[0][0], 8), -1);
+    T_INT("only the first row", blockMax(&a[0][0], 4), 4);
+    return 0;
+}`), io("the highest is in the last row", "3 1 4 1 5 9 2 6 5 3 58 9\n", "3 x 4 heights: highest: 58")]
+			},
+			R`<p>שורות באורכים שונים: מערך של מצביעים, <code>int *week[3]</code>. כל תא בו מצביע על מערך אחר, ומערך נוסף, <code>lens</code>, שומר את האורכים. <code>week[i][j]</code> הוא תא <code>j</code> בשורה <code>i</code>.</p>
+<p>זו לא מטריצה: <code>int m[3][4]</code> הוא בלוק אחד, ואינו מערך של מצביעים.</p>`,
+			{
+				id: "ptr-matrix-jagged",
+				title: "שורות באורכים שונים",
+				code: JAGGED_MAIN,
+				files: project({}),
+				tests: [io("three rows", "", "5 8\n1 2 3 4\n9")]
+			},
+			R`<p>תורכם: <code>sumRows</code> סוכמת את כל התאים של <code>n</code> שורות כאלה.</p>`,
+			{
+				id: "ptr-matrix-rows",
+				title: "sumRows",
+				task: "כתבו ב-<code>matrix.c</code> את <code>sumRows</code> לפי החוזה.",
+				code: taskIn("matrix.c", SUM_ROWS_MAIN),
+				solution: SUM_ROWS_MAIN,
+				files: project({ matrix: matrixPtr([MX_BLOCK_MAX, contractOf(MX_SUM_ROWS, "return 0;")]) }),
+				solutionFiles: { "matrix.c": matrixPtr([MX_BLOCK_MAX, MX_SUM_ROWS]).c },
+				tests: [unit("sumRows", R`
+int sumRows(int *rows[], const int lens[], int n);
+int main(void)
+{
+    int r0[3] = {1, 2, 3};
+    int r1[1] = {10};
+    int r2[4] = {-1, -1, -1, -1};
+    int *rows[3] = {r0, r1, r2};
+    int lens[3] = {3, 1, 4};
+    int noLens[3] = {3, 0, 4};
+    T_INT("three rows", sumRows(rows, lens, 3), 12);
+    T_INT("only the first row", sumRows(rows, lens, 1), 6);
+    T_INT("a row of length 0", sumRows(rows, noLens, 3), 2);
+    T_INT("no rows", sumRows(rows, lens, 0), 0);
+    return 0;
+}`), io("all rows and the first two", "", "all rows: 80\nfirst two: 65")]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int m[3][4];</code> ו-<code>int *p = &amp;m[0][0];</code>. איזה תא הוא <code>*(p + 5)</code>?",
+				o: [
+					"<code>m[1][1]</code>",
+					"<code>m[0][5]</code>",
+					"<code>m[5][0]</code>"
+				],
+				a: 0,
+				w: "<code>4 * 1 + 1 = 5</code>."
+			},
+			{
+				s: "מה הוא <code>int *rows[3]</code>?",
+				o: [
+					"מטריצה של 3 שורות",
+					"מערך של 3 מצביעים ל-<code>int</code>",
+					"מצביע למערך של 3"
+				],
+				a: 1,
+				w: "כל תא בו הוא <code>int*</code>."
+			},
+			{
+				s: "מה מהבאים <b>לא</b> נכון לגבי <code>int m[3][4]</code>?",
+				o: [
+					"התאים שלה רצופים בזיכרון",
+					"אפשר להעביר <code>&amp;m[0][0]</code> לפונקציה שמקבלת <code>const int *</code>",
+					"אפשר להעביר <code>m</code> לפונקציה שמקבלת <code>int **</code>"
+				],
+				a: 2,
+				w: "<code>int m[3][4]</code> הוא בלוק אחד, לא מערך של מצביעים."
+			}
+		]
+	}));
+	const C_MINMAX_R = {
+		p: "/* writes the smallest value of arr into *min and the largest into *max; size > 0 */\nvoid minMax(int arr[], int size, int *min, int *max);",
+		b: R`void minMax(int arr[], int size, int *min, int *max)
+{
+    *min = arr[0];
+    *max = arr[0];
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i] < *min)
+        {
+            *min = arr[i];
+        }
+        if (arr[i] > *max)
+        {
+            *max = arr[i];
+        }
+    }
+}`
+	};
+	const RANGE_EMPTY = R`/* TODO: write the whole program here */
+`;
+	const RANGE_SOLVED = R`#include <stdio.h>
+#include "calc.h"
+
+#define SIZE 5
+
+int main(void)
+{
+    int nums[SIZE];
+    int low = 0;
+    int high = 0;
+    int q = 0;
+    int r = 0;
+
+    printf("%d numbers: ", SIZE);
+    for (int i = 0; i < SIZE; i++)
+    {
+        scanf("%d", &nums[i]);
+    }
+    minMax(nums, SIZE, &low, &high);
+    printf("min: %d, max: %d\n", low, high);
+    if (divideSafe(high, low, &q, &r))
+    {
+        printf("max / min = %d, remainder %d\n", q, r);
+    }
+    else
+    {
+        printf("cannot divide by 0\n");
+    }
+    return 0;
+}`;
+	const REVERSE_PTR_START = R`#include <stdio.h>
+
+/* reverses arr in place with two pointers, one from each end; no [ ] in this function */
+void reverseInPlace(int *arr, int size)
+{
+    /* TODO: write the function */
+}
+
+int main(void)
+{
+    int line[6] = {0};
+
+    printf("6 numbers: ");
+    for (int i = 0; i < 6; i++)
+    {
+        scanf("%d", &line[i]);
+    }
+    reverseInPlace(line, 6);
+    for (int i = 0; i < 6; i++)
+    {
+        printf("%d ", line[i]);
+    }
+    printf("\n");
+    return 0;
+}`;
+	const REVERSE_PTR_SOLVED = REVERSE_PTR_START.replace("    /* TODO: write the function */\n", R`    int *left = arr;
+    int *right = arr + size - 1;
+    while (left < right)
+    {
+        int temp = *left;
+        *left = *right;
+        *right = temp;
+        left++;
+        right--;
+    }
+`);
+	U.push(withOutputs({
+		id: "ptr-review2",
+		title: "חזרה: מצביעים 2",
+		body: [
+			R`<p>כל הפרק יחד, בלי עזרה. ב-<code>calc.h</code> יש <code>minMax</code> ו-<code>divideSafe</code>, כבר כתובות. ב-<code>main.c</code> הריק כתבו תוכנית שקוראת 5 מספרים ומדפיסה:</p>
+<table class="tbl"><tr><th>שורה</th><th>עבור <code>8 3 12 5 9</code></th></tr>
+<tr><td>הקטן והגדול</td><td class="mono">min: 3, max: 12</td></tr>
+<tr><td>הגדול חלקי הקטן, או <code>cannot divide by 0</code></td><td class="mono">max / min = 4, remainder 0</td></tr></table>
+<p>לפני הקלט היא מדפיסה <code>5 numbers: </code>.</p>`,
+			{
+				id: "ptr-review2-range",
+				title: "תוכנית שלמה",
+				task: "בקובץ הריק כתבו את <code>main.c</code> כולו, בעזרת <code>minMax</code> ו-<code>divideSafe</code>.",
+				code: RANGE_EMPTY,
+				solution: RANGE_SOLVED,
+				files: project({ calc: calcOf([
+					C_SAFE,
+					C_MINMAX_R,
+					C_DIVIDE_SAFE
+				]) }),
+				tests: [
+					io("8 3 12 5 9", "8 3 12 5 9\n", "5 numbers: min: 3, max: 12\nmax / min = 4, remainder 0"),
+					io("with a 0", "4 0 7 2 6\n", "5 numbers: min: 0, max: 7\ncannot divide by 0"),
+					io("negatives", "-2 5 -7 1 3\n", "5 numbers: min: -7, max: 5\nmax / min = 0, remainder 5")
+				]
+			},
+			R`<p>עוד אחת: <code>reverseInPlace</code> הופכת מערך עם שני מצביעים, אחד מכל קצה, שמתקרבים זה לזה. בלי <code>[ ]</code> בפונקציה.</p>`,
+			{
+				id: "ptr-review2-reverse",
+				title: "reverseInPlace",
+				task: "כתבו את <code>reverseInPlace</code> ב-<code>main.c</code>, לפי ההערה שמעליה.",
+				code: REVERSE_PTR_START,
+				solution: REVERSE_PTR_SOLVED,
+				files: project({}),
+				tests: [
+					io("1 to 6", "1 2 3 4 5 6\n", "6 numbers: 6 5 4 3 2 1"),
+					io("repeats and negatives", "4 -1 4 0 9 -1\n", "6 numbers: -1 9 0 4 -1 4"),
+					{
+						type: "src",
+						name: "reverseInPlace has no [ ]",
+						fn: "reverseInPlace",
+						forbid: "\\[",
+						msg: "use two pointers: no [ ] inside reverseInPlace"
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "<code>int x = 2; int *p = &amp;x; *p *= 5;</code>. כמה ב-<code>x</code>?",
+				o: [
+					"2",
+					"10",
+					"5"
+				],
+				a: 1,
+				w: "<code>*p</code> הוא <code>x</code>."
+			},
+			{
+				s: "<code>int a[4]; int *p = a + 1;</code>. מה הוא <code>p - a</code>?",
+				o: [
+					"4",
+					"1",
+					"הכתובת של <code>a[1]</code>"
+				],
+				a: 1,
+				w: "מספר התאים ביניהם."
+			},
+			{
+				s: "מה עושה <code>*p++</code>?",
+				o: [
+					"מוסיף 1 לערך",
+					"קורא את הערך ומזיז את <code>p</code>",
+					"מזיז את <code>p</code> אחורה"
+				],
+				a: 1,
+				w: "<code>(*p)++</code> הוא זה שמוסיף לערך."
+			},
+			{
+				s: "פונקציה צריכה לתת שתי תוצאות. מה הדרך הרגילה?",
+				o: [
+					"שני <code>return</code>",
+					"שני פרמטרי פלט: כתובות שהיא כותבת לתוכן",
+					"משתנים גלובליים"
+				],
+				a: 1,
+				w: "הכתובות מגיעות ממי שקרא, והוא רואה את התוצאות."
+			},
+			{
+				s: "פונקציית חיפוש לא מצאה. מה היא מחזירה, אם היא מחזירה מצביע?",
+				o: [
+					"<code>NULL</code>",
+					"0 כערך",
+					"את הכתובת של התא האחרון"
+				],
+				a: 0,
+				w: "ומי שקרא בודק <code>NULL</code> לפני <code>*</code>."
+			},
+			{
+				s: "<code>int nums[5];</code>. מה שווה ל-<code>nums[2]</code>?",
+				o: [
+					"<code>*nums + 2</code>",
+					"<code>&amp;nums + 2</code>",
+					"<code>*(nums + 2)</code>"
+				],
+				a: 2,
+				w: "הולכים 2 תאים מההתחלה וקוראים."
+			},
+			{
+				s: "איזה מהבאים <b>לא</b> נכון לגבי <code>const int *p</code>?",
+				o: [
+					"אפשר לקרוא <code>*p</code>",
+					"אפשר לכתוב <code>*p = 0;</code>",
+					"אפשר להזיז את <code>p</code> לכתובת אחרת"
+				],
+				a: 1,
+				w: "דרך <code>const int *</code> רק קוראים."
+			},
+			{
+				s: "פונקציה מחזירה <code>&amp;local</code>, כש-<code>local</code> משתנה מקומי שלה. מה <b>לא</b> יקרה?",
+				o: [
+					"gcc מזהיר",
+					"המצביע שחוזר מצביע על משתנה שנמחק",
+					"מי שקרא יקרא את הערך בבטחה"
+				],
+				a: 2,
+				w: "אחרי החזרה המשתנה כבר לא קיים."
+			}
+		]
+	}));
 	U.push({
 		id: "split",
 		title: "תוכנית בכמה קבצים",
@@ -27643,6 +30298,24 @@ int main(void)
 		"c-arrays",
 		"c-arrays",
 		"c-arrays",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
+		"c-ptr",
 		"make",
 		"make",
 		"make",
@@ -27710,12 +30383,20 @@ window.LabCourse = {
 			public: true
 		},
 		{
+			id: "c-ptr",
+			title: "10. כתובות ומצביעים",
+			public: true
+		},
+		{
 			id: "make",
 			title: "make ו-Makefile",
 			public: true
 		}
 	],
 	formerly: [{
+		id: "pointers",
+		sections: ["c-ptr"]
+	}, {
 		id: "c-make",
 		prefix: "lab:c-make:",
 		sections: ["make"],
@@ -48508,7 +51189,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0f78909 מ-2026-11-14 00:52"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0f78909</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 853b8f6 מ-2026-11-14 01:23"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 853b8f6</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
