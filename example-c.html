@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-yZSwVPyk1LWnNJJGxcljCgn+tuE6hlSy072MJwZOW6Y=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-kxV5hNxn/rGGyc5tLuVaZOknLF0j/G5tZBMISDinQjI=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -8879,6 +8879,10 @@ var SUMMARY_RULE_WIDTH = 36;
 function normOut(text) {
 	return text.replace(/\r/g, "").split("\n").map((line) => line.replace(/\s+$/, "")).join("\n").replace(/\n+$/, "");
 }
+var ADDRESS_PATTERN = /0x[0-9a-fA-F]+|\b[0-9A-F]{16}\b/g;
+function maskAddresses(text) {
+	return text.replace(ADDRESS_PATTERN, "<address>");
+}
 function srcList(userFiles) {
 	const extraSources = Object.keys(userFiles || {}).filter((name) => name.endsWith(".c"));
 	return ["main.c"].concat(extraSources).join(" ");
@@ -9078,6 +9082,9 @@ function setMakeOn(isOn) {
 		localStorage.setItem(settingKey(), isOn ? "1" : "0");
 	} catch {}
 	document.dispatchEvent(new CustomEvent("ptr-engine"));
+}
+function usesMake(userFiles) {
+	return isMakeOn() && findMakefile(userFiles) !== null;
 }
 function findMakefile(userFiles) {
 	for (const name of [
@@ -10515,19 +10522,35 @@ function cString(text) {
 	return JSON.stringify(text).replace(LINE_SEPARATORS, "");
 }
 function testMain(units, ioTests) {
-	let text = "\nint main(void)\n{\n";
-	units.forEach((test, index) => {
-		text += "    " + unitFunctionName(index) + "();\n";
-	});
-	for (const test of ioTests) {
+	let text = "\nint main(void)\n{\n    int __which = 0;\n    scanf(\"%d\", &__which);\n";
+	if (units.length) {
+		text += "    if (__which == 0) {\n";
+		units.forEach((test, index) => {
+			text += "        " + unitFunctionName(index) + "();\n";
+		});
+		text += "    }\n";
+	}
+	ioTests.forEach((test, index) => {
 		const args = [
 			cString(test.name),
 			cString(test.stdin || ""),
 			cString(test.expect)
 		];
-		text += "    T_IO(" + args.join(", ") + ");\n";
-	}
+		text += "    if (__which == " + (index + 1) + ") T_IO(" + args.join(", ") + ");\n";
+	});
 	return text + "    T_SUMMARY();\n    return 0;\n}\n";
+}
+function testRuns(box) {
+	const runs = [];
+	if (box.tests.some((test) => test.type === "unit")) runs.push({
+		input: "0\n",
+		name: null
+	});
+	box.tests.filter((test) => test.type === "io").forEach((test, index) => runs.push({
+		input: index + 1 + "\n",
+		name: test.name
+	}));
+	return runs;
 }
 function testFile(box) {
 	const units = box.tests.filter((test) => test.type === "unit");
@@ -14110,7 +14133,7 @@ async function runProgram(context) {
 	const { ui, state } = context;
 	stopDebug(context);
 	state.outPrefix = "";
-	if (isMakeOn()) return runWithMake(context);
+	if (usesMake(ui.userFiles())) return runWithMake(context);
 	if (RealGcc && RealGcc.on) return runOnRealGcc(context);
 	const build = await compileForRun(context);
 	if (!build) return;
@@ -14497,7 +14520,7 @@ async function startDebug(context) {
 	};
 	state.outPrefix = "";
 	state.makeSteps = [];
-	if (isMakeOn() && !await makeBeforeStepping(context, stopDebug)) return;
+	if (usesMake(ui.userFiles()) && !await makeBeforeStepping(context, stopDebug)) return;
 	if (RealGcc && RealGcc.on && !await checkWithGcc(context, session)) return;
 	session.userFiles = ui.userFiles();
 	const build = await buildSteppable(context, session);
@@ -14546,16 +14569,17 @@ function updateEngineLabel(context) {
 	if (isLocal) labelText = "machine's gcc · live";
 	else if (isRealGcc) labelText = "gcc 16.2 · online";
 	const tone = [isRealGcc ? "real" : "", isLocal ? "local" : ""].filter(Boolean).join(" ");
-	ui.setEngineLabel(isMakeOn() ? "make · " + labelText : labelText, tone);
+	ui.setEngineLabel(usesMake(ui.userFiles()) ? "make · " + labelText : labelText, tone);
 	ui.setNotice(gcc64Notice(ui.box));
 }
 // src/engines/c/tests/run-xcc.js
+var OWN_SUMMARY = /\ntests\.c: \d+ passed, \d+ failed\n?$/;
 function whyUnfinished(run) {
 	if (run.stepLimit) return "more than 1,000,000 steps (infinite loop?)";
 	if (run.trap) return "the program crashed: " + run.trap;
 	return "exit code " + run.code;
 }
-async function runTestProgram(code, userFiles, file, results) {
+async function runTestProgram(box, code, userFiles, file, results) {
 	const build = await StepRunner.build(code, {
 		extra: {
 			"tests.c": file,
@@ -14571,21 +14595,27 @@ async function runTestProgram(code, userFiles, file, results) {
 		});
 		return (build.errors || "compilation failed") + "\n" + TESTS_DID_NOT_COMPILE;
 	}
-	const run = StepRunner.run(build, { stdin: "" });
+	let log = "";
+	for (const part of testRuns(box)) log += playPart(build, part, results);
+	const passCount = results.filter((result) => result.ok).length;
+	return log + "\ntests.c: " + passCount + " passed, " + (results.length - passCount) + " failed\n";
+}
+function playPart(build, part, results) {
+	const run = StepRunner.run(build, { stdin: part.input });
 	results.push(...printedResults(run.out));
-	if (TESTS_FINISHED.test(run.out)) return run.out;
+	if (TESTS_FINISHED.test(run.out)) return run.out.replace(OWN_SUMMARY, "");
 	results.push({
-		name: "tests.c finished",
+		name: part.name || "tests.c finished",
 		ok: false
 	});
-	return run.out + "\n[FAIL] tests.c stopped before finishing: " + whyUnfinished(run) + "\n       The tests after this point did not run.\n";
+	return run.out + "\n[FAIL] tests.c stopped before finishing: " + whyUnfinished(run) + "\n";
 }
 async function runTests(box, code, userFiles) {
 	const results = [];
 	const statics = staticChecks(box, code);
 	const file = testFile(box);
 	let log = file ? "$ cc " + srcList(userFiles) + " tests.c -o tests && ./tests\n" : "";
-	if (file) log += await runTestProgram(code, userFiles, file, results);
+	if (file) log += await runTestProgram(box, code, userFiles, file, results);
 	log += await runMakeTests(box, code, userFiles, false, results);
 	log = finishLog(results, log, statics);
 	return {
@@ -14655,7 +14685,7 @@ async function runBoxTests(context) {
 	return showTestResult(context, testRun);
 }
 async function makeFirst(context) {
-	if (!isMakeOn() || !findMakefile(boxFiles(context))) return null;
+	if (!usesMake(context.ui.userFiles())) return null;
 	const result = await makeInBox(context, []);
 	const ok = result.status === 0;
 	const goal = result.goals[0];
@@ -14941,8 +14971,8 @@ function shortPointerName(meta, steps) {
 	}
 }
 function steppingProblem(plain, prepared, run) {
-	const wanted = plainOutput(plain.stdout);
-	const got = plainOutput(run.out + (run.err || ""));
+	const wanted = maskAddresses(plainOutput(plain.stdout));
+	const got = maskAddresses(plainOutput(run.out + (run.err || "")));
 	if (!(run.stepLimit || run.timedOut ? wanted.startsWith(got) : got === wanted)) {
 		const quotedWanted = JSON.stringify(wanted.slice(0, QUOTED_OUTPUT_LENGTH));
 		const quotedGot = JSON.stringify(got.slice(0, QUOTED_OUTPUT_LENGTH));
@@ -14980,7 +15010,7 @@ async function stepCheck(box, code) {
 }
 var SUMMARY_LINE = /(ALL \d+ TESTS PASSED|1 TEST PASSED|\d+ \/ \d+ tests passed)\n?$/;
 async function addMakeFirst(testRun, code, files, real) {
-	const made = isMakeOn() ? await makeBuildsTest(code, files, real) : null;
+	const made = usesMake(files) ? await makeBuildsTest(code, files, real) : null;
 	if (made) {
 		testRun.res.unshift(made.result);
 		const passCount = testRun.res.filter((result) => result.ok).length;
@@ -37186,7 +37216,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit b4d8960 מ-2026-11-14 05:32"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · b4d8960</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0d08562 מ-2026-11-14 05:48"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0d08562</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
