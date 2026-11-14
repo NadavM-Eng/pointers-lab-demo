@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-Wius+eJQAdva2+mDeDkYbi1h9VfCBbkGIR8rwb0FrSU=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-tsGnqOElKRO1s2pn8jU+U97kSAvbTpeXnaleB/NeS1U=' 'sha256-2/G1n/cgt4KXBhbpLtjYBW3/yhOIpkkY76NR3tCbFLs=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -15895,38 +15895,6 @@ int isIncreasing(int arr[], int size)
 		};
 	};
 	const contractOf = (fn, ret) => starterOf(fn, ["TODO: write the function"], ret);
-	const CALC_H = R`#ifndef CALC_H
-#define CALC_H
-
-int add(int a, int b);
-int square(int x);
-
-#endif
-`;
-	const CALC_C = R`#include "calc.h"
-
-int add(int a, int b)
-{
-    return a + b;
-}
-
-int square(int x)
-{
-    return x * x;
-}
-`;
-	const CALC_MAIN = R`#include <stdio.h>
-#include "calc.h"
-
-int main(void)
-{
-    printf("add(2, 3) = %d\n", add(2, 3));
-    printf("square(4) = %d\n", square(4));
-    return 0;
-}`;
-	const CALC_OUT = "add(2, 3) = 5\nsquare(4) = 16\n";
-	const CALC_MAKEFILE = mk("prog: main.o calc.o", ">gcc main.o calc.o -o prog", "", "main.o: main.c calc.h", ">gcc -c main.c", "", "calc.o: calc.c calc.h", ">gcc -c calc.c");
-	const IN_MAKEFILE = (code) => "/* the task is in the Makefile tab */\n" + code;
 	const U = [];
 	const FIRST_HELLO = R`#include <stdio.h>
 
@@ -25162,8 +25130,7 @@ int main(void)
 			}
 		]
 	}));
-	{
-		const CLEAN_MAIN = R`#include <stdio.h>
+	const CLEAN_MAIN = R`#include <stdio.h>
 #include "mathx.h"
 
 int main(void)
@@ -25171,7 +25138,7 @@ int main(void)
     printf("reverseNumber(907) = %d\n", reverseNumber(907));
     return 0;
 }`;
-		const CLEAN_TASK_MAIN = R`#include <stdio.h>
+	const CLEAN_TASK_MAIN = R`#include <stdio.h>
 #include "mathx.h"
 
 int main(void)
@@ -25180,100 +25147,99 @@ int main(void)
     printf("cube(-3) = %d\n", cube(-3));
     return 0;
 }`;
-		const CLEAN_TASK_OUT = "isEven(12) = 1\ncube(-3) = -27\n";
-		const CLEAN_START = houseMakefile(["mathx"]).replace(/\nclean:[\s\S]*$/, "\n# TODO 1: a rule clean that removes every .o file and prog\n\n# TODO 2: mark clean as .PHONY\n");
-		U.push(withOutputs({
-			id: "build-clean",
-			title: "ניקוי הפרויקט",
-			body: [
-				R`<p>בסוף ה-Makefile של הקורס יש כלל בשם <code>clean</code>. אין לו prerequisites, וה-recipe שלו מוחק את כל מה ש-<bdi dir="ltr">make</bdi> בנה:</p>
+	const CLEAN_TASK_OUT = "isEven(12) = 1\ncube(-3) = -27\n";
+	const CLEAN_START = houseMakefile(["mathx"]).replace(/\nclean:[\s\S]*$/, "\n# TODO 1: a rule clean that removes every .o file and prog\n\n# TODO 2: mark clean as .PHONY\n");
+	U.push(withOutputs({
+		id: "build-clean",
+		title: "ניקוי הפרויקט",
+		body: [
+			R`<p>בסוף ה-Makefile של הקורס יש כלל בשם <code>clean</code>. אין לו prerequisites, וה-recipe שלו מוחק את כל מה ש-<bdi dir="ltr">make</bdi> בנה:</p>
 <pre class="code-static"><span>clean:</span><span>	rm -f *.o prog</span></pre>
 <p>מריצים אותו כך: <code>make clean</code>. כאן: ⏯ עם <bdi dir="ltr">make</bdi> דולק, ואז הכפתור <code>make clean</code> בחלונית של <bdi dir="ltr">make</bdi>.</p>`,
-				{
-					id: "build-clean-run",
-					title: "make clean",
-					code: CLEAN_MAIN,
-					files: mathxProject(MATHX, houseMakefile(["mathx"])),
-					tests: [io("reverseNumber(907)", "", "reverseNumber(907) = 709")]
-				},
-				R`<p>אם בתיקייה יש קובץ בשם <code>clean</code>, <bdi dir="ltr">make</bdi> חושב שה-target כבר קיים ולא מוחק כלום:</p>
+			{
+				id: "build-clean-run",
+				title: "make clean",
+				code: CLEAN_MAIN,
+				files: mathxProject(MATHX, houseMakefile(["mathx"])),
+				tests: [io("reverseNumber(907)", "", "reverseNumber(907) = 709")]
+			},
+			R`<p>אם בתיקייה יש קובץ בשם <code>clean</code>, <bdi dir="ltr">make</bdi> חושב שה-target כבר קיים ולא מוחק כלום:</p>
 <pre class="code-static"><span>make: 'clean' is up to date.</span></pre>
 <p>השורה <code>.PHONY: clean</code> אומרת ש-<code>clean</code> הוא לא קובץ, ולכן ה-recipe שלו רץ תמיד.</p>`,
-				{
-					id: "build-clean-add",
-					title: "הכלל clean",
-					task: "הוסיפו ל-<code>Makefile</code> את הכלל <code>clean</code> ואת השורה <code>.PHONY</code>, לפי שני ה-TODO.",
-					code: "/* the task is in the Makefile tab */\n" + CLEAN_TASK_MAIN,
-					solution: CLEAN_TASK_MAIN,
-					files: mathxProject(MATHX, CLEAN_START),
-					solutionFiles: { "Makefile": houseMakefile(["mathx"]) },
-					example: { output: CLEAN_TASK_OUT },
-					tests: [
-						{
-							type: "make",
-							name: "make builds prog, and it prints",
-							steps: [make([], {
-								built: [
-									"main.o",
-									"mathx.o",
-									"prog"
-								],
-								run: { expect: CLEAN_TASK_OUT }
-							})]
-						},
-						{
-							type: "make",
-							name: "make clean removes main.o, mathx.o and prog",
-							steps: [make([]), make(["clean"], { gone: [
+			{
+				id: "build-clean-add",
+				title: "הכלל clean",
+				task: "הוסיפו ל-<code>Makefile</code> את הכלל <code>clean</code> ואת השורה <code>.PHONY</code>, לפי שני ה-TODO.",
+				code: "/* the task is in the Makefile tab */\n" + CLEAN_TASK_MAIN,
+				solution: CLEAN_TASK_MAIN,
+				files: mathxProject(MATHX, CLEAN_START),
+				solutionFiles: { "Makefile": houseMakefile(["mathx"]) },
+				example: { output: CLEAN_TASK_OUT },
+				tests: [
+					{
+						type: "make",
+						name: "make builds prog, and it prints",
+						steps: [make([], {
+							built: [
 								"main.o",
 								"mathx.o",
 								"prog"
-							] })]
-						},
-						{
-							type: "make",
-							name: "clean is .PHONY",
-							steps: [make([])],
-							require: "^\\.PHONY\\s*:.*\\bclean\\b",
-							msg: "add the line .PHONY: clean"
-						}
-					]
-				}
-			],
-			quiz: [
-				{
-					s: "מה עושה <code>make clean</code> ב-Makefile של הקורס?",
-					o: [
-						"מוחק את קבצי ה-<code>.o</code> ואת <code>prog</code>",
-						"מוחק את קבצי ה-<code>.c</code>",
-						"בונה הכול מחדש"
-					],
-					a: 0,
-					w: "ה-recipe הוא <code>rm -f *.o prog</code>."
-				},
-				{
-					s: "מה מונעת השורה <code>.PHONY: clean</code>?",
-					o: [
-						"שגיאה ב-<code>rm</code>",
-						"שקובץ בשם <code>clean</code> יעצור את הניקוי",
-						"את בניית <code>prog</code>"
-					],
-					a: 1,
-					w: "עם <code>.PHONY</code>, <bdi dir=\"ltr\">make</bdi> לא מחפש קובץ בשם <code>clean</code>."
-				},
-				{
-					s: "מריצים <code>make</code> בלי שם של target. למה <code>clean</code> <b>לא</b> רץ?",
-					o: [
-						"כי הוא לא הכלל הראשון",
-						"כי אין לו prerequisites",
-						"כי הוא <code>.PHONY</code>"
-					],
-					a: 0,
-					w: "<bdi dir=\"ltr\">make</bdi> בלי שם בונה רק את הכלל הראשון, <code>prog</code>, ומה שהוא צריך."
-				}
-			]
-		}));
-	}
+							],
+							run: { expect: CLEAN_TASK_OUT }
+						})]
+					},
+					{
+						type: "make",
+						name: "make clean removes main.o, mathx.o and prog",
+						steps: [make([]), make(["clean"], { gone: [
+							"main.o",
+							"mathx.o",
+							"prog"
+						] })]
+					},
+					{
+						type: "make",
+						name: "clean is .PHONY",
+						steps: [make([])],
+						require: "^\\.PHONY\\s*:.*\\bclean\\b",
+						msg: "add the line .PHONY: clean"
+					}
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה עושה <code>make clean</code> ב-Makefile של הקורס?",
+				o: [
+					"מוחק את קבצי ה-<code>.o</code> ואת <code>prog</code>",
+					"מוחק את קבצי ה-<code>.c</code>",
+					"בונה הכול מחדש"
+				],
+				a: 0,
+				w: "ה-recipe הוא <code>rm -f *.o prog</code>."
+			},
+			{
+				s: "מה מונעת השורה <code>.PHONY: clean</code>?",
+				o: [
+					"שגיאה ב-<code>rm</code>",
+					"שקובץ בשם <code>clean</code> יעצור את הניקוי",
+					"את בניית <code>prog</code>"
+				],
+				a: 1,
+				w: "עם <code>.PHONY</code>, <bdi dir=\"ltr\">make</bdi> לא מחפש קובץ בשם <code>clean</code>."
+			},
+			{
+				s: "מריצים <code>make</code> בלי שם של target. למה <code>clean</code> <b>לא</b> רץ?",
+				o: [
+					"כי הוא לא הכלל הראשון",
+					"כי אין לו prerequisites",
+					"כי הוא <code>.PHONY</code>"
+				],
+				a: 0,
+				w: "<bdi dir=\"ltr\">make</bdi> בלי שם בונה רק את הכלל הראשון, <code>prog</code>, ומה שהוא צריך."
+			}
+		]
+	}));
 	const EXE_H = R`#ifndef EXE_H
 #define EXE_H
 
@@ -30052,473 +30018,6 @@ int main(void)
 			}
 		]
 	}));
-	U.push({
-		id: "split",
-		title: "תוכנית בכמה קבצים",
-		body: [
-			R`<p>תוכנית אמיתית לא יושבת בקובץ אחד. כאן <code>calc.c</code> מגדיר שתי פונקציות, <code>calc.h</code> מצהיר עליהן, ו-<code>main.c</code> כולל את <code>calc.h</code> וקורא להן. ה-header הוא החוזה: מי שכולל אותו יודע את השם, הפרמטרים והטיפוס המוחזר של כל פונקציה.</p>
-<p>הבנייה עוברת בשני שלבים. קודם כל קובץ <code>.c</code> מקומפל לבד לקובץ <b>object</b> (<code>.o</code>): קוד מכונה עם "חורים" במקומות שבהם הוא קורא לפונקציה מקובץ אחר. אחר כך ה-<bdi dir="ltr">linker</bdi> מחבר את כל קבצי ה-<code>.o</code> לתוכנית אחת וממלא את החורים.</p>
-<pre class="code-static"><span>gcc -c main.c                # main.o</span><span>gcc -c calc.c                # calc.o</span><span>gcc main.o calc.o -o prog    # link</span></pre>
-<div class="callout key"><b>למה לא פקודה אחת?</b><p>אפשר לכתוב <code>gcc main.c calc.c -o prog</code>, אבל אז כל שינוי קטן מקמפל הכול מחדש. כשכל קובץ הוא <code>.o</code> משלו, אחרי שינוי ב-<code>calc.c</code> מספיק לקמפל אותו ולקשר שוב. בפרויקט של מאות קבצים זה ההבדל בין שנייה לדקות.</p></div>`,
-			{
-				id: "split-demo",
-				title: "main.c עם calc.c ו-calc.h",
-				code: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H
-				},
-				tests: [io("prints add and square", "", CALC_OUT)]
-			},
-			R`<p>עברו בין הלשוניות <code>main.c</code>, <code>calc.c</code> ו-<code>calc.h</code>. נסו למחוק את השורה <code>#include "calc.h"</code> מ-<code>main.c</code> ולהריץ: המהדר כבר לא מכיר את <code>add</code>. בשיעור הבא <bdi dir="ltr">make</bdi> יריץ את שלוש הפקודות למעלה בשבילכם.</p>`
-		]
-	});
-	const FM_START = mk("prog: main.o", ">gcc main.o -o prog", "", "main.o: main.c calc.h", ">gcc -c main.c", "", "calc.o: calc.c calc.h", ">gcc -c calc.c");
-	U.push({
-		id: "first-makefile",
-		title: "Makefile ראשון",
-		body: [
-			R`<p>קובץ בשם <code>Makefile</code> מתאר את הבנייה ב<b>כללים</b>. כל כלל אומר מה בונים (<b>target</b>), ממה הוא תלוי (<b>prerequisites</b>), ואיך בונים אותו (<b>recipe</b>):</p>
-<pre class="code-static"><span>calc.o: calc.c calc.h        # target: prerequisites</span><span>	gcc -c calc.c            # recipe: a line that starts with a TAB</span></pre>
-<p>שורת ה-recipe חייבת להתחיל ב-<bdi dir="ltr">TAB</bdi>, לא ברווחים. עם רווחים <bdi dir="ltr">make</bdi> עוצר עם <code>missing separator</code>. בעורך כאן, מקש <bdi dir="ltr">Tab</bdi> בקובץ <code>Makefile</code> מכניס TAB אמיתי.</p>
-<p>כש-<bdi dir="ltr">make</bdi> רץ בלי שם של target, הוא בונה את ה-target של <b>הכלל הראשון</b>, כאן <code>prog</code>. לפני כן הוא בונה את מה ש-<code>prog</code> תלוי בו, וכל פקודה שהוא מריץ מודפסת לפני שהיא רצה.</p>
-<div class="callout"><b>להריץ דרך make</b><p>הדליקו בסרגל הצד את <b>כל הרצה דרך <bdi dir="ltr">make</bdi></b>. מעכשיו ▶ הרצה מריצה <code>make</code> ואז את <code>./prog</code>. לחצו פעמיים: בפעם השנייה אין מה לבנות.</p></div>`,
-			{
-				id: "fm-demo",
-				title: "Makefile לשלושה קבצים",
-				code: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": CALC_MAKEFILE
-				},
-				tests: [io("prints add and square", "", CALC_OUT)]
-			},
-			R`<p>ב-<code>Makefile</code> שבתרגיל, הכלל של <code>prog</code> שכח את <code>calc.o</code>: הוא תלוי רק ב-<code>main.o</code> ומקשר רק אותו. הריצו דרך <bdi dir="ltr">make</bdi> וקראו את השגיאה של ה-<bdi dir="ltr">linker</bdi>: הוא לא מוצא את <code>add</code> ואת <code>square</code>, כי אף אחד לא נתן לו את <code>calc.o</code>.</p>`,
-			{
-				id: "fm-link",
-				title: "הכלל של prog",
-				task: "תקנו את הכלל של <code>prog</code> ב-<code>Makefile</code>: שיהיה תלוי גם ב-<code>calc.o</code> ויקשר את <b>שני</b> קבצי ה-<code>.o</code>.",
-				code: IN_MAKEFILE(CALC_MAIN),
-				solution: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": FM_START
-				},
-				solutionFiles: { "Makefile": CALC_MAKEFILE },
-				tests: [
-					{
-						type: "make",
-						name: "make builds main.o, calc.o and prog",
-						steps: [make([], { built: [
-							"main.o",
-							"calc.o",
-							"prog"
-						] })]
-					},
-					{
-						type: "make",
-						name: "./prog prints add and square",
-						steps: [make([], { run: { expect: CALC_OUT } })]
-					},
-					{
-						type: "make",
-						name: "a second make says 'prog' is up to date",
-						steps: [make([]), make([], { out: "make: 'prog' is up to date." })]
-					}
-				]
-			}
-		]
-	});
-	const RB_MAIN = R`#include <stdio.h>
-#include "calc.h"
-
-int main(void)
-{
-    printf("%d\n", SCALE * add(1, 2));
-    return 0;
-}`;
-	const RB_H = R`#ifndef CALC_H
-#define CALC_H
-
-#define SCALE 10
-
-int add(int a, int b);
-int square(int x);
-
-#endif
-`;
-	const RB_START = mk("prog: main.o calc.o", ">gcc main.o calc.o -o prog", "", "main.o: main.c", ">gcc -c main.c", "", "calc.o: calc.c calc.h", ">gcc -c calc.c");
-	U.push({
-		id: "rebuild",
-		title: "מה נבנה מחדש, ולמה",
-		body: [
-			R`<p>ל-<bdi dir="ltr">make</bdi> יש כלל אחד פשוט: target נבנה מחדש אם הוא <b>לא קיים</b>, או אם אחד מה-prerequisites שלו <b>חדש ממנו</b>, כלומר השתנה אחרי שה-target נבנה. כדי לדעת, <bdi dir="ltr">make</bdi> משווה את זמני השינוי של הקבצים.</p>
-<p>הוא עובד מלמטה למעלה: לפני ש-<code>prog</code> נבדק, כל אחד מקבצי ה-<code>.o</code> שלו נבדק ונבנה אם צריך. אם <code>calc.o</code> נבנה עכשיו, הוא חדש מ-<code>prog</code>, ולכן גם <code>prog</code> מקושר מחדש.</p>
-<table class="tbl"><tr><th>מה השתנה</th><th>מה make מריץ</th></tr>
-<tr><td class="mono">calc.c</td><td class="mono">gcc -c calc.c, then the link</td></tr>
-<tr><td class="mono">calc.h</td><td class="mono">gcc -c main.c, gcc -c calc.c, then the link</td></tr>
-<tr><td class="mono">nothing</td><td class="mono">make: 'prog' is up to date.</td></tr></table>
-<div class="callout"><b>לראות את ההחלטות</b><p>עם <b>כל הרצה דרך <bdi dir="ltr">make</bdi></b> דולק, ⏯ שורה אחר שורה עובר קודם על ההחלטות של <bdi dir="ltr">make</bdi>, target אחרי target, ורק אז על התוכנית. ערכו את <code>calc.h</code> (אפילו רווח) ונסו.</p></div>`,
-			{
-				id: "rb-demo",
-				title: "שינוי ב-calc.h",
-				code: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": CALC_MAKEFILE
-				},
-				tests: [io("prints add and square", "", CALC_OUT)]
-			},
-			R`<p>מה קורה כששוכחים prerequisite? בתרגיל, <code>main.o</code> תלוי רק ב-<code>main.c</code>, אבל <code>main.c</code> כולל את <code>calc.h</code> ומשתמש ב-<code>SCALE</code>. שנו את <code>SCALE</code> ל-<code>100</code> והריצו: <bdi dir="ltr">make</bdi> לא בונה את <code>main.o</code> מחדש, והתוכנית ממשיכה להדפיס <code>30</code>. זה באג מסוכן: הקוד נכון, והתוכנית הישנה.</p>`,
-			{
-				id: "rb-header",
-				title: "ה-header ששכחו",
-				task: "הוסיפו ל-<code>Makefile</code> את ה-prerequisite שחסר, כך ששינוי ב-<code>calc.h</code> יבנה מחדש את <b>כל</b> מה שתלוי בו.",
-				code: IN_MAKEFILE(RB_MAIN),
-				solution: RB_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": RB_H,
-					"Makefile": RB_START
-				},
-				solutionFiles: { "Makefile": RB_START.replace("main.o: main.c\n", "main.o: main.c calc.h\n") },
-				tests: [
-					{
-						type: "make",
-						name: "the first make builds everything and prints 30",
-						steps: [make([], {
-							built: [
-								"main.o",
-								"calc.o",
-								"prog"
-							],
-							run: { expect: "30" }
-						})]
-					},
-					{
-						type: "make",
-						name: "after calc.h changes, main.o, calc.o and prog are built again",
-						steps: [
-							make([]),
-							{ touch: "calc.h" },
-							make([], { built: [
-								"main.o",
-								"calc.o",
-								"prog"
-							] })
-						]
-					},
-					{
-						type: "make",
-						name: "after calc.c changes, only calc.o and prog are built again",
-						steps: [
-							make([]),
-							{ touch: "calc.c" },
-							make([], { built: ["calc.o", "prog"] })
-						]
-					}
-				]
-			}
-		]
-	});
-	const VAR_DEMO = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o prog", "", "main.o: main.c calc.h", ">$(CC) $(CFLAGS) -c main.c", "", "calc.o: calc.c calc.h", ">$(CC) $(CFLAGS) -c calc.c");
-	const VAR_START = mk("CC = gcc", "# TODO: CFLAGS", "", "prog: main.o calc.o", ">$(CC) main.o calc.o -o prog", "", "main.o: main.c calc.h", ">$(CC) -c main.c", "", "calc.o: calc.c calc.h", ">$(CC) -c calc.c");
-	const VAR_SOLVED = mk("CC = gcc", "CFLAGS = -std=c11 -Wall -Werror", "", "prog: main.o calc.o", ">$(CC) main.o calc.o -o prog", "", "main.o: main.c calc.h", ">$(CC) $(CFLAGS) -c main.c", "", "calc.o: calc.c calc.h", ">$(CC) $(CFLAGS) -c calc.c");
-	U.push({
-		id: "variables",
-		title: "משתנים: CC ו-CFLAGS",
-		body: [
-			R`<p>כשאותה מחרוזת חוזרת בכמה כללים, נותנים לה שם. <code>NAME = value</code> מגדיר משתנה, ו-<code>$(NAME)</code> מכניס את הערך שלו. כך אפשר להחליף מהדר או להוסיף דגל אזהרה בשורה אחת, במקום לחפש אותו בכל כלל.</p>
-<p>יש שמות שכולם משתמשים בהם: <code>CC</code> הוא המהדר, <code>CFLAGS</code> הם הדגלים של הקומפילציה (<code>-Wall</code>, <code>-std=c11</code>), ו-<code>OBJS</code> נהוג לרשימת קבצי ה-<code>.o</code>.</p>
-<div class="callout key"><b>= לעומת :=</b><p>עם <code>=</code> הערך נפתח בכל שימוש, כך שאפשר להשתמש בו במשתנה שמוגדר מאוחר יותר. עם <code>:=</code> הערך נפתח פעם אחת, בשורה שמגדירה אותו. <code>+=</code> מוסיף מילים לסוף הערך.</p></div>
-<p>בדוגמה, <bdi dir="ltr">make</bdi> מדפיס את הפקודות <b>אחרי</b> שהחליף את המשתנים: רואים <code>gcc -std=c11 -Wall -c main.c</code>, לא <code>$(CC)</code>.</p>`,
-			{
-				id: "var-demo",
-				title: "Makefile עם משתנים",
-				code: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": VAR_DEMO
-				},
-				tests: [io("prints add and square", "", CALC_OUT)]
-			},
-			R`<p>עכשיו אתם: בתרגיל יש <code>CC</code>, אבל הקומפילציה רצה בלי דגלים בכלל.</p>`,
-			{
-				id: "var-flags",
-				title: "CFLAGS",
-				task: "הגדירו <code>CFLAGS = -std=c11 -Wall -Werror</code> והשתמשו ב-<code>$(CFLAGS)</code> בשני הכללים שמקמפלים קובץ <code>.c</code>.",
-				code: IN_MAKEFILE(CALC_MAIN),
-				solution: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": VAR_START
-				},
-				solutionFiles: { "Makefile": VAR_SOLVED },
-				tests: [
-					{
-						type: "make",
-						name: "CFLAGS has -std=c11, -Wall and -Werror",
-						steps: [make([])],
-						require: "^CFLAGS\\s*:?=(?=.*-std=c11)(?=.*-Wall)(?=.*-Werror)",
-						msg: "CFLAGS is not -std=c11 -Wall -Werror"
-					},
-					{
-						type: "make",
-						name: "main.c is compiled with $(CFLAGS)",
-						steps: [make([], { has: "-Werror" })],
-						require: "^\\t[^\\n]*(\\$\\(CFLAGS\\)[^\\n]*main\\.c|main\\.c[^\\n]*\\$\\(CFLAGS\\))",
-						msg: "the recipe that compiles main.c does not use $(CFLAGS)"
-					},
-					{
-						type: "make",
-						name: "calc.c is compiled with $(CFLAGS)",
-						steps: [make([], { has: "-Werror" })],
-						require: "^\\t[^\\n]*(\\$\\(CFLAGS\\)[^\\n]*calc\\.c|calc\\.c[^\\n]*\\$\\(CFLAGS\\))",
-						msg: "the recipe that compiles calc.c does not use $(CFLAGS)"
-					},
-					{
-						type: "make",
-						name: "./prog prints add and square",
-						steps: [make([], { run: { expect: CALC_OUT } })]
-					}
-				]
-			}
-		]
-	});
-	const LIST_H = R`#ifndef LIST_H
-#define LIST_H
-
-int biggest(const int *values, int count);
-
-#endif
-`;
-	const LIST_C = R`#include "list.h"
-
-int biggest(const int *values, int count)
-{
-    int best = values[0];
-    for (int i = 1; i < count; i++) {
-        if (values[i] > best) {
-            best = values[i];
-        }
-    }
-    return best;
-}
-`;
-	const PAT_MAIN = R`#include <stdio.h>
-#include "calc.h"
-#include "list.h"
-
-int main(void)
-{
-    int values[] = {4, 9, 2};
-    printf("%d\n", add(biggest(values, 3), square(2)));
-    return 0;
-}`;
-	const PAT_START = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o list.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o $@", "", "main.o: main.c calc.h list.h", ">$(CC) $(CFLAGS) -c main.c -o main.o", "", "calc.o: calc.c calc.h", ">$(CC) $(CFLAGS) -c calc.c -o calc.o", "", "list.o: list.c list.h", ">$(CC) $(CFLAGS) -c list.c -o list.o");
-	const PAT_SOLVED = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o list.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o $@", "", "%.o: %.c", ">$(CC) $(CFLAGS) -c $< -o $@", "", "main.o: calc.h list.h", "calc.o: calc.h", "list.o: list.h");
-	U.push({
-		id: "patterns",
-		title: "$@, $< וכלל תבנית",
-		body: [R`<p>בתוך recipe יש ל-<bdi dir="ltr">make</bdi> משתנים אוטומטיים, שמקבלים ערך לפי הכלל שרץ:</p>
-<table class="tbl"><tr><th>משתנה</th><th>הערך</th><th>בכלל <code>calc.o: calc.c calc.h</code></th></tr>
-<tr><td class="mono">$@</td><td>ה-target</td><td class="mono">calc.o</td></tr>
-<tr><td class="mono">$&lt;</td><td>ה-prerequisite הראשון</td><td class="mono">calc.c</td></tr>
-<tr><td class="mono">$^</td><td>כל ה-prerequisites</td><td class="mono">calc.c calc.h</td></tr></table>
-<p>איתם אפשר לכתוב <b>כלל תבנית</b> אחד לכל קבצי ה-<code>.o</code>: ה-<code>%</code> מתאים לכל שם, ובשני הצדדים זה אותו שם.</p>
-<pre class="code-static"><span>%.o: %.c</span><span>	$(CC) $(CFLAGS) -c $&lt; -o $@</span></pre>
-<p>את ה-headers מוסיפים בכללים בלי recipe, כמו <code>calc.o: calc.h</code>: הם מצטרפים ל-prerequisites של <code>calc.o</code>, ו-<code>$&lt;</code> נשאר <code>calc.c</code>. ל-<bdi dir="ltr">make</bdi> יש גם כלל כזה מובנה: גם בלי שום recipe הוא יודע לבנות <code>calc.o</code> מ-<code>calc.c</code>, עם <code>$(CC)</code> ו-<code>$(CFLAGS)</code>.</p>`, {
-			id: "pat-rule",
-			title: "כלל אחד לכל ה-.o",
-			task: "החליפו את שלושת הכללים של קבצי ה-<code>.o</code> ב<b>כלל תבנית</b> <code>%.o: %.c</code> אחד, והשאירו את ה-headers כ-prerequisites בכללים בלי recipe.",
-			code: IN_MAKEFILE(PAT_MAIN),
-			solution: PAT_MAIN,
-			files: {
-				"calc.c": CALC_C,
-				"calc.h": CALC_H,
-				"list.c": LIST_C,
-				"list.h": LIST_H,
-				"Makefile": PAT_START
-			},
-			solutionFiles: { "Makefile": PAT_SOLVED },
-			tests: [
-				{
-					type: "make",
-					name: "the Makefile has a pattern rule %.o: %.c",
-					steps: [make([])],
-					require: "^%\\.o\\s*:\\s*%\\.c",
-					msg: "there is no pattern rule %.o: %.c"
-				},
-				{
-					type: "make",
-					name: "no rule compiles one .c file by name any more",
-					steps: [make([])],
-					forbid: "^\\t[^\\n]*-c (main|calc|list)\\.c",
-					msg: "a recipe still names main.c, calc.c or list.c"
-				},
-				{
-					type: "make",
-					name: "make builds the three objects and ./prog prints 13",
-					steps: [make([], {
-						built: [
-							"main.o",
-							"calc.o",
-							"list.o",
-							"prog"
-						],
-						run: { expect: "13" }
-					})]
-				},
-				{
-					type: "make",
-					name: "after list.h changes, main.o and list.o are built again",
-					steps: [
-						make([]),
-						{ touch: "list.h" },
-						make([], { built: [
-							"main.o",
-							"list.o",
-							"prog"
-						] })
-					]
-				}
-			]
-		}]
-	});
-	{
-		const CLEAN_START = mk("CC = gcc", "CFLAGS = -std=c11 -Wall", "OBJS = main.o calc.o", "", "prog: $(OBJS)", ">$(CC) $(OBJS) -o $@", "", "%.o: %.c", ">$(CC) $(CFLAGS) -c $< -o $@", "", "main.o: calc.h", "calc.o: calc.h", "", "# TODO: clean");
-		const CLEAN_SOLVED = CLEAN_START.replace("# TODO: clean\n", mk(".PHONY: clean", "clean:", ">rm -f $(OBJS) prog"));
-		U.push({
-			id: "clean",
-			title: "clean ו-.PHONY",
-			body: [R`<p>לא כל target הוא קובץ. <code>clean</code> הוא שם של פעולה: הוא מוחק את מה שהבנייה יצרה, כדי שהבנייה הבאה תתחיל מאפס. מריצים אותו עם שם: <code>make clean</code>.</p>
-<pre class="code-static"><span>.PHONY: clean</span><span>clean:</span><span>	rm -f $(OBJS) prog</span></pre>
-<p>ה-<code>-f</code> של <code>rm</code> אומר "אל תתלונן על קובץ שלא קיים": בלי זה, <code>make clean</code> פעמיים ברצף נכשל בפעם השנייה. <code>.PHONY</code> אומר ל-<bdi dir="ltr">make</bdi> ש-<code>clean</code> אינו קובץ. בלעדיו, אם יום אחד ייווצר קובץ בשם <code>clean</code>, <bdi dir="ltr">make</bdi> יחשוב שה-target קיים ועדכני, ולא ימחק כלום.</p>
-<div class="callout"><b>בקופסה כאן</b><p>הלחצנים <bdi dir="ltr">make clean</bdi> ו-<bdi dir="ltr">make</bdi> נמצאים באי <b>make</b> שנפתח ב-⏯. <code>rm</code> כאן מוחק רק קבצים ש-<bdi dir="ltr">make</bdi> בנה; קבצי הקוד של הקופסה נשארים.</p></div>`, {
-				id: "clean-target",
-				title: "make clean",
-				task: "הוסיפו target בשם <code>clean</code> שמוחק עם <code>rm -f</code> את <code>$(OBJS)</code> ואת <code>prog</code>, וסמנו אותו ב-<code>.PHONY</code>.",
-				code: IN_MAKEFILE(CALC_MAIN),
-				solution: CALC_MAIN,
-				files: {
-					"calc.c": CALC_C,
-					"calc.h": CALC_H,
-					"Makefile": CLEAN_START
-				},
-				solutionFiles: { "Makefile": CLEAN_SOLVED },
-				tests: [
-					{
-						type: "make",
-						name: "make clean removes the objects and prog",
-						steps: [make([]), make(["clean"], {
-							gone: [
-								"main.o",
-								"calc.o",
-								"prog"
-							],
-							exists: ["main.c", "calc.c"]
-						})]
-					},
-					{
-						type: "make",
-						name: "make clean twice in a row works (rm -f)",
-						steps: [make(["clean"]), make(["clean"])]
-					},
-					{
-						type: "make",
-						name: "clean is .PHONY",
-						steps: [make([])],
-						require: "^\\.PHONY\\s*:[^\\n]*\\bclean\\b",
-						msg: ".PHONY does not name clean"
-					},
-					{
-						type: "make",
-						name: "after make clean, make builds everything again",
-						steps: [
-							make([]),
-							make(["clean"]),
-							make([], { built: [
-								"main.o",
-								"calc.o",
-								"prog"
-							] })
-						]
-					}
-				]
-			}]
-		});
-	}
-	U.push({
-		id: "make-quiz",
-		title: "חידון",
-		quiz: [
-			{
-				s: "ב-<code>Makefile</code> הכלל הראשון הוא <code>prog: main.o calc.o</code>. מה בונה <code>make</code> בלי שום target?",
-				o: [
-					"את <code>prog</code>, ולפניו את מה שהוא תלוי בו",
-					"את כל ה-targets שבקובץ",
-					"את ה-target האחרון בקובץ"
-				],
-				a: 0,
-				w: "בלי שם, make בונה את ה-target של הכלל הראשון (ה-default goal), ובדרך את כל מה שהוא תלוי בו."
-			},
-			{
-				s: "<code>main.o: main.c calc.h</code>, ו-<code>main.o</code> כבר בנוי. עכשיו משנים את <code>calc.h</code>. מה יקרה ב-<code>make main.o</code>?",
-				o: [
-					"כלום: <code>main.c</code> לא השתנה",
-					"<code>main.o</code> ייבנה מחדש, כי <code>calc.h</code> חדש ממנו",
-					"שגיאה: header לא יכול להיות prerequisite"
-				],
-				a: 1,
-				w: "כל prerequisite שחדש מה-target גורם לבנייה מחדש, גם header."
-			},
-			{
-				s: "מה ההודעה כש-<code>make</code> רץ ואין מה לבנות ל-<code>prog</code>?",
-				o: [
-					"<code>make: Nothing to build.</code>",
-					"הוא מקשר את <code>prog</code> שוב בכל מקרה",
-					"<code>make: 'prog' is up to date.</code>"
-				],
-				a: 2,
-				w: "כשאף פקודה לא רצה, make אומר שה-target עדכני."
-			},
-			{
-				s: "שורת recipe מתחילה בארבעה רווחים במקום TAB. מה יקרה?",
-				o: [
-					"make מתעלם מהשורה",
-					"<code>missing separator</code>, ו-make עוצר",
-					"עובד, כי רווחים ו-TAB זהים"
-				],
-				a: 1,
-				w: "make מזהה שורת recipe רק לפי ה-TAB בתחילתה; כל דבר אחר הוא שגיאה."
-			},
-			{
-				s: "בכלל <code>calc.o: calc.c calc.h</code>, מה הערך של <code>$&lt;</code>?",
-				o: [
-					"<code>calc.c</code>",
-					"<code>calc.o</code>",
-					"<code>calc.c calc.h</code>"
-				],
-				a: 0,
-				w: "$&lt; הוא ה-prerequisite הראשון; $@ הוא ה-target ו-$^ הוא כל ה-prerequisites."
-			},
-			{
-				s: "למה כותבים <code>.PHONY: clean</code>?",
-				o: [
-					"כדי ש-<code>clean</code> ירוץ ראשון",
-					"כדי למחוק גם את קבצי ה-<code>.c</code>",
-					"כדי ש-<code>clean</code> ירוץ גם אם קיים קובץ בשם <code>clean</code>"
-				],
-				a: 2,
-				w: "target ב-.PHONY אינו קובץ, ולכן הוא אף פעם לא \"עדכני\": ה-recipe שלו תמיד רץ."
-			}
-		]
-	});
 	[
 		"c-structure",
 		"c-structure",
@@ -30622,14 +30121,7 @@ int main(void)
 		"c-ptr",
 		"c-ptr",
 		"c-ptr",
-		"c-ptr",
-		"make",
-		"make",
-		"make",
-		"make",
-		"make",
-		"make",
-		"make"
+		"c-ptr"
 	].forEach((subject, index) => {
 		U[index].subject = subject;
 	});
@@ -30706,12 +30198,6 @@ window.LabCourse = {
 			title: "10. כתובות ומצביעים",
 			en: "Addresses and pointers",
 			public: true
-		},
-		{
-			id: "make",
-			title: "make ו-Makefile",
-			en: "make and Makefiles",
-			public: true
 		}
 	],
 	formerly: [{
@@ -30720,8 +30206,7 @@ window.LabCourse = {
 	}, {
 		id: "c-make",
 		prefix: "lab:c-make:",
-		sections: ["make"],
-		units: { quiz: "make-quiz" }
+		sections: ["c-build"]
 	}],
 	units: window.PContent,
 	welcome: `
@@ -52058,7 +51543,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit e346ad1 מ-2026-11-14 04:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · e346ad1</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit b4d8960 מ-2026-11-14 05:32"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · b4d8960</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
