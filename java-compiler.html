@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-LlNiBAI4EIPx3V3b/pF0sazM56vW2ZJLt20uOy4hn8U=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-W79c3hXusF2UXzYXHG8+N9zoRho3BA1snjv0FMonMas=' 'sha256-ATjfKMta/qj3Y6/XeibWlVDa3ddLaFg3iYyghvkZX9Q=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title>המהדר של Java: רישיונות וקוד מקור · צעד אחר צעד</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Cpath d=%27M6 25h6v-6h6v-6h6V7h3%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -820,6 +820,24 @@ body.hub {
   columns: 1;
 }
 
+/* "my courses": the lesson the course page saved last, then the progress */
+.recent-card .last-t {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* a narrow card (a phone): the long "continue" button gets a row of its own under the names */
+@container card (max-width: 479px) {
+  .recent-card .card-h {
+    flex-wrap: wrap;
+  }
+
+  .recent-card .continue {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+
 /* a card too narrow for two columns of sections: one column */
 @container card (max-width: 559px) {
   .chapters {
@@ -1346,6 +1364,7 @@ body.notice {
  *   - The course tree: a course opens to its sections; choosing one outlines its card, scrolls to
  *     it and names it in the status bar (the address keeps it: index.html#<course id>, which is
  *     also where a course page's link back leads).
+ *   - My courses: hub-recent.js (the progress of its cards is painted here, like every card's).
  *   - Progress: how many of a course's exercises passed, read from the keys the course page writes
  *     ('<prefix>pass:<box id>', JSON true; also under the prefixes of the courses it took over,
  *     data-former), for each card, each of its sections and the status bar.
@@ -1796,7 +1815,7 @@ function setUpHub() {
   paintAllProgress();
   const wanted = courseInAddress();
   if (!chooseCourse(wanted, true)) {
-    chooseCourse(document.querySelector('.card').dataset.course, false);
+    chooseCourse(document.querySelector('#cards > .card').dataset.course, false);
   }
   window.addEventListener('hashchange', () => chooseCourse(courseInAddress(), true));
   // back from a course page: the browser may show the page from its cache, so read again

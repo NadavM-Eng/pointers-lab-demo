@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-rJe2S3fX5soy80tfG+rjWiEH++8ewkWDB47R8veJ7Nk=' 'sha256-LlNiBAI4EIPx3V3b/pF0sazM56vW2ZJLt20uOy4hn8U=' 'sha256-U9pbEePTTLr70RPQuueSF1hCE7Bw69j0jygSbneFiRg=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-rJe2S3fX5soy80tfG+rjWiEH++8ewkWDB47R8veJ7Nk=' 'sha256-oUQEi+prZVQ7RhapBofHpeoaPynQznIub+pGYL3PAhI=' 'sha256-ATjfKMta/qj3Y6/XeibWlVDa3ddLaFg3iYyghvkZX9Q=' 'sha256-U9pbEePTTLr70RPQuueSF1hCE7Bw69j0jygSbneFiRg=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title>צעד אחר צעד</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Cpath d=%27M6 25h6v-6h6v-6h6V7h3%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t; var h = document.documentElement, l, f; try { var m = /[?&]lang=(en|he)/.exec(location.search); l = m ? m[1] : JSON.parse(localStorage.getItem('lab:hub:lang') || 'null'); f = JSON.parse(localStorage.getItem('lab:hub:side-folded') || 'null'); } catch(e){} if (l === 'en') { h.lang = 'en'; h.dir = 'ltr'; } if (f === true) h.dataset.side = 'folded';</script>
@@ -820,6 +820,24 @@ body.hub {
   columns: 1;
 }
 
+/* "my courses": the lesson the course page saved last, then the progress */
+.recent-card .last-t {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* a narrow card (a phone): the long "continue" button gets a row of its own under the names */
+@container card (max-width: 479px) {
+  .recent-card .card-h {
+    flex-wrap: wrap;
+  }
+
+  .recent-card .continue {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+
 /* a card too narrow for two columns of sections: one column */
 @container card (max-width: 559px) {
   .chapters {
@@ -1593,6 +1611,45 @@ body.notice {
 <li><span class="l-he">ההתקדמות נשמרת אצלך</span><span class="l-en" lang="en">Your progress stays on your computer</span></li>
 </ul>
 </div></div>
+<section class="recent" id="recent" aria-labelledby="recent-h" hidden>
+<div class="sec-h">
+<h2 id="recent-h"><span class="l-he">הקורסים שלי</span><span class="l-en" lang="en">My courses</span></h2>
+<span class="cm" lang="en">// my-courses.md</span></div>
+<div class="cards" id="recent-cards">
+<section class="card recent-card" id="recent-c" data-course="c"
+ data-prefix="ptrlab:" data-former="[&quot;lab:c-make:&quot;]" data-ids="[&quot;structure-first-text&quot;,&quot;structure-include-fix&quot;,&quot;structure-main-fix&quot;,&quot;structure-braces-fix&quot;,&quot;structure-statements-semi&quot;,&quot;structure-statements-swap&quot;,&quot;structure-return-stop&quot;,&quot;structure-comments-off&quot;,&quot;structure-printf-add&quot;,&quot;structure-printf-box&quot;,&quot;structure-review-write&quot;,&quot;structure-review-fix&quot;,&quot;types-variable-year&quot;,&quot;types-assign-points&quot;,&quot;types-overview-change&quot;,&quot;types-int-sum&quot;,&quot;types-float-double-price&quot;,&quot;types-char-letter&quot;,&quot;types-string-reverse&quot;,&quot;types-sizeof-var&quot;,&quot;types-uninit-fix&quot;,&quot;types-const-days&quot;,&quot;types-review-card&quot;,&quot;types-review-fix&quot;,&quot;io-printf-values-date&quot;,&quot;io-printf-width-prices&quot;,&quot;io-printf-mistakes-fix&quot;,&quot;io-scanf-int-year&quot;,&quot;io-scanf-height&quot;,&quot;io-scanf-char-seat&quot;,&quot;io-scanf-word-city&quot;,&quot;io-scanf-many-sum&quot;,&quot;io-scanf-order&quot;,&quot;io-scanf-bad-age&quot;,&quot;io-review-receipt&quot;,&quot;io-review-fix&quot;,&quot;ops-arith-rect&quot;,&quot;ops-intdiv-minutes&quot;,&quot;ops-cast-average&quot;,&quot;ops-compound-countdown&quot;,&quot;ops-precedence-average&quot;,&quot;ops-math-distance&quot;,&quot;ops-review-clock&quot;,&quot;ops-review-celsius&quot;,&quot;if-if-pass&quot;,&quot;if-compare-even&quot;,&quot;if-else-parity&quot;,&quot;if-else-larger&quot;,&quot;if-elseif-sign&quot;,&quot;if-elseif-largest&quot;,&quot;if-logic-leap&quot;,&quot;if-switch-day&quot;,&quot;if-review-calc&quot;,&quot;if-review-ticket&quot;,&quot;loops-while-countdown&quot;,&quot;loops-for-header&quot;,&quot;loops-for-evens&quot;,&quot;loops-do-positive&quot;,&quot;loops-sum-mean&quot;,&quot;loops-digits-sum&quot;,&quot;loops-digits-reverse&quot;,&quot;loops-break-negative&quot;,&quot;loops-nested-table&quot;,&quot;loops-review-until-zero&quot;,&quot;loops-review-sum-to&quot;,&quot;func-why-card&quot;,&quot;func-void-box&quot;,&quot;func-params-row&quot;,&quot;func-return-seven&quot;,&quot;func-return-max&quot;,&quot;func-proto-half&quot;,&quot;func-proto-power&quot;,&quot;func-byvalue-digits&quot;,&quot;func-scope-pass&quot;,&quot;func-static-ticket&quot;,&quot;func-review-primes&quot;,&quot;func-review-average&quot;,&quot;build-split-call&quot;,&quot;build-header-proto&quot;,&quot;build-header-move&quot;,&quot;build-guards-add&quot;,&quot;build-stages-fix&quot;,&quot;build-link-errors-fix&quot;,&quot;build-makefile-link&quot;,&quot;build-rules-mathx&quot;,&quot;build-rules-tab&quot;,&quot;build-rebuild-header&quot;,&quot;build-vars-use&quot;,&quot;build-clean-add&quot;,&quot;build-layout-convert&quot;,&quot;build-review-whole&quot;,&quot;build-review-faults&quot;,&quot;arrays-declare-laps&quot;,&quot;arrays-init-prices&quot;,&quot;arrays-loop-sum&quot;,&quot;arrays-loop-sumarray&quot;,&quot;arrays-bounds-fix&quot;,&quot;arrays-params-reverse&quot;,&quot;arrays-sizeof-fix&quot;,&quot;arrays-max-min&quot;,&quot;arrays-check-increasing&quot;,&quot;arrays-check-digits&quot;,&quot;arrays-review-second&quot;,&quot;arrays-matrix-inner&quot;,&quot;arrays-matrix-sum&quot;,&quot;arrays-matrix-params-count&quot;,&quot;arrays-matrix-review-stats&quot;,&quot;arrays-matrix-review-transpose&quot;,&quot;ptr-address-total&quot;,&quot;ptr-declare-q&quot;,&quot;ptr-deref-add&quot;,&quot;ptr-decl-trap-fix&quot;,&quot;ptr-null-safe&quot;,&quot;ptr-uninit-fix&quot;,&quot;ptr-swap-ptr&quot;,&quot;ptr-swap-sort3&quot;,&quot;ptr-outparams-divide&quot;,&quot;ptr-status-divide&quot;,&quot;ptr-const-params&quot;,&quot;ptr-review1-order&quot;,&quot;ptr-arith-between&quot;,&quot;ptr-incr-fix&quot;,&quot;ptr-array-walk&quot;,&quot;ptr-return-last&quot;,&quot;ptr-return-max&quot;,&quot;ptr-dangling-fix&quot;,&quot;ptr-matrix-max&quot;,&quot;ptr-matrix-rows&quot;,&quot;ptr-review2-range&quot;,&quot;ptr-review2-reverse&quot;,&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]"
+ data-units="{&quot;structure-first&quot;:&quot;התוכנית הראשונה&quot;,&quot;structure-include&quot;:&quot;הספרייה stdio.h&quot;,&quot;structure-main&quot;:&quot;הפונקציה main&quot;,&quot;structure-braces&quot;:&quot;סוגריים מסולסלים&quot;,&quot;structure-statements&quot;:&quot;פקודות ונקודה-פסיק&quot;,&quot;structure-return&quot;:&quot;קוד היציאה ו-return 0&quot;,&quot;structure-comments&quot;:&quot;הערות בקוד&quot;,&quot;structure-printf&quot;:&quot;הדפסת טקסט&quot;,&quot;structure-review&quot;:&quot;חזרה: מבנה התוכנית&quot;,&quot;types-variable&quot;:&quot;מה זה משתנה&quot;,&quot;types-assign&quot;:&quot;שינוי ערך&quot;,&quot;types-overview&quot;:&quot;כל הטיפוסים יחד&quot;,&quot;types-int&quot;:&quot;מספר שלם: int&quot;,&quot;types-float-double&quot;:&quot;מספר עשרוני: double&quot;,&quot;types-char&quot;:&quot;תו אחד: char&quot;,&quot;types-string&quot;:&quot;מחרוזת: מילה&quot;,&quot;types-sizeof&quot;:&quot;כמה מקום תופס כל טיפוס&quot;,&quot;types-uninit&quot;:&quot;משתנה בלי ערך התחלתי&quot;,&quot;types-const&quot;:&quot;שמות לקבועים&quot;,&quot;types-review&quot;:&quot;חזרה: משתנים וטיפוסים&quot;,&quot;io-printf-values&quot;:&quot;הדפסת ערכים&quot;,&quot;io-printf-width&quot;:&quot;רוחב ודיוק בהדפסה&quot;,&quot;io-printf-mistakes&quot;:&quot;טעויות נפוצות בהדפסה&quot;,&quot;io-scanf-int&quot;:&quot;קריאת מספר שלם&quot;,&quot;io-scanf-decimal&quot;:&quot;קריאת מספר עשרוני&quot;,&quot;io-scanf-char&quot;:&quot;קריאת תו&quot;,&quot;io-scanf-word&quot;:&quot;קריאת מילה&quot;,&quot;io-scanf-many&quot;:&quot;כמה ערכים בפעם אחת&quot;,&quot;io-scanf-bad&quot;:&quot;אות במקום מספר&quot;,&quot;io-review&quot;:&quot;חזרה: קלט ופלט&quot;,&quot;ops-arith&quot;:&quot;ארבע פעולות החשבון&quot;,&quot;ops-intdiv&quot;:&quot;חילוק שלמים ושארית&quot;,&quot;ops-cast&quot;:&quot;המרה בין טיפוסים&quot;,&quot;ops-compound&quot;:&quot;קיצורי כתיבה&quot;,&quot;ops-precedence&quot;:&quot;סדר פעולות&quot;,&quot;ops-math&quot;:&quot;ספריית המתמטיקה&quot;,&quot;ops-review&quot;:&quot;חזרה: חשבון ואופרטורים&quot;,&quot;if-if&quot;:&quot;בודקים תנאי&quot;,&quot;if-compare&quot;:&quot;השוואות&quot;,&quot;if-else&quot;:&quot;שתי אפשרויות&quot;,&quot;if-elseif&quot;:&quot;כמה אפשרויות&quot;,&quot;if-logic&quot;:&quot;וגם, או, לא&quot;,&quot;if-switch&quot;:&quot;בחירה מתוך רשימה&quot;,&quot;if-review&quot;:&quot;חזרה: תנאים&quot;,&quot;loops-while&quot;:&quot;לולאה: while&quot;,&quot;loops-for&quot;:&quot;לולאה: for&quot;,&quot;loops-do&quot;:&quot;לולאה שרצה לפחות פעם&quot;,&quot;loops-sum&quot;:&quot;סכום, ספירה ומקסימום&quot;,&quot;loops-digits&quot;:&quot;ספרות של מספר&quot;,&quot;loops-break&quot;:&quot;עצירה ודילוג&quot;,&quot;loops-nested&quot;:&quot;לולאה בתוך לולאה&quot;,&quot;loops-review&quot;:&quot;חזרה: לולאות&quot;,&quot;func-why&quot;:&quot;למה פונקציות&quot;,&quot;func-void&quot;:&quot;פונקציה בלי ערך מוחזר&quot;,&quot;func-params&quot;:&quot;פרמטרים&quot;,&quot;func-return&quot;:&quot;ערך מוחזר&quot;,&quot;func-proto&quot;:&quot;אב טיפוס&quot;,&quot;func-byvalue&quot;:&quot;העברה לפי ערך&quot;,&quot;func-scope&quot;:&quot;משתנים מקומיים וגלובליים&quot;,&quot;func-static&quot;:&quot;משתנה static&quot;,&quot;func-review&quot;:&quot;חזרה: פונקציות&quot;,&quot;build-split&quot;:&quot;למה לפצל לקבצים&quot;,&quot;build-header&quot;:&quot;קובץ כותרת משלנו&quot;,&quot;build-guards&quot;:&quot;שומרי כותרת&quot;,&quot;build-stages&quot;:&quot;שלבי הבנייה&quot;,&quot;build-link-errors&quot;:&quot;שגיאות קישור&quot;,&quot;build-makefile&quot;:&quot;בונים עם Makefile&quot;,&quot;build-rules&quot;:&quot;כלל לכל קובץ&quot;,&quot;build-rebuild&quot;:&quot;מה make בונה מחדש&quot;,&quot;build-vars&quot;:&quot;משתנים ב-Makefile&quot;,&quot;build-clean&quot;:&quot;ניקוי הפרויקט&quot;,&quot;build-layout&quot;:&quot;מבנה של פרויקט&quot;,&quot;build-review&quot;:&quot;חזרה: בנייה&quot;,&quot;arrays-declare&quot;:&quot;מערך&quot;,&quot;arrays-init&quot;:&quot;אתחול מערך&quot;,&quot;arrays-loop&quot;:&quot;לולאה על מערך&quot;,&quot;arrays-bounds&quot;:&quot;מחוץ לגבולות&quot;,&quot;arrays-params&quot;:&quot;מערך כפרמטר&quot;,&quot;arrays-sizeof&quot;:&quot;גודל מערך: sizeof&quot;,&quot;arrays-max&quot;:&quot;מקסימום ואינדקס&quot;,&quot;arrays-check&quot;:&quot;בדיקה על כל המערך&quot;,&quot;arrays-review&quot;:&quot;חזרה: מערכים&quot;,&quot;arrays-matrix&quot;:&quot;מטריצה&quot;,&quot;arrays-matrix-params&quot;:&quot;מטריצה כפרמטר&quot;,&quot;arrays-matrix-review&quot;:&quot;חזרה: מערכים ומטריצות&quot;,&quot;ptr-address&quot;:&quot;כתובת&quot;,&quot;ptr-declare&quot;:&quot;משתנה מצביע&quot;,&quot;ptr-deref&quot;:&quot;גישה דרך המצביע&quot;,&quot;ptr-decl-trap&quot;:&quot;שני מצביעים בשורה אחת&quot;,&quot;ptr-null&quot;:&quot;מצביע ריק: NULL&quot;,&quot;ptr-uninit&quot;:&quot;מצביע לא מאותחל&quot;,&quot;ptr-swap&quot;:&quot;לשנות משתנה של מי שקרא&quot;,&quot;ptr-outparams&quot;:&quot;כמה תוצאות מפונקציה&quot;,&quot;ptr-status&quot;:&quot;ערך החזרה של הצלחה&quot;,&quot;ptr-const&quot;:&quot;מצביע לקריאה בלבד: const&quot;,&quot;ptr-review1&quot;:&quot;חזרה: מצביעים 1&quot;,&quot;ptr-arith&quot;:&quot;חשבון מצביעים&quot;,&quot;ptr-incr&quot;:&quot;קידום: *p++ מול (*p)++&quot;,&quot;ptr-array&quot;:&quot;מערך ומצביע&quot;,&quot;ptr-return&quot;:&quot;החזרת מצביע&quot;,&quot;ptr-dangling&quot;:&quot;מצביע לכתובת שנמחקה&quot;,&quot;ptr-matrix&quot;:&quot;מטריצות ומצביעים&quot;,&quot;ptr-review2&quot;:&quot;חזרה: מצביעים 2&quot;,&quot;split&quot;:&quot;תוכנית בכמה קבצים&quot;,&quot;first-makefile&quot;:&quot;Makefile ראשון&quot;,&quot;rebuild&quot;:&quot;מה נבנה מחדש, ולמה&quot;,&quot;variables&quot;:&quot;משתנים: CC ו-CFLAGS&quot;,&quot;patterns&quot;:&quot;$@, $&lt; וכלל תבנית&quot;,&quot;clean&quot;:&quot;clean ו-.PHONY&quot;,&quot;make-quiz&quot;:&quot;חידון&quot;}" aria-labelledby="recent-c-h" hidden>
+<div class="card-h"><span class="ico ico-0" aria-hidden="true">C</span><div class="names"><h2 id="recent-c-h"><span class="l-he">תכנות בשפת C</span><span class="l-en" lang="en">Programming in C</span></h2><span class="other"><bdi class="l-he" lang="en">Programming in C</bdi><bdi class="l-en" lang="he" dir="rtl">תכנות בשפת C</bdi></span></div>
+<a class="btn run continue" href="c.html?course=c"
+ data-base="c.html?course=c"><span class="l-he">▶ להמשיך מאיפה שעצרתם</span><span class="l-en" lang="en">▶ Continue where you stopped</span></a></div>
+<div class="card-b">
+<p class="last" hidden><span class="l-he">נעצרתם ב: </span><span class="l-en" lang="en">You stopped at: </span>
+<bdi class="last-t"></bdi></p>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">110 שיעורים</span><span class="l-en" lang="en">110 lessons</span></span></div>
+</div></section>
+<section class="card recent-card" id="recent-probability" data-course="probability"
+ data-prefix="lab:probability:" data-ids="[&quot;ha-practice&quot;,&quot;ev-weekend&quot;,&quot;ev-coins&quot;,&quot;ru-system&quot;,&quot;ru-lights&quot;,&quot;co-committee&quot;,&quot;co-letters&quot;,&quot;cd-chips&quot;,&quot;cd-survey&quot;,&quot;ba-dice&quot;,&quot;ba-servers&quot;,&quot;in-shots&quot;,&quot;in-check&quot;,&quot;rv-table&quot;,&quot;rv-game&quot;,&quot;bi-packets&quot;,&quot;bi-test&quot;,&quot;gp-desk&quot;,&quot;gp-batch&quot;,&quot;gp-uniform&quot;,&quot;ct-battery&quot;,&quot;ct-uniform&quot;,&quot;ct-density&quot;,&quot;no-scores&quot;,&quot;no-sigma&quot;,&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;,&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]"
+ data-units="{&quot;how-to-answer&quot;:&quot;איך עונים&quot;,&quot;events&quot;:&quot;מרחב מדגם ומאורעות&quot;,&quot;rules&quot;:&quot;חוקי ההסתברות&quot;,&quot;counting&quot;:&quot;קומבינטוריקה&quot;,&quot;conditional&quot;:&quot;הסתברות מותנית&quot;,&quot;bayes&quot;:&quot;הסתברות שלמה ובייס&quot;,&quot;independence&quot;:&quot;אי-תלות&quot;,&quot;random-variable&quot;:&quot;משתנה מקרי&quot;,&quot;binomial&quot;:&quot;ההתפלגות הבינומית&quot;,&quot;geometric-poisson&quot;:&quot;גאומטרית, פואסון ועוד&quot;,&quot;continuous&quot;:&quot;משתנה רציף&quot;,&quot;normal&quot;:&quot;ההתפלגות הנורמלית&quot;,&quot;sums&quot;:&quot;תוחלת ושונות של סכומים&quot;,&quot;clt&quot;:&quot;משפט הגבול המרכזי&quot;,&quot;estimation&quot;:&quot;רווח סמך ובדיקת השערות&quot;,&quot;t-test&quot;:&quot;סטיית תקן לא ידועה: התפלגות t&quot;,&quot;proportion&quot;:&quot;רווח סמך לפרופורציה&quot;,&quot;power&quot;:&quot;טעויות ועוצמה&quot;,&quot;quiz&quot;:&quot;חידון סיכום&quot;}" aria-labelledby="recent-probability-h" hidden>
+<div class="card-h"><span class="ico ico-1" aria-hidden="true">P</span><div class="names"><h2 id="recent-probability-h"><span class="l-he">הסתברות</span><span class="l-en" lang="en">Probability</span></h2><span class="other"><bdi class="l-he" lang="en">Probability</bdi><bdi class="l-en" lang="he" dir="rtl">הסתברות</bdi></span></div>
+<a class="btn run continue" href="probability.html?course=probability"
+ data-base="probability.html?course=probability"><span class="l-he">▶ להמשיך מאיפה שעצרתם</span><span class="l-en" lang="en">▶ Continue where you stopped</span></a></div>
+<div class="card-b">
+<p class="last" hidden><span class="l-he">נעצרתם ב: </span><span class="l-en" lang="en">You stopped at: </span>
+<bdi class="last-t"></bdi></p>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">19 שיעורים</span><span class="l-en" lang="en">19 lessons</span></span></div>
+</div></section>
+<section class="card recent-card" id="recent-calc1" data-course="calc1"
+ data-prefix="lab:math-sequences:" data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]"
+ data-units="{&quot;bounded&quot;:&quot;סדרות חסומות&quot;,&quot;question&quot;:&quot;ארבע טענות&quot;,&quot;sum&quot;:&quot;(א) צירוף ליניארי&quot;,&quot;product&quot;:&quot;(ב) מכפלה וריבוע&quot;,&quot;quotient&quot;:&quot;(ג) מנה, מכנה חיובי&quot;,&quot;quotient-c&quot;:&quot;(ד) מנה, מכנה רחוק מ-0&quot;,&quot;quiz&quot;:&quot;חידון&quot;,&quot;sources&quot;:&quot;מקורות&quot;}" aria-labelledby="recent-calc1-h" hidden>
+<div class="card-h"><span class="ico ico-2" aria-hidden="true">∫</span><div class="names"><h2 id="recent-calc1-h"><span class="l-he">חדו&quot;א 1</span><span class="l-en" lang="en">Calculus 1</span></h2><span class="other"><bdi class="l-he" lang="en">Calculus 1</bdi><bdi class="l-en" lang="he" dir="rtl">חדו&quot;א 1</bdi></span></div>
+<a class="btn run continue" href="calc1.html?course=calc1"
+ data-base="calc1.html?course=calc1"><span class="l-he">▶ להמשיך מאיפה שעצרתם</span><span class="l-en" lang="en">▶ Continue where you stopped</span></a></div>
+<div class="card-b">
+<p class="last" hidden><span class="l-he">נעצרתם ב: </span><span class="l-en" lang="en">You stopped at: </span>
+<bdi class="last-t"></bdi></p>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">8 שיעורים</span><span class="l-en" lang="en">8 lessons</span></span></div>
+</div></section>
+</div></section>
 <div class="sec-h">
 <h2 id="courses-h"><span class="l-he">הקורסים</span><span class="l-en" lang="en">The courses</span></h2>
 <span class="cm" lang="en">// courses.md</span></div>
@@ -1616,10 +1673,7 @@ body.notice {
 <li data-part="c-ptr" data-ids="[&quot;ptr-address-total&quot;,&quot;ptr-declare-q&quot;,&quot;ptr-deref-add&quot;,&quot;ptr-decl-trap-fix&quot;,&quot;ptr-null-safe&quot;,&quot;ptr-uninit-fix&quot;,&quot;ptr-swap-ptr&quot;,&quot;ptr-swap-sort3&quot;,&quot;ptr-outparams-divide&quot;,&quot;ptr-status-divide&quot;,&quot;ptr-const-params&quot;,&quot;ptr-review1-order&quot;,&quot;ptr-arith-between&quot;,&quot;ptr-incr-fix&quot;,&quot;ptr-array-walk&quot;,&quot;ptr-return-last&quot;,&quot;ptr-return-max&quot;,&quot;ptr-dangling-fix&quot;,&quot;ptr-matrix-max&quot;,&quot;ptr-matrix-rows&quot;,&quot;ptr-review2-range&quot;,&quot;ptr-review2-reverse&quot;]"><a href="c.html?course=c#ptr-address"><span class="k" aria-hidden="true">10</span><span class="pt"><span class="l-he">כתובות ומצביעים</span><span class="l-en" lang="en">Addresses and pointers</span></span><span class="st"></span></a></li>
 <li data-part="make" data-ids="[&quot;fm-link&quot;,&quot;rb-header&quot;,&quot;var-flags&quot;,&quot;pat-rule&quot;,&quot;clean-target&quot;]"><a href="c.html?course=c#split"><span class="k" aria-hidden="true">11</span><span class="pt"><span class="l-he">make ו-Makefile</span><span class="l-en" lang="en">make and Makefiles</span></span><span class="st"></span></a></li>
 </ol>
-<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> 
-<span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span>
-<span class="bar" hidden><i></i></span>
-<span class="m-l"><span class="l-he">110 שיעורים</span><span class="l-en" lang="en">110 lessons</span></span></div>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">110 שיעורים</span><span class="l-en" lang="en">110 lessons</span></span></div>
 </div></section>
 <section class="card" id="card-probability" data-course="probability" data-prefix="lab:probability:"
  data-ids="[&quot;ha-practice&quot;,&quot;ev-weekend&quot;,&quot;ev-coins&quot;,&quot;ru-system&quot;,&quot;ru-lights&quot;,&quot;co-committee&quot;,&quot;co-letters&quot;,&quot;cd-chips&quot;,&quot;cd-survey&quot;,&quot;ba-dice&quot;,&quot;ba-servers&quot;,&quot;in-shots&quot;,&quot;in-check&quot;,&quot;rv-table&quot;,&quot;rv-game&quot;,&quot;bi-packets&quot;,&quot;bi-test&quot;,&quot;gp-desk&quot;,&quot;gp-batch&quot;,&quot;gp-uniform&quot;,&quot;ct-battery&quot;,&quot;ct-uniform&quot;,&quot;ct-density&quot;,&quot;no-scores&quot;,&quot;no-sigma&quot;,&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;,&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]" aria-labelledby="card-probability-h">
@@ -1635,10 +1689,7 @@ body.notice {
 <li data-part="sums" data-ids="[&quot;su-joint&quot;,&quot;su-luggage&quot;,&quot;cl-tasks&quot;,&quot;cl-coin&quot;]"><a href="probability.html?course=probability#sums"><span class="k" aria-hidden="true">5</span><span class="pt"><span class="l-he">סכומים וגבולות</span><span class="l-en" lang="en">Sums and limits</span></span><span class="st"></span></a></li>
 <li data-part="statistics" data-ids="[&quot;es-test&quot;,&quot;es-size&quot;,&quot;es-t2&quot;,&quot;es-prop2&quot;,&quot;es-power2&quot;]"><a href="probability.html?course=probability#estimation"><span class="k" aria-hidden="true">6</span><span class="pt"><span class="l-he">הסקה סטטיסטית</span><span class="l-en" lang="en">Statistical inference</span></span><span class="st"></span></a></li>
 </ol>
-<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> 
-<span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span>
-<span class="bar" hidden><i></i></span>
-<span class="m-l"><span class="l-he">19 שיעורים</span><span class="l-en" lang="en">19 lessons</span></span></div>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">19 שיעורים</span><span class="l-en" lang="en">19 lessons</span></span></div>
 </div></section>
 <section class="card" id="card-calc1" data-course="calc1" data-prefix="lab:math-sequences:"
  data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]" aria-labelledby="card-calc1-h">
@@ -1649,10 +1700,7 @@ body.notice {
 <ol class="chapters one">
 <li data-part="sequences" data-ids="[&quot;combo-bound&quot;,&quot;ratio-c-bound&quot;]"><a href="calc1.html?course=calc1#bounded"><span class="k" aria-hidden="true">1</span><span class="pt"><span class="l-he">סדרות חסומות</span><span class="l-en" lang="en">Bounded sequences</span></span><span class="st"></span></a></li>
 </ol>
-<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> 
-<span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span>
-<span class="bar" hidden><i></i></span>
-<span class="m-l"><span class="l-he">8 שיעורים</span><span class="l-en" lang="en">8 lessons</span></span></div>
+<div class="meter"><span class="m-n" hidden><span class="n" dir="ltr"></span> <span class="l-he">תרגילים</span><span class="l-en" lang="en">exercises</span></span><span class="bar" hidden><i></i></span><span class="m-l"><span class="l-he">8 שיעורים</span><span class="l-en" lang="en">8 lessons</span></span></div>
 </div></section>
 </div>
 <footer class="page-foot">
@@ -1675,6 +1723,106 @@ body.notice {
 </footer>
 </div>
 <script>/*
+ * The hub's "הקורסים שלי" / "My courses" (the owner, 2026-11-14; inlined by src/vite/hub-page.ts
+ * after hub.js; a classic script, no imports). Every course page notes its course when it opens
+ * ('lab:recent-courses', a list of {id, at}: src/core/page/recent-courses.ts), so a visit
+ * straight to a course page counts too. This script shows the cards of the listed courses this
+ * browser entered, the most recent first, each with a link to the page its course saved last
+ * ('<prefix>page'); an id the hub does not list (a private course on the public site, a removed
+ * one) and anything unreadable are skipped. With none, the section stays hidden, so a first
+ * visit sees the page as before. The cards' progress is hub.js's, as for every card.
+ */
+
+/** The courses this browser entered (src/core/page/recent-courses.ts writes it). */
+const RECENT_KEY = 'lab:recent-courses';
+
+/**
+ * Reads a JSON value from localStorage.
+ *
+ * @param {string} key the key
+ * @returns {unknown} the value, or null when it is missing or unreadable
+ */
+function readRecentStored(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reads the ids of the courses this browser entered, the most recent first. Entries of another
+ * shape, and anything unreadable, are left out.
+ *
+ * @returns {string[]} the ids, each once
+ */
+function recentCourseIds() {
+  const list = readRecentStored(RECENT_KEY);
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  const entries = list.filter(
+    (entry) => entry && typeof entry.id === 'string' && typeof entry.at === 'number',
+  );
+  entries.sort((first, second) => second.at - first.at);
+  return [...new Set(entries.map((entry) => entry.id))];
+}
+
+/**
+ * Points a "my courses" card at the page its course saved last ('<prefix>page': a unit id, or
+ * '<unit id>/<step>'), and names that lesson.
+ *
+ * @param {HTMLElement} card the card (data-prefix, data-units)
+ * @returns {void}
+ */
+function paintContinue(card) {
+  const link = card.querySelector('.continue');
+  const page = readRecentStored(card.dataset.prefix + 'page');
+  const isPage = typeof page === 'string' && page !== 'home' && /^[\w-]+(\/\d+)?$/.test(page);
+  link.href = link.dataset.base + (isPage ? '#' + page : '');
+  let units = {};
+  try {
+    units = JSON.parse(card.dataset.units || '{}');
+  } catch {
+    // a broken map: no lesson line
+  }
+  const unit = isPage ? page.split('/')[0] : '';
+  const title = Object.prototype.hasOwnProperty.call(units, unit) ? units[unit] : '';
+  card.querySelector('.last-t').textContent = title;
+  card.querySelector('.last').hidden = !title;
+}
+
+/**
+ * Shows "my courses": the cards of the listed courses this browser entered, in that order.
+ *
+ * @returns {void}
+ */
+function paintRecent() {
+  const section = document.getElementById('recent');
+  if (!section) {
+    return;
+  }
+  const holder = section.querySelector('.cards');
+  const shown = [];
+  for (const id of recentCourseIds()) {
+    const card = holder.querySelector('.recent-card[data-course="' + CSS.escape(id) + '"]');
+    if (card) {
+      holder.append(card);
+      paintContinue(card);
+      shown.push(card);
+    }
+  }
+  holder.querySelectorAll('.recent-card').forEach((card) => {
+    card.hidden = !shown.includes(card);
+  });
+  section.hidden = !shown.length;
+}
+
+paintRecent();
+// back from a course page: the browser may show the page from its cache, so read again
+window.addEventListener('pageshow', paintRecent);
+</script>
+<script>/*
  * The hub page's script (inlined by src/vite/hub-page.ts; a classic script, no imports).
  *   - The theme switch, under the lab's own key 'lab:theme', so the course pages follow it.
  *   - The language switch (EN / עב): the page carries both languages and its lang shows one
@@ -1684,6 +1832,7 @@ body.notice {
  *   - The course tree: a course opens to its sections; choosing one outlines its card, scrolls to
  *     it and names it in the status bar (the address keeps it: index.html#<course id>, which is
  *     also where a course page's link back leads).
+ *   - My courses: hub-recent.js (the progress of its cards is painted here, like every card's).
  *   - Progress: how many of a course's exercises passed, read from the keys the course page writes
  *     ('<prefix>pass:<box id>', JSON true; also under the prefixes of the courses it took over,
  *     data-former), for each card, each of its sections and the status bar.
@@ -2134,7 +2283,7 @@ function setUpHub() {
   paintAllProgress();
   const wanted = courseInAddress();
   if (!chooseCourse(wanted, true)) {
-    chooseCourse(document.querySelector('.card').dataset.course, false);
+    chooseCourse(document.querySelector('#cards > .card').dataset.course, false);
   }
   window.addEventListener('hashchange', () => chooseCourse(courseInAddress(), true));
   // back from a course page: the browser may show the page from its cache, so read again
