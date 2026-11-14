@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-cb9cm8qaGZEoHLsGWKcefrcREy172pFTRXUszK21/KY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-Kp2A4Z33Fb3Fu/X5RRn0CteHvAIitOfudRuoWBFKoPc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -792,7 +792,7 @@ body.debugging .wb-grid{grid-template-areas:"code split side";grid-template-colu
 /* file tabs: one line; with many files the strip scrolls and shows a thin scrollbar, and the tabs get a little lower so they are not cut */
 .ftabs{display:flex;flex:none;gap:0;align-items:flex-end;height:36px;background:var(--panel);padding:5px 8px 0;border-bottom:1px solid var(--line-2);flex-wrap:nowrap;overflow:hidden}
 .ftabs.ovf{padding-top:2px}
-.ft{flex:none;white-space:nowrap;font-family:var(--f-mono);font-size:12.5px;background:transparent;color:var(--muted);border:0;border-radius:6px 6px 0 0;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.ft{flex:none;white-space:nowrap;-webkit-user-select:none;user-select:none;font-family:var(--f-mono);font-size:12.5px;background:transparent;color:var(--muted);border:0;border-radius:6px 6px 0 0;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .ft:hover{color:var(--ink)}
 .ft.admin-tab{color:var(--warn)}
 body:not(.admin) .admin-tab{display:none}
@@ -804,7 +804,9 @@ body:not(.admin) .admin-tab{display:none}
 .ft-add{font-size:15px;padding:2px 10px}
 .ft-user{display:contents}
 .ft-name{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;display:inline}
-.ft-u{padding-block:0;padding-inline:0;gap:0}
+.ft-u{padding-block:0;padding-inline:0;gap:0;-webkit-touch-callout:none}
+/* an extra file's tab held and dragged to another place (tab-drag.ts): lifted above its neighbours */
+.ft-u.drag{position:relative;z-index:3;background:var(--raised);color:var(--ink);box-shadow:0 0 0 1px var(--line),0 6px 16px var(--shadow);cursor:grabbing}
 .ft-u .ft-name{padding:5px 2px 5px 12px}
 .ft-x{background:none;border:0;color:var(--muted);cursor:pointer;min-width:24px;height:24px;margin-block:-4px;display:inline-grid;place-items:center;padding:0;font-size:15px;line-height:1;border-radius:4px}
 .ft-x:hover{color:var(--err)}
@@ -5589,7 +5591,7 @@ function showsStepsAtOnce(choice, systemReduces) {
 function scaledMs(ms, speed) {
 	return speed > 0 ? ms / speed : ms;
 }
-var current = null;
+var current$1 = null;
 var listeners$4 = /* @__PURE__ */ new Set();
 var isWatchingSystem = false;
 function isInPage() {
@@ -5604,11 +5606,11 @@ function readSaved$1(key) {
 	}
 }
 function motionSettings() {
-	if (!current) current = isInPage() ? settingsOf({
+	if (!current$1) current$1 = isInPage() ? settingsOf({
 		speed: readSaved$1(SPEED_KEY),
 		choice: readSaved$1(CHOICE_KEY$1)
 	}, location.search) : DEFAULT_SETTINGS;
-	return current;
+	return current$1;
 }
 function motionSpeed() {
 	return motionSettings().speed;
@@ -5639,7 +5641,7 @@ function changeMotionSettings(change) {
 		...speed === null ? {} : { speed },
 		...choice === null ? {} : { choice }
 	};
-	current = {
+	current$1 = {
 		...motionSettings(),
 		...valid
 	};
@@ -17961,10 +17963,64 @@ function createCourseLayer() {
 	return courseLayer;
 }
 var CourseLayer = createCourseLayer();
+// src/core/code-box/line-scroll.ts
+var GLIDE_TIMEOUT_MS = 900;
+var CUT_TOLERANCE_PX = 1;
+var glideTargets = /* @__PURE__ */ new WeakMap();
+function scrollingBoxOf(parts) {
+	const scroller = parts.scroller;
+	return scroller ? scroller.closest(".ed") || scroller : null;
+}
+function settledTopOf(box) {
+	const glide = glideTargets.get(box);
+	if (glide && performance.now() < glide.until) return glide.top;
+	glideTargets.delete(box);
+	return box.scrollTop;
+}
+function targetTopOf(box, line) {
+	const boxRect = box.getBoundingClientRect();
+	const lineRect = line.getBoundingClientRect();
+	const visibleTop = boxRect.top + box.clientTop;
+	const lineTop = lineRect.top - visibleTop + box.scrollTop;
+	const settledTop = settledTopOf(box);
+	const isAbove = lineTop < settledTop - CUT_TOLERANCE_PX;
+	const isBelow = lineTop + lineRect.height > settledTop + box.clientHeight + CUT_TOLERANCE_PX;
+	if (!isAbove && !isBelow) return null;
+	const centred = lineTop - (box.clientHeight - lineRect.height) / 2;
+	const lowest = Math.max(0, box.scrollHeight - box.clientHeight);
+	return Math.round(Math.min(lowest, Math.max(0, centred)));
+}
+function scrollBoxTo$1(box, top) {
+	if (prefersReducedMotion() || typeof box.scrollTo !== "function") {
+		glideTargets.delete(box);
+		box.scrollTop = top;
+		return;
+	}
+	glideTargets.set(box, {
+		top,
+		until: performance.now() + GLIDE_TIMEOUT_MS
+	});
+	box.addEventListener("scrollend", () => glideTargets.delete(box), { once: true });
+	box.scrollTo({
+		top,
+		behavior: "smooth"
+	});
+}
+function bringLineIntoSight(parts, lineNumber) {
+	const line = parts.colourLayer?.children[lineNumber - 1];
+	const box = scrollingBoxOf(parts);
+	if (!line || !box || !box.getClientRects().length) return;
+	const top = targetTopOf(box, line);
+	if (top !== null && top !== Math.round(settledTopOf(box))) scrollBoxTo$1(box, top);
+}
+function scrollLineIntoView(parts, lineNumber, isStillCurrent) {
+	bringLineIntoSight(parts, lineNumber);
+	if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => {
+		if (isStillCurrent()) bringLineIntoSight(parts, lineNumber);
+	});
+}
 // src/core/code-box/editor-model.ts
 var EDITOR_LABEL = "עורך קוד";
-var SCROLL_MARGIN_PX = 40;
-var SCROLL_OFFSET_PX = 60;
 function asTextAreaText(text) {
 	return String(text).replace(/\r\n?/g, "\n");
 }
@@ -17980,20 +18036,12 @@ function commit(state, changes) {
 	};
 	(0, import_react_dom.flushSync)(() => state.listeners.forEach((listener) => listener()));
 }
-function scrollToLine(parts, lineNumber) {
-	const lineElement = parts.colourLayer?.children[lineNumber - 1];
-	const scroller = parts.scroller;
-	if (!lineElement || !scroller || !scroller.getClientRects().length) return;
-	const top = lineElement.offsetTop;
-	const bottomEdge = scroller.scrollTop + scroller.clientHeight - SCROLL_MARGIN_PX;
-	if (top < scroller.scrollTop || top > bottomEdge) scroller.scrollTop = Math.max(0, top - SCROLL_OFFSET_PX);
-}
 function markMembers(state, parts) {
 	const breakpoints = state.breakpoints;
 	return {
 		setCur(lineNumber) {
 			commit(state, { current: lineNumber });
-			if (lineNumber > 0) scrollToLine(parts, lineNumber);
+			if (lineNumber > 0) scrollLineIntoView(parts, lineNumber, () => state.snapshot.current === lineNumber);
 		},
 		setErr(lineNumbers) {
 			commit(state, { errors: new Set(lineNumbers) });
@@ -18576,6 +18624,45 @@ function showFile(context, key) {
 	checkTabOverflow(context);
 	scrollActiveTabIntoView(context);
 }
+// src/core/code-box/opening-tab.js
+var MAKEFILE_NAME = /^[Mm]akefile$/;
+function withoutCommentsAndSpaces(text) {
+	return String(text).replace(/"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (token) => token[0] === "/" ? " " : token).replace(/\s+/g, "");
+}
+function isMainSolved(box) {
+	if (typeof box.code !== "string" || typeof box.solution !== "string") return false;
+	return withoutCommentsAndSpaces(box.code) === withoutCommentsAndSpaces(box.solution);
+}
+function tabOfFile(context, name) {
+	if (typeof name !== "string" || !name) return null;
+	if (name === context.files.main) return "main";
+	return context.userEditors.has(name) ? "u:" + name : null;
+}
+function defaultTabOf(context) {
+	const { box } = context;
+	const named = tabOfFile(context, box.focus);
+	if (named) return named;
+	if (!isMainSolved(box)) return "main";
+	const names = solutionFilesOf(box).map(([name]) => name);
+	const ordered = names.filter((name) => MAKEFILE_NAME.test(name));
+	ordered.push(...names.filter((name) => !MAKEFILE_NAME.test(name)));
+	for (const name of ordered) {
+		const tab = tabOfFile(context, name);
+		if (tab) return tab;
+	}
+	return "main";
+}
+function openingTabOf(context) {
+	return tabOfFile(context, store.get("tab:" + context.box.id, null)) || defaultTabOf(context);
+}
+function saveChosenTab(context, key) {
+	if (key !== "main" && !key.startsWith("u:")) return;
+	const name = key === "main" ? context.files.main : key.slice(2);
+	store.set("tab:" + context.box.id, key === defaultTabOf(context) ? null : name);
+}
+function forgetChosenTab(context) {
+	store.set("tab:" + context.box.id, null);
+}
 // src/core/code-box/terminal.js
 var EMPTY_TERMINAL_HTML = "<span class=\"dim\">// program output appears here</span>";
 var ANNOUNCE_DELAY_MS$1 = 30;
@@ -18866,12 +18953,12 @@ function takeSnapshot$2(context) {
 function replaceWithCourseCode(context, offerText) {
 	const boxId = context.box.id;
 	const snapshot = takeSnapshot$2(context);
-	showFile(context, "main");
 	store.set("pass:" + boxId, false);
 	store.set("passsig:" + boxId, null);
 	context.editor.value = context.box.code;
 	courseFiles(context.box).forEach((givenFile) => restoreUserFile(context, givenFile));
 	saveUserFiles(context);
+	showFile(context, defaultTabOf(context));
 	if (context.state.mode !== "debug") clearTerminal(context);
 	setBadge(context, false, 0, 0);
 	context.ui.progress();
@@ -18879,6 +18966,7 @@ function replaceWithCourseCode(context, offerText) {
 }
 function resetCode(context) {
 	stampVersion(store, context.box);
+	forgetChosenTab(context);
 	const updated = context.view.get().updated;
 	if (updated.isOpen) context.view.update({ updated: {
 		...updated,
@@ -18927,7 +19015,7 @@ function pressReset(context, resetButton) {
 		return;
 	}
 	stopDebugging(context);
-	showFile(context, "main");
+	showFile(context, defaultTabOf(context));
 	clearTerminal(context);
 }
 // src/core/code-box/box-actions.js
@@ -18951,7 +19039,9 @@ function pressActionButton(context, action, actionButton) {
 		setWideLayout(!document.body.classList.contains("wide"));
 		return;
 	}
-	if (action !== "reset") showFile(context, "main");
+	const shownFile = context.view.get().shownFile;
+	const isAdminTabShown = context.adminTabs.some((tab) => tab.key === shownFile);
+	if (action !== "reset" && isAdminTabShown) showFile(context, openingTabOf(context));
 	if (action === "run") runWhileBusy(context, "run", () => controller.run());
 	if (action === "debug" && controller.debug) runWhileBusy(context, "debug", () => controller.debug());
 	if (action === "test" && controller.test) runWhileBusy(context, "test", () => controller.test());
@@ -19992,7 +20082,7 @@ var CURSOR_CLASSES = [
 	"isl-row-resize",
 	"isl-nwse-resize"
 ];
-function followPointer(start, handlers, cursorClass) {
+function followPointer$1(start, handlers, cursorClass) {
 	let last = {
 		dx: 0,
 		dy: 0,
@@ -20379,7 +20469,7 @@ function dragSplitter(event, model, isStepping) {
 	if (event.button !== 0 || !grid) return;
 	event.preventDefault();
 	const leastSide = islandsMinWidth(model, model.get());
-	followPointer(event, {
+	followPointer$1(event, {
 		move(track) {
 			const next = shareAt(grid, isStepping, track.clientX, track.clientY, leastSide);
 			model.set(withShare(model.get(), isStepping, next), false);
@@ -20425,13 +20515,13 @@ function CodeSplitter({ context }) {
 	});
 }
 var OPEN_MS = 240;
-var PLAYERS = /* @__PURE__ */ new WeakMap();
+var PLAYERS$1 = /* @__PURE__ */ new WeakMap();
 var layoutSpeed = () => 1;
 function islandPlayerOf(box) {
-	let player = PLAYERS.get(box);
+	let player = PLAYERS$1.get(box);
 	if (!player) {
 		player = createMotionPlayer({ speed: layoutSpeed });
-		PLAYERS.set(box, player);
+		PLAYERS$1.set(box, player);
 	}
 	return player;
 }
@@ -21396,11 +21486,30 @@ function closeNewFileForm(context, shouldFocusAddTab) {
 		if (addTab) addTab.focus();
 	}
 }
+function hebrewWithNames(text) {
+	return ltrCode(escapeHtml$1(text));
+}
+function ruleProblemHtml(files, name) {
+	if (files.extraRe.test(name)) return "";
+	const reason = typeof files.nameProblem === "function" ? files.nameProblem(name) : "";
+	if (reason) return html`שם לא תקין: ${rawHtml(hebrewWithNames(reason))}`.text;
+	return html`שם לא תקין. ${rawHtml(hebrewWithNames(files.hint || files.badName || ""))}`.text;
+}
+function clashingName(context, name) {
+	const names = [context.files.main, ...context.userFiles.map((file) => file.name)];
+	const lowered = name.toLowerCase();
+	return names.find((existing) => existing === name) || names.find((existing) => existing.toLowerCase() === lowered) || "";
+}
 function nameProblemHtml(context, name) {
 	const { files, userFiles } = context;
-	if (!files.extraRe.test(name)) return html`שם לא תקין. ${rawHtml(ltrCode(escapeHtml$1(files.hint || files.badName || "")))}`.text;
-	if (name === files.main || userFiles.some((file) => file.name === name)) return html`הקובץ <bdi dir="ltr">${name}</bdi> כבר קיים`.text;
 	if (userFiles.length >= MAX_USER_FILES) return "אפשר להוסיף עד 10 קבצים";
+	if (!name) return hebrewWithNames("כתבו שם לקובץ" + (files.placeholder ? ", למשל " + files.placeholder : ""));
+	const ruleProblem = ruleProblemHtml(files, name);
+	if (ruleProblem) return ruleProblem;
+	const existing = clashingName(context, name);
+	if (existing === name) return html`הקובץ <bdi dir="ltr">${name}</bdi> כבר קיים`.text;
+	if (existing) return html`הקובץ <bdi dir="ltr">${existing}</bdi> כבר קיים, ו-<bdi dir="ltr">${name}</bdi> שונה
+      ממנו רק באותיות גדולות`.text;
 	return "";
 }
 function submitNewFile(context) {
@@ -21438,9 +21547,315 @@ function onNameBlur(context) {
 		if (!input.value.trim() && !form.contains(document.activeElement)) closeNewFileForm(context, false);
 	}, BLUR_CLOSE_DELAY_MS);
 }
+// src/core/code-box/tab-order.ts
+var TAB_ORDER_KEY = "taborder:";
+var ANCHOR_PREFIX = "tab:";
+var PLAYERS = /* @__PURE__ */ new WeakMap();
+var furnitureSpeed = () => 1;
+function tabAnchor(name) {
+	return isAnchorName(ANCHOR_PREFIX + name) ? anchor(ANCHOR_PREFIX + name) : {};
+}
+function orderedTabNames(boxId, names) {
+	const saved = store.get(TAB_ORDER_KEY + boxId, null);
+	if (!Array.isArray(saved)) return names;
+	const known = saved.filter((name, index) => names.includes(name) && saved.indexOf(name) === index);
+	return known.concat(names.filter((name) => !known.includes(name)));
+}
+function saveTabOrder(context) {
+	const order = context.view.get().userFileNames;
+	const files = context.userFiles;
+	const isOwnOrder = order.every((name, index) => files[index] && files[index].name === name);
+	store.set(TAB_ORDER_KEY + context.box.id, isOwnOrder ? null : order);
+}
+function playerEntryOf(context, channel) {
+	let entries = PLAYERS.get(context);
+	if (!entries) {
+		entries = {
+			row: {
+				player: createMotionPlayer({ speed: furnitureSpeed }),
+				moveKey: 0
+			},
+			drop: {
+				player: createMotionPlayer({ speed: furnitureSpeed }),
+				moveKey: 0
+			}
+		};
+		PLAYERS.set(context, entries);
+	}
+	return entries[channel];
+}
+function cueTabSlides(context, names, channel = "row") {
+	const entry = playerEntryOf(context, channel);
+	entry.moveKey += 1;
+	const motions = names.filter((name) => isAnchorName(ANCHOR_PREFIX + name)).map((name) => slide({
+		anchor: ANCHOR_PREFIX + name,
+		ms: 180
+	}));
+	const stage = context.find(".ftabs");
+	if (stage) entry.player.show(stage, -entry.moveKey);
+	entry.player.cue(entry.moveKey, motions.length ? together(motions) : null, "next");
+	return entry.moveKey;
+}
+function showTabSlides(context, key, channel = "row") {
+	const stage = context.find(".ftabs");
+	if (stage) playerEntryOf(context, channel).player.show(stage, key);
+}
+function setTabOrder(context, order, sliding, shouldSave, afterDraw) {
+	const key = cueTabSlides(context, sliding);
+	context.view.update({ userFileNames: order });
+	afterDraw?.();
+	showTabSlides(context, key);
+	if (shouldSave) saveTabOrder(context);
+}
+function announceTabPlace(context, name, edge = "") {
+	const order = context.view.get().userFileNames;
+	const place = order.indexOf(name) + 2;
+	const count = order.length + 1;
+	const where = "במקום " + place + " מתוך " + count;
+	let text = "הקובץ " + name + " עבר למקום " + place + " מתוך " + count;
+	if (edge === "first") text = "הקובץ " + name + " כבר ראשון אחרי " + context.files.main + ", " + where;
+	else if (edge === "last") text = "הקובץ " + name + " כבר אחרון, " + where;
+	announce$2(context, text);
+}
+function focusUserTab(context, name) {
+	[...context.host.querySelectorAll(".ftabs .ft-u")].find((element) => element.dataset.name === name)?.querySelector(".ft-name")?.focus({ preventScroll: true });
+}
+function onTabReorderKey(context, event) {
+	if (!(event.key === "ArrowLeft" || event.key === "ArrowRight") || !event.altKey || !event.shiftKey || event.ctrlKey || event.metaKey) return false;
+	const target = event.target;
+	if (!target.matches("[role=tab]")) return false;
+	event.preventDefault();
+	const tab = target.closest(".ft-u");
+	if (!tab) {
+		if (target.closest("[data-f=main]")) announce$2(context, "הקובץ " + context.files.main + " נשאר תמיד ראשון");
+		return true;
+	}
+	const name = tab.dataset.name || "";
+	const order = [...context.view.get().userFileNames];
+	const from = order.indexOf(name);
+	const to = from + (event.key === "ArrowRight" ? 1 : -1);
+	if (from < 0 || to < 0 || to >= order.length) {
+		announceTabPlace(context, name, to < 0 ? "first" : "last");
+		return true;
+	}
+	order.splice(from, 1);
+	order.splice(to, 0, name);
+	setTabOrder(context, order, [name, order[from]], true);
+	focusUserTab(context, name);
+	announceTabPlace(context, name);
+	return true;
+}
+var MOVE_TOLERANCE_PX = 8;
+var EDGE_PX = 28;
+var EDGE_SCROLL_PX = 12;
+var CLICK_AFTER_DROP_MS = 600;
+var current = null;
+function userTabOf(strip, name) {
+	return [...strip.querySelectorAll(".ft-u")].find((tab) => tab.dataset.name === name) || null;
+}
+function measureSlots(press) {
+	const { strip } = press;
+	const origin = strip.getBoundingClientRect().left - strip.scrollLeft;
+	const slots = /* @__PURE__ */ new Map();
+	for (const name of press.context.view.get().userFileNames) {
+		const tab = userTabOf(strip, name);
+		if (tab) {
+			const rect = tab.getBoundingClientRect();
+			const shift = name === press.name ? press.shift : 0;
+			slots.set(name, {
+				left: rect.left - origin - shift,
+				width: rect.width
+			});
+		}
+	}
+	return slots;
+}
+function followPointer(press, clientX) {
+	const { strip, slots } = press;
+	const own = slots.get(press.name);
+	if (!own) return;
+	const all = [...slots.values()];
+	const lowest = Math.min(...all.map((slot) => slot.left));
+	const highest = Math.max(...all.map((slot) => slot.left + slot.width)) - own.width;
+	const pointerInStrip = clientX - strip.getBoundingClientRect().left + strip.scrollLeft;
+	press.shift = Math.min(highest, Math.max(lowest, pointerInStrip - press.grabOffset)) - own.left;
+	press.tab.style.transform = "translateX(" + press.shift + "px)";
+}
+function wantedOrder(press) {
+	const own = press.slots.get(press.name);
+	const left = own.left + press.shift;
+	const right = left + own.width;
+	const others = press.context.view.get().userFileNames.filter((name) => name !== press.name);
+	const place = others.filter((name) => {
+		const slot = press.slots.get(name);
+		if (!slot) return false;
+		const middle = slot.left + slot.width / 2;
+		return slot.left < own.left ? left >= middle : right > middle;
+	}).length;
+	others.splice(place, 0, press.name);
+	return others;
+}
+function reorderWhileDragging(press, order) {
+	const sliding = order.filter((name) => name !== press.name);
+	setTabOrder(press.context, order, sliding, false, () => {
+		press.slots = measureSlots(press);
+		followPointer(press, press.lastX);
+	});
+	try {
+		press.tab.setPointerCapture(press.pointerId);
+	} catch {}
+}
+function scrollNearEdge(press, clientX) {
+	const { strip } = press;
+	if (strip.scrollWidth <= strip.clientWidth + 1) return;
+	const box = strip.getBoundingClientRect();
+	if (clientX < box.left + EDGE_PX) strip.scrollLeft -= EDGE_SCROLL_PX;
+	else if (clientX > box.right - EDGE_PX) strip.scrollLeft += EDGE_SCROLL_PX;
+}
+function startDrag$3(press) {
+	press.isDragging = true;
+	press.startOrder = [...press.context.view.get().userFileNames];
+	press.grabOffset = press.startX - press.tab.getBoundingClientRect().left;
+	press.context.view.update({ draggedFile: press.name });
+	press.slots = measureSlots(press);
+	try {
+		press.tab.setPointerCapture(press.pointerId);
+	} catch {}
+}
+function swallowNextClick(tab) {
+	const onClick = (event) => {
+		if (tab.contains(event.target)) {
+			event.stopPropagation();
+			event.preventDefault();
+		}
+		window.removeEventListener("click", onClick, true);
+	};
+	window.addEventListener("click", onClick, true);
+	setTimeout(() => window.removeEventListener("click", onClick, true), CLICK_AFTER_DROP_MS);
+}
+function endDrag(press, isCancelled) {
+	const { context, tab, name } = press;
+	if (isCancelled) reorderWhileDragging(press, press.startOrder);
+	const key = cueTabSlides(context, [name], "drop");
+	tab.style.transform = "";
+	context.view.update({ draggedFile: null });
+	showTabSlides(context, key, "drop");
+	if (!press.hasTravelled && !isCancelled) return;
+	swallowNextClick(tab);
+	if (isCancelled) return;
+	saveTabOrder(context);
+	if (press.startOrder.join("\n") !== context.view.get().userFileNames.join("\n")) announceTabPlace(context, name);
+}
+function releasePress() {
+	const press = current;
+	if (!press) return;
+	current = null;
+	clearTimeout(press.timer);
+	window.removeEventListener("pointermove", onPointerMove$1);
+	window.removeEventListener("pointerup", onPointerUp$1);
+	window.removeEventListener("pointercancel", onPointerCancel);
+	window.removeEventListener("keydown", onKeyDown, true);
+	press.tab.removeEventListener("touchmove", onTouchMove);
+	press.tab.removeEventListener("contextmenu", onContextMenu);
+}
+function onPointerMove$1(event) {
+	const press = current;
+	if (!press || event.pointerId !== press.pointerId) return;
+	press.lastX = event.clientX;
+	if (!press.isDragging) {
+		if (Math.hypot(event.clientX - press.startX, event.clientY - press.startY) > MOVE_TOLERANCE_PX) releasePress();
+		return;
+	}
+	if (event.pointerType === "mouse" && event.buttons === 0) {
+		onPointerUp$1(event);
+		return;
+	}
+	event.preventDefault();
+	if (Math.abs(event.clientX - press.startX) > MOVE_TOLERANCE_PX) press.hasTravelled = true;
+	scrollNearEdge(press, event.clientX);
+	followPointer(press, event.clientX);
+	const order = wantedOrder(press);
+	if (order.join("\n") !== press.context.view.get().userFileNames.join("\n")) reorderWhileDragging(press, order);
+}
+function onPointerUp$1(event) {
+	const press = current;
+	if (!press || event.pointerId !== press.pointerId) return;
+	releasePress();
+	if (press.isDragging) endDrag(press, false);
+}
+function onPointerCancel(event) {
+	onPointerUp$1(event);
+}
+function onKeyDown(event) {
+	const press = current;
+	if (event.key !== "Escape" || !press || !press.isDragging) return;
+	event.preventDefault();
+	event.stopPropagation();
+	releasePress();
+	endDrag(press, true);
+}
+function onTouchMove(event) {
+	if (current && current.isDragging && event.cancelable) event.preventDefault();
+}
+function onContextMenu(event) {
+	if (current) event.preventDefault();
+}
+function newPress(context, strip, tab, event) {
+	return {
+		context,
+		strip,
+		tab,
+		name: tab.dataset.name || "",
+		pointerId: event.pointerId,
+		startX: event.clientX,
+		startY: event.clientY,
+		lastX: event.clientX,
+		timer: 0,
+		isDragging: false,
+		hasTravelled: false,
+		grabOffset: 0,
+		shift: 0,
+		startOrder: [],
+		slots: /* @__PURE__ */ new Map()
+	};
+}
+function onPointerDown(context, strip, event) {
+	const target = event.target;
+	const tab = target.closest(".ft-u");
+	const isMainButton = event.pointerType !== "mouse" || event.button === 0;
+	if (!tab || target.closest(".ft-x") || !isMainButton || !event.isPrimary) return;
+	if (context.view.get().userFileNames.length < 2) return;
+	releasePress();
+	const press = newPress(context, strip, tab, event);
+	current = press;
+	press.timer = window.setTimeout(() => {
+		if (current === press) startDrag$3(press);
+	}, 300);
+	window.addEventListener("pointermove", onPointerMove$1);
+	window.addEventListener("pointerup", onPointerUp$1);
+	window.addEventListener("pointercancel", onPointerCancel);
+	window.addEventListener("keydown", onKeyDown, true);
+	tab.addEventListener("touchmove", onTouchMove, { passive: false });
+	tab.addEventListener("contextmenu", onContextMenu);
+}
+function useTabDrag(context, stripRef) {
+	(0, import_react.useEffect)(() => {
+		const strip = stripRef.current;
+		if (!strip) return;
+		const onDown = (event) => {
+			onPointerDown(context, strip, event);
+		};
+		strip.addEventListener("pointerdown", onDown);
+		return () => strip.removeEventListener("pointerdown", onDown);
+	}, [context, stripRef]);
+}
 // src/core/code-box/FileTabs.tsx
 function tabClasses(baseClasses, isShown, hasErrors) {
 	return baseClasses + (isShown ? " on" : "") + (hasErrors ? " has-err" : "");
+}
+function chooseFile(context, key) {
+	showFile(context, key);
+	saveChosenTab(context, key);
 }
 function MainTab(props) {
 	const { context, name, isShown, hasErrors } = props;
@@ -21452,7 +21867,7 @@ function MainTab(props) {
 		"data-f": "main",
 		"data-name": name,
 		"aria-label": hasErrors ? name + ", יש שגיאות בקובץ" : void 0,
-		onClick: () => showFile(context, "main"),
+		onClick: () => chooseFile(context, "main"),
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 			className: "ft-name",
 			children: name
@@ -21460,14 +21875,15 @@ function MainTab(props) {
 	});
 }
 function UserTab(props) {
-	const { context, name, isShown, hasErrors } = props;
+	const { context, name, isShown, hasErrors, isDragged } = props;
 	const deleteLabel = "מחיקת " + name;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-		className: tabClasses("ft ft-u", isShown, hasErrors),
+		className: tabClasses("ft ft-u", isShown, hasErrors) + (isDragged ? " drag" : ""),
 		"data-f": "u:" + name,
 		"data-name": name,
+		...tabAnchor(name),
 		onClick: (event) => {
-			if (!event.target.closest(".ft-x")) showFile(context, "u:" + name);
+			if (!event.target.closest(".ft-x")) chooseFile(context, "u:" + name);
 		},
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 			className: "ft-name",
@@ -21521,6 +21937,7 @@ function FileTabs({ context }) {
 	const isOverflowing = useBoxView(context.view, (view) => view.isTabRowOverflowing);
 	const rowRef = (0, import_react.useRef)(null);
 	const stripRef = useTabRowOverflow(context);
+	useTabDrag(context, stripRef);
 	const hidden = useHiddenTabs(stripRef, [
 		shownFile,
 		isOverflowing,
@@ -21535,7 +21952,9 @@ function FileTabs({ context }) {
 		role: "tablist",
 		"aria-label": "קבצי הקוד",
 		ref: rowRef,
-		onKeyDown: (event) => onTabRowKey(rowRef.current, event.nativeEvent),
+		onKeyDown: (event) => {
+			if (!onTabReorderKey(context, event.nativeEvent)) onTabRowKey(rowRef.current, event.nativeEvent);
+		},
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MoreTabsChip, {
 				side: "before",
@@ -21561,6 +21980,7 @@ function StripTabs({ context }) {
 	const shownFile = useBoxView(context.view, (view) => view.shownFile);
 	const userFileNames = useBoxView(context.view, (view) => view.userFileNames);
 	const errorFiles = useBoxView(context.view, (view) => view.errorFiles);
+	const draggedFile = useBoxView(context.view, (view) => view.draggedFile);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MainTab, {
 			context,
@@ -21574,7 +21994,8 @@ function StripTabs({ context }) {
 				context,
 				name,
 				isShown: shownFile === "u:" + name,
-				hasErrors: errorFiles.includes(name)
+				hasErrors: errorFiles.includes(name),
+				isDragged: draggedFile === name
 			}, name))
 		}),
 		adminTabs.map((tab) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AdminTabButton, {
@@ -21727,6 +22148,9 @@ function HintLine({ context }) {
 		dangerouslySetInnerHTML: { __html: context.strings.hint || "" }
 	});
 }
+function hostOrder(names) {
+	return [...names].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+}
 function CodeColumn({ context }) {
 	const shownFile = useBoxView(context.view, (view) => view.shownFile);
 	const userFileNames = useBoxView(context.view, (view) => view.userFileNames);
@@ -21747,7 +22171,7 @@ function CodeColumn({ context }) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "ed-hosts-user",
 				lang: "en",
-				children: userFileNames.map((name) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EditorHost, {
+				children: hostOrder(userFileNames).map((name) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EditorHost, {
 					fileKey: "u:" + name,
 					model: context.userEditors.get(name) || null,
 					isHidden: shownFile !== "u:" + name,
@@ -22167,7 +22591,7 @@ function dragDocked(deps, event, island) {
 	const title = titles.get(island);
 	let isDragging = false;
 	let target = null;
-	followPointer(event, {
+	followPointer$1(event, {
 		move(track) {
 			if (!isDragging && Math.hypot(track.dx, track.dy) >= 6) {
 				isDragging = true;
@@ -22201,7 +22625,7 @@ function dragFloat(deps, event, isResize) {
 	event.preventDefault();
 	const { width, height } = scene.size;
 	const least = floatMin(base, model.measures);
-	followPointer(event, {
+	followPointer$1(event, {
 		move(track) {
 			startCursor(isResize ? "isl-nwse-resize" : "isl-grabbing");
 			const moved = isResize ? {
@@ -22235,7 +22659,7 @@ function startSplitter(deps, event, line) {
 	const measure = scene.arrangement.splits.get(line.path.join("."));
 	if (!line.isActive || !measure || event.button !== 0) return;
 	event.preventDefault();
-	followPointer(event, {
+	followPointer$1(event, {
 		move(track) {
 			const delta = line.axis === "row" ? track.dx : track.dy;
 			const root = resizeSplit(layout.root, line.path, line.before, line.after, delta, measure);
@@ -23484,7 +23908,9 @@ function adminTabsOf(engine, box) {
 	}));
 	return engineTabs.concat(box.solution ? [solutionTab] : [], fileTabs);
 }
-function firstView(box, userFiles) {
+function firstView(context) {
+	const { box, userFiles } = context;
+	const names = userFiles.map((file) => file.name);
 	return {
 		title: box.title,
 		badge: {
@@ -23518,9 +23944,10 @@ function firstView(box, userFiles) {
 		},
 		isDebugging: false,
 		isStale: false,
-		userFileNames: userFiles.map((file) => file.name),
+		userFileNames: orderedTabNames(box.id, names),
+		draggedFile: null,
 		madeAdminEditors: [],
-		shownFile: "main",
+		shownFile: openingTabOf(context),
 		errorFiles: [],
 		newFile: {
 			isOpen: false,
@@ -23633,14 +24060,16 @@ function makeBox(host, box, options) {
 	context.editor = createMainEditor(context);
 	context.userFiles = loadUserFiles(context);
 	context.userFiles.forEach((file) => makeUserEditor(context, file));
-	context.view = createBoxStore(firstView(box, context.userFiles));
+	context.view = createBoxStore(firstView(context));
 	const root = (0, import_client.createRoot)(host);
 	(0, import_react_dom.flushSync)(() => root.render((0, import_react.createElement)(CodeBoxView, { context })));
+	showFile(context, context.view.get().shownFile);
 	showTerminal(context);
 	context.ui = buildEngineUi(context);
 	context.controller = context.engine.attach(context.ui);
 	document.addEventListener("ptr-admin", () => {
-		if (!document.body.classList.contains("admin")) showFile(context, "main");
+		const isAdminTabShown = context.adminTabs.some((tab) => tab.key === context.view.get().shownFile);
+		if (!document.body.classList.contains("admin") && isAdminTabShown) showFile(context, openingTabOf(context));
 	});
 	wireBoxKeys(context);
 	wireStepKeys(context);
@@ -35715,7 +36144,7 @@ async function runSelfTest(engine, allBoxes, wantsReal) {
 	};
 }
 // src/core/page/admin.js
-var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|stdin|ver|quizpass):/;
+var EXERCISE_KEY_PATTERN = /^(code|pass|passsig|passkind|files|taborder|tab|stdin|ver|quizpass):/;
 function paintAdminSwitch() {
 	const adminSwitch = document.getElementById("admin");
 	adminSwitch.setAttribute("aria-checked", String(adminSwitch.checked));
@@ -36666,7 +37095,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 596337c מ-2026-11-14 15:42"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 596337c</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 8e3974c מ-2026-11-14 20:02"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 8e3974c</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
