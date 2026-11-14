@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ooe28qZfIDaLI6/notmO+JR4ayxm2DhFZIc6eIMd5bY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-m83CDxfUjNJcF4eQEDD9BAla3leqL5j/i2lPhATEtzY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -3120,6 +3120,295 @@ body.debugging .tour-roomy .wb-grid {
 .tour-roomy .wb-split {
   display: none;
 }
+/* The feedback panel (src/shared/feedback/feedback-panel.ts; design/mock/feedback.html, approved
+   2026-11-14): the line at the end of a lesson page, the form that opens in place under it,
+   and the sidebar's "✎ משוב" link. Only var(--token) colours (design/tokens.css), the page's
+   fonts and its focus ring (2px var(--accent)). Joined into the page's CSS by
+   src/vite/page-pieces.ts; every selector starts with .fb or .side-fb, so nothing else changes. */
+
+.fb-end {
+  margin-top: 26px;
+}
+
+.fb-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.fb-line[hidden],
+.fb[hidden],
+.fb-form[hidden],
+.fb-done[hidden] {
+  display: none;
+}
+
+.fb-grow {
+  flex: 1;
+}
+
+.fb-btn,
+.fb-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.fb-btn:hover,
+.fb-cancel:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
+.fb-btn[aria-expanded='true'] {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+/* the panel: in the lesson's flow under the line, nothing floats over the lesson */
+.fb {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 14px 16px;
+}
+
+.lesson .fb-h {
+  font: 600 16px/1.4 var(--f-body);
+  margin: 0 0 2px;
+  color: var(--ink);
+}
+
+.fb-h:focus {
+  outline: none;
+}
+
+.fb-where {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.fb-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.fb-kinds legend {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.fb-kinds label {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 12px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+/* the radio itself is invisible; its label is the chip, and it shows the ring */
+.fb-kinds input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fb-kinds label:has(input:checked) {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.fb-kinds label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.fb-lbl {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 10px 0 4px;
+}
+
+.fb-text {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 96px;
+  resize: vertical;
+  font: 14.5px/1.55 var(--f-body);
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.fb-text::placeholder {
+  color: var(--muted);
+}
+
+.fb-text:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.fb-text[aria-invalid='true'] {
+  border-color: var(--err);
+}
+
+/* the honeypot: out of sight and out of the reading order (like .sr) */
+.fb-hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fb-err {
+  color: var(--err);
+  font-size: 13px;
+  margin-top: 4px;
+  min-height: 1em;
+}
+
+.fb-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.fb-send {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 5px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fb-send:hover {
+  filter: brightness(1.1);
+}
+
+.fb-send:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.fb-privacy {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fb-done {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fb-done:focus {
+  outline: none;
+}
+
+.fb-done:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.fb-ic {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.fb-done.ok .fb-ic {
+  background: color-mix(in srgb, var(--ok) 22%, transparent);
+  color: var(--ok);
+}
+
+.fb-done.off .fb-ic {
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  color: var(--warn);
+}
+
+.fb-done p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.fb-done small {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* the sidebar foot's link (src/vite/feedback-build.ts puts it among the links): a button that
+   looks like its neighbours (.side-repo), in the accent's text colour as in the mock-up */
+.side-fb {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--accent-text);
+}
+
+.side-fb:hover {
+  color: var(--link);
+}
+
+/* with one more link the row may be full: the build stamp then goes to a line of its own
+   (squeezed beside the links, its commit ran past its box) */
+.side-repo-row:has(.side-fb) {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+@media print {
+  .fb-end,
+  .side-fb {
+    display: none;
+  }
+}
 /* Probability engine styles (only var(--token) colours). Appended after src/core/style.css.
    Formulas are native MathML from Temml (no web fonts): every <math> is a left-to-right island
    inside the Hebrew text (dir="ltr", set by tex-text.ts). The islands' figures are SVG drawn in
@@ -4652,11 +4941,11 @@ function readPart(name, line, source, known) {
 			line,
 			source,
 			state: "error",
-			message: messageOf(error, line, source, known)
+			message: messageOf$1(error, line, source, known)
 		};
 	}
 }
-function messageOf(error, line, source, known) {
+function messageOf$1(error, line, source, known) {
 	const message = inputMessage(error, line);
 	if (error instanceof InputError && /is not a part answered above/.test(message)) {
 		const name = /'([^']*)'/.exec(message)?.[1] || "";
@@ -5302,7 +5591,7 @@ var isWatchingSystem = false;
 function isInPage() {
 	return typeof window !== "undefined" && typeof document !== "undefined";
 }
-function readSaved(key) {
+function readSaved$1(key) {
 	try {
 		const text = localStorage.getItem(key);
 		return text === null ? null : JSON.parse(text);
@@ -5312,8 +5601,8 @@ function readSaved(key) {
 }
 function motionSettings() {
 	if (!current) current = isInPage() ? settingsOf({
-		speed: readSaved(SPEED_KEY),
-		choice: readSaved(CHOICE_KEY$1)
+		speed: readSaved$1(SPEED_KEY),
+		choice: readSaved$1(CHOICE_KEY$1)
 	}, location.search) : DEFAULT_SETTINGS;
 	return current;
 }
@@ -14791,32 +15080,41 @@ window.LabCourse = {
 	title: "הסתברות",
 	public: true,
 	en: "Probability",
-	order: 5,
+	icon: "P",
+	blurb: "מקומבינטוריקה ועד הסקה סטטיסטית, עם תרגילים שנבדקים מיד.",
+	blurbEn: "From counting to statistical inference, with exercises checked on the spot.",
+	order: 4,
 	engine: "prob",
 	subjects: [
 		{
 			id: "basics",
-			title: "יסודות"
+			title: "יסודות",
+			en: "Foundations"
 		},
 		{
 			id: "conditional",
-			title: "הסתברות מותנית"
+			title: "הסתברות מותנית",
+			en: "Conditional probability"
 		},
 		{
 			id: "discrete",
-			title: "משתנים בדידים"
+			title: "משתנים בדידים",
+			en: "Discrete variables"
 		},
 		{
 			id: "continuous",
-			title: "משתנים רציפים"
+			title: "משתנים רציפים",
+			en: "Continuous variables"
 		},
 		{
 			id: "sums",
-			title: "סכומים וגבולות"
+			title: "סכומים וגבולות",
+			en: "Sums and limits"
 		},
 		{
 			id: "statistics",
-			title: "הסקה סטטיסטית"
+			title: "הסקה סטטיסטית",
+			en: "Statistical inference"
 		}
 	],
 	units: window.PContent,
@@ -18258,7 +18556,7 @@ function setStatus(context, text, tone, isQuiet) {
 		isQuiet: Boolean(isQuiet)
 	} });
 }
-function announce$1(context, text) {
+function announce$2(context, text) {
 	context.view.update({ announcement: "" });
 	setTimeout(() => context.view.update({ announcement: text }), ANNOUNCE_DELAY_MS$1);
 }
@@ -18339,7 +18637,7 @@ function passOutsideGate(context) {
 	} });
 	const first = context.find(".wb-outside [data-outside-here]");
 	if (first) first.focus();
-	announce$1(context, OUTSIDE_TEXT);
+	announce$2(context, OUTSIDE_TEXT);
 	return new Promise((resolve) => waiting.set(context, resolve));
 }
 function closeStrip(context, isRun) {
@@ -18408,7 +18706,7 @@ function showUndoOffer(context, text, snapshot) {
 		isOpen: true,
 		text
 	} });
-	announce$1(context, text + ". אפשר לבטל.");
+	announce$2(context, text + ". אפשר לבטל.");
 	context.prompt.undoTimer = setTimeout(() => hideUndoOffer(context), UNDO_OFFER_MS);
 }
 // src/core/code-box/step-files.js
@@ -18442,7 +18740,7 @@ function clearStepLine(context) {
 function markStepsStale(context) {
 	if (context.state.mode !== "debug" || context.view.get().isStale) return;
 	context.view.update({ isStale: true });
-	announce$1(context, STALE_NOTICE);
+	announce$2(context, STALE_NOTICE);
 }
 // src/core/code-box/extra-files.js
 function makeUserEditor(context, file) {
@@ -18478,7 +18776,7 @@ function deleteUserFile(context, name) {
 	showFile(context, "main");
 	hideUndoOffer(context);
 	refreshBadge(context);
-	announce$1(context, "הקובץ " + name + " נמחק");
+	announce$2(context, "הקובץ " + name + " נמחק");
 	const mainTab = context.find(".ftabs [data-f=main]");
 	if (mainTab) mainTab.focus();
 }
@@ -18560,7 +18858,7 @@ function undoReset(context) {
 	store.set("passsig:" + context.box.id, snapshot.sig);
 	refreshBadge(context);
 	context.ui.progress();
-	announce$1(context, "הקוד הקודם הוחזר");
+	announce$2(context, "הקוד הקודם הוחזר");
 	const resetButton = context.host.querySelector("[data-a=reset]");
 	if (resetButton) resetButton.focus();
 }
@@ -20446,11 +20744,11 @@ function keepMyCode(context) {
 	if (wasCleared) {
 		refreshBadge(context);
 		context.ui.progress();
-		announce$1(context, "הקוד שלכם נשאר. הבדיקות השתנו: לחצו ✓ בדיקות כדי לבדוק אותו שוב.");
+		announce$2(context, "הקוד שלכם נשאר. הבדיקות השתנו: לחצו ✓ בדיקות כדי לבדוק אותו שוב.");
 		focusBarButton(context, "[data-a=test]");
 		return;
 	}
-	announce$1(context, "הקוד שלכם נשאר.");
+	announce$2(context, "הקוד שלכם נשאר.");
 	focusBarButton(context, "[data-a=run]");
 }
 function takeNewCode(context) {
@@ -23001,7 +23299,7 @@ function terminalMembers(context) {
 			return context.view.get().terminalHtml;
 		},
 		announce(text) {
-			announce$1(context, text);
+			announce$2(context, text);
 		}
 	};
 }
@@ -23922,7 +24220,7 @@ function toggleEdit() {
 function isEditing() {
 	return getView().editing;
 }
-function announce(message) {
+function announce$1(message) {
 	setView({ liveText: "" });
 	clearTimeout(timers.announce);
 	timers.announce = window.setTimeout(() => {
@@ -30894,7 +31192,7 @@ function stepHistory(direction, isCaretRestored = false) {
 	const isUndo = direction < 0;
 	if (!(isUndo ? historyInfo.steps() > 0 : historyInfo.canRedo())) {
 		const nothingToDo = isUndo ? "אין מה לבטל" : "אין מה לשחזר";
-		announce(nothingToDo);
+		announce$1(nothingToDo);
 		showNote(nothingToDo);
 		return;
 	}
@@ -30908,7 +31206,7 @@ function stepHistory(direction, isCaretRestored = false) {
 	const caret = takeRestoredFocus();
 	if (isCaretRestored && wasEditing) restoreFieldFocus(caret);
 	const message = (isUndo ? "בוטל: " : "בוצע שוב: ") + label;
-	announce(message);
+	announce$1(message);
 	showNote(message);
 }
 function undoTargetOf(event) {
@@ -30964,7 +31262,7 @@ function moveUnit(unitId, toIndex) {
 		units.splice(finalIndex, 0, moved);
 	});
 	focusRow("u:" + unitId);
-	announce("שיעור «" + stripTags(unitById(unitId).title) + "» הוזז למקום " + (finalIndex + 1) + " מתוך " + units.length);
+	announce$1("שיעור «" + stripTags(unitById(unitId).title) + "» הוזז למקום " + (finalIndex + 1) + " מתוך " + units.length);
 	return true;
 }
 function moveUnitBy(unitId, offset) {
@@ -31005,7 +31303,7 @@ function movePage(boxId, toUnitId, beforeBoxId) {
 	const movedPage = pageOfBox(boxId);
 	if (movedPage && movedPage.u && movedPage.box) {
 		focusRow("p:" + boxId);
-		announce(positionText(movedPage.u, movedPage.box));
+		announce$1(positionText(movedPage.u, movedPage.box));
 	}
 	return true;
 }
@@ -33596,6 +33894,537 @@ function PageEditor(props) {
 		page.box ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BoxParts, { page }) : null
 	] });
 }
+// src/shared/feedback/feedback-config.ts
+var CONFIG_ELEMENT_ID = "lab-feedback";
+var FEEDBACK_LINK_ID = "feedback-link";
+var ENTRY_NAMES = [
+	"kind",
+	"course",
+	"section",
+	"lesson",
+	"subLesson",
+	"text"
+];
+var FEEDBACK_KINDS = [
+	"משהו לא ברור",
+	"טעות בשיעור",
+	"משהו לא עובד",
+	"רעיון"
+];
+var FORM_PATTERN = /^https:\/\/docs\.google\.com\/forms\/d\/e\/[\w-]+\/formResponse$/;
+var ENTRY_PATTERN = /^entry\.\d+$/;
+function checkFeedbackConfig(value) {
+	const given = value || {};
+	if (typeof given.form !== "string" || !FORM_PATTERN.test(given.form)) throw new Error("feedback.form must be a Google Form formResponse address (https)");
+	const entries = {};
+	for (const name of ENTRY_NAMES) {
+		const entry = given.entries ? given.entries[name] : void 0;
+		if (typeof entry !== "string" || !ENTRY_PATTERN.test(entry)) throw new Error(`feedback.entries.${name} must be a form field such as entry.123`);
+		entries[name] = entry;
+	}
+	return {
+		form: given.form,
+		entries
+	};
+}
+// src/shared/feedback/feedback-send.ts
+var QUEUE_KEY = "lab-feedback:queue";
+var LAST_KEY = "lab-feedback:last";
+var MIN_GAP_MS = 3e4;
+var TEXT_MAX = 4e3;
+function browserDeps(config) {
+	let storage;
+	try {
+		storage = window.localStorage;
+	} catch {
+		storage = null;
+	}
+	return {
+		config,
+		fetch: (address, init) => window.fetch(address, init),
+		storage,
+		now: () => Date.now(),
+		isOnline: () => navigator.onLine !== false
+	};
+}
+function feedbackBody(config, message) {
+	const body = new URLSearchParams();
+	for (const name of ENTRY_NAMES) {
+		const value = String(message[name] || "");
+		body.append(config.entries[name], name === "text" ? value.slice(0, TEXT_MAX) : value);
+	}
+	return body;
+}
+function readSaved(deps, key, fallback) {
+	try {
+		const text = deps.storage ? deps.storage.getItem(key) : null;
+		return text === null ? fallback : JSON.parse(text);
+	} catch {
+		return fallback;
+	}
+}
+function writeSaved(deps, key, value) {
+	try {
+		if (!deps.storage) return false;
+		deps.storage.setItem(key, JSON.stringify(value));
+		return true;
+	} catch {
+		return false;
+	}
+}
+function readQueue(deps) {
+	const saved = readSaved(deps, QUEUE_KEY, []);
+	return (Array.isArray(saved) ? saved : []).filter((entry) => Boolean(entry) && typeof entry === "object" && typeof entry.text === "string");
+}
+function addToQueue(deps, messages, isOlder = false) {
+	const saved = readQueue(deps);
+	return writeSaved(deps, QUEUE_KEY, (isOlder ? messages.concat(saved) : saved.concat(messages)).slice(-20));
+}
+function secondsToWait(deps) {
+	const left = (Number(readSaved(deps, "lab-feedback:last", 0)) || 0) + MIN_GAP_MS - deps.now();
+	return left > 0 && left <= 3e4 ? Math.ceil(left / 1e3) : 0;
+}
+async function postFeedback(deps, message) {
+	await deps.fetch(deps.config.form, {
+		method: "POST",
+		mode: "no-cors",
+		credentials: "omit",
+		cache: "no-store",
+		referrerPolicy: "no-referrer",
+		body: feedbackBody(deps.config, message)
+	});
+}
+async function sendFeedback(deps, message, honeypot) {
+	if (!message.text.trim()) return "empty";
+	if (honeypot.trim()) return "dropped";
+	if (secondsToWait(deps) > 0) return "too-soon";
+	writeSaved(deps, LAST_KEY, deps.now());
+	if (deps.isOnline()) try {
+		await postFeedback(deps, message);
+		return "sent";
+	} catch {}
+	addToQueue(deps, [message]);
+	return "queued";
+}
+async function flushFeedbackQueue(deps) {
+	const queue = readQueue(deps);
+	if (!queue.length || !deps.isOnline()) return 0;
+	writeSaved(deps, QUEUE_KEY, []);
+	let sent = 0;
+	for (const message of queue) try {
+		await postFeedback(deps, message);
+		sent++;
+	} catch {
+		addToQueue(deps, queue.slice(sent), true);
+		break;
+	}
+	return sent;
+}
+// src/shared/feedback/feedback-texts.ts
+var FEEDBACK_TEXTS = {
+	endLine: "סיימתם את הדף?",
+	pageButton: "✎ משוב על הדף הזה",
+	shortLink: "✎ משוב",
+	title: "משוב על הדף",
+	whereNote: "(נשלח איתו אוטומטית)",
+	kindsLegend: "על מה?",
+	textLabel: "מה תרצו לספר לנו?",
+	textPlaceholder: "למשל: לא הבנתי למה צריך נקודה-פסיק בסוף השורה",
+	emptyError: "כתבו משהו לפני השליחה",
+	tooSoon: "אפשר לשלוח משוב אחד כל 30 שניות. נסו שוב בעוד {s} שניות.",
+	send: "שליחה",
+	cancel: "ביטול",
+	privacy: "נשלחים רק הטקסט והדף. בלי שם ובלי אימייל.",
+	sentTitle: "תודה! המשוב נשלח.",
+	sentNote: "אפשר להמשיך לדף הבא.",
+	queuedTitle: "אין חיבור לאינטרנט, אז המשוב נשמר בדפדפן.",
+	queuedNote: "הוא יישלח לבד כשהחיבור יחזור.",
+	honeypotLabel: "אל תמלאו את השדה הזה"
+};
+// src/shared/feedback/feedback-dom.ts
+var lastId = 0;
+function make(tag, className = "", text = "") {
+	const element = document.createElement(tag);
+	if (className) element.className = className;
+	if (text) element.textContent = text;
+	return element;
+}
+function makeLine(formId) {
+	const line = make("div", "fb-line");
+	const button = make("button", "fb-btn", FEEDBACK_TEXTS.pageButton);
+	button.type = "button";
+	button.setAttribute("aria-expanded", "false");
+	button.setAttribute("aria-controls", formId);
+	line.append(make("span", "fb-ask", FEEDBACK_TEXTS.endLine), make("span", "fb-grow"), button);
+	return {
+		line,
+		button
+	};
+}
+function makeKinds(id) {
+	const fieldset = make("fieldset", "fb-kinds");
+	fieldset.append(make("legend", "", FEEDBACK_TEXTS.kindsLegend));
+	return {
+		fieldset,
+		radios: FEEDBACK_KINDS.map((kind, index) => {
+			const label = make("label");
+			const radio = make("input");
+			radio.type = "radio";
+			radio.name = id + "-kind";
+			radio.value = kind;
+			radio.checked = index === 0;
+			label.append(radio, make("span", "", kind));
+			fieldset.append(label);
+			return radio;
+		})
+	};
+}
+function makeTextParts(id) {
+	const label = make("label", "fb-lbl", FEEDBACK_TEXTS.textLabel);
+	const text = make("textarea", "fb-text");
+	text.id = label.htmlFor = id + "-text";
+	text.maxLength = TEXT_MAX;
+	text.placeholder = FEEDBACK_TEXTS.textPlaceholder;
+	text.setAttribute("aria-describedby", id + "-err");
+	text.setAttribute("aria-required", "true");
+	const trap = make("div", "fb-hp");
+	trap.setAttribute("aria-hidden", "true");
+	const trapLabel = make("label", "", FEEDBACK_TEXTS.honeypotLabel);
+	const honeypot = make("input");
+	honeypot.type = "text";
+	honeypot.name = "website";
+	honeypot.tabIndex = -1;
+	honeypot.autocomplete = "off";
+	trapLabel.append(honeypot);
+	trap.append(trapLabel);
+	const error = make("div", "fb-err");
+	error.id = id + "-err";
+	return {
+		nodes: [
+			label,
+			text,
+			trap,
+			error
+		],
+		text,
+		honeypot,
+		error
+	};
+}
+function makeButtons() {
+	const row = make("div", "fb-row");
+	const send = make("button", "fb-send", FEEDBACK_TEXTS.send);
+	send.type = "submit";
+	const cancel = make("button", "fb-cancel", FEEDBACK_TEXTS.cancel);
+	cancel.type = "button";
+	row.append(send, cancel, make("span", "fb-grow"), make("span", "fb-privacy", FEEDBACK_TEXTS.privacy));
+	return {
+		row,
+		send,
+		cancel
+	};
+}
+function makeDone(kind, icon, title, note) {
+	const done = make("div", "fb-done " + kind);
+	done.hidden = true;
+	done.tabIndex = -1;
+	const ic = make("span", "fb-ic", icon);
+	ic.setAttribute("aria-hidden", "true");
+	const words = make("p", "", title);
+	words.append(make("small", "", note));
+	done.append(ic, words);
+	return done;
+}
+function makeFormPart(id) {
+	const formPart = make("div", "fb-form");
+	const heading = make("h2", "fb-h", FEEDBACK_TEXTS.title);
+	heading.id = id + "-h";
+	heading.tabIndex = -1;
+	const where = make("div", "fb-where");
+	const { fieldset, radios } = makeKinds(id);
+	const { nodes, text, honeypot, error } = makeTextParts(id);
+	const { row, send, cancel } = makeButtons();
+	formPart.append(heading, where, fieldset, ...nodes, row);
+	return {
+		formPart,
+		heading,
+		where,
+		radios,
+		text,
+		honeypot,
+		error,
+		send,
+		cancel
+	};
+}
+function buildParts(showLine) {
+	const id = "fb-" + ++lastId;
+	const root = make("div", "fb-end");
+	const { line, button } = makeLine(id);
+	line.hidden = !showLine;
+	const form = make("form", "fb");
+	form.id = id;
+	form.noValidate = true;
+	form.hidden = true;
+	form.setAttribute("aria-labelledby", id + "-h");
+	const inner = makeFormPart(id);
+	const sent = makeDone("ok", "✓", FEEDBACK_TEXTS.sentTitle, FEEDBACK_TEXTS.sentNote);
+	const queued = makeDone("off", "!", FEEDBACK_TEXTS.queuedTitle, FEEDBACK_TEXTS.queuedNote);
+	form.append(inner.formPart, sent, queued);
+	const live = make("p", "sr");
+	live.setAttribute("role", "status");
+	root.append(line, form, live);
+	return {
+		...inner,
+		root,
+		button,
+		form,
+		sent,
+		queued,
+		live
+	};
+}
+function paintWhere(where, place) {
+	const names = [
+		place.course,
+		place.section,
+		place.lesson
+	].filter(Boolean);
+	where.replaceChildren();
+	names.forEach((name, index) => {
+		if (index > 0) where.append(" · ");
+		where.append(make("bdi", "", name));
+	});
+	where.append(" " + FEEDBACK_TEXTS.whereNote);
+}
+// src/shared/feedback/feedback-panel.ts
+var WIDGETS = /* @__PURE__ */ new WeakMap();
+function readFeedbackConfig(doc = document) {
+	const script = doc.getElementById(CONFIG_ELEMENT_ID);
+	if (!script) return null;
+	try {
+		return checkFeedbackConfig(JSON.parse(script.textContent || ""));
+	} catch {
+		return null;
+	}
+}
+function widgetOf(element) {
+	return element && WIDGETS.get(element) || null;
+}
+function startFeedbackQueue(deps) {
+	const flush = () => {
+		flushFeedbackQueue(deps);
+	};
+	window.addEventListener("online", flush);
+	flush();
+	return () => window.removeEventListener("online", flush);
+}
+function messageOf(parts, place) {
+	return {
+		kind: (parts.radios.find((radio) => radio.checked) || parts.radios[0]).value,
+		course: place.course || "—",
+		section: place.section || "—",
+		lesson: place.lesson || "—",
+		subLesson: place.subLesson || "—",
+		text: parts.text.value.trim()
+	};
+}
+function showError(parts, message) {
+	parts.error.textContent = message;
+	if (message) parts.text.setAttribute("aria-invalid", "true");
+	else parts.text.removeAttribute("aria-invalid");
+}
+function announce(parts, sentence) {
+	parts.live.textContent = "";
+	window.setTimeout(() => {
+		parts.live.textContent = sentence;
+	}, 50);
+}
+function resetForm(parts) {
+	parts.radios.forEach((radio, index) => {
+		radio.checked = index === 0;
+	});
+	parts.text.value = "";
+	parts.honeypot.value = "";
+	showError(parts, "");
+	parts.formPart.hidden = false;
+	parts.sent.hidden = true;
+	parts.queued.hidden = true;
+}
+function showDone(parts, isQueued) {
+	const done = isQueued ? parts.queued : parts.sent;
+	parts.formPart.hidden = true;
+	done.hidden = false;
+	announce(parts, isQueued ? FEEDBACK_TEXTS.queuedTitle + " " + FEEDBACK_TEXTS.queuedNote : "✓ " + FEEDBACK_TEXTS.sentTitle + " " + FEEDBACK_TEXTS.sentNote);
+	done.focus();
+}
+async function submit(parts, options, deps) {
+	if (!parts.text.value.trim()) {
+		showError(parts, FEEDBACK_TEXTS.emptyError);
+		announce(parts, FEEDBACK_TEXTS.emptyError);
+		parts.text.focus();
+		return;
+	}
+	parts.send.disabled = true;
+	parts.send.setAttribute("aria-busy", "true");
+	const result = await sendFeedback(deps, messageOf(parts, options.place()), parts.honeypot.value);
+	parts.send.disabled = false;
+	parts.send.removeAttribute("aria-busy");
+	if (result === "too-soon") {
+		const sentence = FEEDBACK_TEXTS.tooSoon.replace("{s}", String(secondsToWait(deps)));
+		showError(parts, sentence);
+		announce(parts, sentence);
+		parts.text.focus();
+		return;
+	}
+	showDone(parts, result === "queued");
+}
+function makeWidget(parts, options) {
+	const showLine = options.showLine !== false;
+	let opener = null;
+	return {
+		element: parts.root,
+		open(from) {
+			if (parts.formPart.hidden) resetForm(parts);
+			paintWhere(parts.where, options.place());
+			opener = from || parts.button;
+			parts.form.hidden = false;
+			parts.button.setAttribute("aria-expanded", "true");
+			parts.form.scrollIntoView({ block: "nearest" });
+			(parts.radios.find((radio) => radio.checked) || parts.heading).focus();
+		},
+		close(returnFocus = false) {
+			parts.form.hidden = true;
+			parts.button.setAttribute("aria-expanded", "false");
+			showError(parts, "");
+			const back = showLine ? parts.button : opener;
+			if (returnFocus && back) back.focus();
+		},
+		isOpen: () => !parts.form.hidden
+	};
+}
+function createFeedbackWidget(options) {
+	const deps = options.deps || browserDeps(options.config);
+	const parts = buildParts(options.showLine !== false);
+	const widget = makeWidget(parts, options);
+	parts.button.addEventListener("click", () => {
+		if (widget.isOpen()) widget.close();
+		else widget.open(parts.button);
+	});
+	parts.cancel.addEventListener("click", () => widget.close(true));
+	parts.form.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") {
+			event.stopPropagation();
+			widget.close(true);
+		}
+	});
+	parts.text.addEventListener("input", () => showError(parts, ""));
+	parts.form.addEventListener("submit", (event) => {
+		event.preventDefault();
+		if (!parts.send.disabled) submit(parts, options, deps);
+	});
+	WIDGETS.set(parts.root, widget);
+	return widget;
+}
+// src/shared/subjects.ts
+function subjectList(subjects) {
+	if (!Array.isArray(subjects)) return [];
+	const seen = /* @__PURE__ */ new Set();
+	const list = [];
+	for (const entry of subjects) if (entry && typeof entry.id === "string" && typeof entry.title === "string" && !seen.has(entry.id)) {
+		seen.add(entry.id);
+		list.push({
+			id: entry.id,
+			title: entry.title
+		});
+	}
+	return list;
+}
+function groupUnits(subjects, units) {
+	const list = subjectList(subjects);
+	if (list.length < 2) return null;
+	const groups = list.map((subject) => ({
+		...subject,
+		units: []
+	}));
+	const byId = new Map(groups.map((group) => [group.id, group]));
+	let current = groups[0];
+	for (const unit of units) {
+		current = unit.subject && byId.get(unit.subject) || current;
+		current.units.push(unit);
+	}
+	const used = groups.filter((group) => group.units.length > 0);
+	return used.length >= 2 ? used : null;
+}
+// src/core/lesson/FeedbackEnd.tsx
+var HOME_NAME = "דף הפתיחה";
+var config;
+function showsOtherCourse() {
+	const layer = courseLayer;
+	return Boolean(layer && (layer.local || layer.fromOutside));
+}
+function pageFeedbackConfig() {
+	if (config === void 0) config = showsOtherCourse() ? null : readFeedbackConfig(document);
+	return config;
+}
+function plainText(html) {
+	return (new DOMParser().parseFromString(String(html || ""), "text/html").body.textContent || "").replace(/\s+/g, " ").trim();
+}
+function sectionTitle(course, unit) {
+	const subjects = subjectList(course.subjects);
+	if (!subjects.length) return "";
+	let current = subjects[0];
+	for (const each of course.units) {
+		current = subjects.find((subject) => subject.id === each.subject) || current;
+		if (each === unit || each.id === unit.id) break;
+	}
+	return current.title;
+}
+function feedbackPlace(course, page) {
+	const courseName = plainText(course.title);
+	if (page.kind === "home" || !page.u) return {
+		course: courseName,
+		lesson: HOME_NAME
+	};
+	const boxTitle = page.box ? plainText(page.box.title) : "";
+	return {
+		course: courseName,
+		section: plainText(sectionTitle(course, page.u)),
+		lesson: plainText(page.u.title),
+		subLesson: String(page.si + 1) + (boxTitle ? ". " + boxTitle : "")
+	};
+}
+function FeedbackEnd(props) {
+	const settings = pageFeedbackConfig();
+	const hostRef = (0, import_react.useRef)(null);
+	const { course } = props;
+	const pageKey = props.page.key;
+	const isHome = props.page.kind === "home";
+	(0, import_react.useLayoutEffect)(() => {
+		const host = hostRef.current;
+		if (!settings || !host) return;
+		const place = () => {
+			const page = pageModel.pages.find((each) => each.key === pageKey);
+			return page ? feedbackPlace(course, page) : { course: plainText(course.title) };
+		};
+		const widget = createFeedbackWidget({
+			config: settings,
+			place,
+			showLine: !isHome
+		});
+		host.append(widget.element);
+		return () => widget.element.remove();
+	}, [
+		settings,
+		course,
+		pageKey,
+		isHome
+	]);
+	return settings ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "fb-host",
+		ref: hostRef
+	}) : null;
+}
 // src/core/lesson/LessonHtml.tsx
 function HtmlWithDiagrams(props) {
 	const hostRef = (0, import_react.useRef)(null);
@@ -33674,6 +34503,10 @@ function LessonPage(props) {
 				isEditing: props.isEditing
 			}) : null,
 			content,
+			props.isEditing ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FeedbackEnd, {
+				page,
+				course: props.course
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pager, {
 				previousPage: pages[pageIndex - 1],
 				nextPage: pages[pageIndex + 1],
@@ -33702,36 +34535,6 @@ function Lessons(props) {
 			editGeneration
 		}, page.key);
 	}) });
-}
-// src/shared/subjects.ts
-function subjectList(subjects) {
-	if (!Array.isArray(subjects)) return [];
-	const seen = /* @__PURE__ */ new Set();
-	const list = [];
-	for (const entry of subjects) if (entry && typeof entry.id === "string" && typeof entry.title === "string" && !seen.has(entry.id)) {
-		seen.add(entry.id);
-		list.push({
-			id: entry.id,
-			title: entry.title
-		});
-	}
-	return list;
-}
-function groupUnits(subjects, units) {
-	const list = subjectList(subjects);
-	if (list.length < 2) return null;
-	const groups = list.map((subject) => ({
-		...subject,
-		units: []
-	}));
-	const byId = new Map(groups.map((group) => [group.id, group]));
-	let current = groups[0];
-	for (const unit of units) {
-		current = unit.subject && byId.get(unit.subject) || current;
-		current.units.push(unit);
-	}
-	const used = groups.filter((group) => group.units.length > 0);
-	return used.length >= 2 ? used : null;
 }
 // src/core/sidebar/sidebar-forms.ts
 var UNIT_TYPES = [
@@ -35150,6 +35953,24 @@ function setUpMotionSwitch() {
 	onMotionChange(paintMotionPanel);
 	paintMotionPanel();
 }
+// src/core/page/feedback-link.ts
+function openPanelOnScreen(link) {
+	const widget = widgetOf(document.querySelector("#lesson-in > .page:not([hidden]) .fb-end"));
+	if (!widget) return;
+	document.body.classList.remove("side-open");
+	document.getElementById("menu-b")?.setAttribute("aria-expanded", "false");
+	widget.open(link);
+}
+function setUpFeedback() {
+	const config = pageFeedbackConfig();
+	const link = document.getElementById(FEEDBACK_LINK_ID);
+	if (!config) {
+		link?.remove();
+		return;
+	}
+	startFeedbackQueue(browserDeps(config));
+	link?.addEventListener("click", () => openPanelOnScreen(link));
+}
 // src/core/page/theme.js
 var THEME_STORAGE_KEY = "lab:theme";
 function paintTheme(theme) {
@@ -35247,6 +36068,7 @@ function setUpShell() {
 	setUpTours();
 	followLessonWidth(document.getElementById("lesson-in"));
 	setUpAdminTools(engine, allBoxes);
+	setUpFeedback();
 	document.getElementById("nav").addEventListener("scroll", paintNavFade, { passive: true });
 	window.addEventListener("resize", paintNavFade);
 	window.addEventListener("hashchange", paintNavFade);
@@ -35530,7 +36352,7 @@ function onPointerUp(event) {
 	else movePage(finished.id, target.unitId, target.beforeBoxId ?? null);
 }
 function cancelDrag() {
-	if (finishDrag()) announce("הגרירה בוטלה");
+	if (finishDrag()) announce$1("הגרירה בוטלה");
 }
 function onKeyDuringDrag(event) {
 	if (event.key === "Escape") {
@@ -35550,7 +36372,7 @@ function onListKey(event) {
 	event.stopPropagation();
 	const direction = event.key === "ArrowUp" ? -1 : 1;
 	const id = rowKey.slice(2);
-	if (!(rowKey.startsWith("u:") ? moveUnitBy(id, direction) : movePageBy(id, direction))) announce(direction < 0 ? "אי אפשר להזיז למעלה" : "אי אפשר להזיז למטה");
+	if (!(rowKey.startsWith("u:") ? moveUnitBy(id, direction) : movePageBy(id, direction))) announce$1(direction < 0 ? "אי אפשר להזיז למעלה" : "אי אפשר להזיז למטה");
 }
 function onListPointerDown(event) {
 	const grip = event.target.closest(".au-grip");
@@ -35650,7 +36472,7 @@ function startAuthoring() {
 			convert: convertBox
 		},
 		history: stepHistory,
-		announce,
+		announce: announce$1,
 		structural
 	};
 }
@@ -35688,7 +36510,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 559bf50 מ-2026-11-14 02:21"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 559bf50</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 84aad2a מ-2026-11-14 03:58"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 84aad2a</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
@@ -35762,5 +36584,6 @@ window.__lab = {
 <!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then one ES module, lab-entry.js (made by src/vite/lab-page-plugins.ts; it runs after the page is parsed), which imports in this order: the engine (window.LabEngine), the course (window.LabCourse), the local layer (layer.js), the code box (app.js), the page (lab.ts), the authoring UI (author.ts) -->
 <script></script>
 <!--lab-package-here-->
+<script type="application/json" id="lab-feedback">{"form":"https://docs.google.com/forms/d/e/1FAIpQLSfjQKsL-jnAaQtBcXgb4J3yp7m5Q2Mf26nPvp82FDu_sjClNA/formResponse","entries":{"kind":"entry.553178060","course":"entry.804347730","section":"entry.934529071","lesson":"entry.194724274","subLesson":"entry.1630899329","text":"entry.324750931"}}</script>
 </body>
 </html>
