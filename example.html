@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-wvxqGoXDa9yHygCUPy/3u8McBLMcJUE69UvQrCNGOTE=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ZkDIbCKKImSoOOAbKkzSmemfq4p+QlbRjNCVU2lqQhc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -186,11 +186,11 @@ body.no-code .code-pane,body.no-code .split{display:none}
 /* ── sidebar ── */
 .side{background:var(--panel);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .side-top{display:flex;align-items:center;gap:10px;padding:14px 14px 10px 12px}
-.logo{font-weight:700;font-size:18px;white-space:nowrap;display:flex;gap:8px;align-items:center;flex:1;min-width:0;color:var(--ink);text-decoration:none}
-.logo-t{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.logo{font-weight:700;font-size:18px;line-height:1.25;overflow-wrap:anywhere;display:flex;gap:8px;align-items:center;flex:1;min-width:0;color:var(--ink);text-decoration:none}
+.logo-t{display:flex;flex-direction:column;min-width:0;white-space:nowrap}
 .logo-t > span{overflow:hidden;text-overflow:ellipsis}
 .logo-en{font-size:12px;font-weight:400;color:var(--muted);text-align:right;overflow:hidden;text-overflow:ellipsis}
-.logo .tag{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--accent-text);border:1px solid var(--accent);border-radius:4px;padding:0 6px;direction:ltr}
+.logo .tag{flex:none;line-height:1.75;font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--accent-text);border:1px solid var(--accent);border-radius:4px;padding:0 6px;direction:ltr}
 .icon-b{flex:0 0 auto;width:32px;height:32px;border-radius:7px;border:1px solid var(--line);background:var(--raised);color:var(--ink-2);cursor:pointer;display:grid;place-items:center;font-size:14px;line-height:1}
 .icon-b:hover{background:var(--panel-2);color:var(--ink)}
 .menu-b{display:none;position:fixed;top:10px;right:10px;z-index:70}
@@ -2872,10 +2872,14 @@ body.isl-nwse-resize {
   touch-action: none;
 }
 
+/* the grab area is wider than the 5 px gap, but never over content: between two rows it reaches
+   down only, 4 px into the empty top strip of the next island's title bar (36 px, its 28 px
+   buttons centred), so the last line of the island above (a call stack scrolled to its end)
+   stays free (docs/changes/2026-11-14-small-fixes.md) */
 .isl-split.on::before {
   content: '';
   position: absolute;
-  inset: -3px 0;
+  inset: 0 0 -4px;
 }
 
 .isl-split.on.cols::before {
@@ -24593,6 +24597,41 @@ var FEEDBACK_TEXTS = {
 	queuedNote: "הוא יישלח לבד כשהחיבור יחזור.",
 	honeypotLabel: "אל תמלאו את השדה הזה"
 };
+var FEEDBACK_TEXTS_EN = {
+	endLine: "Finished the page?",
+	pageButton: "✎ Feedback on this page",
+	shortLink: "✎ Feedback",
+	title: "Feedback on the page",
+	whereNote: "(sent with it automatically)",
+	kindsLegend: "About what?",
+	textLabel: "What would you like to tell us?",
+	textPlaceholder: "For example: I did not understand why a line ends with a semicolon",
+	emptyError: "Write something before sending",
+	tooSoon: "You can send one message every 30 seconds. Try again in {s} seconds.",
+	send: "Send",
+	cancel: "Cancel",
+	privacy: "Only the text and the page are sent. No name and no email.",
+	sentTitle: "Thank you! The feedback was sent.",
+	sentNote: "You can go on to the next page.",
+	queuedTitle: "There is no internet connection, so the feedback was kept in the browser.",
+	queuedNote: "It will be sent by itself when the connection is back.",
+	honeypotLabel: "Do not fill in this field"
+};
+var FEEDBACK_KIND_LABELS = {
+	he: FEEDBACK_KINDS,
+	en: [
+		"Something is unclear",
+		"A mistake in the lesson",
+		"Something does not work",
+		"An idea"
+	]
+};
+function feedbackTexts(lang) {
+	return lang === "en" ? FEEDBACK_TEXTS_EN : FEEDBACK_TEXTS;
+}
+function feedbackDirection(lang) {
+	return lang === "en" ? "ltr" : "rtl";
+}
 // src/shared/feedback/feedback-dom.ts
 var lastId = 0;
 function make(tag, className = "", text = "") {
@@ -24601,21 +24640,30 @@ function make(tag, className = "", text = "") {
 	if (text) element.textContent = text;
 	return element;
 }
-function makeLine(formId) {
+function makeWord(words, tag, className, key) {
+	const element = make(tag, className);
+	words.push({
+		element,
+		key
+	});
+	return element;
+}
+function makeLine(words, formId) {
 	const line = make("div", "fb-line");
-	const button = make("button", "fb-btn", FEEDBACK_TEXTS.pageButton);
+	const button = makeWord(words, "button", "fb-btn", "pageButton");
 	button.type = "button";
 	button.setAttribute("aria-expanded", "false");
 	button.setAttribute("aria-controls", formId);
-	line.append(make("span", "fb-ask", FEEDBACK_TEXTS.endLine), make("span", "fb-grow"), button);
+	line.append(makeWord(words, "span", "fb-ask", "endLine"), make("span", "fb-grow"), button);
 	return {
 		line,
 		button
 	};
 }
-function makeKinds(id) {
+function makeKinds(words, id) {
 	const fieldset = make("fieldset", "fb-kinds");
-	fieldset.append(make("legend", "", FEEDBACK_TEXTS.kindsLegend));
+	fieldset.append(makeWord(words, "legend", "", "kindsLegend"));
+	const kindLabels = [];
 	return {
 		fieldset,
 		radios: FEEDBACK_KINDS.map((kind, index) => {
@@ -24625,29 +24673,37 @@ function makeKinds(id) {
 			radio.name = id + "-kind";
 			radio.value = kind;
 			radio.checked = index === 0;
-			label.append(radio, make("span", "", kind));
+			const name = make("span");
+			kindLabels.push(name);
+			label.append(radio, name);
 			fieldset.append(label);
 			return radio;
-		})
+		}),
+		kindLabels
 	};
 }
-function makeTextParts(id) {
-	const label = make("label", "fb-lbl", FEEDBACK_TEXTS.textLabel);
+function makeTextParts(words, id) {
+	const label = makeWord(words, "label", "fb-lbl", "textLabel");
 	const text = make("textarea", "fb-text");
 	text.id = label.htmlFor = id + "-text";
 	text.maxLength = TEXT_MAX;
-	text.placeholder = FEEDBACK_TEXTS.textPlaceholder;
+	words.push({
+		element: text,
+		key: "textPlaceholder",
+		attribute: "placeholder"
+	});
 	text.setAttribute("aria-describedby", id + "-err");
 	text.setAttribute("aria-required", "true");
 	const trap = make("div", "fb-hp");
 	trap.setAttribute("aria-hidden", "true");
-	const trapLabel = make("label", "", FEEDBACK_TEXTS.honeypotLabel);
+	const trapLabel = make("label");
+	const trapName = makeWord(words, "span", "", "honeypotLabel");
 	const honeypot = make("input");
 	honeypot.type = "text";
 	honeypot.name = "website";
 	honeypot.tabIndex = -1;
 	honeypot.autocomplete = "off";
-	trapLabel.append(honeypot);
+	trapLabel.append(trapName, honeypot);
 	trap.append(trapLabel);
 	const error = make("div", "fb-err");
 	error.id = id + "-err";
@@ -24663,45 +24719,47 @@ function makeTextParts(id) {
 		error
 	};
 }
-function makeButtons() {
+function makeButtons(words) {
 	const row = make("div", "fb-row");
-	const send = make("button", "fb-send", FEEDBACK_TEXTS.send);
+	const send = makeWord(words, "button", "fb-send", "send");
 	send.type = "submit";
-	const cancel = make("button", "fb-cancel", FEEDBACK_TEXTS.cancel);
+	const cancel = makeWord(words, "button", "fb-cancel", "cancel");
 	cancel.type = "button";
-	row.append(send, cancel, make("span", "fb-grow"), make("span", "fb-privacy", FEEDBACK_TEXTS.privacy));
+	const privacy = makeWord(words, "span", "fb-privacy", "privacy");
+	row.append(send, cancel, make("span", "fb-grow"), privacy);
 	return {
 		row,
 		send,
 		cancel
 	};
 }
-function makeDone(kind, icon, title, note) {
+function makeDone(words, kind, icon, title, note) {
 	const done = make("div", "fb-done " + kind);
 	done.hidden = true;
 	done.tabIndex = -1;
 	const ic = make("span", "fb-ic", icon);
 	ic.setAttribute("aria-hidden", "true");
-	const words = make("p", "", title);
-	words.append(make("small", "", note));
-	done.append(ic, words);
+	const line = make("p");
+	line.append(makeWord(words, "span", "", title), makeWord(words, "small", "", note));
+	done.append(ic, line);
 	return done;
 }
-function makeFormPart(id) {
+function makeFormPart(words, id) {
 	const formPart = make("div", "fb-form");
-	const heading = make("h2", "fb-h", FEEDBACK_TEXTS.title);
+	const heading = makeWord(words, "h2", "fb-h", "title");
 	heading.id = id + "-h";
 	heading.tabIndex = -1;
 	const where = make("div", "fb-where");
-	const { fieldset, radios } = makeKinds(id);
-	const { nodes, text, honeypot, error } = makeTextParts(id);
-	const { row, send, cancel } = makeButtons();
+	const { fieldset, radios, kindLabels } = makeKinds(words, id);
+	const { nodes, text, honeypot, error } = makeTextParts(words, id);
+	const { row, send, cancel } = makeButtons(words);
 	formPart.append(heading, where, fieldset, ...nodes, row);
 	return {
 		formPart,
 		heading,
 		where,
 		radios,
+		kindLabels,
 		text,
 		honeypot,
 		error,
@@ -24709,34 +24767,48 @@ function makeFormPart(id) {
 		cancel
 	};
 }
-function buildParts(showLine) {
+function paintTexts(parts, lang) {
+	const texts = feedbackTexts(lang);
+	parts.root.lang = lang;
+	parts.root.dir = feedbackDirection(lang);
+	for (const word of parts.words) if (word.attribute) word.element.setAttribute(word.attribute, texts[word.key]);
+	else word.element.textContent = texts[word.key];
+	parts.kindLabels.forEach((label, index) => {
+		label.textContent = FEEDBACK_KIND_LABELS[lang][index];
+	});
+}
+function buildParts(showLine, lang) {
 	const id = "fb-" + ++lastId;
+	const words = [];
 	const root = make("div", "fb-end");
-	const { line, button } = makeLine(id);
+	const { line, button } = makeLine(words, id);
 	line.hidden = !showLine;
 	const form = make("form", "fb");
 	form.id = id;
 	form.noValidate = true;
 	form.hidden = true;
 	form.setAttribute("aria-labelledby", id + "-h");
-	const inner = makeFormPart(id);
-	const sent = makeDone("ok", "✓", FEEDBACK_TEXTS.sentTitle, FEEDBACK_TEXTS.sentNote);
-	const queued = makeDone("off", "!", FEEDBACK_TEXTS.queuedTitle, FEEDBACK_TEXTS.queuedNote);
+	const inner = makeFormPart(words, id);
+	const sent = makeDone(words, "ok", "✓", "sentTitle", "sentNote");
+	const queued = makeDone(words, "off", "!", "queuedTitle", "queuedNote");
 	form.append(inner.formPart, sent, queued);
 	const live = make("p", "sr");
 	live.setAttribute("role", "status");
 	root.append(line, form, live);
-	return {
+	const parts = {
 		...inner,
 		root,
 		button,
 		form,
 		sent,
 		queued,
-		live
+		live,
+		words
 	};
+	paintTexts(parts, lang);
+	return parts;
 }
-function paintWhere(where, place) {
+function paintWhere(where, place, lang) {
 	const names = [
 		place.course,
 		place.section,
@@ -24747,7 +24819,7 @@ function paintWhere(where, place) {
 		if (index > 0) where.append(" · ");
 		where.append(make("bdi", "", name));
 	});
-	where.append(" " + FEEDBACK_TEXTS.whereNote);
+	where.append(" " + feedbackTexts(lang).whereNote);
 }
 // src/shared/feedback/feedback-panel.ts
 var WIDGETS = /* @__PURE__ */ new WeakMap();
@@ -24803,17 +24875,18 @@ function resetForm(parts) {
 	parts.sent.hidden = true;
 	parts.queued.hidden = true;
 }
-function showDone(parts, isQueued) {
+function showDone(parts, isQueued, texts) {
 	const done = isQueued ? parts.queued : parts.sent;
 	parts.formPart.hidden = true;
 	done.hidden = false;
-	announce(parts, isQueued ? FEEDBACK_TEXTS.queuedTitle + " " + FEEDBACK_TEXTS.queuedNote : "✓ " + FEEDBACK_TEXTS.sentTitle + " " + FEEDBACK_TEXTS.sentNote);
+	announce(parts, isQueued ? texts.queuedTitle + " " + texts.queuedNote : "✓ " + texts.sentTitle + " " + texts.sentNote);
 	done.focus();
 }
-async function submit(parts, options, deps) {
+async function submit(parts, options, deps, speech) {
 	if (!parts.text.value.trim()) {
-		showError(parts, FEEDBACK_TEXTS.emptyError);
-		announce(parts, FEEDBACK_TEXTS.emptyError);
+		const sentence = feedbackTexts(speech.lang).emptyError;
+		showError(parts, sentence);
+		announce(parts, sentence);
 		parts.text.focus();
 		return;
 	}
@@ -24822,23 +24895,27 @@ async function submit(parts, options, deps) {
 	const result = await sendFeedback(deps, messageOf(parts, options.place()), parts.honeypot.value);
 	parts.send.disabled = false;
 	parts.send.removeAttribute("aria-busy");
+	const texts = feedbackTexts(speech.lang);
 	if (result === "too-soon") {
-		const sentence = FEEDBACK_TEXTS.tooSoon.replace("{s}", String(secondsToWait(deps)));
+		const sentence = texts.tooSoon.replace("{s}", String(secondsToWait(deps)));
 		showError(parts, sentence);
 		announce(parts, sentence);
 		parts.text.focus();
 		return;
 	}
-	showDone(parts, result === "queued");
+	showDone(parts, result === "queued", texts);
 }
-function makeWidget(parts, options) {
+function shownPlaceOf(options, lang) {
+	return options.shownPlace ? options.shownPlace(lang) : options.place();
+}
+function makeWidget(parts, options, speech) {
 	const showLine = options.showLine !== false;
 	let opener = null;
 	return {
 		element: parts.root,
 		open(from) {
 			if (parts.formPart.hidden) resetForm(parts);
-			paintWhere(parts.where, options.place());
+			paintWhere(parts.where, shownPlaceOf(options, speech.lang), speech.lang);
 			opener = from || parts.button;
 			parts.form.hidden = false;
 			parts.button.setAttribute("aria-expanded", "true");
@@ -24852,13 +24929,21 @@ function makeWidget(parts, options) {
 			const back = showLine ? parts.button : opener;
 			if (returnFocus && back) back.focus();
 		},
-		isOpen: () => !parts.form.hidden
+		isOpen: () => !parts.form.hidden,
+		setLanguage(lang) {
+			if (lang === speech.lang) return;
+			speech.lang = lang;
+			paintTexts(parts, lang);
+			paintWhere(parts.where, shownPlaceOf(options, lang), lang);
+			showError(parts, "");
+		}
 	};
 }
 function createFeedbackWidget(options) {
 	const deps = options.deps || browserDeps(options.config);
-	const parts = buildParts(options.showLine !== false);
-	const widget = makeWidget(parts, options);
+	const speech = { lang: options.lang || "he" };
+	const parts = buildParts(options.showLine !== false, speech.lang);
+	const widget = makeWidget(parts, options, speech);
 	parts.button.addEventListener("click", () => {
 		if (widget.isOpen()) widget.close();
 		else widget.open(parts.button);
@@ -24873,7 +24958,7 @@ function createFeedbackWidget(options) {
 	parts.text.addEventListener("input", () => showError(parts, ""));
 	parts.form.addEventListener("submit", (event) => {
 		event.preventDefault();
-		if (!parts.send.disabled) submit(parts, options, deps);
+		if (!parts.send.disabled) submit(parts, options, deps, speech);
 	});
 	WIDGETS.set(parts.root, widget);
 	return widget;
@@ -27085,7 +27170,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0d08562 מ-2026-11-14 05:48"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0d08562</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 58620e3 מ-2026-11-14 05:59"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 58620e3</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
