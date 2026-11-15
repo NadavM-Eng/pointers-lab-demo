@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-6BgHfliQ9lnqTaPHoOvHUs7gDk+O8+B3TCsgnADeqW4=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-l81rFGf0KSZGDhPRuThgCzfNpVM8SB3CkXmiplfixaA=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -14822,6 +14822,97 @@ function buildSidebar(slot) {
 	document.addEventListener("ptr-engine", () => paint(root));
 	paint(root);
 }
+// src/engines/java/tests/self-test.ts
+function solutionFilesProblem(box) {
+	const given = box.solutionFiles;
+	if (given === void 0 || given === null) return "";
+	if (typeof given !== "object" || Array.isArray(given)) return "test setup: solutionFiles must be an object such as {'Song.java': '...'}";
+	const entries = Object.entries(given);
+	for (const [name, text] of entries) {
+		if (name === "Main.java") return "test setup: solutionFiles cannot hold Main.java (the box's solution is Main.java)";
+		if (!CLASS_FILE_PATTERN.test(name)) return "test setup: solutionFiles has '" + name + "', not a Java class file name (ClassName.java: an English capital letter, then English letters, digits or _)";
+		if (typeof text !== "string") return "test setup: solutionFiles['" + name + "'] must be the file's text (a string)";
+	}
+	if (entries.length && typeof box.solution === "string" && box.solution === box.code) return "test setup: with solutionFiles, code and solution must differ (put a note such as '/* the task is in Song.java */' on the starter's first line)";
+	return "";
+}
+function selfTestFiles(box, code) {
+	const problem = solutionFilesProblem(box);
+	const solved = typeof box.solution === "string" && code === box.solution && !problem ? box.solutionFiles : {};
+	const given = {
+		...box.files || {},
+		...solved || {}
+	};
+	const extra = Object.keys(given).filter((name) => typeof given[name] === "string").sort().map((name) => ({
+		name,
+		text: given[name]
+	}));
+	return {
+		files: [{
+			name: "Main.java",
+			text: code
+		}, ...extra],
+		problem
+	};
+}
+async function stepCheck(box, files, labRt, compileRun) {
+	const name = "line by line: same output as Run";
+	const io = (box.tests || []).find((test) => test.type === "io");
+	const stdin = io ? io.stdin : "";
+	const plain = await compileRun({
+		files,
+		main: "Main",
+		stdin
+	});
+	const instrumented = instrumentProgram(files);
+	const traced = await compileRun({
+		files: [
+			...instrumented.files,
+			{
+				name: "LabRt.java",
+				text: labRt
+			},
+			{
+				name: "LabMain.java",
+				text: entrySource("Main")
+			}
+		],
+		main: "LabMain",
+		stdin
+	});
+	const trace = readTrace(traced.out, instrumented.meta);
+	const same = normaliseOutput(trace.out) === normaliseOutput(plain.out);
+	return {
+		name,
+		ok: plain.compiled && traced.compiled && same && trace.steps.length > 0
+	};
+}
+async function selfTestRun(box, code, runtime, compileRun, withStep) {
+	const { files, problem } = selfTestFiles(box, code);
+	if (problem) {
+		const res = [{
+			name: problem,
+			ok: false
+		}];
+		return {
+			res,
+			log: "[FAIL] " + problem + "\n" + summaryLine(res) + "\n"
+		};
+	}
+	const run = await runJavaTests(box.tests || [], files, runtime, compileRun);
+	const res = run.res;
+	if (!withStep) return {
+		res,
+		log: run.log
+	};
+	const check = await stepCheck(box, files, runtime.labRt, compileRun);
+	res.push(check);
+	const line = (check.ok ? "[PASS] " : "[FAIL] ") + check.name;
+	return {
+		res,
+		log: run.log.split("\n").slice(0, -2).concat(line, summaryLine(res), "").join("\n")
+	};
+}
 // src/core/islands/island-dom.ts
 var DRAW_WAIT_MS = 1500;
 var DRAW_POLL_MS = 16;
@@ -15029,69 +15120,8 @@ var tour = {
 	overrides: { "box-run": { text: say$1("<b>▶ הרצה</b> מקמפל את כל קבצי ה-<code>.java</code> ומריץ את <code>Main</code>.", "שגיאת קומפילציה מסומנת בשורה שלה.") } }
 };
 // src/engines/java/engine.ts
-function selfTestFiles(box, code) {
-	const given = box.files || {};
-	const names = Object.keys(given).filter((name) => typeof given[name] === "string").sort();
-	return [{
-		name: "Main.java",
-		text: code
-	}, ...names.map((name) => ({
-		name,
-		text: given[name]
-	}))];
-}
-async function stepCheck(box, code, mode) {
-	const name = "line by line: same output as Run";
-	const io = (box.tests || []).find((test) => test.type === "io");
-	const stdin = io ? io.stdin : "";
-	const files = selfTestFiles(box, code);
-	const run = compilerOf(mode);
-	const plain = await run({
-		files,
-		main: "Main",
-		stdin
-	});
-	const instrumented = instrumentProgram(files);
-	const traced = await run({
-		files: [
-			...instrumented.files,
-			{
-				name: "LabRt.java",
-				text: LAB_RT_SOURCE
-			},
-			{
-				name: "LabMain.java",
-				text: entrySource("Main")
-			}
-		],
-		main: "LabMain",
-		stdin
-	});
-	const trace = readTrace(traced.out, instrumented.meta);
-	const same = normaliseOutput(trace.out) === normaliseOutput(plain.out);
-	return {
-		name,
-		ok: plain.compiled && traced.compiled && same && trace.steps.length > 0
-	};
-}
-async function selfTestBox(box, code, real) {
-	const mode = real && javaRunner() ? "local" : "tea";
-	const files = selfTestFiles(box, code);
-	const run = await runJavaTests(box.tests || [], files, RUNTIME, compilerOf(mode));
-	const res = run.res;
-	if (real) {
-		const check = await stepCheck(box, code, mode);
-		res.push(check);
-		const line = (check.ok ? "[PASS] " : "[FAIL] ") + check.name;
-		return {
-			res,
-			log: run.log.split("\n").slice(0, -2).concat(line, summaryLine(res), "").join("\n")
-		};
-	}
-	return {
-		res,
-		log: run.log
-	};
+function selfTestBox(box, code, real) {
+	return selfTestRun(box, code, RUNTIME, compilerOf(real && javaRunner() ? "local" : "tea"), real);
 }
 window.LabEngine = {
 	id: "java",
@@ -37758,7 +37788,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 24f119f מ-2026-11-15 21:21"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 24f119f</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 5492897 מ-2026-11-15 22:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 5492897</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>

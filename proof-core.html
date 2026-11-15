@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-uIIyAcT4UHfFAADGihXadYFRdIYGBs6REgCB4+LvBHE=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-LrwKZpDeAhMYetDu87i3cyoINEACXRZk3f/5e6x2mnw=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -3446,71 +3446,138 @@ code.math-bad {
   white-space: nowrap;
 }
 
-/* ── The editor's live preview: one row per line, the editor's line height kept ── */
+/* ── The editor's live preview: one row per line, left to right on the source's columns
+   (box/preview-line.ts). The row is in the editor's mono font at its size, so 1ch is one
+   column of the textarea: each piece's margin and min-width are in ch. ── */
 .ed-hl .pnv {
-  display: inline-flex;
+  display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 10px;
   height: 100%;
-  max-width: calc(100cqw - 80px);
   box-sizing: border-box;
-  vertical-align: top;
-  overflow: hidden;
   white-space: nowrap;
+  font-family: var(--f-mono);
+  direction: ltr;
+  color: var(--ink);
+}
+
+.ed-hl .pnv > span {
+  flex: none;
+  box-sizing: border-box;
 }
 
 /* a formula in a preview row is a little smaller, so a bracket with limits fits the row */
 .ed-hl .pnv math {
-  font-size: 0.88em;
+  font-size: 0.95em;
+}
+
+/* a tall formula (a fraction inside a fraction, a power in a fraction, cases) is smaller still:
+   the row keeps the editor's line height and never runs over the next line */
+.ed-hl .pnv math:has(mfrac mfrac, mfrac msup, mfrac msub) {
+  font-size: 0.74em;
+}
+
+/* cases (two rows of a table) fit the row only small */
+.ed-hl .pnv math:has(mtable) {
+  font-size: 0.6em;
 }
 
 .pnv-id {
-  flex: none;
   color: var(--syn-num);
-  font-family: var(--f-mono);
 }
 
-.pnv-s {
-  flex: none;
-  unicode-bidi: isolate;
+.pnv-k,
+.pnv-by,
+.pnv-kw2 {
+  color: var(--syn-kw);
+}
+
+/* the statement: typeset; 2ch of room before the reason when it is wider than its source */
+.ed-hl .pnv > .pnv-st {
   font-family: var(--f-body, 'Segoe UI', sans-serif);
-  color: var(--ink);
-}
-
-.pnv-k {
-  font-weight: 600;
-  color: var(--accent-text);
-}
-
-.pnv-link {
-  flex: none;
   unicode-bidi: isolate;
-  direction: ltr;
 }
 
-/* the reason and the author's words give way first when the row is too narrow: each ends in an
-   ellipsis inside its own box (the whole text is in the editor's source view) */
-.pnv-r {
+/* before a reason: 2ch of room, and a thin rule 1ch before the reason's column (the mock-up's
+   divider; drawn as a background, so it takes no column) */
+.ed-hl .pnv > .pnv-st:not(:last-child) {
+  padding-right: 2ch;
+}
+
+.ed-hl .pnv > .pnv-st:has(+ .pnv-r) {
+  background: linear-gradient(var(--line), var(--line)) no-repeat right 1ch center / 1px 70%;
+}
+
+/* while stepping (box/preview-compact.ts): the piece before each reason reaches the proof's one
+   reason column (--pn-rcol, measured), not its source column; the step number, the keyword and
+   the indentation keep their source columns (--pc: the piece's column, written per line) */
+.ed.pn-compact .ed-hl .pnv > :has(+ .pnv-r) {
+  box-sizing: border-box;
+  min-width: calc(var(--pn-rcol, 0px) - var(--pc, 0) * var(--pn-ch, 1ch)) !important;
+}
+
+/* while a typeset line runs past the code area's right edge and there is more to scroll to,
+   the edge fades (as a wide pre.code-static does): a line is never cut without a sign */
+.ed.pn-compact.pn-more-right {
+  /* --pn-sb: the vertical scrollbar's width, which stays opaque */
+  mask-image: linear-gradient(
+    to left,
+    var(--ink) var(--pn-sb, 0px),
+    transparent var(--pn-sb, 0px),
+    var(--ink) calc(var(--pn-sb, 0px) + 12px)
+  );
+}
+
+.pnv-he {
+  unicode-bidi: isolate;
+}
+
+.pnv-dim {
+  color: var(--muted);
+}
+
+/* the reason: `by rule` in mono, the references as small chips; it is the piece that gives way
+   (an ellipsis) when a typeset statement pushes the row past the code area */
+.ed-hl .pnv > .pnv-r {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 6px;
+}
+
+.pnv-rule {
+  color: var(--ink-2);
+}
+
+.pnv-chips {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.pnv-chip {
+  display: inline-block;
+  min-width: 1.9em;
+  padding: 0 5px;
   border: 1px solid var(--line);
   border-radius: 4px;
-  font-family: var(--f-body, 'Segoe UI', sans-serif);
+  background: var(--panel-2);
+  color: var(--ink);
   font-size: 0.86em;
-  color: var(--ink-2);
-  unicode-bidi: isolate;
-  direction: rtl;
+  line-height: 1.55;
+  text-align: center;
 }
 
-.pnv-why {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.pnv-chip.is-on {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.ed-hl .ln.pnv-hl {
+  background: color-mix(in srgb, var(--orange) 14%, transparent);
+}
+
+.ed-hl .pnv > .pnv-why {
   font-family: var(--f-body, 'Segoe UI', sans-serif);
   font-size: 0.86em;
   color: var(--muted);
@@ -3520,8 +3587,6 @@ code.math-bad {
 
 .pnv-c,
 .pnv-meta {
-  font-family: var(--f-mono);
-  font-size: 0.9em;
   color: var(--syn-com);
 }
 
@@ -3584,6 +3649,26 @@ code.math-bad {
 .pn-view p {
   margin: 0;
   text-wrap: pretty;
+}
+
+/* An island's body stops 2 px above the island's bottom edge. The core places the islands at
+   half pixels (an island from y = 567.5 to 883.5, the row splitter under it from 883.5, on top
+   with z-index 4), so the island's last pixel row and the splitter snap to the same device row:
+   text scrolled into that row is under the (transparent) splitter for elementFromPoint, which
+   the layout checker reports as "covered: ... is under div.isl-split.rows". Nothing is cut or
+   hidden on screen; the transparent border keeps text out of that row. */
+.mem-body:has(> .pn-view) {
+  border-bottom: 2px solid transparent;
+}
+
+/* Where an island scrolls, its last 14 px fade out: a line cut by the island's bottom edge
+   reads as "more below", not as text running under the next island's title bar (1024 x 768).
+   At the end of the scroll the bottom padding (16 to 24 px) is what fades, never text. */
+.mem-body:has(> .pn-def),
+.mem-body:has(> .pn-pcv),
+.pn-proof > .pn-stage,
+.pn-bd > .pn-ol-scroll {
+  mask-image: linear-gradient(to bottom, var(--ink) calc(100% - 14px), transparent);
 }
 
 .pn-muted {
@@ -3792,23 +3877,6 @@ code.math-bad {
   gap: 10px;
 }
 
-/* a wide island: "what is known now" beside the table (on its left, the reading order kept) */
-@container (min-width: 720px) {
-  .pn-stage {
-    grid-template-columns: minmax(0, 1fr) minmax(210px, 0.42fr);
-    column-gap: 16px;
-  }
-
-  .pn-known {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    position: sticky;
-    top: 0;
-    padding-right: 12px;
-    border-right: 1px solid var(--line);
-  }
-}
-
 /* ── PROOF: the table ── */
 .pn-table {
   width: 100%;
@@ -3816,23 +3884,26 @@ code.math-bad {
   font-size: 14px;
 }
 
-/* the table never runs under "what is known now" beside it: a long claim that a reference
-   points to (a whole model) scrolls in its own line, so the column stays narrow */
-.pn-ref .pn-tex {
-  display: inline-block;
-  max-width: 12em;
-  overflow-x: auto;
-  overflow-y: hidden;
-  vertical-align: middle;
+/* a claim stays on one line inside its cell, and its formula scrolls sideways (from its start)
+   when the cell is narrower: the grid track asks the table for the whole width yet lets it
+   shrink, so no glyph is drawn over the row number or the next cell */
+.pn-fit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 6px;
 }
 
-/* a long claim (an unfolded definition) scrolls in its own cell for the same reason */
-.pn-c-claim .pn-tex {
-  display: inline-block;
-  max-width: 18em;
+.pn-fit-lead {
+  white-space: nowrap;
+}
+
+.pn-fit-in {
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  vertical-align: middle;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .pn-table th {
@@ -3848,7 +3919,7 @@ code.math-bad {
 .pn-table td {
   padding: 4px 6px;
   border-bottom: 1px solid var(--line-2);
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 /* the current row scrolled into view whole, with room below it while it grows in */
@@ -3875,7 +3946,7 @@ code.math-bad {
 }
 
 .pn-c-claim {
-  min-width: 9em;
+  min-width: 8em;
 }
 
 .pn-c-reason {
@@ -3886,8 +3957,79 @@ code.math-bad {
   display: block;
 }
 
+/* a rule's name is short: one line (the claim column, which scrolls, gives way first) */
+.pn-c-reason > .pn-rule {
+  white-space: nowrap;
+}
+
+/* "נשען על" takes the width it needs (chips are small), so the claim column gets the rest */
 .pn-c-rests {
-  min-width: 8em;
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* "נשען על": the sources that are not rows, then the row chips */
+.pn-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* a long given (a whole model) scrolls in its own line, from its start, instead of widening
+   the table */
+.pn-src-tex {
+  display: inline-block;
+  max-width: 12em;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+}
+
+.pn-src-lbl {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.pn-rowchips {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+/* a reference to a row: its number only (view/common.tsx RowChip; the board uses it too) */
+.pn-rowchip {
+  min-width: 1.9em;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  text-align: center;
+  cursor: pointer;
+}
+
+.pn-rowchip-implicit {
+  border-style: dashed;
+}
+
+.pn-rowchip:hover,
+.pn-rowchip:focus-visible {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.pn-rowchip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.pn-rest-none {
+  color: var(--muted);
 }
 
 .pn-kind {
@@ -3918,21 +4060,6 @@ code.math-bad {
   color: var(--err);
 }
 
-.pn-ref {
-  display: block;
-  margin-bottom: 2px;
-}
-
-.pn-ref-id {
-  font-family: var(--f-mono);
-  font-size: 12.5px;
-  color: var(--ink-2);
-}
-
-.pn-ref-implicit {
-  color: var(--ink-2);
-}
-
 .pn-row.pn-cur td {
   background: var(--sel);
 }
@@ -3952,6 +4079,15 @@ code.math-bad {
 .pn-rest-tag {
   color: var(--orange);
   font-weight: 700;
+}
+
+/* the row a hovered or focused chip names */
+.pn-row.pn-lit td {
+  background: color-mix(in srgb, var(--orange) 16%, var(--bg));
+}
+
+.pn-row.pn-lit td:first-child {
+  box-shadow: inset -3px 0 0 var(--orange);
 }
 
 .pn-more {
@@ -3996,102 +4132,37 @@ code.math-bad {
   box-shadow: inset -3px 0 0 var(--orange);
 }
 
-/* ── PROOF: what is known now ── */
-.pn-h {
-  margin: 4px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.pn-known ul {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pn-fact {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-}
-
-/* a long fact (a whole model) scrolls in its own row instead of running over the id beside it */
-.pn-fact > .pn-tex {
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.pn-fact-id {
-  min-width: 2.2em;
-  font-family: var(--f-mono);
-  font-size: 12.5px;
-  color: var(--ink-2);
-}
-
-.pn-tag {
-  padding: 0 6px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--ink-2);
-}
-
-.pn-tag-given {
-  border-color: var(--line);
-}
-
-.pn-tag-arbitrary {
-  border-color: var(--accent);
-  color: var(--accent-text);
-}
-
-.pn-tag-chosen {
-  border-color: var(--orange);
-  color: var(--orange);
-}
-
-.pn-tag-proved {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.pn-tag-new {
-  border-style: dashed;
-}
-
-/* ── BOARD and PICTURE (placeholders until their builder) ── */
-.pn-board-list {
-  margin: 0;
-  padding-left: 1.4em;
-  text-align: left;
-}
-
-.pn-board-list li.pn-cur {
-  background: var(--sel);
-}
-
-.pn-picture ul {
-  margin: 0;
-  padding-right: 1.2em;
-}
-
-.pn-param {
-  margin-left: 10px;
-}
-
-/* board and pictures */
-/* (owned by the views2 builder: view/board and view/picture; everything up to the end marker) */
+/* ── BOARD and PICTURE (view/board, view/picture) ── */
 
 /* ── the BOARD: stages, arrows with relation and reason, marks, strike lines ── */
+/* the header stays in view: the island does not scroll, the outline under it does (as the
+   PROOF island's switches: a sticky header over the scrolled lines would hide the line under
+   it, and the layout checker would rightly call that line covered) */
+.mem-body:has(> .pn-bd) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pn-bd {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 4px;
+}
+
 .pn-bd-head {
-  margin: 0 0 6px;
+  flex: none;
+  margin: 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-2);
+  background: var(--bg);
+}
+
+.pn-bd > .pn-ol-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 16px;
 }
 
 .pn-bd-rows {
@@ -4108,11 +4179,6 @@ code.math-bad {
   gap: 4px 12px;
   padding: 6px 8px;
   border-radius: 6px;
-}
-
-.pn-bd-stage.pn-cur {
-  background: var(--sel);
-  outline: 1px solid var(--accent);
 }
 
 .pn-bd-expr {
@@ -4136,24 +4202,28 @@ code.math-bad {
   border-radius: 4px;
 }
 
+/* a link of the chain, right to left: its sign (✓ ◀ ○), the arrow with the relation, the reason */
 .pn-bd-link {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: 1.4em auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 2px 10px;
+  gap: 2px 8px;
   margin: 0;
-  padding: 0 4px;
+  padding: 2px 8px;
+  border-radius: 5px;
   font-size: 13px;
 }
 
 .pn-bd-link .pn-bd-why {
-  grid-column: 1;
-  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  min-width: 0;
   color: var(--ink-2);
 }
 
 .pn-bd-arrow {
-  grid-column: 2;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -4176,11 +4246,6 @@ code.math-bad {
   text-align: center;
 }
 
-.pn-bd-link > .pn-mark {
-  grid-column: 3;
-  justify-self: start;
-}
-
 .pn-bd-rule {
   color: var(--ink);
 }
@@ -4194,15 +4259,6 @@ code.math-bad {
 .pn-bd-merged,
 .pn-bd-from {
   color: var(--muted);
-}
-
-.pn-bd-ref {
-  display: inline-block;
-  margin-inline-start: 6px;
-  padding: 0 5px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--panel-2);
 }
 
 .pn-bd-side {
@@ -4222,6 +4278,150 @@ code.math-bad {
 
 .pn-bd-words .pn-tex {
   white-space: nowrap;
+}
+
+/* ── the BOARD's outline: the whole proof, one line per line (view/board/Outline.tsx) ── */
+.pn-ol {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pn-ol-ln {
+  display: grid;
+  grid-template-columns: 1.5em var(--pn-ol-idw, 2.4em) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4px;
+  min-height: 28px;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.pn-ol-mk {
+  font-weight: 700;
+  text-align: center;
+}
+
+.pn-ol-id {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.pn-ol-c {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  min-width: 0;
+}
+
+/* a long claim scrolls in its own line instead of running out of the island */
+.pn-ol-c > .pn-tex {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.pn-ol-c .pn-scope {
+  margin-left: 0;
+}
+
+.pn-ol-more,
+.pn-ol-src {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.pn-ol-done {
+  color: var(--ink-2);
+}
+
+.pn-ol-done .pn-kind {
+  color: var(--ink-2);
+}
+
+.pn-ol-ahead,
+.pn-ol-ahead .pn-kind,
+.pn-ol-ahead .pn-ol-id {
+  color: var(--muted);
+}
+
+.pn-ol-ahead .pn-ol-mk {
+  font-weight: 400;
+}
+
+.pn-ol-current {
+  background: var(--sel);
+  box-shadow: inset -3px 0 0 var(--accent);
+  color: var(--ink);
+}
+
+.pn-ol-current .pn-ol-mk,
+.pn-ch-now .pn-ol-mk {
+  color: var(--accent-text);
+}
+
+.pn-ol-current.pn-ol-open {
+  background: color-mix(in srgb, var(--sel) 45%, var(--bg));
+}
+
+/* the line a hovered or focused row chip names */
+.pn-ol-ln.pn-lit {
+  background: color-mix(in srgb, var(--orange) 16%, var(--bg));
+  box-shadow: inset -3px 0 0 var(--orange);
+}
+
+.pn-ol-why {
+  padding-top: 2px;
+  padding-bottom: 4px;
+}
+
+.pn-ol-why-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* the chain open under its line, tied to it by a bar */
+.pn-ol-chain {
+  margin-top: 2px;
+  margin-bottom: 6px;
+  padding: 4px 8px 6px;
+  border-right: 2px solid var(--accent);
+}
+
+.pn-ol-chain .pn-bd-stage {
+  padding: 2px 8px;
+}
+
+.pn-ch-now {
+  background: var(--sel);
+  outline: 1px solid var(--accent);
+  color: var(--ink);
+}
+
+.pn-ch-now .pn-bd-why {
+  color: var(--ink);
+}
+
+.pn-bd-link.pn-ch-later,
+.pn-bd-link.pn-ch-later .pn-bd-why,
+.pn-bd-link.pn-ch-later .pn-bd-rule,
+.pn-bd-link.pn-ch-later .pn-bd-rel,
+.pn-bd-stage.pn-ch-later {
+  color: var(--muted);
+}
+
+.pn-bd-link.pn-ch-later .pn-bd-rel {
+  border-color: var(--line);
 }
 
 /* the terms of a stage (view/board/Expr.tsx) */
@@ -6358,7 +6558,7 @@ function linearFacts(norm, facts) {
 	}
 	return out;
 }
-function rowFact$1(norm, row, goal, facts) {
+function rowFact(norm, row, goal, facts) {
 	if ("goal" in row) return negatedGoal(norm, goal) ?? fail$1("the goal is not an inequality");
 	if ("ref" in row) return nfactOf(norm, facts.get(row.ref) ?? fail$1("no fact " + row.ref)) ?? fail$1("fact " + row.ref + " is not linear");
 	if ("atom" in row) {
@@ -6396,7 +6596,7 @@ function checkFarkas(norm, goal, cert, facts) {
 	cert.rows.forEach((row, i) => {
 		const lam = parseQ(cert.lam[i]);
 		if (isZero(lam)) return;
-		const n = rowFact$1(norm, row, goal, facts);
+		const n = rowFact(norm, row, goal, facts);
 		if (n.rel !== "=" && sgn(lam) < 0) fail$1("a negative multiplier on an inequality");
 		strict = strict || n.rel === ">";
 		sum = padd(sum, n.lin, lam);
@@ -11956,7 +12156,7 @@ function needTable(st, line) {
 	if (!st.table || !st.rs) throw new ProofError("no-uses", {}, line, 0);
 	return st.table;
 }
-function splitWhy(rest, line, col) {
+function splitWhy$1(rest, line, col) {
 	const quote = rest.indexOf("\"");
 	if (quote < 0) return { text: rest };
 	const close = rest.lastIndexOf("\"");
@@ -11975,7 +12175,7 @@ function refuseTwice(st, name, line, col) {
 }
 function parseGiven(st, rest, line, col) {
 	const table = needTable(st, line);
-	const { text, why } = splitWhy(rest, line, col);
+	const { text, why } = splitWhy$1(rest, line, col);
 	const m = /^([A-Za-z][\w']*(?:\s*,\s*[A-Za-z][\w']*)*)(?:\s*:\s*([A-Za-z][\w-]*))?\s*(?:,(.*))?$/.exec(text.trim());
 	if (!m) throw new ProofError("given", {}, line, col);
 	const sorts = st.rs ? [...st.rs.sorts.keys()] : [];
@@ -13488,7 +13688,6 @@ function ofTerm(t, defs, depth = DEPTH$1) {
 	else if (t.fn === "sqrt") out.push(rel(a, ">=", lit(0)));
 	else if (t.fn === "ln") out.push(rel(a, ">", lit(0)));
 	else if (t.fn === "pow" && !(b.t === "num" && b.q.d === 1n && b.q.n >= 0n)) out.push(rel(a, ">", lit(0)));
-	else if (t.fn === "pow" && b.t === "num" && b.q.n === 0n) out.push(rel(a, "!=", lit(0)));
 	return out;
 }
 function ofQuantifier$1(p, defs, under, taken) {
@@ -13607,6 +13806,20 @@ function fracPower(t, a, b, divisors) {
 		d: ppow(x.d, k)
 	};
 }
+function constantOf(t) {
+	const divisors = [];
+	const x = fracOf(t, divisors);
+	if (pisZero(x.d)) return null;
+	if (pisZero(x.n)) return {
+		value: ZERO,
+		divisors
+	};
+	const c = div(lead(x.n).c, lead(x.d).c);
+	return pisZero(padd(x.n, x.d, neg$1(c))) ? {
+		value: c,
+		divisors
+	} : null;
+}
 function fieldEqual(s, t) {
 	const divisors = [];
 	const x = fracOf(s, divisors);
@@ -13617,6 +13830,14 @@ function fieldEqual(s, t) {
 	};
 }
 // src/engines/proof-next/logic/arith.ts
+var ARITHMETIC = /* @__PURE__ */ new Set([
+	"add",
+	"sub",
+	"mul",
+	"div",
+	"neg",
+	"pow"
+]);
 var MAX_EXPONENT$1 = 1e6;
 var MAX_SPLITS = 4;
 var MAX_POWER$1 = 16;
@@ -13632,9 +13853,14 @@ function atom(t) {
 function inverse(y) {
 	return pmono([[`[inv(${pkey(y)})]`, 1]]);
 }
+function numbersOnly(t) {
+	if (t.t === "num") return true;
+	return t.t === "app" && !t.free && ARITHMETIC.has(t.fn) && t.t === "app" && t.args.every(numbersOnly);
+}
 function literalPower(t) {
-	if (t.t !== "num" || t.q.d !== 1n || t.q.n < 0n || t.q.n > BigInt(MAX_POWER$1)) return null;
-	return Number(t.q.n);
+	const c = t.t === "num" ? t.q : numbersOnly(t) ? pconstVal(polyOf$1(t)) : null;
+	if (!c || c.d !== 1n || c.n < 0n || c.n > BigInt(MAX_POWER$1)) return null;
+	return Number(c.n);
 }
 function times(a, b) {
 	const r = pmul(a, b);
@@ -13842,8 +14068,25 @@ function bind(pat, t, b) {
 	if (fits) b.set(pat.name, t);
 	return fits;
 }
+function matchApplied(pat, t, vars, b) {
+	if (t.t !== "app" || !t.free || t.args.length !== pat.args.length) return false;
+	const trial = new Map(b);
+	const symbol = {
+		t: "fn",
+		name: t.fn,
+		free: true,
+		ar: t.args.length
+	};
+	const old = trial.get(pat.fn);
+	if (old && termKey$1(old) !== termKey$1(symbol)) return false;
+	trial.set(pat.fn, symbol);
+	if (!pat.args.every((a, i) => matchTerm(a, t.args[i], vars, trial, true))) return false;
+	trial.forEach((value, key) => b.set(key, value));
+	return true;
+}
 function matchTerm(pat, t, vars, b, shift = false) {
 	if (pat.t === "fn" && pat.free && vars.has(pat.name) || pat.t === "var" && vars.has(pat.name)) return bind(pat, t, b);
+	if (pat.t === "app" && pat.free && vars.has(pat.fn)) return matchApplied(pat, t, vars, b);
 	if (pat.t === "app" && t.t === "app" && pat.fn === t.fn && pat.free === t.free) {
 		const trial = new Map(b);
 		if (pat.args.length === t.args.length && pat.args.every((a, i) => matchTerm(a, t.args[i], vars, trial, pat.free))) {
@@ -14238,6 +14481,59 @@ function clash(s) {
 	}
 	return null;
 }
+function conjunctsOf(p) {
+	return p.f === "and" ? [...conjunctsOf(p.a), ...conjunctsOf(p.b)] : [p];
+}
+function fromPremise(s, lemma, found) {
+	if (!lemma.prem || lemma.vars.every((name) => found.has(name))) return found;
+	const b = new Map(found);
+	const vars = new Set(lemma.vars);
+	for (const part of conjunctsOf(lemma.prem)) for (const th of s.known.values()) {
+		const trial = new Map(b);
+		if (matchDeep(part, th.concl, vars, trial, 0)) {
+			trial.forEach((value, key) => b.set(key, value));
+			break;
+		}
+	}
+	return b;
+}
+function sameUpToNumbers(s, goal) {
+	for (const fact of [...s.known.values()]) {
+		const c = fact.concl;
+		if (c.f !== "pred" || c.name !== goal.name || c.args.length !== goal.args.length) continue;
+		let th = fact;
+		const args = [...c.args];
+		for (let i = 0; th && i < args.length; i++) {
+			const [from, to] = [args[i], goal.args[i]];
+			if (termKey$1(from) === termKey$1(to)) continue;
+			const eq = from.t !== "fn" && from.t !== "lam" && to.t !== "fn" && to.t !== "lam" ? s.basic({
+				f: "rel",
+				rel: "=",
+				a: from,
+				b: to
+			}) : null;
+			const oriented = eq && s.try(() => s.k.arith([eq], {
+				f: "rel",
+				rel: "=",
+				a: from,
+				b: to
+			}));
+			const mark = {
+				t: "var",
+				name: "_p"
+			};
+			const pattern = {
+				...goal,
+				args: args.map((arg, j) => j === i ? mark : arg)
+			};
+			const prev = th;
+			th = oriented ? s.try(() => s.k.subst(oriented, "_p", pattern, prev)) : null;
+			args[i] = to;
+		}
+		if (th && formulaKey(th.concl) === formulaKey(goal)) return th;
+	}
+	return null;
+}
 // src/engines/proof-next/prover/negate.ts
 function rename$1(p, from, to) {
 	const v = {
@@ -14377,7 +14673,7 @@ function excludedMiddle(k, a) {
 }
 // src/engines/proof-next/prover/relevant.ts
 var UNKNOWNS = /* @__PURE__ */ new Map();
-var CACHE$2 = 2e4;
+var CACHE$3 = 2e4;
 function unknownsOf(p) {
 	if (p.f !== "rel") return [];
 	const key = formulaKey(p);
@@ -14388,33 +14684,29 @@ function unknownsOf(p) {
 			for (const term of polyOf$1(side).values()) term.m.forEach(([atom]) => atoms.add(atom));
 		} catch {}
 		found = [...atoms];
-		if (UNKNOWNS.size > CACHE$2) UNKNOWNS.clear();
+		if (UNKNOWNS.size > CACHE$3) UNKNOWNS.clear();
 		UNKNOWNS.set(key, found);
 	}
 	return found;
 }
-function relevant(facts, goal) {
-	if (goal.f !== "rel") return facts;
+function relevantLevels(facts, goal) {
+	if (goal.f !== "rel") return [facts];
 	const reached = new Set(unknownsOf(goal));
-	const rest = facts.map((th) => ({
+	let rest = facts.map((th) => ({
 		th,
 		atoms: unknownsOf(th.concl)
 	}));
-	const out = [];
-	let grew = true;
-	while (grew) {
-		grew = false;
-		for (let i = rest.length - 1; i >= 0; i--) {
-			const { th, atoms } = rest[i];
-			if (atoms.some((a) => reached.has(a))) {
-				atoms.forEach((a) => reached.add(a));
-				out.push(th);
-				rest.splice(i, 1);
-				grew = true;
-			}
-		}
+	const levels = [];
+	let out = [];
+	for (;;) {
+		const near = rest.filter(({ atoms }) => atoms.some((a) => reached.has(a)));
+		if (!near.length) break;
+		rest = rest.filter((entry) => !near.includes(entry));
+		near.forEach(({ atoms }) => atoms.forEach((a) => reached.add(a)));
+		out = [...out, ...near.map(({ th }) => th)];
+		levels.push(out);
 	}
-	return out;
+	return levels.length ? levels : [[]];
 }
 // src/engines/proof-next/prover/rewrite.ts
 function size$2(t) {
@@ -14632,6 +14924,32 @@ function rootOf(s, t, done) {
 	}]]);
 	return s.add(s.instance(lemma, b, 0));
 }
+function plainArgument(s, t, done) {
+	const arithmetic = !t.free && [
+		"add",
+		"sub",
+		"mul",
+		"div",
+		"neg",
+		"pow"
+	].includes(t.fn);
+	const id = "plain|" + termKey$1(t);
+	if (arithmetic || done.has(id)) return false;
+	const args = t.args.map((arg) => {
+		const c = arg.t === "num" || arg.t === "var" ? null : constantOf(arg);
+		return c ? {
+			t: "num",
+			q: c.value
+		} : arg;
+	});
+	if (args.every((arg, i) => arg === t.args[i])) return false;
+	const th = congruent(s, t, {
+		...t,
+		args
+	});
+	if (th) done.add(id);
+	return s.add(th);
+}
 var DONE = /* @__PURE__ */ new WeakMap();
 function saturate(s, goal) {
 	const done = DONE.get(s) ?? /* @__PURE__ */ new Set();
@@ -14650,6 +14968,7 @@ function saturate(s, goal) {
 		for (const t of terms.values()) if (t.t === "app") {
 			grew = fire(s, t, done) || grew;
 			grew = rootOf(s, t, done) || grew;
+			grew = plainArgument(s, t, done) || grew;
 		}
 		grew = congruences(s, terms, goal) || grew;
 		if (!grew || s.budget.left <= 0) return;
@@ -14673,6 +14992,7 @@ function unary(s, fact, done) {
 	return grew;
 }
 // src/engines/proof-next/prover/auto.ts
+var WIDE = 60;
 var BUDGET = 6e3;
 var Search = class Search {
 	k;
@@ -14736,11 +15056,21 @@ var Search = class Search {
 		const key = formulaKey(goal);
 		const before = this.proved.get(key);
 		if (before) return before;
-		const facts = relevant(this.relFacts(), goal);
-		if (this.failed.get(key) === facts.length) return null;
-		const th = this.try(() => this.k.arith(facts, goal));
+		const levels = relevantLevels(this.relFacts(), goal);
+		const all = levels[levels.length - 1].length;
+		if (this.failed.get(key) === all) return null;
+		let th = null;
+		const lists = /* @__PURE__ */ new Set([
+			levels[0],
+			levels[1] ?? levels[0],
+			levels[levels.length - 1]
+		]);
+		for (const facts of lists) {
+			const fits = facts === levels[0] ? facts.length <= 180 : facts.length <= WIDE;
+			if (!th && fits) th = this.try(() => this.k.arith(facts, goal));
+		}
 		if (th) this.proved.set(key, th);
-		else this.failed.set(key, facts.length);
+		else this.failed.set(key, all);
 		return th;
 	}
 	basic(goal) {
@@ -14796,11 +15126,14 @@ var Search = class Search {
 		return th;
 	}
 	apply(lemma, goal, depth) {
-		for (const b of matchFormula(lemma.concl, goal, new Set(lemma.vars))) if (lemma.vars.every((name) => b.has(name))) {
-			const th = this.instance(lemma, b, depth);
-			if (th && formulaKey(th.concl) === formulaKey(goal)) return th;
-			const same = th && goal.f === "rel" ? this.try(() => this.k.arith([th], goal)) : null;
-			if (same) return same;
+		for (const found of matchFormula(lemma.concl, goal, new Set(lemma.vars))) {
+			const b = fromPremise(this, lemma, found);
+			if (lemma.vars.every((name) => b.has(name))) {
+				const th = this.instance(lemma, b, depth);
+				if (th && formulaKey(th.concl) === formulaKey(goal)) return th;
+				const same = th && goal.f === "rel" ? this.try(() => this.k.arith([th], goal)) : null;
+				if (same) return same;
+			}
 		}
 		return null;
 	}
@@ -14838,7 +15171,7 @@ var Search = class Search {
 				return a && b ? this.k.andIntro(a, b) : null;
 			}
 			case "or": return this.proveOr(goal.a, goal.b, depth);
-			case "not": return this.proveNot(goal.a, depth);
+			case "not": return (depth > 0 ? this.byLemma(goal, depth - 1) : null) ?? this.proveNot(goal.a, depth);
 			case "iff": {
 				const ab = this.with(this.k.assume(goal.a)).prove(goal.b, depth);
 				const ba = ab && this.with(this.k.assume(goal.b)).prove(goal.a, depth);
@@ -14877,7 +15210,7 @@ var Search = class Search {
 		const logical = this.shape(goal, depth);
 		if (logical !== void 0) return logical;
 		saturate(this, goal);
-		const second = this.basic(goal) ?? (goal.f === "pred" ? proveLimit(this, goal) : null);
+		const second = this.basic(goal) ?? (goal.f === "pred" ? sameUpToNumbers(this, goal) ?? proveLimit(this, goal) : null);
 		if (second || depth <= 0) return second;
 		if (goal.f === "rel" || goal.f === "pred") {
 			const th = this.rewriting ? null : this.viaRewriting(goal, depth);
@@ -15095,6 +15428,19 @@ function search(pr, env) {
 function counterexample(facts, claim, defs) {
 	const pr = analyse(facts, claim, defs);
 	return pr === null ? null : kernelSafe(() => search(pr, /* @__PURE__ */ new Map()), null);
+}
+// src/engines/proof-next/prover/rules.ts
+var PLAIN = /* @__PURE__ */ new Set([
+	"def",
+	"calc",
+	"choose",
+	"given",
+	"inst",
+	"logic",
+	"cases"
+]);
+function ruleKnown(rule, course, theory) {
+	return !course.size || course.has(rule) || theory.has(rule) || PLAIN.has(rule);
 }
 // src/engines/proof-next/logic/clean.ts
 var NAME = /^[\p{L}_][\p{L}\p{N}_']*$/u;
@@ -15866,6 +16212,266 @@ for (const c of [
 	Object.freeze(c.prototype);
 	Object.freeze(c);
 }
+// src/engines/proof-next/modules/analysis.ts
+var SEQ = {
+	name: "a",
+	sort: "seq"
+};
+var FUN = {
+	name: "phi",
+	sort: "function"
+};
+var real = (name) => ({
+	name,
+	sort: "real"
+});
+var analysis = {
+	id: "analysis",
+	version: 1,
+	he: "אנליזה על הליבה הלוגית",
+	extends: [
+		"limits",
+		"sequences",
+		"functions"
+	],
+	definitions: [
+		{
+			id: "decreasing",
+			params: [SEQ],
+			body: "forall n in nat: a_n > a_(n+1)",
+			he: {
+				name: "הגדרת סדרה יורדת",
+				statement: "הסדרה {a} יורדת",
+				words: "לכל n טבעי, האיבר הבא קטן מהאיבר הנוכחי: a_n > a_(n+1). (יורדת ממש.)",
+				parts: ["לכל n טבעי", "האיבר ה-(n+1) קטן מהאיבר ה-n"],
+				conclude: "הראינו שכל איבר גדול מהאיבר שאחריו, ולכן הסדרה יורדת."
+			}
+		},
+		{
+			id: "boundedbelow",
+			params: [SEQ],
+			body: "exists M: forall n in nat: a_n >= M",
+			he: {
+				name: "הגדרת סדרה חסומה מלרע",
+				statement: "הסדרה {a} חסומה מלרע",
+				words: "קיים מספר M, כך שכל איברי הסדרה גדולים ממנו או שווים לו: a_n ≥ M לכל n טבעי.",
+				parts: [
+					"קיים M",
+					"לכל n טבעי",
+					"האיבר ה-n לפחות M"
+				],
+				conclude: "מצאנו M שכל האיברים מעליו, ולכן הסדרה חסומה מלרע."
+			}
+		},
+		{
+			id: "bounded",
+			params: [SEQ],
+			body: "exists M: forall n in nat: |a_n| <= M",
+			he: {
+				name: "הגדרת סדרה חסומה",
+				statement: "הסדרה {a} חסומה",
+				words: "קיים מספר M, כך שהערך המוחלט של כל איבר קטן ממנו או שווה לו: |a_n| ≤ M.",
+				parts: [
+					"קיים M",
+					"לכל n טבעי",
+					"הערך המוחלט של האיבר ה-n לכל היותר M"
+				],
+				conclude: "מצאנו M שחוסם את כל האיברים בערך מוחלט, ולכן הסדרה חסומה."
+			}
+		},
+		{
+			id: "convergent",
+			params: [SEQ],
+			body: "exists L: lim(n->oo) a_n = L",
+			he: {
+				name: "הגדרת סדרה מתכנסת",
+				statement: "הסדרה {a} מתכנסת",
+				words: "קיים מספר L שהוא הגבול של הסדרה.",
+				parts: ["קיים L", "L הוא הגבול של הסדרה"],
+				conclude: "מצאנו את הגבול, ולכן הסדרה מתכנסת."
+			}
+		},
+		{
+			id: "cauchy",
+			params: [SEQ],
+			body: "forall eps > 0: exists N in nat: forall n in nat, n > N: forall m in nat, m > N: |a_n - a_m| < eps",
+			he: {
+				name: "הגדרת סדרת קושי",
+				statement: "הסדרה {a} היא סדרת קושי",
+				words: "יהי ε > 0. קיים מספר טבעי N, כך שלכל שני מקומות n ו-m שגדולים מ-N, המרחק בין האיבר ה-n לאיבר ה-m קטן מ-ε.",
+				parts: [
+					"יהי ε > 0",
+					"קיים N טבעי",
+					"לכל n > N",
+					"לכל m > N",
+					"המרחק בין שני האיברים קטן מ-ε"
+				],
+				conclude: "לכל ε > 0 מצאנו N מתאים, ולכן זו סדרת קושי."
+			}
+		},
+		{
+			id: "tendsinf",
+			params: [SEQ],
+			body: "forall M: exists N in nat: forall n in nat, n > N: a_n > M",
+			he: {
+				name: "הגדרת סדרה ששואפת לאינסוף",
+				statement: "הסדרה {a} שואפת לאינסוף",
+				words: "יהי M מספר כלשהו. קיים מספר טבעי N, כך שלכל n שגדול מ-N, האיבר ה-n גדול מ-M.",
+				parts: [
+					"יהי M",
+					"קיים N טבעי",
+					"לכל n > N",
+					"האיבר ה-n גדול מ-M"
+				],
+				conclude: "לכל M מצאנו N מתאים, ולכן הסדרה שואפת לאינסוף."
+			}
+		},
+		{
+			id: "upperbound",
+			params: [SEQ, real("M")],
+			body: "forall n in nat: a_n <= M",
+			he: {
+				name: "הגדרת חסם מלעיל של סדרה",
+				statement: "{M} הוא חסם מלעיל של הסדרה {a}",
+				words: "כל איברי הסדרה קטנים מ-M או שווים לו: a_n ≤ M לכל n טבעי.",
+				parts: ["לכל n טבעי", "האיבר ה-n לכל היותר M"],
+				conclude: "כל האיברים מתחת ל-M, ולכן M הוא חסם מלעיל."
+			}
+		},
+		{
+			id: "supremum",
+			params: [SEQ, real("s")],
+			body: "upperbound(a, s) and (forall M: upperbound(a, M) => s <= M)",
+			he: {
+				name: "הגדרת החסם העליון של סדרה",
+				statement: "{s} הוא החסם העליון (סופרמום) של הסדרה {a}",
+				words: "s הוא חסם מלעיל של הסדרה, וכל חסם מלעיל אחר M גדול מ-s או שווה לו.",
+				parts: [
+					"s הוא חסם מלעיל",
+					"לכל M",
+					"אם M חסם מלעיל",
+					"אז s ≤ M"
+				],
+				conclude: "s הוא חסם מלעיל והוא הקטן ביותר, ולכן הוא החסם העליון."
+			}
+		},
+		{
+			id: "subseq",
+			params: [
+				{
+					name: "b",
+					sort: "seq"
+				},
+				SEQ,
+				{
+					name: "k",
+					sort: "seq"
+				}
+			],
+			body: "forall n in nat: k_n in nat and k_n < k_(n+1) and b_n = a_(k_n)",
+			he: {
+				name: "הגדרת תת-סדרה",
+				statement: "הסדרה {b} היא תת-סדרה של {a} לפי המקומות {k}",
+				words: "המקומות k_n הם מספרים טבעיים שעולים ממש, והאיבר ה-n של b הוא האיבר של a במקום k_n.",
+				parts: [
+					"לכל n טבעי",
+					"k_n טבעי",
+					"המקומות עולים",
+					"b_n הוא האיבר של a במקום k_n"
+				],
+				conclude: "המקומות עולים והאיברים מתאימים, ולכן זו תת-סדרה."
+			}
+		},
+		{
+			id: "limfun",
+			params: [
+				FUN,
+				real("c"),
+				real("L")
+			],
+			body: "forall eps > 0: exists delta > 0: forall x: 0 < |x - c| < delta => |phi(x) - L| < eps",
+			he: {
+				name: "הגדרת הגבול של פונקציה בנקודה",
+				statement: "הגבול של {phi} בנקודה {c} הוא {L}",
+				words: "יהי ε > 0. קיים δ > 0, כך שלכל x שונה מ-c שמרחקו מ-c קטן מ-δ, המרחק בין f(x) ל-L קטן מ-ε.",
+				parts: [
+					"יהי ε > 0",
+					"קיים δ > 0",
+					"לכל x",
+					"אם 0 < |x - c| < δ",
+					"אז |f(x) - L| < ε"
+				],
+				conclude: "לכל ε > 0 מצאנו δ מתאים, ולכן זה הגבול."
+			}
+		},
+		{
+			id: "conton",
+			params: [
+				FUN,
+				real("a"),
+				real("b")
+			],
+			body: "forall c: a <= c and c <= b => forall eps > 0: exists delta > 0: forall x: a <= x and x <= b and |x - c| < delta => |phi(x) - phi(c)| < eps",
+			he: {
+				name: "הגדרת רציפות בקטע סגור",
+				statement: "הפונקציה {phi} רציפה בקטע הסגור מ-{a} עד {b}",
+				words: "לכל נקודה c בקטע ולכל ε > 0 קיים δ > 0, כך שלכל x בקטע שמרחקו מ-c קטן מ-δ, המרחק בין f(x) ל-f(c) קטן מ-ε. בקצוות הקטע מסתכלים רק על נקודות מתוך הקטע.",
+				parts: [
+					"לכל c",
+					"אם c בקטע",
+					"יהי ε > 0",
+					"קיים δ > 0",
+					"לכל x",
+					"אם x בקטע ו-|x - c| < δ",
+					"אז |f(x) - f(c)| < ε"
+				],
+				conclude: "לכל נקודה בקטע ולכל ε > 0 מצאנו δ מתאים, ולכן הפונקציה רציפה בקטע."
+			}
+		},
+		{
+			id: "unifcont",
+			params: [
+				FUN,
+				real("a"),
+				real("b")
+			],
+			body: "forall eps > 0: exists delta > 0: forall x, y: a <= x and x <= b and a <= y and y <= b and |x - y| < delta => |phi(x) - phi(y)| < eps",
+			he: {
+				name: "הגדרת רציפות במידה שווה בקטע",
+				statement: "הפונקציה {phi} רציפה במידה שווה בקטע מ-{a} עד {b}",
+				words: "יהי ε > 0. קיים δ > 0 אחד שמתאים לכל הקטע: לכל שתי נקודות x ו-y בקטע שהמרחק ביניהן קטן מ-δ, המרחק בין f(x) ל-f(y) קטן מ-ε.",
+				parts: [
+					"יהי ε > 0",
+					"קיים δ > 0",
+					"לכל x ו-y",
+					"אם שתיהן בקטע ו-|x - y| < δ",
+					"אז |f(x) - f(y)| < ε"
+				],
+				conclude: "לכל ε > 0 מצאנו δ אחד לכל הקטע, ולכן הרציפות היא במידה שווה."
+			}
+		},
+		{
+			id: "diffon",
+			params: [
+				FUN,
+				real("a"),
+				real("b")
+			],
+			body: "forall x: a < x and x < b => differentiable(phi, x)",
+			he: {
+				name: "הגדרת גזירות בקטע פתוח",
+				statement: "הפונקציה {phi} גזירה בקטע הפתוח מ-{a} עד {b}",
+				words: "בכל נקודה x שנמצאת ממש בין a ל-b הפונקציה גזירה.",
+				parts: [
+					"לכל x",
+					"אם a < x < b",
+					"אז f גזירה ב-x"
+				],
+				conclude: "הפונקציה גזירה בכל נקודה פנימית, ולכן היא גזירה בקטע הפתוח."
+			}
+		}
+	]
+};
 // src/engines/proof-next/deciders/sets/match.ts
 var COMMUTATIVE = /* @__PURE__ */ new Set([
 	"add",
@@ -17402,7 +18008,7 @@ var CALLS = [
 	"sin",
 	"cos"
 ];
-function valueAt(norm, e, v, a, depth = 0) {
+function valueAt$1(norm, e, v, a, depth = 0) {
 	if (depth > 60 || size$1(e) > 600) return null;
 	if (!mentions(norm, e, v)) return {
 		value: e,
@@ -17415,7 +18021,7 @@ function valueAt(norm, e, v, a, depth = 0) {
 		value: a,
 		cert: schema(`at-var-${v}`, { a })
 	};
-	const sub = (x) => valueAt(norm, x, v, a, depth + 1);
+	const sub = (x) => valueAt$1(norm, x, v, a, depth + 1);
 	if (e.k === "app" && e.args.length === 1 && CALLS.includes(e.fn)) {
 		const pa = sub(e.args[0]);
 		return pa ? {
@@ -17789,7 +18395,7 @@ function substitutionArg(input) {
 }
 function changeOfVariable(input, f, v, h, u, g) {
 	const gp = derive(input.norm, g, v);
-	const hg = valueAt(input.norm, h, u, g);
+	const hg = valueAt$1(input.norm, h, u, g);
 	if (!gp || !hg) return fail("not-derivable");
 	const product = op("mul", hg.value, gp.value);
 	if (!same$1(input.norm, product, f)) return fail(numberOf(input.norm, op("div", product, f)) ? "dx-factor" : "wrong-substitution");
@@ -17834,7 +18440,7 @@ function backSubstitution(input) {
 	const parts = [];
 	for (const t of gone) {
 		const [E, uExpr, g] = t.atom.args;
-		const proof = valueAt(input.norm, E, uExpr.name, g);
+		const proof = valueAt$1(input.norm, E, uExpr.name, g);
 		if (!proof) return { failure: fail("not-derivable") };
 		parts.push({
 			k: t.k,
@@ -17858,8 +18464,8 @@ function pairUp(gone, added, fits) {
 	return free.length ? null : out;
 }
 function newLimits(input, g, old, now) {
-	const atLo = valueAt(input.norm, g, old.v, old.lo);
-	const atHi = valueAt(input.norm, g, old.v, old.hi);
+	const atLo = valueAt$1(input.norm, g, old.v, old.lo);
+	const atHi = valueAt$1(input.norm, g, old.v, old.hi);
 	if (!atLo || !atHi) return fail("not-derivable");
 	if (!same$1(input.norm, atLo.value, now.lo) || !same$1(input.norm, atHi.value, now.hi)) return fail(same$1(input.norm, now.lo, old.lo) && same$1(input.norm, now.hi, old.hi) ? "limits-not-changed" : "wrong-limits");
 	return [atLo.cert, atHi.cert];
@@ -18021,8 +18627,8 @@ function evaluation(input) {
 	return combine(parts);
 }
 function endpoints(input, F, v, lo, hi, written) {
-	const top = valueAt(input.norm, F, v, hi);
-	const bottom = valueAt(input.norm, F, v, lo);
+	const top = valueAt$1(input.norm, F, v, hi);
+	const bottom = valueAt$1(input.norm, F, v, lo);
 	if (!top || !bottom) return null;
 	for (const d of written) {
 		const [P, Q] = d.args;
@@ -19949,7 +20555,8 @@ var MODULES = [
 		}]
 	},
 	counting,
-	probability
+	probability,
+	analysis
 ];
 var COURSES = [
 	{
@@ -19983,6 +20590,10 @@ var COURSES = [
 			},
 			{
 				id: "integrals",
+				version: 1
+			},
+			{
+				id: "analysis",
 				version: 1
 			}
 		]
@@ -20070,6 +20681,261 @@ function findRuleset(id, version) {
 	cache$2.set(key, rs);
 	return rs;
 }
+// src/engines/proof-next/prover/theory-analysis.ts
+var fun = (name) => ({
+	name,
+	ar: 1,
+	kind: "function"
+});
+var seq = (name) => ({
+	name,
+	ar: 1,
+	kind: "seq"
+});
+var num$1 = (name) => ({
+	name,
+	ar: 0,
+	kind: "num"
+});
+var ANALYSIS_DEFINITIONS = [
+	{
+		id: "cauchy",
+		pred: "cauchy",
+		params: [seq("a")],
+		text: "forall eps > 0: exists N in nat: forall n in nat, n > N: forall m in nat, m > N: |a_n - a_m| < eps"
+	},
+	{
+		id: "tendsinf",
+		pred: "tendsinf",
+		params: [seq("a")],
+		text: "forall M: exists N in nat: forall n in nat, n > N: a_n > M"
+	},
+	{
+		id: "conton",
+		pred: "conton",
+		params: [
+			fun("f"),
+			num$1("a"),
+			num$1("b")
+		],
+		text: "forall c: a <= c and c <= b => forall eps > 0: exists delta > 0: forall x: a <= x and x <= b and |x - c| < delta => |f(x) - f(c)| < eps"
+	},
+	{
+		id: "unifcont",
+		pred: "unifcont",
+		params: [
+			fun("f"),
+			num$1("a"),
+			num$1("b")
+		],
+		text: "forall eps > 0: exists delta > 0: forall x, y: a <= x and x <= b and a <= y and y <= b and |x - y| < delta => |f(x) - f(y)| < eps"
+	},
+	{
+		id: "diffon",
+		pred: "diffon",
+		params: [
+			fun("f"),
+			num$1("a"),
+			num$1("b")
+		],
+		text: "forall x: a < x and x < b => differentiable(f, x)"
+	},
+	{
+		id: "upperbound",
+		pred: "upperbound",
+		params: [seq("a"), num$1("M")],
+		text: "forall n in nat: a_n <= M"
+	},
+	{
+		id: "supremum",
+		pred: "supremum",
+		params: [seq("a"), num$1("s")],
+		text: "upperbound(a, s) and (forall M: upperbound(a, M) => s <= M)"
+	},
+	{
+		id: "subseq",
+		pred: "subseq",
+		params: [
+			seq("b"),
+			seq("a"),
+			seq("k")
+		],
+		text: "forall n in nat: k_n in nat and k_n < k_(n+1) and b_n = a_(k_n)"
+	}
+];
+var SEQUENCES = [
+	{
+		name: "conv-bounded",
+		fns: ["a"],
+		text: "forall L: lim(n->oo) a_n = L => bounded(a)",
+		derivable: true
+	},
+	{
+		name: "conv-cauchy",
+		fns: ["a"],
+		text: "forall L: lim(n->oo) a_n = L => cauchy(a)",
+		derivable: true
+	},
+	{
+		name: "tendsinf-unbounded",
+		fns: ["a"],
+		text: "tendsinf(a) => not boundedabove(a)",
+		derivable: true
+	}
+];
+var FUNCTIONS$1 = [
+	{
+		name: "limfun-unique",
+		fns: ["f"],
+		text: "forall c, L, M: limfun(f, c, L) and limfun(f, c, M) => L = M",
+		derivable: true
+	},
+	{
+		name: "limfun-sum",
+		fns: [
+			"f",
+			"g",
+			"h"
+		],
+		text: "forall c, L, M: limfun(f, c, L) and limfun(g, c, M) and (forall x: h(x) = f(x) + g(x)) => limfun(h, c, L + M)",
+		derivable: true
+	},
+	{
+		name: "limfun-diff",
+		fns: [
+			"f",
+			"g",
+			"h"
+		],
+		text: "forall c, L, M: limfun(f, c, L) and limfun(g, c, M) and (forall x: h(x) = f(x) - g(x)) => limfun(h, c, L - M)",
+		derivable: true
+	},
+	{
+		name: "limfun-scalar",
+		fns: ["f", "h"],
+		text: "forall c, k, L: limfun(f, c, L) and (forall x: h(x) = k*f(x)) => limfun(h, c, k*L)",
+		derivable: true
+	},
+	{
+		name: "heine",
+		fns: ["f", "s"],
+		text: "forall c, L: limfun(f, c, L) and lim(n->oo) s_n = c and (forall n in nat: s_n != c) => lim(n->oo) f(s_n) = L",
+		derivable: true
+	},
+	{
+		name: "cont-sum",
+		fns: [
+			"f",
+			"g",
+			"h"
+		],
+		text: "forall c: continuous(f, c) and continuous(g, c) and (forall x: h(x) = f(x) + g(x)) => continuous(h, c)",
+		derivable: true
+	},
+	{
+		name: "cont-prod",
+		fns: [
+			"f",
+			"g",
+			"h"
+		],
+		text: "forall c: continuous(f, c) and continuous(g, c) and (forall x: h(x) = f(x)*g(x)) => continuous(h, c)",
+		derivable: true
+	},
+	{
+		name: "cont-conton",
+		fns: ["f"],
+		text: "forall a, b: (forall x: a <= x and x <= b => continuous(f, x)) => conton(f, a, b)",
+		derivable: true
+	}
+];
+var DERIVATIVES = [
+	{
+		name: "d-const",
+		fns: ["f"],
+		text: "forall c: (forall x, y: f(x) = f(y)) => derivative(f, c, 0)",
+		derivable: true
+	},
+	{
+		name: "d-id",
+		fns: ["f"],
+		text: "forall c: (forall x: f(x) = x) => derivative(f, c, 1)",
+		derivable: true
+	},
+	{
+		name: "d-sum",
+		fns: [
+			"f",
+			"g",
+			"h"
+		],
+		text: "forall c, L, M: derivative(f, c, L) and derivative(g, c, M) and (forall x: h(x) = f(x) + g(x)) => derivative(h, c, L + M)",
+		derivable: true
+	},
+	{
+		name: "d-scalar",
+		fns: ["f", "h"],
+		text: "forall c, k, L: derivative(f, c, L) and (forall x: h(x) = k*f(x)) => derivative(h, c, k*L)",
+		derivable: true
+	},
+	{
+		name: "d-unique",
+		fns: ["f"],
+		text: "forall c, L, M: derivative(f, c, L) and derivative(f, c, M) => L = M",
+		derivable: true
+	},
+	{
+		name: "fermat",
+		fns: ["f"],
+		text: "forall c: differentiable(f, c) and ((exists r > 0: forall x: |x - c| < r => f(x) <= f(c)) or (exists r > 0: forall x: |x - c| < r => f(c) <= f(x))) => derivative(f, c, 0)",
+		derivable: true
+	},
+	{
+		name: "rolle",
+		fns: ["f"],
+		text: "forall a, b: a < b and conton(f, a, b) and diffon(f, a, b) and f(a) = f(b) => exists c: a < c and c < b and derivative(f, c, 0)",
+		derivable: true
+	},
+	{
+		name: "deriv-zero",
+		fns: ["f"],
+		text: "forall a, b: a < b and conton(f, a, b) and (forall x: a < x and x < b => derivative(f, x, 0)) => f(a) = f(b)",
+		derivable: true
+	}
+];
+var COMPLETENESS = [
+	{
+		name: "cauchy-conv",
+		fns: ["a"],
+		text: "cauchy(a) => exists L: lim(n->oo) a_n = L"
+	},
+	{
+		name: "ivt",
+		fns: ["f"],
+		text: "forall a, b, y: a < b and conton(f, a, b) and ((f(a) < y and y < f(b)) or (f(b) < y and y < f(a))) => exists c: a < c and c < b and f(c) = y"
+	},
+	{
+		name: "evt",
+		fns: ["f"],
+		text: "forall a, b: a <= b and conton(f, a, b) => (exists c: a <= c and c <= b and (forall x: a <= x and x <= b => f(x) <= f(c))) and (exists d: a <= d and d <= b and (forall x: a <= x and x <= b => f(d) <= f(x)))"
+	},
+	{
+		name: "heine-cantor",
+		fns: ["f"],
+		text: "forall a, b: conton(f, a, b) => unifcont(f, a, b)"
+	},
+	{
+		name: "mvt",
+		fns: ["f"],
+		text: "forall a, b: a < b and conton(f, a, b) and diffon(f, a, b) => exists c: a < c and c < b and derivative(f, c, (f(b) - f(a))/(b - a))"
+	}
+];
+var ANALYSIS_THEOREMS = [
+	...SEQUENCES,
+	...FUNCTIONS$1,
+	...DERIVATIVES,
+	...COMPLETENESS
+];
 // src/engines/proof-next/prover/theory.ts
 var FUNCTIONS = [
 	["abs", 1],
@@ -20424,21 +21290,6 @@ var THEOREMS = [
 		text: "forall M: increasing(a) and (forall n in nat: a_n <= M) => exists L: lim(n->oo) a_n = L and L <= M"
 	}
 ];
-var fun = (name) => ({
-	name,
-	ar: 1,
-	kind: "function"
-});
-var seq = (name) => ({
-	name,
-	ar: 1,
-	kind: "seq"
-});
-var num$1 = (name) => ({
-	name,
-	ar: 0,
-	kind: "num"
-});
 var DEFINITIONS = [
 	{
 		id: "limit",
@@ -20519,6 +21370,11 @@ function read(k, text, params) {
 	const rs = findRuleset("core", 1);
 	if (!rs) throw new Error("the core course is not registered");
 	const table = tableForProof(rs.table);
+	table.fns = new Map(table.fns);
+	for (const pred of k.sig.preds.keys()) if (!table.fns.has(pred) && !["nat", "int"].includes(pred)) table.fns.set(pred, {
+		name: pred,
+		resultSort: "prop"
+	});
 	const sc = {
 		sig: k.sig,
 		vars: /* @__PURE__ */ new Set(),
@@ -20550,7 +21406,7 @@ function calc1() {
 	AXIOMS.forEach((axiom) => addAxiom(k, axiom));
 	const defs = /* @__PURE__ */ new Map();
 	const kinds = /* @__PURE__ */ new Map();
-	for (const def of DEFINITIONS) {
+	for (const def of [...DEFINITIONS, ...ANALYSIS_DEFINITIONS]) {
 		const params = def.params.map(({ name, ar }) => ({
 			name,
 			ar
@@ -20559,9 +21415,13 @@ function calc1() {
 		defs.set(def.id, def.pred);
 		kinds.set(def.pred, def.params.map((x) => x.kind));
 	}
-	THEOREMS.forEach((axiom) => addAxiom(k, axiom));
+	[...THEOREMS, ...ANALYSIS_THEOREMS].forEach((axiom) => addAxiom(k, axiom));
 	k.seal();
-	const all = [...AXIOMS, ...THEOREMS];
+	const all = [
+		...AXIOMS,
+		...THEOREMS,
+		...ANALYSIS_THEOREMS
+	];
 	return {
 		k,
 		defs,
@@ -20696,6 +21556,8 @@ var Walk = class {
 	k;
 	sc;
 	doc;
+	courseRules;
+	theoryNames;
 	defs = {
 		seqs: /* @__PURE__ */ new Set(),
 		bodies: /* @__PURE__ */ new Map(),
@@ -20714,10 +21576,12 @@ var Walk = class {
 	whole = null;
 	last = null;
 	done = false;
-	constructor(doc) {
+	constructor(doc, courseRules = /* @__PURE__ */ new Set()) {
 		this.doc = doc;
+		this.courseRules = courseRules;
 		this.th = theoryOf();
 		this.k = this.th.k;
+		this.theoryNames = new Set(this.k.axiomList().map(([name]) => name));
 		this.sc = {
 			sig: this.k.sig,
 			vars: /* @__PURE__ */ new Set(),
@@ -20825,6 +21689,10 @@ var Walk = class {
 		}
 	}
 	prove(claim, cited, rule) {
+		if (rule && !ruleKnown(rule, this.courseRules, this.theoryNames)) throw new Refuse("unknown-rule", {
+			rule,
+			hint: ""
+		});
 		const th = this.search(cited).prove(claim);
 		const ok = th && this.k.isThm(th) && formulaKey(th.concl) === formulaKey(claim);
 		if (!th || !ok || !this.inScope(th)) {
@@ -21618,10 +22486,10 @@ function required(w) {
 		}));
 	}
 }
-function coreCheck(doc) {
+function coreCheck(doc, courseRules) {
 	let w;
 	try {
-		w = new Walk(doc);
+		w = new Walk(doc, courseRules);
 	} catch (error) {
 		if (error instanceof ConvertError) return {
 			items: unread(doc, error),
@@ -21727,7 +22595,7 @@ function checkProof(src, findRuleset, options = {}) {
 	}
 }
 function checkOnCore(src, parsed, level) {
-	const core = coreCheck(parsed.doc);
+	const core = coreCheck(parsed.doc, new Set(parsed.rs.rules.keys()));
 	const out = frame(src, level, parsed.rs);
 	out.kernel = "logic-core/1";
 	out.items = core.items;
@@ -21773,6 +22641,60 @@ function checkParsed(src, parsed, level) {
 	verdict.status = statusOf(items);
 	verdict.accepted = verdict.status === "proved";
 	return verdict;
+}
+// src/engines/proof-next/core/theory-he.ts
+var THEORY_HE = {
+	"div-pos": "מנה של חיוביים",
+	"div-lt": "חילוק אי-שוויון בחיובי",
+	"div-le": "חילוק אי-שוויון בחיובי",
+	"div-gt": "חילוק אי-שוויון בחיובי",
+	"div-ge": "חילוק אי-שוויון בחיובי",
+	"mul-gt-div": "כפל אי-שוויון בחיובי",
+	"mul-ge-div": "כפל אי-שוויון בחיובי",
+	"mul-lt-div": "כפל אי-שוויון בחיובי",
+	"mul-le-div": "כפל אי-שוויון בחיובי",
+	"mul-lt-mono": "כפל אי-שוויון בחיובי",
+	"mul-le-mono": "כפל אי-שוויון באי-שלילי",
+	"mul-pos": "מכפלה של חיוביים",
+	"abs-ge": "ערך מוחלט גדול מהמספר",
+	"abs-ge-neg": "ערך מוחלט גדול מהנגדי",
+	"abs-lt": "ערך מוחלט קטן מחסם",
+	"abs-le": "ערך מוחלט קטן מחסם",
+	"abs-pos-ne": "ערך מוחלט חיובי",
+	"ceil-nat": "הערך השלם העליון של חיובי הוא טבעי",
+	"ceil-lt": "הערך השלם העליון",
+	"lim-neg": "גבול של נגדי",
+	"lim-unique": "יחידות הגבול",
+	sandwich: "כלל הסנדוויץ'",
+	"lim-le": "שמירה על אי-שוויון בגבול",
+	"conv-bounded": "סדרה מתכנסת חסומה",
+	"conv-cauchy": "סדרה מתכנסת היא סדרת קושי",
+	"cauchy-conv": "סדרת קושי מתכנסת",
+	"tendsinf-unbounded": "סדרה ששואפת לאינסוף אינה חסומה",
+	"limfun-unique": "יחידות הגבול של פונקציה",
+	"limfun-sum": "גבול של סכום פונקציות",
+	"limfun-diff": "גבול של הפרש פונקציות",
+	"limfun-scalar": "גבול של כפל פונקציה בקבוע",
+	heine: "משפט היינה",
+	"cont-sum": "רציפות של סכום",
+	"cont-prod": "רציפות של מכפלה",
+	"cont-conton": "רציפה בכל נקודה, רציפה בקטע",
+	"diff-cont": "גזירה גוררת רציפה",
+	"d-const": "נגזרת של קבוע",
+	"d-id": "הנגזרת של x",
+	"d-sum": "נגזרת של סכום",
+	"d-scalar": "נגזרת של כפל בקבוע",
+	"d-unique": "יחידות הנגזרת",
+	"deriv-zero": "נגזרת אפס, פונקציה קבועה",
+	fermat: "משפט פרמה",
+	rolle: "משפט רול",
+	ivt: "משפט ערך הביניים",
+	evt: "משפט ויירשטראס",
+	"heine-cantor": "משפט קנטור",
+	mvt: "משפט לגרנז׳"
+};
+function theoryHe(id) {
+	return Object.hasOwn(THEORY_HE, id) ? THEORY_HE[id] : void 0;
 }
 // src/engines/proof-next/core/print-common.ts
 function viewContext(doc, rs, table) {
@@ -21835,7 +22757,7 @@ function refHe(v, ref) {
 	return shown.claimTex ? `(${shown.ref}: $${shown.claimTex}$)` : `(${shown.ref})`;
 }
 function ruleHe(v, rule) {
-	return v.rs.rules.get(rule)?.he ?? rule;
+	return v.rs.rules.get(rule)?.he ?? theoryHe(rule) ?? rule;
 }
 var QUOTED_HE = "משפט של הקורס, מצוטט, לא מוכח כאן";
 function quotedNote(v, rule) {
@@ -24862,13 +25784,6 @@ var MARK_HE = {
 	blocked: "חסום: נשען על שורה שנדחתה",
 	unchecked: "לא נבדק"
 };
-var TAG_HE = {
-	given: "נתון",
-	arbitrary: "שרירותי",
-	chosen: "נבחר",
-	proved: "הוכח",
-	assumed: "הנחה"
-};
 var KIND_HE = {
 	unfold: "לפי ההגדרה",
 	let: "יהי",
@@ -24905,8 +25820,6 @@ var LEVEL_HE = {
 var LABEL = {
 	claim: "הטענה",
 	given: "נתון",
-	toProve: "צריך להוכיח",
-	definition: "ההגדרה",
 	inSymbols: "בסימנים",
 	parts: "חלקי ההגדרה, לפי הסדר",
 	partDone: "בוצע",
@@ -24924,14 +25837,14 @@ var LABEL = {
 	viewTable: "טבלה",
 	viewWritten: "הוכחה כתובה",
 	level: "רמת פירוט",
-	known: "מה ידוע עכשיו",
-	knownEmpty: "עוד לא ידוע דבר.",
+	restGiven: "נתון:",
+	restDefinition: "הגדרה:",
+	restTheorem: "משפט:",
+	restLine: (id) => `שורה ${id}:`,
+	restNothing: "לא נשענת על שורה או על נתון",
 	restsMark: "נשענים עליה",
 	current: "השורה הנוכחית",
-	more: (count) => count === 1 ? "עוד שורה אחת" : `עוד ${count} שורות`,
-	rule: "לפי",
-	boardSoon: "הלוח של שרשרת החישוב יצויר כאן.",
-	pictureSoon: "התמונה של הטענה תצויר כאן."
+	more: (count) => count === 1 ? "עוד שורה אחת" : `עוד ${count} שורות`
 };
 var ANNOUNCE = {
 	allPassed: (count) => `כל ${count} הבדיקות עברו`,
@@ -26566,17 +27479,7 @@ function heMathText(text, toTex) {
 	if (text.includes("$")) return text;
 	return splitHeMath(text, toTex).map((p) => p.tex !== void 0 ? `$${p.tex}$` : p.isLtr ? LRI + p.text + PDI : p.text).join("");
 }
-// src/engines/proof-next/box/known.ts
-var TAGS = {
-	let: "arbitrary",
-	choose: "chosen",
-	assume: "assumed",
-	have: "proved",
-	show: "proved",
-	obtain: "chosen",
-	calc: "proved",
-	induction: "proved"
-};
+// src/engines/proof-next/box/places.ts
 function placesOf(lines) {
 	const places = /* @__PURE__ */ new Map();
 	const walk = (block, parent) => {
@@ -26598,97 +27501,75 @@ function placesOf(lines) {
 	walk(lines, null);
 	return places;
 }
-function ancestorsOf(places, id) {
-	const out = [];
-	let parent = places.get(id)?.parent ?? null;
-	while (parent !== null && out.length < 64) {
-		out.push(parent);
-		parent = places.get(parent)?.parent ?? null;
+// src/engines/proof-next/box/rests.ts
+function theoremOf(v, rule) {
+	const spec = rule ? v.rs.rules.get(rule) : void 0;
+	if (!spec || !isQuoted(spec)) return {
+		tex: "",
+		words: ""
+	};
+	try {
+		return {
+			tex: printTex(parseExpr((spec.conclusion ?? "").replace(/\?/g, ""), v.table), v.table),
+			words: spec.statement
+		};
+	} catch {
+		return {
+			tex: "",
+			words: spec.statement
+		};
 	}
-	return out;
 }
-function lineFact(v, line) {
-	if (!Object.hasOwn(TAGS, line.kind)) return null;
-	const claims = v.st.conclusions(line);
-	if (!claims.length) return null;
+function writtenOf(rest) {
+	if (rest.to === "given") return {
+		kind: "given",
+		ref: rest.ref,
+		tex: rest.claimTex
+	};
+	if (rest.to === "line") return {
+		kind: "line",
+		ref: rest.ref,
+		tex: rest.claimTex
+	};
 	return {
-		tex: claims.map((c) => printTex(c, v.table)).join(",\\ "),
-		tag: TAGS[line.kind]
+		kind: "unknown",
+		ref: rest.ref
 	};
 }
-function chainSoFar(v, calc, linkId, level) {
-	const chain = calc.chain;
-	if (!chain) return null;
-	const shown = linksAt(chain.links, level);
-	const upto = shown.findIndex((s) => s.link.id === linkId);
-	if (upto < 0) return null;
-	const rel = joinRels(shown.slice(0, upto + 1).map((s) => s.rel));
-	if (!rel) return null;
-	const end = printTex(shown[upto].link.expr.ast, v.table);
-	return `${printTex(chain.start.ast, v.table)} ${relTex(v, rel)} ${end}`;
+function chipClaim(v, rest) {
+	if (rest.claimTyped) return rest.claimTyped;
+	const line = allLines(v.doc.lines).find((l) => l.id === rest.ref);
+	return (line ? kindHe(line.kind) : "") || rest.ref;
 }
-function isOpenWhileInside(place) {
-	const line = place?.line;
-	return !!line && (line.kind === "calc" || line.childRole === "body");
-}
-function givenFacts$1(v) {
-	return v.doc.givens.flatMap((g) => g.facts.map((f, k) => ({
-		id: g.facts.length > 1 ? `${g.name}#${k + 1}` : g.name,
-		tex: printTex(f.ast, v.table),
-		tag: "given",
-		isNew: false
-	})));
-}
-function rowFact(scope, row, isNew) {
-	const place = scope.places.get(row.id);
-	const mark = row.mark && row.mark !== "proved" ? { mark: row.mark } : {};
-	if (place?.link && place.calc) {
-		const tex = scope.ancestors.has(place.calc.id) ? chainSoFar(scope.v, place.calc, row.id, scope.level) : null;
-		return tex ? {
-			id: place.calc.id,
-			tex,
-			tag: "proved",
-			isNew,
-			...mark
-		} : null;
-	}
-	const parentOk = !place || place.parent === null || scope.inScope.has(place.parent);
-	const isOpen = scope.ancestors.has(row.id) && isOpenWhileInside(place);
-	const isCurrentChain = row.id === scope.current && place?.line?.kind === "calc";
-	if (!place?.line || !parentOk || isOpen || isCurrentChain) return null;
-	const fact = lineFact(scope.v, place.line);
-	return fact ? {
-		id: row.id,
-		...fact,
-		isNew,
-		...mark
-	} : null;
-}
-function knownAt(v, rows, places, index, level) {
-	const current = rows[index].id;
-	const ancestors = new Set(ancestorsOf(places, current));
-	const scope = {
-		v,
-		places,
-		current,
-		ancestors,
-		inScope: /* @__PURE__ */ new Set([...ancestors, current]),
-		level
-	};
-	const facts = givenFacts$1(v);
-	const chainFacts = /* @__PURE__ */ new Map();
-	rows.slice(0, index + 1).forEach((row, j) => {
-		const fact = rowFact(scope, row, j === index);
-		if (fact && places.get(row.id)?.link) chainFacts.set(fact.id, fact);
-		else if (fact) facts.push(fact);
+function restCellOf(v, row, rests, above, place) {
+	const chips = [];
+	const written = [];
+	for (const rest of rests) if (rest.to === "line" && above.has(rest.ref)) chips.push({
+		id: rest.ref,
+		claim: chipClaim(v, rest),
+		implicit: rest.implicit
 	});
-	return [...facts, ...chainFacts.values()];
+	else if (!rest.implicit || rest.to === "given") written.push(writtenOf(rest));
+	const def = row.kind === "unfold" ? place?.line?.def : void 0;
+	const name = def ? v.rs.defs.get(def.id)?.he.name.replace(/^הגדרת /, "") : void 0;
+	if (name) written.unshift({
+		kind: "definition",
+		name
+	});
+	const theorem = theoremOf(v, row.rule);
+	if (!chips.length && !written.length && (theorem.tex || theorem.words)) written.push({
+		kind: "theorem",
+		...theorem
+	});
+	return {
+		written,
+		chips
+	};
 }
 // src/engines/proof-next/box/steps.ts
 var rowAnchor = (id) => "pn-row:" + id;
 var sentenceAnchor = (id) => "pn-sent:" + id;
 var partAnchor$1 = (index) => "pn-part:" + index;
-var factAnchor = (id) => "pn-fact:" + id;
 function definitionOf(v) {
 	const unfold = allLines(v.doc.lines).find((l) => l.kind === "unfold" && l.def);
 	const def = unfold?.def ? v.rs.defs.get(unfold.def.id) : void 0;
@@ -26776,49 +27657,34 @@ function restsOf(v, row) {
 }
 function motionsOf(step, isNewSentence) {
 	const id = step.row.id;
-	const factMotions = step.known.filter((f) => f.isNew).map((f) => factAnchor(f.id)).map((anchor) => appear({
-		anchor,
-		style: "fade",
-		dx: 14,
-		delay: 260,
-		ms: 420
-	}));
 	const pulses = step.restRows.map((r) => highlight$1({
 		anchor: rowAnchor(r),
 		tone: "compare",
 		delay: 180
 	}));
-	const table = together([
-		appear({
-			anchor: rowAnchor(id),
-			style: "grow",
-			scale: .92,
-			dy: -10,
-			ms: 420
-		}),
-		...pulses,
-		...factMotions
-	]);
+	const table = together([appear({
+		anchor: rowAnchor(id),
+		style: "grow",
+		scale: .92,
+		dy: -10,
+		ms: 420
+	}), ...pulses]);
 	const sentenceRests = [...new Set(step.rests.filter((r) => r.to === "line").map((r) => r.ref.split("/")[0]))].filter((r) => r !== step.lineId);
 	return {
 		table,
-		written: together([
-			isNewSentence ? appear({
-				anchor: sentenceAnchor(step.lineId),
-				style: "fade",
-				dy: -8,
-				ms: 420
-			}) : highlight$1({
-				anchor: sentenceAnchor(step.lineId),
-				tone: "focus"
-			}),
-			...sentenceRests.map((r) => highlight$1({
-				anchor: sentenceAnchor(r),
-				tone: "compare",
-				delay: 180
-			})),
-			...factMotions
-		]),
+		written: together([isNewSentence ? appear({
+			anchor: sentenceAnchor(step.lineId),
+			style: "fade",
+			dy: -8,
+			ms: 420
+		}) : highlight$1({
+			anchor: sentenceAnchor(step.lineId),
+			tone: "focus"
+		}), ...sentenceRests.map((r) => highlight$1({
+			anchor: sentenceAnchor(r),
+			tone: "compare",
+			delay: 180
+		}))]),
 		definition: step.part >= 0 ? highlight$1({
 			anchor: partAnchor$1(step.part),
 			tone: "good"
@@ -26847,10 +27713,10 @@ function modelOf(result, level) {
 		rows: shown.table,
 		boards: shown.boards,
 		pictures: shown.pictures,
-		steps: stepsOf$1(v, shown.table, definition, level, result)
+		steps: stepsOf$1(v, shown.table, definition, result)
 	};
 }
-function stepsOf$1(v, rows, definition, level, result) {
+function stepsOf$1(v, rows, definition, result) {
 	const places = placesOf(v.doc.lines);
 	const items = new Map(result.verdict.items.map((item) => [item.id, item]));
 	const partOfRow = partsOfRows(v, rows, places, definition);
@@ -26874,7 +27740,7 @@ function stepsOf$1(v, rows, definition, level, result) {
 			parts: definition ? partStates(partOfRow, index, definition.partsHe.length, isOpened) : [],
 			rests,
 			restRows: [...new Set(rests.map((r) => r.ref))].filter((r) => above.has(r)),
-			known: knownAt(v, rows, places, index, level),
+			cell: restCellOf(v, row, rests, above, place),
 			title: rowTitle(row, lineId)
 		};
 		return {
@@ -27481,6 +28347,160 @@ async function askLocal(text, deps) {
 function reportHtml(report) {
 	return `<span class="dim">${escapeHtml$2(report.line)}</span>\n`;
 }
+// src/engines/proof-next/box/preview-compact.ts
+var COMPACT_CLASS = "pn-compact";
+var GAP_CH = 2;
+function chooseColumn(rows) {
+	let best = null;
+	for (const column of [...new Set(rows.map((r) => Math.ceil(r.end)))].sort((a, b) => a - b)) {
+		const fits = rows.filter((r) => Math.max(column, r.end) + r.reason <= r.room);
+		const aligned = fits.filter((r) => r.end <= column).length;
+		if (!best || fits.length > best.visible || fits.length === best.visible && aligned > best.aligned) best = {
+			column,
+			visible: fits.length,
+			aligned
+		};
+	}
+	const column = best?.column ?? 0;
+	return {
+		column,
+		over: rows.flatMap((r, i) => Math.max(column, r.end) + r.reason > r.room ? [i] : [])
+	};
+}
+function charWidth(ed) {
+	const keyword = ed.querySelector(".ed-hl .pnv > .pnv-k");
+	const text = keyword?.textContent ?? "";
+	if (!keyword || !text) return 0;
+	const range = document.createRange();
+	range.selectNodeContents(keyword);
+	return range.getBoundingClientRect().width / text.length;
+}
+function textWidth$1(el) {
+	const range = document.createRange();
+	range.selectNodeContents(el);
+	return range.getBoundingClientRect().width;
+}
+function measureRows(ed, ch) {
+	const visibleRight = ed.getBoundingClientRect().left + ed.clientLeft + ed.clientWidth - 2;
+	const out = [];
+	for (const row of ed.querySelectorAll(".ed-hl .ln.pv-ln > .pnv")) {
+		const piece = row.querySelector(":scope > :has(+ .pnv-r)");
+		const reason = row.querySelector(":scope > .pnv-r");
+		if (!piece || !reason) continue;
+		const rowLeft = row.getBoundingClientRect().left + ed.scrollLeft;
+		const left = piece.getBoundingClientRect().left + ed.scrollLeft - rowLeft;
+		const pad = parseFloat(getComputedStyle(piece).paddingRight) || 0;
+		const end = left + textWidth$1(piece) + Math.max(pad, GAP_CH * ch);
+		out.push({
+			end,
+			reason: textWidth$1(reason),
+			room: visibleRight - rowLeft
+		});
+	}
+	return out;
+}
+var MEASURED = /* @__PURE__ */ new WeakMap();
+function applyCompact(ed, isOn) {
+	ed.classList.toggle(COMPACT_CLASS, isOn);
+	if (!isOn) {
+		ed.classList.remove(OVER_CLASS, MORE_CLASS);
+		return;
+	}
+	const ch = charWidth(ed);
+	const text = ed.querySelector("textarea")?.value ?? "";
+	const typeset = ed.querySelectorAll(".ed-hl .ln.pv-ln").length;
+	const key = `${ch.toFixed(3)}|${ed.clientWidth}|${typeset}|${text}`;
+	if (ch && MEASURED.get(ed) !== key) {
+		MEASURED.set(ed, key);
+		const choice = chooseColumn(measureRows(ed, ch));
+		ed.style.setProperty("--pn-ch", ch + "px");
+		ed.style.setProperty("--pn-rcol", choice.column + "px");
+		const scrollbar = Math.max(0, ed.offsetWidth - ed.clientWidth - 2 * ed.clientLeft);
+		ed.style.setProperty("--pn-sb", scrollbar + "px");
+		ed.classList.toggle(OVER_CLASS, choice.over.length > 0);
+	}
+	showMore(ed);
+}
+var OVER_CLASS = "pn-over";
+var MORE_CLASS = "pn-more-right";
+function showMore(ed) {
+	const hasMore = ed.scrollLeft + ed.clientWidth < ed.scrollWidth - 1;
+	ed.classList.toggle(MORE_CLASS, ed.classList.contains(OVER_CLASS) && hasMore);
+}
+var WATCHED = /* @__PURE__ */ new WeakSet();
+function watchEditor(ed, update) {
+	if (WATCHED.has(ed)) return;
+	WATCHED.add(ed);
+	new ResizeObserver(update).observe(ed);
+	ed.addEventListener("scroll", () => showMore(ed), { passive: true });
+}
+function watchCompact(host) {
+	const box = host.closest(".wb") ?? host;
+	let queued = false;
+	const update = () => {
+		if (queued) return;
+		queued = true;
+		requestAnimationFrame(() => {
+			queued = false;
+			const isOn = box.classList.contains("debugging");
+			box.querySelectorAll(".ed.ed-pv").forEach((ed) => {
+				watchEditor(ed, update);
+				applyCompact(ed, isOn);
+			});
+			box.querySelectorAll(`.ed.${COMPACT_CLASS}:not(.ed-pv)`).forEach((ed) => {
+				ed.classList.remove(COMPACT_CLASS);
+			});
+		});
+	};
+	new MutationObserver(update).observe(box, {
+		subtree: true,
+		childList: true,
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+	new ResizeObserver(update).observe(box);
+	update();
+}
+// src/engines/proof-next/box/preview-hover.ts
+function isInside$1(element, x, y) {
+	const r = element.getBoundingClientRect();
+	return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+function hitAt(editor, x, y) {
+	const line = [...editor.querySelectorAll(".ed-hl .ln.pv-ln")].find((l) => isInside$1(l, x, y));
+	if (!line) return null;
+	const tipped = [...line.querySelectorAll("[data-tip]")].filter((piece) => piece.dataset.tip && isInside$1(piece, x, y));
+	const inner = tipped[tipped.length - 1];
+	return inner ? {
+		tip: inner.dataset.tip ?? "",
+		ref: inner.dataset.ref ?? "",
+		element: inner
+	} : null;
+}
+function markRows(editor, ref, chip) {
+	for (const line of editor.querySelectorAll(".ed-hl .ln")) {
+		const row = line.querySelector(".pnv[data-row]");
+		line.classList.toggle("pnv-hl", ref !== "" && row?.dataset.row === ref);
+	}
+	for (const other of editor.querySelectorAll(".pnv-chip.is-on")) other.classList.toggle("is-on", other === chip);
+	chip?.classList.add("is-on");
+}
+function watchPreviewHover(host) {
+	host.addEventListener("mousemove", (event) => {
+		const area = event.target;
+		const editor = area.classList?.contains("ed-ta") ? area.closest(".ed.ed-pv") : null;
+		if (!editor) return;
+		const hit = hitAt(editor, event.clientX, event.clientY);
+		markRows(editor, hit?.ref ?? "", hit?.ref ? hit.element : void 0);
+		if (hit?.tip) setTimeout(() => {
+			area.title = hit.tip;
+		}, 0);
+	});
+	host.addEventListener("mouseout", (event) => {
+		const editor = event.target.closest?.(".ed.ed-pv");
+		if (editor) markRows(editor, "");
+	});
+}
 // src/engines/proof-next/view/board/bidi.ts
 var HEBREW = /[֐-׿]/;
 var CORE = /[A-Za-z0-9εδ∞|()[\]{}√⌈⌉⌊⌋−+*/^=<>≤≥≠·_]/;
@@ -27558,6 +28578,22 @@ function SrOnly({ children }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 		className: "pn-sr",
 		children
+	});
+}
+function RowChip({ id, claim, implicit, onHover }) {
+	const said = `שורה ${id}: ${claim}${implicit ? " (מהתחום)" : ""}`;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+		type: "button",
+		className: implicit ? "pn-rowchip pn-rowchip-implicit" : "pn-rowchip",
+		"data-ref": id,
+		dir: "ltr",
+		"aria-label": said,
+		title: said,
+		onMouseEnter: () => onHover?.(id),
+		onMouseLeave: () => onHover?.(null),
+		onFocus: () => onHover?.(id),
+		onBlur: () => onHover?.(null),
+		children: id
 	});
 }
 var ViewGuard = class extends import_react.Component {
@@ -27948,6 +28984,237 @@ function Box({ node, marks }) {
 		}), parts.strike]
 	});
 }
+// src/engines/proof-next/view/board/words.ts
+var BOARD_HE = {
+	by: "לפי",
+	given: "הנתון",
+	definition: "הגדרה",
+	theorem: "משפט",
+	from: "מתוך",
+	since: "כי",
+	assumed: "הנחה: לא הוכח מהעובדות",
+	merged: (n) => `${n} צעדים במעבר אחד`,
+	proof: "ההוכחה",
+	provedOf: (k, m) => `${k} מתוך ${m} שורות הוכחו`,
+	links: (n) => n === 1 ? "צעד אחד" : `${n} צעדים`,
+	linkOf: (k, n) => `קישור ${k} מתוך ${n}`,
+	currentStep: "הצעד הנוכחי",
+	chainOpen: "החישוב פתוח",
+	notYet: "עוד לא הגענו",
+	outline: "ההוכחה בקיצור, שורה לכל צעד",
+	rels: {
+		"=": "שווה",
+		"!=": "שונה",
+		"<": "קטן מ-",
+		"<=": "קטן או שווה ל-",
+		">": "גדול מ-",
+		">=": "גדול או שווה ל-"
+	}
+};
+// src/engines/proof-next/view/board/Chain.tsx
+function keysOf(paths) {
+	return new Set(paths.filter((p) => p.length > 0).map(pathKey));
+}
+function marksOf(at, layouts) {
+	const { board, visible, fresh } = at;
+	const isFresh = (i) => fresh !== null && i >= fresh[0] && i <= fresh[1];
+	return board.rows.map((row, i) => {
+		const next = i + 1 < visible ? board.rows[i + 1] : void 0;
+		return {
+			row: i,
+			struck: new Set(next ? struckPaths(board, layouts, i + 1).map(pathKey) : []),
+			out: next && isFresh(i + 1) ? keysOf(next.removed) : /* @__PURE__ */ new Set(),
+			in: i > 0 && i < visible && isFresh(i) ? keysOf(row.added) : /* @__PURE__ */ new Set()
+		};
+	});
+}
+function Words({ text }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("q", {
+		className: "pn-bd-words",
+		children: bidiRuns(text).map((run, i) => run.ltr ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "pn-tex",
+			dir: "ltr",
+			children: run.text
+		}, i) : run.text)
+	});
+}
+function RefOf({ ref_, onHover }) {
+	if (ref_.to === "line") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowChip, {
+		id: ref_.ref,
+		claim: ref_.claimTyped,
+		onHover
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-ol-src",
+		children: [ref_.to === "given" ? BOARD_HE.given + " " : "", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			dir: "ltr",
+			children: ref_.ref
+		})]
+	});
+}
+function Side({ side }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: side.status === "assumed" ? "pn-bd-side pn-bd-assumed" : "pn-bd-side",
+		children: [
+			BOARD_HE.since,
+			" ",
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: side.tex }),
+			side.from.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "pn-bd-from",
+				children: [
+					" ",
+					"(",
+					BOARD_HE.from,
+					" ",
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						dir: "ltr",
+						children: side.from.join(", ")
+					}),
+					")"
+				]
+			}) : null,
+			side.status === "assumed" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [" · ", BOARD_HE.assumed] }) : null
+		]
+	});
+}
+function Reason({ row, onHover }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-bd-why",
+		children: [
+			row.reasonHe ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: row.micro ? "pn-bd-rule pn-bd-micro" : "pn-bd-rule",
+				children: row.micro ? row.reasonHe : `${BOARD_HE.by} ${row.reasonHe}`
+			}) : null,
+			row.stepHe ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "pn-bd-step",
+				children: [
+					" (",
+					row.stepHe,
+					")"
+				]
+			}) : null,
+			row.merged.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "pn-bd-merged",
+				children: [" · ", BOARD_HE.merged(row.merged.length)]
+			}) : null,
+			row.refs.map((ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefOf, {
+				ref_: ref,
+				onHover
+			}, ref.ref)),
+			row.sides.map((side, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Side, { side }, "s" + i)),
+			row.why ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Words, { text: row.why }) : null
+		]
+	});
+}
+function LinkSign({ row, state }) {
+	if (state === "now") return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-ol-mk pn-ol-mk-now",
+		title: BOARD_HE.currentStep,
+		children: ["◀", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: BOARD_HE.currentStep })]
+	});
+	if (state === "later") return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-ol-mk pn-ol-mk-later",
+		title: BOARD_HE.notYet,
+		children: ["○", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: BOARD_HE.notYet })]
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "pn-ol-mk",
+		children: row.mark ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: row.mark }) : null
+	});
+}
+function Arrow$1(props) {
+	const { row, index, state, onHover } = props;
+	const relWords = BOARD_HE.rels[row.rel] ?? row.rel;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+		className: "pn-bd-link pn-ch-" + state,
+		"aria-current": state === "now" ? "step" : void 0,
+		"data-ol-focus": state === "now" ? "" : void 0,
+		...anchor(arrowAnchor(index)),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LinkSign, {
+				row,
+				state
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "pn-bd-arrow",
+				dir: "ltr",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "pn-bd-shaft",
+						"aria-hidden": "true",
+						children: "↓"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "pn-bd-rel",
+						"aria-hidden": "true",
+						children: relText(row.rel)
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: relWords })
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reason, {
+				row,
+				onHover
+			}),
+			state === "now" && row.mark && row.mark !== "proved" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: row.mark }) : null
+		]
+	});
+}
+function Stage(props) {
+	const { layout, marks, typed, note, isLater } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+		className: isLater ? "pn-bd-stage pn-ch-later" : "pn-bd-stage",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "pn-bd-expr",
+			dir: "ltr",
+			...anchor(stageAnchor(marks.row)),
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				"aria-hidden": "true",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Box, {
+					node: layout,
+					marks
+				})
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: typed })]
+		}), note && !isLater ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "pn-bd-note",
+			dir: "ltr",
+			...anchor(noteAnchor(marks.row)),
+			children: note
+		}) : null]
+	});
+}
+function rowState(at, i) {
+	if (i >= at.visible) return "later";
+	return at.fresh !== null && i > 0 && i >= at.fresh[0] && i <= at.fresh[1] ? "now" : "done";
+}
+function layoutsOf(board, table) {
+	return table ? board.rows.map((row) => layoutExpr(row.expr, table)) : [];
+}
+function Chain(props) {
+	const { at, layouts, typed, onHover } = props;
+	const marks = marksOf(at, layouts);
+	const items = [];
+	at.board.rows.forEach((row, i) => {
+		const state = rowState(at, i);
+		if (i > 0) items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow$1, {
+			row,
+			index: i,
+			state,
+			onHover
+		}, "a" + i));
+		items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stage, {
+			layout: layouts[i],
+			marks: marks[i],
+			typed: typed[i],
+			...row.note ? { note: row.note } : {},
+			isLater: state === "later"
+		}, "s" + i));
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+		className: "pn-bd-rows",
+		children: items
+	});
+}
 // src/engines/proof-next/view/board/follow.ts
 function belongs(rowId, line) {
 	return rowId === line || rowId.startsWith(line + "/") && !rowId.slice(line.length + 1).includes(".");
@@ -28010,7 +29277,7 @@ function childrenOf(e) {
 	if (e.k === "op" || e.k === "app" || e.k === "rel") return e.args;
 	return e.k === "abs" ? [e.arg] : null;
 }
-function headOf(e) {
+function headOf$1(e) {
 	if (e.k === "op") return "op:" + e.op;
 	if (e.k === "app") return "app:" + e.fn;
 	return e.k === "rel" ? "rel:" + e.rels.join(",") : e.k;
@@ -28022,7 +29289,7 @@ function diffPaths(before, after) {
 		if (same(a, b)) return;
 		const ca = childrenOf(a);
 		const cb = childrenOf(b);
-		if (ca && cb && ca.length === cb.length && headOf(a) === headOf(b)) {
+		if (ca && cb && ca.length === cb.length && headOf$1(a) === headOf$1(b)) {
 			ca.forEach((child, i) => walk(child, cb[i], [...path, i]));
 			return;
 		}
@@ -28259,272 +29526,391 @@ function boardOfLine(v, line, level, marks) {
 		rows
 	};
 }
-var CACHE$1 = /* @__PURE__ */ new WeakMap();
+var CACHE$2 = /* @__PURE__ */ new WeakMap();
 function boardsOf(result, level) {
-	const known = CACHE$1.get(result)?.get(level);
+	const known = CACHE$2.get(result)?.get(level);
 	if (known) return known;
 	if (!result.parsed) return [];
 	const { doc, rs, table } = result.parsed;
 	const v = viewContext(doc, rs, table);
 	const marks = new Map(result.verdict.items.map((item) => [item.id, item.mark]));
 	const boards = allLines(doc.lines).filter((l) => l.chain).map((l) => boardOfLine(v, l, level, marks));
-	const byLevel = CACHE$1.get(result) ?? /* @__PURE__ */ new Map();
+	const byLevel = CACHE$2.get(result) ?? /* @__PURE__ */ new Map();
 	byLevel.set(level, boards);
-	CACHE$1.set(result, byLevel);
+	CACHE$2.set(result, byLevel);
 	return boards;
 }
 function rowTyped(result, row) {
 	return result.parsed ? printTyped(row.expr, result.parsed.table) : "";
 }
-// src/engines/proof-next/view/board/words.ts
-var BOARD_HE = {
-	title: "לוח החישוב",
-	lineOf: (line) => `החישוב של שורה ${line}`,
-	preview: (line) => `החישוב יתחיל בשורה ${line}.`,
-	by: "לפי",
-	given: "הנתון",
-	from: "מתוך",
-	since: "כי",
-	proved: "הוכח",
-	assumed: "הנחה: לא הוכח מהעובדות",
-	merged: (n) => `${n} צעדים במעבר אחד`,
-	micro: "צעד ביניים",
-	relation: "יחס",
-	cancels: "מתבטלים",
-	changed: "מה השתנה",
-	stage: (i) => `שלב ${i}`,
-	noBoard: "בהוכחה הזו אין שרשרת חישוב.",
-	checkNumbers: "נבדק על מספרים",
-	rels: {
-		"=": "שווה",
-		"!=": "שונה",
-		"<": "קטן מ-",
-		"<=": "קטן או שווה ל-",
-		">": "גדול מ-",
-		">=": "גדול או שווה ל-"
-	}
+// src/engines/proof-next/view/board/outline.ts
+var REL_TEX = {
+	"=": "=",
+	"!=": "\\ne",
+	"<": "<",
+	"<=": "\\le",
+	">": ">",
+	">=": "\\ge"
 };
-// src/engines/proof-next/view/board/index.tsx
-function hasBoard(boards) {
-	return boards.length > 0;
+function calcClaimTex(board) {
+	const last = board.steps[board.steps.length - 1];
+	if (!last) return "";
+	const rel = joinRels(board.steps.map((s) => s.rel)) ?? last.rel;
+	const relTex = Object.hasOwn(REL_TEX, rel) ? REL_TEX[rel] : last.relTex;
+	return `${board.startTex} ${relTex} ${last.exprTex}`;
 }
-function boardSummary(boards, step) {
-	const board = boards.find((b) => b.line === step.lineId) ?? boards[0];
-	return board ? [`שורה ${board.line}`, `${board.steps.length} צעדים`].map(rtl).join(" · ") : "";
-}
-function keysOf(paths) {
-	return new Set(paths.filter((p) => p.length > 0).map(pathKey));
-}
-function marksOf(at, layouts) {
-	const { board, visible, fresh } = at;
-	const isFresh = (i) => fresh !== null && i >= fresh[0] && i <= fresh[1];
-	return board.rows.slice(0, visible).map((row, i) => {
-		const next = i + 1 < visible ? board.rows[i + 1] : void 0;
-		return {
-			row: i,
-			struck: new Set(next ? struckPaths(board, layouts, i + 1).map(pathKey) : []),
-			out: next && isFresh(i + 1) ? keysOf(next.removed) : /* @__PURE__ */ new Set(),
-			in: i > 0 && isFresh(i) ? keysOf(row.added) : /* @__PURE__ */ new Set()
+function unfoldClaims(result) {
+	const claims = /* @__PURE__ */ new Map();
+	if (!result.parsed) return claims;
+	const { doc, table } = result.parsed;
+	for (const line of allLines(doc.lines)) {
+		if (line.kind !== "unfold" || !line.def) continue;
+		const call = {
+			k: "app",
+			fn: line.def.id,
+			args: line.def.args.map((a) => a.ast)
 		};
-	});
+		try {
+			claims.set(line.id, printTex(line.def.negated ? not(call) : call, table));
+		} catch {}
+	}
+	return claims;
 }
-function Words({ text }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("q", {
-		className: "pn-bd-words",
-		children: bidiRuns(text).map((run, i) => run.ltr ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-tex",
-			dir: "ltr",
-			children: run.text
-		}, i) : run.text)
-	});
+var not = (e) => ({
+	k: "op",
+	op: "not",
+	args: [e]
+});
+function stateOf(id, step, current, index) {
+	if (id === current) return "current";
+	return step < index ? "done" : "ahead";
 }
-function Reason({ row }) {
+var accepted = (mark) => mark === void 0 || mark === "proved";
+function linesOf(steps, boards, index, short) {
+	const current = steps[index]?.lineId ?? "";
+	const byLine = new Map(boards.map((b) => [b.line, b]));
+	const lines = [];
+	steps.forEach((s, i) => {
+		const row = s.row;
+		if (row.kind === "link" || row.id !== s.lineId) return;
+		const board = row.kind === "calc" ? byLine.get(row.id) : void 0;
+		lines.push({
+			id: row.id,
+			kind: row.kind,
+			keyword: row.kind === "have" ? "" : kindHe(row.kind),
+			depth: row.depth,
+			claimTex: (board ? calcClaimTex(board) : short.get(row.id)) || row.claimTex,
+			state: stateOf(row.id, i, current, index),
+			...row.mark ? { mark: row.mark } : {},
+			links: board ? board.steps.length : 0,
+			step: i
+		});
+	});
+	return lines;
+}
+function openOf(steps, index) {
+	const step = steps[index];
+	const line = steps.find((s) => s.row.id === step?.lineId);
+	if (!step || line?.row.kind !== "calc") return null;
+	const links = steps.filter((s) => s.lineId === step.lineId && s.row.kind === "link");
+	const link = links.findIndex((s) => s.row.id === step.row.id) + 1;
+	return {
+		line: step.lineId,
+		link,
+		links: links.length
+	};
+}
+function outlineAt(steps, boards, index, short = /* @__PURE__ */ new Map()) {
+	const lines = linesOf(steps, boards, index, short);
+	const isLast = index >= steps.length - 1;
+	const proved = lines.filter((l) => (l.state === "done" || isLast && l.state === "current") && accepted(l.mark)).length;
+	return {
+		lines,
+		current: steps[index]?.lineId ?? "",
+		proved,
+		total: lines.length,
+		open: openOf(steps, index)
+	};
+}
+var lineAnchor = (id) => "pnb:ol:" + id;
+var markAnchor = (id) => "pnb:mk:" + id;
+var CHAIN_ANCHOR = "pnb:chain";
+var WHY_ANCHOR = "pnb:why";
+function outlineMotion(steps, index, open) {
+	const now = steps[index]?.lineId;
+	const before = steps[index - 1]?.lineId;
+	if (now === void 0 || before === void 0 || now === before) return null;
+	const motions = [appear({
+		anchor: markAnchor(before),
+		style: "grow",
+		scale: .3,
+		ms: 320
+	}), highlight$1({
+		anchor: lineAnchor(now),
+		tone: "focus",
+		delay: 120,
+		ms: 520
+	})];
+	if (open) motions.push(appear({
+		anchor: CHAIN_ANCHOR,
+		style: "fade",
+		dy: -14,
+		delay: 160,
+		ms: 380
+	}));
+	else motions.push(appear({
+		anchor: WHY_ANCHOR,
+		style: "fade",
+		dy: -6,
+		delay: 160,
+		ms: 300
+	}));
+	return together(motions);
+}
+// src/engines/proof-next/view/board/Outline.tsx
+var ID_GAP = "var(--pn-ol-idw, 2.4em) + 1.5em + 14px";
+function idWidth(outline) {
+	return { "--pn-ol-idw": `max(2.4em, ${Math.max(1, ...outline.lines.map((l) => l.id.length)) + .5}ch)` };
+}
+function LineSign({ line, isOpen }) {
+	if (line.state === "current") {
+		const words = isOpen ? BOARD_HE.chainOpen : BOARD_HE.currentStep;
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			title: words,
+			children: ["◀", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: words })]
+		});
+	}
+	if (line.state === "ahead") return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		title: BOARD_HE.notYet,
+		children: ["○", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: BOARD_HE.notYet })]
+	});
+	return line.mark ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: line.mark }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: "proved" });
+}
+function More({ line, open }) {
+	if (line.kind !== "calc") return null;
+	const atLink = open !== null && open.line === line.id && open.link > 0;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-		className: "pn-bd-why",
-		children: [
-			row.reasonHe ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: row.micro ? "pn-bd-rule pn-bd-micro" : "pn-bd-rule",
-				children: row.micro ? row.reasonHe : `${BOARD_HE.by} ${row.reasonHe}`
-			}) : null,
-			row.stepHe ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: "pn-bd-step",
-				children: [
-					" (",
-					row.stepHe,
-					")"
-				]
-			}) : null,
-			row.merged.length > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: "pn-bd-merged",
-				children: [" · ", BOARD_HE.merged(row.merged.length)]
-			}) : null,
-			row.refs.map((ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefChip$1, { ref_: ref }, ref.ref)),
-			row.sides.map((side, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Side, { side }, "s" + i)),
-			row.why ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Words, { text: row.why }) : null
-		]
+		className: "pn-ol-more",
+		children: ["· ", atLink ? BOARD_HE.linkOf(open.link, open.links) : BOARD_HE.links(line.links)]
 	});
 }
-function RefChip$1({ ref_ }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-		className: "pn-ref pn-bd-ref",
-		children: [ref_.to === "given" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-ref-id",
-			children: BOARD_HE.given
-		}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-ref-id",
-			dir: "ltr",
-			children: ref_.ref
-		}), ref_.claimTex ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [": ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: ref_.claimTex })] }) : null]
-	});
-}
-function Side({ side }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-		className: side.status === "assumed" ? "pn-bd-side pn-bd-assumed" : "pn-bd-side",
-		children: [
-			BOARD_HE.since,
-			" ",
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: side.tex }),
-			side.from.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: "pn-bd-from",
-				children: [
-					" ",
-					"(",
-					BOARD_HE.from,
-					" ",
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						dir: "ltr",
-						children: side.from.join(", ")
-					}),
-					")"
-				]
-			}) : null,
-			side.status === "assumed" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [" · ", BOARD_HE.assumed] }) : null
-		]
-	});
-}
-function Arrow$1({ row, index }) {
-	const relWords = BOARD_HE.rels[row.rel] ?? row.rel;
+function Line({ line, ...ctx }) {
+	const isOpen = ctx.open?.line === line.id;
+	const isFocus = line.state === "current" && !(isOpen && (ctx.open?.link ?? 0) > 0);
+	const cls = [
+		"pn-ol-ln",
+		"pn-ol-" + line.state,
+		isOpen ? "pn-ol-open" : ""
+	];
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
-		className: "pn-bd-link",
-		...anchor(arrowAnchor(index)),
+		className: [...cls, ctx.lit === line.id ? "pn-lit" : ""].filter(Boolean).join(" "),
+		"data-row": line.id,
+		"data-ol-row": line.id,
+		"data-ol-focus": isFocus ? "" : void 0,
+		"aria-current": line.state === "current" ? "step" : void 0,
+		...anchor(lineAnchor(line.id)),
 		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: "pn-bd-arrow",
-				dir: "ltr",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						className: "pn-bd-shaft",
-						"aria-hidden": "true",
-						children: "↓"
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						className: "pn-bd-rel",
-						"aria-hidden": "true",
-						children: relText(row.rel)
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: relWords })
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reason, { row }),
-			row.mark ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: row.mark }) : null
-		]
-	});
-}
-function Stage(props) {
-	const { layout, marks, isNew, typed, note } = props;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
-		className: isNew ? "pn-bd-stage pn-cur" : "pn-bd-stage",
-		"aria-current": isNew ? "step" : void 0,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-			className: "pn-bd-expr",
-			dir: "ltr",
-			...anchor(stageAnchor(marks.row)),
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				"aria-hidden": "true",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Box, {
-					node: layout,
-					marks
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "pn-ol-mk",
+				...anchor(markAnchor(line.id)),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LineSign, {
+					line,
+					isOpen
 				})
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: typed })]
-		}), note ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-bd-note",
-			dir: "ltr",
-			...anchor(noteAnchor(marks.row)),
-			children: note
-		}) : null]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "pn-ol-id",
+				dir: "ltr",
+				children: line.id
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "pn-ol-c",
+				children: [
+					Array.from({ length: line.depth }, (_, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "pn-scope",
+						"aria-hidden": "true"
+					}, k)),
+					line.keyword ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", {
+						className: "pn-kind",
+						children: line.keyword
+					}) : null,
+					line.claimTex ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: line.claimTex }) : null,
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(More, {
+						line,
+						open: ctx.open
+					}),
+					line.state === "current" && line.mark && line.mark !== "proved" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: line.mark }) : null
+				]
+			})
+		]
 	});
 }
-function Rows(props) {
-	const { at, layouts, marks, typed } = props;
-	const { board, visible, fresh } = at;
+function writtenWords(source) {
+	switch (source.kind) {
+		case "given": return `${BOARD_HE.given} ${source.ref}`;
+		case "definition": return BOARD_HE.definition;
+		case "theorem": return BOARD_HE.theorem;
+		default: return source.ref;
+	}
+}
+function Why(props) {
+	const { step, onHover } = props;
+	const row = step.row;
+	const said = row.ruleHe ? `${BOARD_HE.by} ${row.ruleHe}` : row.part ?? "";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", {
+		className: "pn-ol-why",
+		style: { paddingInlineStart: `calc(${ID_GAP} + ${row.depth * 16}px)` },
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "pn-ol-why-in",
+			...anchor(WHY_ANCHOR),
+			children: [
+				said ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: said }) : null,
+				step.cell.written.map((source, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "pn-ol-src",
+					children: writtenWords(source)
+				}, "w" + k)),
+				step.cell.chips.map((chip) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowChip, {
+					id: chip.id,
+					claim: chip.claim,
+					...chip.implicit ? { implicit: true } : {},
+					onHover
+				}, chip.id)),
+				row.mark ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: row.mark }) : null
+			]
+		})
+	});
+}
+function Outline(props) {
+	const { outline, steps, chain } = props;
+	const [lit, setLit] = (0, import_react.useState)(null);
+	const onHover = (id) => setLit(id === null ? null : id.split("/")[0]);
+	const ctx = {
+		open: outline.open,
+		lit,
+		onHover
+	};
 	const items = [];
-	board.rows.slice(0, visible).forEach((row, i) => {
-		if (i > 0) items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow$1, {
-			row,
-			index: i
-		}, "a" + i));
-		const isNew = fresh !== null && i >= fresh[0] && i <= fresh[1];
-		items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stage, {
-			layout: layouts[i],
-			marks: marks[i],
-			isNew,
-			typed: typed[i],
-			note: row.note
-		}, "s" + i));
-	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
-		className: "pn-bd-rows",
-		children: items
+	for (const line of outline.lines) {
+		items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
+			line,
+			...ctx
+		}, line.id));
+		if (line.state !== "current") continue;
+		if (outline.open && chain) {
+			const depth = { marginInlineStart: `calc(1.5em + 10px + ${line.depth * 16}px)` };
+			items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", {
+				className: "pn-ol-chain",
+				style: depth,
+				...anchor(CHAIN_ANCHOR),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chain, {
+					at: chain.at,
+					layouts: chain.layouts,
+					typed: chain.typed,
+					onHover
+				})
+			}, "chain"));
+		} else if (!outline.open && steps[line.step]) items.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Why, {
+			step: steps[line.step],
+			onHover
+		}, "why"));
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "pn-bd-head",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: BOARD_HE.proof }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "pn-muted",
+			children: [" · ", BOARD_HE.provedOf(outline.proved, outline.total)]
+		})]
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "pn-ol-scroll",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+			className: "pn-ol",
+			"aria-label": BOARD_HE.outline,
+			style: idWidth(outline),
+			children: items
+		})
+	})] });
+}
+// src/engines/proof-next/view/board/scroll.ts
+function scrollerOf(el) {
+	for (let box = el.parentElement; box; box = box.parentElement) {
+		const overflow = getComputedStyle(box).overflowY;
+		if ((overflow === "auto" || overflow === "scroll") && box.scrollHeight > box.clientHeight + 1) return box;
+	}
+	return null;
+}
+function keepInView(stage, transition) {
+	const marked = stage?.querySelectorAll("[data-ol-focus]");
+	const target = marked?.[marked.length - 1];
+	const box = target ? scrollerOf(target) : null;
+	if (!target || !box) return;
+	const t = target.getBoundingClientRect();
+	const b = box.getBoundingClientRect();
+	const wanted = box.scrollTop + (t.top - b.top) - (box.clientHeight - t.height) / 2;
+	const goal = Math.max(0, Math.min(wanted, box.scrollHeight - box.clientHeight));
+	if (Math.abs(goal - box.scrollTop) < 2) return;
+	const glide = glides(transition, prefersReducedMotion());
+	box.scrollTo({
+		top: goal,
+		behavior: glide ? "smooth" : "auto"
 	});
 }
-function layoutsOf(board, props) {
-	const table = props.model.result.parsed?.table;
-	if (!board || !table) return [];
-	return board.rows.map((row) => layoutExpr(row.expr, table));
+// src/engines/proof-next/view/board/index.tsx
+function hasBoard(model) {
+	return model.steps.length > 0;
+}
+var SHORT = /* @__PURE__ */ new WeakMap();
+function outlineOf(model, index) {
+	let short = SHORT.get(model.result);
+	if (!short) {
+		short = unfoldClaims(model.result);
+		SHORT.set(model.result, short);
+	}
+	return outlineAt(model.steps, model.boards, index, short);
+}
+function boardSummary(model, index) {
+	const outline = outlineOf(model, index);
+	const open = outline.open;
+	return [`שורה ${outline.current}`, open && open.link > 0 ? BOARD_HE.linkOf(open.link, open.links) : BOARD_HE.provedOf(outline.proved, outline.total)].map(rtl).join(" · ");
+}
+function chainAt(model, index, outline) {
+	if (!outline.open) return null;
+	const at = boardAt(boardsOf(model.result, model.level), model.steps.map((s) => s.row.id), index);
+	if (!at || at.phase !== "live" || at.board.line !== outline.open.line) return null;
+	const layouts = layoutsOf(at.board, model.result.parsed?.table);
+	if (layouts.length !== at.board.rows.length) return null;
+	return {
+		at,
+		layouts,
+		typed: at.board.rows.map((row) => rowTyped(model.result, row))
+	};
+}
+function motionAt(model, index, outline, chain) {
+	const parts = [outlineMotion(model.steps, index, outline.open), chain ? boardMotion(chain.at.board, chain.layouts, chain.at.fresh) : null].filter((m) => m !== null);
+	if (parts.length === 0) return null;
+	return parts.length === 1 ? parts[0] : inOrder(parts);
 }
 function BoardIsland(props) {
 	const { model, index, transition } = props;
-	const at = boardAt(boardsOf(model.result, model.level), model.steps.map((s) => s.row.id), index);
-	const layouts = layoutsOf(at?.board, props);
-	const { stage } = useMotion(index, transition, at ? boardMotion(at.board, layouts, at.fresh) : null);
+	const outline = outlineOf(model, index);
+	const chain = chainAt(model, index, outline);
+	const { stage } = useMotion(index, transition, motionAt(model, index, outline, chain));
 	(0, import_react.useLayoutEffect)(() => {
-		const shown = stage.current?.querySelectorAll("[aria-current=\"step\"]");
-		shown?.[shown.length - 1]?.scrollIntoView({
-			block: "nearest",
-			inline: "nearest"
-		});
-	}, [stage, index]);
-	if (!at) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		keepInView(stage.current, transition);
+	}, [
+		stage,
+		index,
+		transition
+	]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "pn-view pn-bd",
 		dir: "rtl",
 		lang: "he",
 		ref: stage,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "pn-muted",
-			children: BOARD_HE.noBoard
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outline, {
+			outline,
+			steps: model.steps,
+			chain
 		})
-	});
-	const typed = at.board.rows.map((row) => rowTyped(model.result, row));
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "pn-view pn-bd",
-		dir: "rtl",
-		lang: "he",
-		ref: stage,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-			className: "pn-bd-head",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: BOARD_HE.lineOf(at.board.line) }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: "pn-muted",
-				children: [" · ", LEVEL_HE[model.level]]
-			})]
-		}), at.phase === "preview" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "pn-muted",
-			children: BOARD_HE.preview(at.board.line)
-		}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Rows, {
-			at,
-			layouts,
-			marks: marksOf(at, layouts),
-			typed
-		})]
 	});
 }
 // src/engines/proof-next/view/DefinitionView.tsx
@@ -28633,9 +30019,9 @@ function fromInstance(v) {
 		tex: v.tex
 	};
 }
-var CACHE = /* @__PURE__ */ new WeakMap();
+var CACHE$1 = /* @__PURE__ */ new WeakMap();
 function picturesOf(model) {
-	const known = CACHE.get(model.result);
+	const known = CACHE$1.get(model.result);
 	if (known) return known;
 	const out = model.pictures.map(fromInstance);
 	for (const source of SOURCES) try {
@@ -28643,7 +30029,7 @@ function picturesOf(model) {
 	} catch {}
 	const seen = /* @__PURE__ */ new Set();
 	const unique = out.filter((p) => !seen.has(p.key) && seen.add(p.key));
-	CACHE.set(model.result, unique);
+	CACHE$1.set(model.result, unique);
 	return unique;
 }
 // src/engines/proof-next/view/picture/follow.ts
@@ -28697,6 +30083,344 @@ function choosePicture(pictures, model, index) {
 	if (own.length > 0) return own[0];
 	const earlier = pictures.filter(reached);
 	return earlier.length > 0 ? earlier[earlier.length - 1] : defs[0] ?? pictures[0];
+}
+// src/engines/proof-next/view/picture/evaluate.ts
+var BIG = 0xe8d4a51000;
+var MAX_DEPTH = 60;
+function envOf(values = {}) {
+	return {
+		values: new Map(Object.entries(values)),
+		seqs: /* @__PURE__ */ new Map(),
+		fns: /* @__PURE__ */ new Map()
+	};
+}
+function withValue(env, name, value) {
+	const values = new Map(env.values);
+	values.set(name, value);
+	return {
+		...env,
+		values
+	};
+}
+function ok(x) {
+	return Number.isFinite(x) && Math.abs(x) <= BIG ? x : null;
+}
+var BUILTIN = /* @__PURE__ */ new Set([
+	"sqrt",
+	"ceil",
+	"floor",
+	"min",
+	"max",
+	"abs",
+	"sin",
+	"cos",
+	"tan",
+	"exp",
+	"ln",
+	"log"
+]);
+function builtin(fn, xs) {
+	const [x] = xs;
+	switch (fn) {
+		case "sqrt": return x < 0 ? NaN : Math.sqrt(x);
+		case "ceil": return Math.ceil(x - 1e-12);
+		case "floor": return Math.floor(x + 1e-12);
+		case "min": return Math.min(...xs);
+		case "max": return Math.max(...xs);
+		case "abs": return Math.abs(x);
+		case "sin": return Math.sin(x);
+		case "cos": return Math.cos(x);
+		case "tan": return Math.tan(x);
+		case "exp": return Math.exp(x);
+		default: return x <= 0 ? NaN : Math.log(x);
+	}
+}
+function literal(v) {
+	const [a, b] = v.split("/");
+	return ok(b === void 0 ? Number(a) : Number(a) / Number(b));
+}
+function arith(op, xs) {
+	switch (op) {
+		case "add": return ok(xs.reduce((s, x) => s + x, 0));
+		case "sub": return ok(xs.slice(1).reduce((s, x) => s - x, xs[0]));
+		case "mul": return ok(xs.reduce((s, x) => s * x, 1));
+		case "div": return xs[1] === 0 ? null : ok(xs[0] / xs[1]);
+		case "pow": return ok(xs[0] ** xs[1]);
+		case "neg": return ok(-xs[0]);
+		default: return null;
+	}
+}
+function applyFn(name, xs, env) {
+	if (xs.some((x) => x === null)) return null;
+	const values = xs;
+	if (BUILTIN.has(name)) return ok(builtin(name, values));
+	const fn = env.fns.get(name);
+	return fn && values.length === 1 ? fn(values[0]) : null;
+}
+function evaluate(e, env, depth = 0) {
+	if (depth > MAX_DEPTH) return null;
+	const sub = (x) => evaluate(x, env, depth + 1);
+	switch (e.k) {
+		case "num": return literal(e.v);
+		case "id": return env.values.get(e.name) ?? (e.name === "pi" ? Math.PI : null);
+		case "abs": {
+			const x = sub(e.arg);
+			return x === null ? null : Math.abs(x);
+		}
+		case "idx": {
+			const seq = e.base.k === "id" ? env.seqs.get(e.base.name) : void 0;
+			const n = sub(e.index);
+			return seq && n !== null && Number.isInteger(n) ? seq(n) : null;
+		}
+		case "app": return applyFn(e.fn, e.args.map(sub), env);
+		case "op": {
+			const xs = e.args.map(sub);
+			return xs.some((x) => x === null) ? null : arith(e.op, xs);
+		}
+		case "pw":
+			for (const branch of e.branches) if (holds(branch.cond, env, depth + 1)) return sub(branch.val);
+			return null;
+		default: return null;
+	}
+}
+function compare(rel, a, b) {
+	const eps = 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+	switch (rel) {
+		case "<": return a < b - eps;
+		case "<=": return a <= b + eps;
+		case ">": return a > b + eps;
+		case ">=": return a >= b - eps;
+		case "=": return Math.abs(a - b) <= eps;
+		case "!=": return Math.abs(a - b) > eps;
+		default: return false;
+	}
+}
+function holds(e, env, depth = 0) {
+	if (depth > MAX_DEPTH) return false;
+	if (e.k === "op" && (e.op === "and" || e.op === "or")) {
+		const parts = e.args.map((a) => holds(a, env, depth + 1));
+		return e.op === "and" ? parts.every(Boolean) : parts.some(Boolean);
+	}
+	if (e.k === "op" && e.op === "not") return !holds(e.args[0], env, depth + 1);
+	if (e.k !== "rel" || e.args.length !== e.rels.length + 1) return false;
+	const values = e.args.map((a) => evaluate(a, env, depth + 1));
+	if (values.some((x) => x === null)) return false;
+	const xs = values;
+	return e.rels.every((r, i) => compare(r, xs[i], xs[i + 1]));
+}
+function firstTerm(f, name, env) {
+	if (f.k !== "rel" || f.rels.length !== 1 || f.rels[0] !== "=") return null;
+	const [lhs, rhs] = f.args;
+	if (lhs.k !== "idx" || lhs.base.k !== "id" || lhs.base.name !== name || lhs.index.k !== "num") return null;
+	const k = literal(lhs.index.v);
+	const value = evaluate(rhs, env);
+	return k !== null && Number.isInteger(k) && value !== null ? [k, value] : null;
+}
+function recurrence(f, name) {
+	if (f.k !== "quant" || f.q !== "forall" || f.vars.length !== 1) return null;
+	const body = f.body;
+	if (body.k !== "rel" || body.rels.length !== 1 || body.rels[0] !== "=") return null;
+	const [lhs, rhs] = body.args;
+	const k = f.vars[0];
+	const index = lhs.k === "idx" ? lhs.index : null;
+	const isNext = index?.k === "op" && index.op === "add" && index.args[0].k === "id" && index.args[0].name === k && index.args[1].k === "num" && index.args[1].v === "1";
+	return lhs.k === "idx" && lhs.base.k === "id" && lhs.base.name === name && isNext ? {
+		k,
+		rhs
+	} : null;
+}
+function sequenceOf(given, env) {
+	const def = given.def;
+	if (def) return (n) => evaluate(def.body, withValue(env, def.v, n));
+	const facts = given.facts.map((f) => f.ast);
+	const first = facts.map((f) => firstTerm(f, given.name, env)).find((x) => x !== null);
+	const step = facts.map((f) => recurrence(f, given.name)).find((x) => x !== null);
+	if (!first || !step) return null;
+	const terms = /* @__PURE__ */ new Map([[first[0], first[1]]]);
+	const own = {
+		...env,
+		seqs: new Map(env.seqs)
+	};
+	own.seqs.set(given.name, (n) => terms.get(n) ?? null);
+	for (let k = first[0]; k < first[0] + 400; k++) {
+		const before = terms.get(k);
+		if (before === null || before === void 0) break;
+		terms.set(k + 1, evaluate(step.rhs, withValue(own, step.k, k)));
+	}
+	return (n) => terms.get(n) ?? null;
+}
+function functionOf(given, env) {
+	const def = given.def;
+	return def ? (x) => evaluate(def.body, withValue(env, def.v, x)) : null;
+}
+function withGivens(givens, env) {
+	for (const g of givens) if (g.sort === "seq") {
+		const seq = sequenceOf(g, env);
+		if (seq) env.seqs.set(g.name, seq);
+	} else if (g.sort === "function" && g.def) {
+		const fn = functionOf(g, env);
+		if (fn) env.fns.set(g.name, fn);
+	}
+	return env;
+}
+// src/engines/proof-next/view/picture/drawable.ts
+var EXAMPLE = {
+	eps: .5,
+	delta: .5,
+	h: .25
+};
+function parsed(model, src) {
+	const table = model.result.parsed?.table;
+	if (!table || src === void 0 || src.trim() === "") return null;
+	try {
+		return parseExpr(src, table);
+	} catch {
+		return null;
+	}
+}
+function claimOf(props) {
+	const { picture, model } = props;
+	const variable = picture.params.variable;
+	if (!variable) return null;
+	const x = {
+		k: "id",
+		name: variable
+	};
+	const radius = parsed(model, picture.params.radius);
+	if (picture.kind === "numberline-open") {
+		const center = parsed(model, picture.params.center);
+		if (!center || !radius) return null;
+		return {
+			claim: {
+				k: "rel",
+				rels: ["<"],
+				args: [{
+					k: "abs",
+					arg: {
+						k: "op",
+						op: "sub",
+						args: [x, center]
+					}
+				}, radius]
+			},
+			variable
+		};
+	}
+	if (picture.kind === "numberline-punctured") {
+		if (!radius) return null;
+		return {
+			claim: {
+				k: "rel",
+				rels: ["<", "<"],
+				args: [
+					{
+						k: "num",
+						v: "0"
+					},
+					{
+						k: "abs",
+						arg: x
+					},
+					radius
+				]
+			},
+			variable
+		};
+	}
+	const claim = parsed(model, picture.params.claim);
+	return claim ? {
+		claim,
+		variable
+	} : null;
+}
+function envWith(model, values) {
+	return withGivens(model.result.parsed?.doc.givens ?? [], envOf(values));
+}
+function valueAt(body, variable, env, at) {
+	return evaluate(body, withValue(env, variable, at));
+}
+function bandDrawable(p, model) {
+	const env = envWith(model, { [p.params.eps ?? "eps"]: EXAMPLE.eps });
+	const lExpr = parsed(model, p.params.L);
+	return parsed(model, p.params.term) !== null && lExpr !== null && evaluate(lExpr, env) !== null;
+}
+function termsDrawable(p, model) {
+	const given = model.result.parsed?.doc.givens.find((g) => g.name === p.params.seq);
+	return given !== void 0 && sequenceOf(given, envWith(model, {})) !== null;
+}
+function pointDrawable(p, model) {
+	const env = envWith(model, { [p.kind === "graph-jump" ? p.params.delta ?? "delta" : p.params.eps ?? "eps"]: EXAMPLE.eps });
+	const body = parsed(model, p.params.f);
+	const aExpr = parsed(model, p.params.a);
+	const a = aExpr ? evaluate(aExpr, env) : null;
+	const variable = p.kind === "graph-jump" ? "x" : p.params.x ?? "x";
+	return body !== null && a !== null && valueAt(body, variable, env, a) !== null;
+}
+function secantDrawable(p, model) {
+	const aName = p.params.a ?? "a";
+	const base = envWith(model, {
+		eps: EXAMPLE.eps,
+		[aName]: 1
+	});
+	const aExpr = parsed(model, aName);
+	const a = aExpr ? evaluate(aExpr, base) ?? 1 : 1;
+	const env = withValue(base, aName, a);
+	const body = parsed(model, p.params.f);
+	const dExpr = parsed(model, p.params.delta);
+	const delta = dExpr ? evaluate(dExpr, env) : null;
+	const h = Math.min(2, Math.max(.05, (delta ?? .5) * .8));
+	return body !== null && valueAt(body, "x", env, a) !== null && valueAt(body, "x", env, a + h) !== null;
+}
+function areaDrawable(p) {
+	const data = p.data;
+	const lo = data ? evaluate(data.lo, envOf()) : null;
+	const hi = data ? evaluate(data.hi, envOf()) : null;
+	return lo !== null && hi !== null && lo !== hi;
+}
+function lineDrawable(p, model) {
+	const found = claimOf({
+		picture: p,
+		model
+	});
+	const givens = model.result.parsed?.doc.givens ?? [];
+	return found !== null && !givens.some((g) => g.name === found.variable && g.sort && g.sort !== "real");
+}
+function discreteDrawable(p) {
+	if (p.kind === "dicegrid") return (p.data?.cells ?? []).length > 0;
+	if (p.kind === "venn") return (p.data?.sets ?? []).length >= 2;
+	return (p.data?.stages ?? []).length > 0;
+}
+var CHECKS = {
+	epsband: bandDrawable,
+	terms: termsDrawable,
+	"graph-epsdelta": pointDrawable,
+	"graph-jump": pointDrawable,
+	"graph-secant": secantDrawable,
+	area: areaDrawable,
+	numberline: lineDrawable,
+	"numberline-open": lineDrawable,
+	"numberline-punctured": lineDrawable,
+	dicegrid: discreteDrawable,
+	venn: discreteDrawable,
+	tree: discreteDrawable
+};
+function canDraw(p, model) {
+	const kind = pictureKind(p.kind);
+	const check = kind?.canDraw ?? CHECKS[p.kind];
+	try {
+		if (check) return check(p, model);
+		return kind !== void 0 || Object.keys(p.tex).length > 0;
+	} catch {
+		return false;
+	}
+}
+var CACHE = /* @__PURE__ */ new WeakMap();
+function drawablePictures(model) {
+	const known = CACHE.get(model.result);
+	if (known) return known;
+	const shown = picturesOf(model).filter((p) => canDraw(p, model));
+	CACHE.set(model.result, shown);
+	return shown;
 }
 // src/engines/proof-next/view/picture/scale.ts
 function linear(domain, range) {
@@ -28808,21 +30532,7 @@ var PAD = {
 	top: 12,
 	bottom: 24
 };
-var EXAMPLE = {
-	eps: .5,
-	delta: .5,
-	h: .25
-};
 var CHOSEN = /* @__PURE__ */ new Map();
-function parsed(model, src) {
-	const table = model.result.parsed?.table;
-	if (!table || src === void 0 || src.trim() === "") return null;
-	try {
-		return parseExpr(src, table);
-	} catch {
-		return null;
-	}
-}
 function useParam(key, name) {
 	const id = key + ":" + name;
 	const [value, setValue] = (0, import_react.useState)(() => CHOSEN.get(id) ?? EXAMPLE[name] ?? .5);
@@ -29236,185 +30946,6 @@ function StageTree(props) {
 			children: (data?.stages ?? []).map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: PICTURE_HE.stage(i + 1, s.pos, s.count) }, i))
 		})
 	});
-}
-// src/engines/proof-next/view/picture/evaluate.ts
-var BIG = 0xe8d4a51000;
-var MAX_DEPTH = 60;
-function envOf(values = {}) {
-	return {
-		values: new Map(Object.entries(values)),
-		seqs: /* @__PURE__ */ new Map(),
-		fns: /* @__PURE__ */ new Map()
-	};
-}
-function withValue(env, name, value) {
-	const values = new Map(env.values);
-	values.set(name, value);
-	return {
-		...env,
-		values
-	};
-}
-function ok(x) {
-	return Number.isFinite(x) && Math.abs(x) <= BIG ? x : null;
-}
-var BUILTIN = /* @__PURE__ */ new Set([
-	"sqrt",
-	"ceil",
-	"floor",
-	"min",
-	"max",
-	"abs",
-	"sin",
-	"cos",
-	"tan",
-	"exp",
-	"ln",
-	"log"
-]);
-function builtin(fn, xs) {
-	const [x] = xs;
-	switch (fn) {
-		case "sqrt": return x < 0 ? NaN : Math.sqrt(x);
-		case "ceil": return Math.ceil(x - 1e-12);
-		case "floor": return Math.floor(x + 1e-12);
-		case "min": return Math.min(...xs);
-		case "max": return Math.max(...xs);
-		case "abs": return Math.abs(x);
-		case "sin": return Math.sin(x);
-		case "cos": return Math.cos(x);
-		case "tan": return Math.tan(x);
-		case "exp": return Math.exp(x);
-		default: return x <= 0 ? NaN : Math.log(x);
-	}
-}
-function literal(v) {
-	const [a, b] = v.split("/");
-	return ok(b === void 0 ? Number(a) : Number(a) / Number(b));
-}
-function arith(op, xs) {
-	switch (op) {
-		case "add": return ok(xs.reduce((s, x) => s + x, 0));
-		case "sub": return ok(xs.slice(1).reduce((s, x) => s - x, xs[0]));
-		case "mul": return ok(xs.reduce((s, x) => s * x, 1));
-		case "div": return xs[1] === 0 ? null : ok(xs[0] / xs[1]);
-		case "pow": return ok(xs[0] ** xs[1]);
-		case "neg": return ok(-xs[0]);
-		default: return null;
-	}
-}
-function applyFn(name, xs, env) {
-	if (xs.some((x) => x === null)) return null;
-	const values = xs;
-	if (BUILTIN.has(name)) return ok(builtin(name, values));
-	const fn = env.fns.get(name);
-	return fn && values.length === 1 ? fn(values[0]) : null;
-}
-function evaluate(e, env, depth = 0) {
-	if (depth > MAX_DEPTH) return null;
-	const sub = (x) => evaluate(x, env, depth + 1);
-	switch (e.k) {
-		case "num": return literal(e.v);
-		case "id": return env.values.get(e.name) ?? (e.name === "pi" ? Math.PI : null);
-		case "abs": {
-			const x = sub(e.arg);
-			return x === null ? null : Math.abs(x);
-		}
-		case "idx": {
-			const seq = e.base.k === "id" ? env.seqs.get(e.base.name) : void 0;
-			const n = sub(e.index);
-			return seq && n !== null && Number.isInteger(n) ? seq(n) : null;
-		}
-		case "app": return applyFn(e.fn, e.args.map(sub), env);
-		case "op": {
-			const xs = e.args.map(sub);
-			return xs.some((x) => x === null) ? null : arith(e.op, xs);
-		}
-		case "pw":
-			for (const branch of e.branches) if (holds(branch.cond, env, depth + 1)) return sub(branch.val);
-			return null;
-		default: return null;
-	}
-}
-function compare(rel, a, b) {
-	const eps = 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
-	switch (rel) {
-		case "<": return a < b - eps;
-		case "<=": return a <= b + eps;
-		case ">": return a > b + eps;
-		case ">=": return a >= b - eps;
-		case "=": return Math.abs(a - b) <= eps;
-		case "!=": return Math.abs(a - b) > eps;
-		default: return false;
-	}
-}
-function holds(e, env, depth = 0) {
-	if (depth > MAX_DEPTH) return false;
-	if (e.k === "op" && (e.op === "and" || e.op === "or")) {
-		const parts = e.args.map((a) => holds(a, env, depth + 1));
-		return e.op === "and" ? parts.every(Boolean) : parts.some(Boolean);
-	}
-	if (e.k === "op" && e.op === "not") return !holds(e.args[0], env, depth + 1);
-	if (e.k !== "rel" || e.args.length !== e.rels.length + 1) return false;
-	const values = e.args.map((a) => evaluate(a, env, depth + 1));
-	if (values.some((x) => x === null)) return false;
-	const xs = values;
-	return e.rels.every((r, i) => compare(r, xs[i], xs[i + 1]));
-}
-function firstTerm(f, name, env) {
-	if (f.k !== "rel" || f.rels.length !== 1 || f.rels[0] !== "=") return null;
-	const [lhs, rhs] = f.args;
-	if (lhs.k !== "idx" || lhs.base.k !== "id" || lhs.base.name !== name || lhs.index.k !== "num") return null;
-	const k = literal(lhs.index.v);
-	const value = evaluate(rhs, env);
-	return k !== null && Number.isInteger(k) && value !== null ? [k, value] : null;
-}
-function recurrence(f, name) {
-	if (f.k !== "quant" || f.q !== "forall" || f.vars.length !== 1) return null;
-	const body = f.body;
-	if (body.k !== "rel" || body.rels.length !== 1 || body.rels[0] !== "=") return null;
-	const [lhs, rhs] = body.args;
-	const k = f.vars[0];
-	const index = lhs.k === "idx" ? lhs.index : null;
-	const isNext = index?.k === "op" && index.op === "add" && index.args[0].k === "id" && index.args[0].name === k && index.args[1].k === "num" && index.args[1].v === "1";
-	return lhs.k === "idx" && lhs.base.k === "id" && lhs.base.name === name && isNext ? {
-		k,
-		rhs
-	} : null;
-}
-function sequenceOf(given, env) {
-	const def = given.def;
-	if (def) return (n) => evaluate(def.body, withValue(env, def.v, n));
-	const facts = given.facts.map((f) => f.ast);
-	const first = facts.map((f) => firstTerm(f, given.name, env)).find((x) => x !== null);
-	const step = facts.map((f) => recurrence(f, given.name)).find((x) => x !== null);
-	if (!first || !step) return null;
-	const terms = /* @__PURE__ */ new Map([[first[0], first[1]]]);
-	const own = {
-		...env,
-		seqs: new Map(env.seqs)
-	};
-	own.seqs.set(given.name, (n) => terms.get(n) ?? null);
-	for (let k = first[0]; k < first[0] + 400; k++) {
-		const before = terms.get(k);
-		if (before === null || before === void 0) break;
-		terms.set(k + 1, evaluate(step.rhs, withValue(own, step.k, k)));
-	}
-	return (n) => terms.get(n) ?? null;
-}
-function functionOf(given, env) {
-	const def = given.def;
-	return def ? (x) => evaluate(def.body, withValue(env, def.v, x)) : null;
-}
-function withGivens(givens, env) {
-	for (const g of givens) if (g.sort === "seq") {
-		const seq = sequenceOf(g, env);
-		if (seq) env.seqs.set(g.name, seq);
-	} else if (g.sort === "function" && g.def) {
-		const fn = functionOf(g, env);
-		if (fn) env.fns.set(g.name, fn);
-	}
-	return env;
 }
 // src/engines/proof-next/view/picture/Sequence.tsx
 var MAX_POINTS$1 = 80;
@@ -30330,61 +31861,6 @@ function intervalText(iv, show) {
 }
 // src/engines/proof-next/view/picture/NumberLine.tsx
 var LINE_H = 70;
-function claimOf(props) {
-	const { picture, model } = props;
-	const variable = picture.params.variable;
-	if (!variable) return null;
-	const x = {
-		k: "id",
-		name: variable
-	};
-	const radius = parsed(model, picture.params.radius);
-	if (picture.kind === "numberline-open") {
-		const center = parsed(model, picture.params.center);
-		if (!center || !radius) return null;
-		return {
-			claim: {
-				k: "rel",
-				rels: ["<"],
-				args: [{
-					k: "abs",
-					arg: {
-						k: "op",
-						op: "sub",
-						args: [x, center]
-					}
-				}, radius]
-			},
-			variable
-		};
-	}
-	if (picture.kind === "numberline-punctured") {
-		if (!radius) return null;
-		return {
-			claim: {
-				k: "rel",
-				rels: ["<", "<"],
-				args: [
-					{
-						k: "num",
-						v: "0"
-					},
-					{
-						k: "abs",
-						arg: x
-					},
-					radius
-				]
-			},
-			variable
-		};
-	}
-	const claim = parsed(model, picture.params.claim);
-	return claim ? {
-		claim,
-		variable
-	} : null;
-}
 function wantsGraph(e) {
 	const text = JSON.stringify(e);
 	return text.includes("\"k\":\"abs\"") || text.includes("\"op\":\"pow\"");
@@ -30922,12 +32398,12 @@ var SHORT_HE = {
 	venn: "דיאגרמת ון",
 	tree: "עץ שלבים"
 };
-function hasPicture(pictures, model) {
-	return pictures.length > 0 || model !== void 0 && picturesOf(model).length > 0;
+function hasPicture(model) {
+	return drawablePictures(model).length > 0;
 }
 function pictureSummary(pictures, step, model) {
 	if (model) {
-		const chosen = choosePicture(picturesOf(model), model, step.index);
+		const chosen = choosePicture(drawablePictures(model), model, step.index);
 		return chosen ? pictureSaid(chosen.kind, chosen.at) : "";
 	}
 	const first = pictures.find((p) => p.at === step.lineId) ?? pictures[0];
@@ -30961,17 +32437,13 @@ function Chooser(props) {
 function PictureIsland(props) {
 	const { model, index } = props;
 	const [picked, setPicked] = (0, import_react.useState)(null);
-	const pictures = picturesOf(model);
+	const pictures = drawablePictures(model);
 	const auto = choosePicture(pictures, model, index);
 	const shown = pictures.find((p) => p.key === picked) ?? auto;
 	if (!shown) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "pn-view pn-pcv",
 		dir: "rtl",
-		lang: "he",
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "pn-muted",
-			children: PICTURE_HE.noData
-		})
+		lang: "he"
 	});
 	const kind = pictureKind(shown.kind);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -30997,61 +32469,65 @@ function PictureIsland(props) {
 		]
 	});
 }
-// src/engines/proof-next/view/ProofView.tsx
-function Toggle({ label, options, onPick, focus }) {
-	const focused = (0, import_react.useRef)(null);
-	(0, import_react.useEffect)(() => {
-		focused.current?.focus();
-	}, []);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "pn-toggle",
-		role: "group",
-		"aria-label": label,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-toggle-label",
-			"aria-hidden": "true",
+// src/engines/proof-next/view/ProofTable.tsx
+function Source({ source }) {
+	const label = source.kind === "given" ? LABEL.restGiven : source.kind === "definition" ? LABEL.restDefinition : source.kind === "theorem" ? LABEL.restTheorem : source.kind === "line" ? LABEL.restLine(source.ref) : "";
+	let body;
+	if (source.kind === "definition") body = source.name;
+	else if (source.kind === "unknown") body = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		dir: "ltr",
+		children: source.ref
+	});
+	else if (source.kind === "theorem" && !source.tex) body = /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bidi, { text: source.words });
+	else body = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "pn-src-tex",
+		dir: "ltr",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: source.tex })
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-src",
+		children: [label ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "pn-src-lbl",
 			children: label
-		}), options.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-			type: "button",
-			className: option.isOn ? "pn-tg on" : "pn-tg",
-			"aria-pressed": option.isOn,
-			ref: option.key === focus ? focused : void 0,
-			onClick: () => onPick(option.key),
-			children: option.text
-		}, option.key))]
+		}) : null, body]
 	});
 }
-function RefChip({ rest }) {
-	const name = rest.to === "given" ? `${LABEL.given} ${rest.ref}` : rest.ref;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-		className: rest.implicit ? "pn-ref pn-ref-implicit" : "pn-ref",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", {
-				className: "pn-ref-id",
-				children: [name, ":"]
-			}),
-			" ",
-			rest.claimTex ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: rest.claimTex }) : null,
-			rest.implicit ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: "pn-muted",
-				children: " (מהתחום)"
-			}) : null
-		]
+function RestsCell({ cell, onHover }) {
+	if (!cell.written.length && !cell.chips.length) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "pn-rest-none",
+		title: LABEL.restNothing,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			"aria-hidden": "true",
+			children: "·"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: LABEL.restNothing })]
 	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [cell.written.map((source, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Source, { source }, k)), cell.chips.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: "pn-rowchips",
+		children: cell.chips.map((chip) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RowChip, {
+			...chip,
+			onHover
+		}, chip.id))
+	}) : null] });
 }
 function ClaimCell({ row }) {
 	const word = row.kind === "link" || row.kind === "have" ? "" : kindHe(row.kind);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-		Array.from({ length: row.depth }, (_, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "pn-scope",
-			"aria-hidden": "true"
-		}, k)),
-		word ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-			className: "pn-kind",
-			children: [word, " "]
-		}) : null,
-		row.claimTex ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: row.claimTex }) : null
-	] });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "pn-fit",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "pn-fit-lead",
+			children: [Array.from({ length: row.depth }, (_, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "pn-scope",
+				"aria-hidden": "true"
+			}, k)), word ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "pn-kind",
+				children: word
+			}) : null]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "pn-fit-in",
+			dir: "ltr",
+			children: row.claimTex ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: row.claimTex }) : null
+		})]
+	});
 }
 function ReasonCell({ step, course }) {
 	const row = step.row;
@@ -31103,7 +32579,7 @@ function IdCell({ id, isCurrent, isRest }) {
 		]
 	});
 }
-function Row({ step, isCurrent, isRest, course }) {
+function Row({ step, isCurrent, isRest, isLit, course, onHover }) {
 	const row = step.row;
 	const cls = [
 		"pn-row",
@@ -31112,8 +32588,9 @@ function Row({ step, isCurrent, isRest, course }) {
 		isRest ? "pn-rest" : ""
 	];
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", {
-		className: cls.filter(Boolean).join(" "),
+		className: [...cls, isLit ? "pn-lit" : ""].filter(Boolean).join(" "),
 		"aria-current": isCurrent ? "step" : void 0,
+		"data-row": row.id,
 		...anchor(rowAnchor(row.id)),
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
@@ -31138,12 +32615,41 @@ function Row({ step, isCurrent, isRest, course }) {
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
 				className: "pn-c-rests",
-				children: step.rests.map((rest) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefChip, { rest }, rest.ref))
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RestsCell, {
+					cell: step.cell,
+					onHover
+				})
 			})
 		]
 	});
 }
+function Head$1() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+			scope: "col",
+			className: "pn-c-mark",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: LABEL.colMark })
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+			scope: "col",
+			children: LABEL.colId
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+			scope: "col",
+			children: LABEL.colClaim
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+			scope: "col",
+			children: LABEL.colReason
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+			scope: "col",
+			children: LABEL.colRests
+		})
+	] }) });
+}
 function ProofTable({ steps, step, course }) {
+	const [lit, setLit] = (0, import_react.useState)(null);
 	const rests = new Set(step.restRows);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", {
 		className: "pn-table",
@@ -31152,36 +32658,40 @@ function ProofTable({ steps, step, course }) {
 				className: "pn-sr",
 				children: LABEL.tableCaption
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-					scope: "col",
-					className: "pn-c-mark",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SrOnly, { children: LABEL.colMark })
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-					scope: "col",
-					children: LABEL.colId
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-					scope: "col",
-					children: LABEL.colClaim
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-					scope: "col",
-					children: LABEL.colReason
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-					scope: "col",
-					children: LABEL.colRests
-				})
-			] }) }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Head$1, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: steps.slice(0, step.index + 1).map((one) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Row, {
 				step: one,
 				isCurrent: one.index === step.index,
 				isRest: rests.has(one.row.id),
-				course
+				isLit: lit === one.row.id,
+				course,
+				onHover: setLit
 			}, one.row.id)) })
 		]
+	});
+}
+// src/engines/proof-next/view/ProofView.tsx
+function Toggle({ label, options, onPick, focus }) {
+	const focused = (0, import_react.useRef)(null);
+	(0, import_react.useEffect)(() => {
+		focused.current?.focus();
+	}, []);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "pn-toggle",
+		role: "group",
+		"aria-label": label,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "pn-toggle-label",
+			"aria-hidden": "true",
+			children: label
+		}), options.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: option.isOn ? "pn-tg on" : "pn-tg",
+			"aria-pressed": option.isOn,
+			ref: option.key === focus ? focused : void 0,
+			onClick: () => onPick(option.key),
+			children: option.text
+		}, option.key))]
 	});
 }
 var SENTENCE = /^(\s*)\(([^)\s]+)\) (.*)$/;
@@ -31238,39 +32748,6 @@ function Written({ written, steps, step }) {
 		})
 	});
 }
-function Known({ facts }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-		className: "pn-known",
-		"aria-label": LABEL.known,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-			className: "pn-h",
-			children: LABEL.known
-		}), facts.length ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { children: facts.map((fact) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
-			className: fact.isNew ? "pn-fact pn-new" : "pn-fact",
-			...anchor(factAnchor(fact.id)),
-			children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-					className: "pn-fact-id",
-					dir: "ltr",
-					children: fact.id
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tex, { tex: fact.tex }),
-				fact.mark && fact.tag === "proved" ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-					className: "pn-tag pn-tag-" + fact.tag,
-					children: TAG_HE[fact.tag]
-				}),
-				fact.isNew ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-					className: "pn-tag pn-tag-new",
-					children: "חדש"
-				}) : null,
-				fact.mark ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarkSign, { mark: fact.mark }) : null
-			]
-		}, fact.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "pn-muted",
-			children: LABEL.knownEmpty
-		})]
-	});
-}
 function ProofBar(props) {
 	const { mode, level, focus } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -31325,22 +32802,18 @@ function ProofView(props) {
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProofBar, { ...props }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "pn-stage",
 			ref: stage,
-			children: [
-				mode === "table" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProofTable, {
-					steps: model.steps,
-					step,
-					course: model.course
-				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Written, {
-					written: model.written,
-					steps: model.steps,
-					step
-				}),
-				later > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					className: "pn-more pn-muted",
-					children: LABEL.more(later)
-				}) : null,
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Known, { facts: step.known })
-			]
+			children: [mode === "table" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProofTable, {
+				steps: model.steps,
+				step,
+				course: model.course
+			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Written, {
+				written: model.written,
+				steps: model.steps,
+				step
+			}), later > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "pn-more pn-muted",
+				children: LABEL.more(later)
+			}) : null]
 		})]
 	});
 }
@@ -31416,7 +32889,7 @@ var PROOF_ISLANDS = {
 			folded: true
 		}
 	] },
-	codeShare: .34
+	codeShare: .37
 };
 function guarded(id, drawKey, view) {
 	return (0, import_react.createElement)(ViewGuard, {
@@ -31457,11 +32930,11 @@ function proofIslands(input) {
 			view: guarded("proof", drawKey, proofView),
 			summary: `${step.title} · ${index + 1} / ${model.steps.length}`
 		},
-		board: hasBoard(model.boards) ? {
+		board: hasBoard(model) ? {
 			view: guarded("board", drawKey, (0, import_react.createElement)(BoardIsland, props)),
-			summary: boardSummary(model.boards, step)
+			summary: boardSummary(model, index)
 		} : null,
-		picture: hasPicture(model.pictures, model) ? {
+		picture: hasPicture(model) ? {
 			view: guarded("picture", drawKey, (0, import_react.createElement)(PictureIsland, props)),
 			summary: pictureSummary(model.pictures, step, model)
 		} : null
@@ -31718,6 +33191,8 @@ function attach(ui) {
 		if (info.available && info.sameKernel) ui.setEngineLabel(engineLabel(info), "real local");
 	}).catch(() => {});
 	ui.ed.setName(MAIN_FILE);
+	watchPreviewHover(ui.host);
+	watchCompact(ui.host);
 	return {
 		run() {
 			guarded$1(context, RUN, () => runProof(context));
@@ -31818,13 +33293,265 @@ function givenParts(rest) {
 		why: tail.why
 	};
 }
+// src/engines/proof-next/box/preview-columns.ts
+var NUMBERED = /^(\s*)(\d+(?:\.\d+)*)(\s+)([a-z]+)\b(\s*)(.*)$/;
+var LINK = /^(\s+)(<=|>=|!=|=|<|>)(\s+.*)$/;
+var HEADER = /^(\s*)([a-z]+)(\s+)(.*)$/;
+var BY = /(^|\s)by\s+([A-Za-z][A-Za-z0-9-]*)(\((?:[^()]|\([^()]*\))*\))?(\s+from\s+(.*))?\s*$/;
+function splitWhy(code) {
+	const quoted = /"([^"]*)"\s*$/.exec(code);
+	if (!quoted) return { rest: code };
+	return {
+		rest: code.slice(0, quoted.index),
+		why: {
+			text: quoted[1],
+			col: quoted.index
+		}
+	};
+}
+function splitReason(code) {
+	const by = BY.exec(code);
+	if (!by) return { rest: code };
+	const col = by.index + by[1].length;
+	const from = by[5] ? by[5].split(",").map((r) => r.trim()) : [];
+	return {
+		rest: code.slice(0, col),
+		reason: {
+			col,
+			rule: by[2],
+			args: by[3] ?? "",
+			from: from.filter(Boolean)
+		}
+	};
+}
+function statementAt(rest, col) {
+	return {
+		text: rest.slice(col).trimEnd(),
+		col
+	};
+}
+function headOf(rest) {
+	const numbered = NUMBERED.exec(rest);
+	if (numbered) {
+		const idCol = numbered[1].length;
+		const wordCol = idCol + numbered[2].length + numbered[3].length;
+		const isEmpty = numbered[6].trim() === "";
+		const statementCol = wordCol + numbered[4].length + (isEmpty ? 1 : numbered[5].length);
+		return {
+			kind: "numbered",
+			id: {
+				text: numbered[2],
+				col: idCol
+			},
+			word: {
+				text: numbered[4],
+				col: wordCol
+			},
+			statement: statementAt(rest, statementCol)
+		};
+	}
+	const link = LINK.exec(rest);
+	if (link) return {
+		kind: "link",
+		statement: statementAt(rest, link[1].length)
+	};
+	const header = HEADER.exec(rest);
+	if (header) {
+		const col = header[1].length;
+		const statementCol = col + header[2].length + header[3].length;
+		return {
+			kind: "header",
+			word: {
+				text: header[2],
+				col
+			},
+			statement: statementAt(rest, statementCol)
+		};
+	}
+	return { kind: rest.trim() ? "other" : "blank" };
+}
+function lineColumns(line) {
+	const { code } = splitComment(line);
+	const out = { kind: "blank" };
+	if (code.length < line.length) out.comment = {
+		text: line.slice(code.length).trimEnd(),
+		col: code.length
+	};
+	const { rest: beforeWhy, why } = splitWhy(code.replace(/@\d+/g, (m) => " ".repeat(m.length)).replace(/\[[^\]]*\]/g, (m) => " ".repeat(m.length)));
+	const { rest, reason } = splitReason(beforeWhy);
+	Object.assign(out, headOf(rest));
+	if (out.word?.text === "title" && out.kind === "header" && why && !out.statement?.text) out.statement = why;
+	else if (why) out.why = why;
+	if (reason) out.reason = reason;
+	return out;
+}
+// src/engines/proof-next/box/preview-line.ts
+var PreviewError = class extends Error {};
+var HEADER_HE = {
+	proof: "שם ההוכחה",
+	uses: "הקורס של ההוכחה",
+	title: "כותרת",
+	given: "נתון",
+	goal: "צריך להוכיח",
+	require: "דרישה"
+};
+function texOf(doc, src) {
+	const table = doc.table;
+	let e;
+	try {
+		e = parseExpr(src.trim(), table);
+	} catch (error) {
+		throw new PreviewError(error instanceof Error ? error.message : String(error));
+	}
+	return printTex(e, table);
+}
+function formula(doc, src) {
+	return doc.table ? math(texOf(doc, src)) : mono(src);
+}
+function mono(text, cls = "") {
+	return `<span class="pnv-src${cls ? " " + cls : ""}">${escapeHtml$2(text)}</span>`;
+}
+function formulas(doc, text) {
+	return topLevelParts(text).map((p) => formula(doc, p)).join(", ");
+}
+function definitionCall(doc, body) {
+	const call = /^(not\s+)?([A-Za-z][A-Za-z0-9-]*)\s*\((.*)\)$/.exec(body.trim());
+	const def = call ? doc.rs?.defs.get(call[2]) : void 0;
+	if (!call || !def || !doc.table) return null;
+	const args = topLevelParts(call[3]).map((a) => texOf(doc, a));
+	const name = `\\mathrm{${call[2].replace(/-/g, "\\text{-}")}}`;
+	return {
+		html: math((call[1] ? "\\neg " : "") + `${name}\\left(${args.join(", ")}\\right)`),
+		tip: (call[1] ? "שלילת " : "") + def.he.name
+	};
+}
+function stepStatement(doc, kind, body) {
+	const qed = doc.goal ? `<span class="pnv-dim">${formula(doc, doc.goal)}</span> ∎` : "∎";
+	const word = keywordHtml;
+	const [head, ...rest] = body.split(/\s+(with|or)\s+|\s:\s/);
+	switch (kind) {
+		case "qed": return body ? formula(doc, body) + " ∎" : qed;
+		case "obtain": return rest.length ? formulas(doc, head) + word("with") + formula(doc, rest[1]) : mono(body);
+		case "induction": return rest.length ? formula(doc, head) + " : " + formula(doc, rest[1] ?? "") : mono(body);
+		case "cases": return body.split(/\s+or\s+/).map((p) => formula(doc, p)).join(word("or"));
+		default: return body ? formulas(doc, body) : "";
+	}
+}
+function keywordHtml(w) {
+	return ` <span class="pnv-kw2">${w}</span> `;
+}
+function statementOf(doc, cols) {
+	const text = cols.statement?.text ?? "";
+	const word = cols.word?.text ?? "";
+	if (cols.kind === "link") {
+		const rel = /^(<=|>=|!=|=|<|>)\s*(.*)$/.exec(text);
+		const relTex = doc.table?.rels.get(rel?.[1] ?? "")?.tex ?? rel?.[1] ?? "";
+		return { html: doc.table && rel ? math(relTex + " " + texOf(doc, rel[2])) : mono(text) };
+	}
+	if (cols.kind === "header") return { html: headerStatement(doc, word, text) };
+	return (word === "unfold" || word === "show" ? definitionCall(doc, text) : null) ?? { html: stepStatement(doc, word, text) };
+}
+function headerStatement(doc, word, text) {
+	switch (word) {
+		case "title": return `<b class="pnv-he" dir="rtl" lang="he">${wordsHtml(doc, text)}</b>`;
+		case "goal": return formula(doc, text);
+		case "given": {
+			const { names, sort, facts } = givenParts(text);
+			return names.map((n) => formula(doc, n)).join(", ") + (sort ? " " + mono(": " + sort) : "") + facts.map((f) => ", " + formula(doc, f)).join("");
+		}
+		default: return mono(text);
+	}
+}
+function wordsHtml(doc, text) {
+	return text.includes("$") ? richHe(text) : heMathHtml(text, texReader(doc.table));
+}
+function reasonSegment(doc, reason) {
+	const rule = `<span class="pnv-rule" ${`data-tip="${escapeHtml$2(doc.rs?.rules.get(reason.rule)?.he ?? theoryHe(reason.rule) ?? "")}"`}>${escapeHtml$2(reason.rule)}</span>`;
+	const args = reason.args ? escapeHtml$2(reason.args) : "";
+	const chips = reason.from.map((ref) => {
+		const tip = /^\d/.test(ref) ? `שורה ${ref}` : `הנתון ${ref}`;
+		const safe = escapeHtml$2(ref);
+		return `<span class="pnv-chip" data-ref="${safe}" data-tip="${tip}">${safe}</span>`;
+	});
+	const from = chips.length ? ` <span class="pnv-chips">${chips.join("")}</span>` : "";
+	return {
+		col: reason.col,
+		cls: "pnv-r",
+		html: `<span class="pnv-by">by</span> ${rule}${args}${from}`
+	};
+}
+function segmentsOf(doc, cols) {
+	const out = [];
+	if (cols.id) out.push({
+		col: cols.id.col,
+		cls: "pnv-id",
+		html: escapeHtml$2(cols.id.text)
+	});
+	if (cols.word) {
+		const tip = cols.kind === "header" ? HEADER_HE[cols.word.text] : kindHe(cols.word.text);
+		out.push({
+			col: cols.word.col,
+			cls: "pnv-k",
+			html: escapeHtml$2(cols.word.text),
+			tip
+		});
+	}
+	if (cols.statement && (cols.statement.text || cols.word?.text === "qed")) {
+		const said = statementOf(doc, cols);
+		const room = cols.reason ? cols.reason.col - cols.statement.col - 2 : Infinity;
+		const bare = !cols.statement.text && doc.goal.length > room;
+		const html = bare ? "∎" : said.html;
+		const tip = bare && doc.goal ? `${HEADER_HE.goal}: ${doc.goal}` : said.tip;
+		out.push({
+			col: cols.statement.col,
+			cls: "pnv-st",
+			html,
+			tip
+		});
+	}
+	if (cols.reason) out.push(reasonSegment(doc, cols.reason));
+	if (cols.why) out.push({
+		col: cols.why.col,
+		cls: "pnv-why",
+		html: wordsHtml(doc, cols.why.text)
+	});
+	if (cols.comment) out.push({
+		col: cols.comment.col,
+		cls: "pnv-c",
+		html: escapeHtml$2(cols.comment.text)
+	});
+	return out;
+}
+function rowHtml(segments, row) {
+	const cells = segments.map((s, i) => {
+		const next = segments[i + 1];
+		const styles = [i === 0 && s.col > 0 ? `margin-left:${s.col}ch` : ""];
+		styles.push(next ? `min-width:${next.col - s.col}ch` : "");
+		styles.push(next?.cls === "pnv-r" ? `--pc:${s.col}` : "");
+		const style = styles.filter(Boolean).join(";");
+		const tip = s.tip ? ` data-tip="${escapeHtml$2(s.tip)}"` : "";
+		const attrs = (style ? ` style="${style}"` : "") + tip;
+		return `<span class="${s.cls}"${attrs}>${s.html}</span>`;
+	});
+	return `<span class="pnv"${row ? ` data-row="${escapeHtml$2(row)}"` : ""}>${cells.join("")}</span>`;
+}
+function lineHtml(doc, line) {
+	const cols = lineColumns(line);
+	const word = cols.word?.text ?? "";
+	if (cols.kind === "blank" || cols.kind === "other") return cols.comment ? rowHtml(segmentsOf(doc, cols), "") : null;
+	if (cols.kind === "header" && !Object.hasOwn(HEADER_HE, word)) return null;
+	if (cols.kind === "header" && (word === "proof" || word === "uses")) return rowHtml([{
+		col: cols.word?.col ?? 0,
+		cls: "pnv-meta",
+		html: escapeHtml$2(line.trim())
+	}], "");
+	return rowHtml(segmentsOf(doc, cols), cols.id?.text ?? "");
+}
 // src/engines/proof-next/box/editor-preview.ts
 var MAX_LINE = 400;
 var lineCache = /* @__PURE__ */ new Map();
 var CACHE_SIZE$2 = 2e3;
 var docs = /* @__PURE__ */ new WeakMap();
-var LINK = /^(\s+)(<=|>=|!=|=|<|>)\s+(.*)$/;
-var NUMBERED = /^(\s*)(\d+(?:\.\d+)*)\s+([a-z]+)\b\s*(.*)$/;
 function rulesetOf(id, version) {
 	try {
 		return findRuleset(id, version);
@@ -31838,142 +33565,37 @@ function docOf(lines) {
 	const uses = lines.map((l) => /^\s*uses\s+([a-z0-9-]+)@(\d+)/.exec(l)).find(Boolean);
 	const rs = uses ? rulesetOf(uses[1], Number(uses[2])) : null;
 	const { names, fns } = declaredNames(lines);
+	const table = rs ? {
+		...rs.table,
+		declared: /* @__PURE__ */ new Set([...rs.table.declared, ...names]),
+		fnNames: /* @__PURE__ */ new Set([...rs.table.fnNames, ...fns])
+	} : null;
+	const goalLine = lines.map((l) => /^\s*goal\s+(.*?)\s*(#.*)?$/.exec(l)).find(Boolean);
+	const course = uses ? uses[1] + "@" + uses[2] : "-";
+	const goal = goalLine ? goalLine[1] : "";
 	const doc = {
 		rs,
-		table: rs ? {
-			...rs.table,
-			declared: /* @__PURE__ */ new Set([...rs.table.declared, ...names]),
-			fnNames: /* @__PURE__ */ new Set([...rs.table.fnNames, ...fns])
-		} : null,
-		key: (uses ? uses[1] + "@" + uses[2] : "-") + "|" + names.join(",") + "|" + fns.join(",")
+		table,
+		key: [
+			course,
+			names.join(","),
+			fns.join(","),
+			goal
+		].join("|"),
+		goal
 	};
 	docs.set(lines, doc);
 	return doc;
 }
-var PreviewError = class extends Error {};
-function formula(doc, src) {
-	if (!doc.table) return `<span class="pnv-src">${escapeHtml$2(src)}</span>`;
-	let e;
-	try {
-		e = parseExpr(src.trim(), doc.table);
-	} catch (error) {
-		throw new PreviewError(error instanceof Error ? error.message : String(error));
-	}
-	return definitionHe(doc, e) ?? math(printTex(e, doc.table));
-}
-function definitionHe(doc, e) {
-	const table = doc.table;
-	const said = definitionSaid(doc.rs, e);
-	return said ? fillSaid(said, escapeHtml$2, (arg) => math(printTex(arg, table))) : null;
-}
-function wordsHtml(doc, text) {
-	return text.includes("$") ? richHe(text) : heMathHtml(text, texReader(doc.table));
-}
-function reasonHtml(doc, tail) {
-	const pieces = [];
-	if (tail.rule) {
-		const he = doc.rs?.rules.get(tail.rule)?.he ?? tail.rule;
-		const from = tail.from ? ` · מ-${tail.from}` : "";
-		pieces.push(`<span class="pnv-r">לפי ${escapeHtml$2(he)}${escapeHtml$2(from)}</span>`);
-	}
-	if (tail.why) pieces.push(`<span class="pnv-why">${wordsHtml(doc, tail.why)}</span>`);
-	return pieces.join("");
-}
-function sentence(label, body) {
-	return `<span class="pnv-s" dir="rtl" lang="he">${label ? `<span class="pnv-k">${escapeHtml$2(label)}</span> ` : ""}${body}</span>`;
-}
-function letBody(doc, body) {
-	const [first, ...conds] = topLevelParts(body);
-	const tail = conds.length ? " כך ש-" + conds.map((c) => formula(doc, c)).join(" ו-") : "";
-	return formula(doc, first ?? "") + tail;
-}
-function numberedSentence(doc, kind, body) {
-	const label = kindHe(kind);
-	switch (kind) {
-		case "unfold": {
-			const def = /^(not\s+)?([A-Za-z][A-Za-z0-9-]*)\s*\((.*)\)$/.exec(body);
-			const he = def ? doc.rs?.defs.get(def[2])?.he.name : void 0;
-			const args = def ? topLevelParts(def[3]).map((a) => formula(doc, a)) : [];
-			return sentence("נפתח את", `${he ? escapeHtml$2((def?.[1] ? "שלילת " : "") + he) : escapeHtml$2(body)}${args.length ? ": " + args.join(", ") : ""}`);
-		}
-		case "let": return sentence(label, letBody(doc, body));
-		case "have": return sentence("", formula(doc, body));
-		case "qed": return sentence(label, "וזה מה שהיה צריך להוכיח ∎");
-		case "cases": return sentence(label, "");
-		case "obtain": {
-			const [names, claim] = body.split(/\s+with\s+/);
-			const then = claim ? " כך ש-" + formula(doc, claim) : "";
-			return sentence(label, escapeHtml$2(names ?? "") + then);
-		}
-		case "induction": {
-			const [start, claim] = body.split(/\s:\s/);
-			return sentence("באינדוקציה על", formula(doc, start ?? "") + (claim ? ": " + formula(doc, claim) : ""));
-		}
-		default: return sentence(label, body ? topLevelParts(body).map((p) => formula(doc, p)).join(", ") : "");
-	}
-}
-function headerHtml(doc, word, rest) {
-	switch (word) {
-		case "title": return sentence("", `<b>${wordsHtml(doc, rest.replace(/^"|"$/g, ""))}</b>`);
-		case "goal": return sentence("צריך להוכיח:", formula(doc, rest));
-		case "given": {
-			const { names, sort, facts, why } = givenParts(rest);
-			const sortHe = sort ? doc.rs?.sorts.get(sort)?.he.one ?? sort : "";
-			const shown = facts.length ? ": " + facts.map((f) => formula(doc, f)).join(", ") : "";
-			const said = names.map((n) => formula(doc, n)).join(", ");
-			const words = reasonHtml(doc, {
-				body: "",
-				rule: "",
-				from: "",
-				why
-			});
-			return sentence("נתון:", `${said} ${escapeHtml$2(sortHe)}${shown}`) + words;
-		}
-		case "require": {
-			const [what, arg] = rest.trim().split(/\s+/);
-			const def = what === "unfold" ? doc.rs?.defs.get(arg ?? "")?.he.name : void 0;
-			if (what === "choose" && arg && doc.table) return sentence("דרישה:", "לבחור את " + formula(doc, arg));
-			const rule = doc.rs?.rules.get(arg ?? "")?.he;
-			return sentence("דרישה:", escapeHtml$2(what === "unfold" ? `לפתוח את ${def ?? arg}` : what === "choose" ? `לבחור את ${arg}` : `להשתמש בכלל ${rule ?? arg}`));
-		}
-		case "uses":
-		case "proof": return `<span class="pnv-meta">${escapeHtml$2(word + " " + rest)}</span>`;
-		default: return null;
-	}
-}
-function wrapLine(line, html) {
-	const indent = /^ */.exec(line)?.[0].length ?? 0;
-	return `<span class="pnv"${indent ? ` style="padding-left:${indent}ch"` : ""}>${html}</span>`;
-}
 function previewOf(doc, line) {
-	const { code, comment } = splitComment(line);
-	const note = comment ? `<span class="pnv-c">${escapeHtml$2(comment)}</span>` : "";
-	if (!code.trim()) return comment ? { html: wrapLine(line, note) } : null;
-	const numbered = NUMBERED.exec(code);
-	if (numbered && !CORE_KINDS.includes(numbered[3])) throw new PreviewError(messageOf$1("unknown-kind", {
-		kind: numbered[3],
+	const cols = lineColumns(line);
+	const kind = cols.kind === "numbered" ? cols.word?.text ?? "" : "";
+	if (kind && !CORE_KINDS.includes(kind)) throw new PreviewError(messageOf$1("unknown-kind", {
+		kind,
 		hint: ""
 	}));
-	if (numbered) {
-		const tail = splitTail(numbered[4]);
-		return { html: wrapLine(line, `<span class="pnv-id">${escapeHtml$2(numbered[2])}</span> ` + numberedSentence(doc, numbered[3], tail.body) + reasonHtml(doc, tail) + note) };
-	}
-	const link = LINK.exec(code);
-	if (link) {
-		const tail = splitTail(link[3]);
-		const rel = doc.table?.rels.get(link[2])?.tex ?? link[2];
-		return { html: wrapLine(line, `<span class="pnv-link">${doc.table ? math(rel + " " + texOf(doc, tail.body)) : escapeHtml$2(code.trim())}</span>` + reasonHtml(doc, tail) + note) };
-	}
-	const header = /^(\s*)([a-z]+)\s+(.*)$/.exec(code);
-	const html = header ? headerHtml(doc, header[2], header[3].trim()) : null;
-	return html === null ? null : { html: wrapLine(line, html + note) };
-}
-function texOf(doc, src) {
-	try {
-		return printTex(parseExpr(src.trim(), doc.table), doc.table);
-	} catch (error) {
-		throw new PreviewError(error instanceof Error ? error.message : String(error));
-	}
+	const html = lineHtml(doc, line);
+	return html === null ? null : { html };
 }
 function editorPreview(line, context) {
 	if (typeof line !== "string" || line.length > MAX_LINE) return null;
@@ -32251,15 +33873,15 @@ goal lim(n->oo) a_n = 0
 `;
 		const L4 = R`4 let n in nat, n > N
 `;
-		const L5 = R`5 have n > 1/eps                                 by arith from 3, 4
+		const L5 = R`5 have n > 1/eps   by arith from 3, 4
 `;
-		const L5_BAD = R`5 have n > 2/eps                                 by arith from 3, 4
+		const L5_BAD = R`5 have n > 2/eps   by arith from 3, 4
 `;
 		const L6_7 = R`6 calc |a_n - 0|
-     = |1/n - 0|                                 by given from a
-     = 1/n                                       by abs-pos
-     < eps                                       by recip from 5
-7 qed                                            by def from 6
+     = |1/n - 0|   by given from a
+     = 1/n         by abs-pos
+     < eps         by recip from 5
+7 qed              by def from 6
 `;
 		const PROOF = {
 			course: "core@1",
@@ -32270,20 +33892,15 @@ goal lim(n->oo) a_n = 0
 			id: "core-limit",
 			title: "הגבול של " + F("1/n"),
 			body: body([
-				R`<p>סדרה $a_n$ שואפת ל-$L$ אם לכל $\varepsilon \gt 0$ יש מספר טבעי $N$, כך שלכל $n \gt N$
-המרחק $|a_n - L|$ קטן מ-$\varepsilon$. כאן הסדרה היא $a_n = \frac{1}{n}$ והגבול הוא $0$.</p>
-<p>כל ✓ בעמוד הזה ניתן על ידי ליבה לוגית קטנה. הליבה בונה את הטענה של כל שורה
-מהשורות שהיא נשענת עליהן, ובודקת שהיא זו שכתבתם. עברו על ההוכחה צעד אחר צעד.</p>`,
+				R`<p>סדרה $a_n$ שואפת ל-$L$ אם לכל $\varepsilon \gt 0$ יש מספר טבעי $N$, כך שלכל $n \gt N$ מתקיים $|a_n - L| \lt \varepsilon$. כאן $a_n = \frac{1}{n}$ ו-$L = 0$.</p>
+<p>כל ✓ ניתן על ידי ליבה לוגית. היא בונה את הטענה של כל שורה מהשורות שהיא נשענת עליהן, ובודקת שהיא זו שכתבתם.</p>`,
 				example({
 					id: "core-worked",
 					title: F("1/n") + " שואפת ל-0",
 					code: "proof limit-one-over-n\n" + HEAD + "\n" + L1_2 + L3 + L4 + L5 + L6_7,
 					proof: PROOF
 				}),
-				R`<p>הליבה לא סומכת על כוונות. אם שורה אינה נובעת מהשורות שהיא נשענת עליהן, היא נדחית,
-וכל שורה שנשענת עליה נעצרת איתה.</p>
-<p>כאן שורה 5 אומרת $n \gt 2/\varepsilon$. זה לא נכון בדרך כלל, כי יודעים רק ש-$n \gt N \ge 1/\varepsilon$.
-הריצו את הבדיקה וראו איך השורה נדחית. ההודעה אומרת שהטענה אינה נכונה, ומראה מספרים שמפריכים אותה.</p>`,
+				R`<p>שורה שאינה נובעת מהשורות שהיא נשענת עליהן נדחית, והשורות שנשענות עליה נעצרות. כאן שורה 5 אומרת $n \gt 2/\varepsilon$, אבל ידוע רק ש-$n \gt N \ge 1/\varepsilon$. הריצו וראו מספרים שמפריכים את השורה.</p>`,
 				example({
 					id: "core-wrong-line",
 					title: "שורה שגויה נדחית",
@@ -32291,14 +33908,13 @@ goal lim(n->oo) a_n = 0
 					proof: PROOF,
 					tests: [reject("5", "false-on-numbers")]
 				}),
-				R`<p>עכשיו תורכם. בשורה 3 צריך לבחור את $N$. הבחירה נכונה אם כל $n \gt N$ מקיים $n \gt 1/\varepsilon$.</p>
-<div class="callout"><b>רמז</b><p>$N$ צריך להיות לפחות $1/\varepsilon$. ו-$N$ חייב להיות מספר טבעי,
-לכן עוטפים בעיגול כלפי מעלה: <code>ceil(...)</code>.</p></div>`,
+				R`<p>בשורה 3 בוחרים $N$ כך שכל $n \gt N$ מקיים $n \gt 1/\varepsilon$.</p>
+<div class="callout"><b>רמז</b><p>$N \ge 1/\varepsilon$, ומספר טבעי: לכן <code>ceil(...)</code>.</p></div>`,
 				exercise({
 					id: "core-choose",
 					title: "בחרו את N",
 					task: "השלימו את שורה 3: כתבו <code>choose N = ...</code> עם ערך שמתאים לשורה 5.",
-					code: "proof limit-choose\n" + HEAD + "\n" + L1_2 + "3 choose N = 1                                   # TODO: choose N so that line 5 holds\n" + L4 + L5 + L6_7,
+					code: "proof limit-choose\n" + HEAD + "\n" + L1_2 + "3 choose N = 1     # TODO: choose N so that line 5 holds\n" + L4 + L5 + L6_7,
 					solution: "proof limit-choose\n" + HEAD + "\n" + L1_2 + L3 + L4 + L5 + L6_7,
 					proof: PROOF,
 					tests: [
@@ -32318,18 +33934,18 @@ goal forall n in nat: a_n = 4n - 1
 `;
 		const OPEN = R`1 induction n >= 1 : a_n = 4n - 1
     1.1 base
-        1.1.1 have a_1 = 4*1 - 1                 by arith from a
+        1.1.1 have a_1 = 4*1 - 1        by arith from a
     1.2 step
         1.2.1 assume a_n = 4n - 1
-        1.2.2 have a_(n+1) = a_n + 4             by inst from a
+        1.2.2 have a_(n+1) = a_n + 4    by inst from a
 `;
-		const LAST = R`        1.2.3 have a_(n+1) = 4(n+1) - 1          by arith from 1.2.1, 1.2.2
+		const LAST = R`        1.2.3 have a_(n+1) = 4(n+1) - 1   by arith from 1.2.1, 1.2.2
 `;
-		const LAST_BAD = R`        1.2.3 have a_(n+1) = 4(n+1) + 1          by arith from 1.2.1, 1.2.2
+		const LAST_BAD = R`        1.2.3 have a_(n+1) = 4(n+1) + 1   by arith from 1.2.1, 1.2.2
 `;
-		const LAST_TODO = R`        1.2.3 have a_(n+1) = 4n - 1              by arith from 1.2.1, 1.2.2   # TODO: the claim for n+1
+		const LAST_TODO = R`        1.2.3 have a_(n+1) = 4n - 1     by arith from 1.2.1, 1.2.2   # TODO: the claim for n+1
 `;
-		const END = R`2 qed                                            by def from 1
+		const END = R`2 qed                                   by def from 1
 `;
 		const PROOF = {
 			course: "core@1",
@@ -32340,19 +33956,16 @@ goal forall n in nat: a_n = 4n - 1
 			id: "core-induction",
 			title: "הוכחה באינדוקציה",
 			body: body([
-				R`<p>הסדרה $a_n$ מוגדרת בנסיגה: $a_1 = 3$ ו-$a_{n+1} = a_n + 4$. אנחנו רוצים נוסחה סגורה, $a_n = 4n - 1$.
-בדיקה על כמה מספרים לא מספיקה. צריך הוכחה לכל $n$.</p>
-<p>בליבה יש כלל אינדוקציה אחד. הוא מקבל שני דברים: את הבסיס ואת הצעד. מהם הוא בונה את הטענה
-"לכל $n$ טבעי". בצעד מניחים את הטענה עבור $n$ ומוכיחים אותה עבור $n+1$.</p>`,
+				R`<p>נתון $a_1 = 3$ ו-$a_{n+1} = a_n + 4$. נוכיח $a_n = 4n - 1$ לכל $n$.</p>
+<p>כלל האינדוקציה של הליבה מקבל את הבסיס ואת הצעד, ובונה מהם את הטענה לכל $n$ טבעי. בצעד מניחים את הטענה עבור $n$ ומוכיחים עבור $n+1$.</p>`,
 				example({
 					id: "core-ind-worked",
 					title: "נוסחה סגורה לסדרה",
 					code: "proof sequence-closed-form\n" + HEAD + "\n" + OPEN + LAST + END,
 					proof: PROOF
 				}),
-				R`<p>הליבה בודקת את הצעד כמו כל הוכחה. שורה 1.2.3 צריכה לנבוע משתי השורות שהיא נשענת עליהן.
-כאן היא אומרת $a_{n+1} = 4(n+1) + 1$. אבל מהנחת האינדוקציה יוצא $4(n+1) - 1$.</p>
-<p>הריצו את הבדיקה. השורה נדחית, והאינדוקציה כולה נעצרת איתה.</p>`,
+				R`<p>שורה 1.2.3 אומרת $a_{n+1} = 4(n+1) + 1$, אבל מהנחת האינדוקציה יוצא $4(n+1) - 1$.</p>
+<p>הריצו: השורה נדחית, והאינדוקציה כולה נעצרת איתה.</p>`,
 				example({
 					id: "core-ind-wrong",
 					title: "צעד שגוי נדחה",
@@ -32360,8 +33973,8 @@ goal forall n in nat: a_n = 4n - 1
 					proof: PROOF,
 					tests: [reject("1.2.3", "does-not-follow")]
 				}),
-				R`<p>תורכם. הבסיס והצעד כמעט מוכנים. חסרה השורה האחרונה של הצעד: מה הטענה עבור $n+1$?</p>
-<div class="callout"><b>רמז</b><p>הטענה היא אותה נוסחה, עם $n+1$ במקום $n$: $a_{n+1} = 4(n+1) - 1$.</p></div>`,
+				R`<p>חסרה השורה האחרונה של הצעד: הטענה עבור $n+1$.</p>
+<div class="callout"><b>רמז</b><p>אותה נוסחה עם $n+1$ במקום $n$: $a_{n+1} = 4(n+1) - 1$.</p></div>`,
 				exercise({
 					id: "core-ind-step",
 					title: "השלימו את הצעד",
@@ -32384,22 +33997,22 @@ goal forall x: |x| >= -x
 1 let x
 `;
 	const CASE_POS = R`  2.1 case x >= 0
-    2.1.1 have |x| >= 0                   by abs-nonneg
-    2.1.2 have |x| >= -x                  by arith from 2.1.1, 2.1
+    2.1.1 have |x| >= 0    by abs-nonneg
+    2.1.2 have |x| >= -x   by arith from 2.1.1, 2.1
 `;
 	const CASE_POS_STRICT = R`  2.1 case x > 0
-    2.1.1 have |x| >= 0                   by abs-nonneg
-    2.1.2 have |x| >= -x                  by arith from 2.1.1, 2.1
+    2.1.1 have |x| >= 0    by abs-nonneg
+    2.1.2 have |x| >= -x   by arith from 2.1.1, 2.1
 `;
 	const CASE_NEG = R`  2.2 case x < 0
-    2.2.1 have |x| = -x                   by abs-neg from 2.2
-    2.2.2 have |x| >= -x                  by arith from 2.2.1
+    2.2.1 have |x| = -x    by abs-neg from 2.2
+    2.2.2 have |x| >= -x   by arith from 2.2.1
 `;
-	const COVER = R`2 cases x >= 0 or x < 0                   by arith
+	const COVER = R`2 cases x >= 0 or x < 0    by arith
 `;
-	const COVER_BAD = R`2 cases x > 0 or x < 0                    by arith
+	const COVER_BAD = R`2 cases x > 0 or x < 0     by arith
 `;
-	const CASES_END = R`3 qed                                     by def from 2
+	const CASES_END = R`3 qed                      by def from 2
 `;
 	const CASES_PROOF = {
 		course: "core@1",
@@ -32415,11 +34028,11 @@ goal forall x in real: 2x + 1 > 7 => x > 3
 `;
 	const CON_OPEN_BAD = R`2 contradiction x <= 4
 `;
-	const CON_BODY = R`  2.1 have false                          by arith from 1, 2
+	const CON_BODY = R`  2.1 have false           by arith from 1, 2
 `;
-	const CON_OPEN_TODO = R`2 contradiction x >= 3                       # TODO: the opposite of x > 3
+	const CON_OPEN_TODO = R`2 contradiction x >= 3     # TODO: the opposite of x > 3
 `;
-	const CON_END = R`3 qed                                     by def from 2
+	const CON_END = R`3 qed                      by def from 2
 `;
 	const CON_PROOF = {
 		course: "core@1",
@@ -32430,19 +34043,15 @@ goal forall x in real: 2x + 1 > 7 => x > 3
 		id: "core-cases-contradiction",
 		title: "מקרים והוכחה בשלילה",
 		body: body([
-			R`<p>הוכחה במקרים מחלקת את העולם לחלקים. כאן רוצים להוכיח $|x| \ge -x$ לכל $x$.
-בכל מקרה ההוכחה קלה, כי ידוע אם $x$ אי-שלילי או שלילי.</p>
-<p>הליבה צריכה שני דברים. הראשון: הוכחה שהמקרים מכסים הכול, וזו שורה 2. השני: הוכחה של אותה טענה בכל מקרה.
-רק אז היא מחברת את המקרים לטענה אחת.</p>`,
+			R`<p>הוכחה במקרים מחלקת את $x$ לחלקים. נוכיח $|x| \ge -x$ לכל $x$.</p>
+<p>הליבה מקבלת הוכחה שהמקרים מכסים הכול (שורה 2), והוכחה של אותה טענה בכל מקרה. רק אז היא מחברת אותם.</p>`,
 			example({
 				id: "core-cases-worked",
 				title: "ערך מוחלט במקרים",
 				code: "proof abs-above-minus\n" + CASES_HEAD + COVER + CASE_POS + CASE_NEG + CASES_END,
 				proof: CASES_PROOF
 			}),
-			R`<p>מה אם המקרים לא מכסים הכול? כאן כתבנו $x \gt 0$ או $x \lt 0$. המקרה $x = 0$ נשכח.
-הליבה לא מקבלת את שורה 2, כי $x \gt 0 \lor x \lt 0$ אינו נכון לכל $x$.</p>
-<p>הריצו את הבדיקה וראו שהשורה נדחית, גם ששני המקרים עצמם מוכחים היטב.</p>`,
+			R`<p>שורה 2 כאן אומרת $x \gt 0 \lor x \lt 0$, והמקרה $x = 0$ נשכח. הריצו: היא נדחית, אף ששני המקרים עצמם מוכחים.</p>`,
 			example({
 				id: "core-cases-wrong",
 				title: "מקרים שאינם מכסים הכול",
@@ -32450,18 +34059,15 @@ goal forall x in real: 2x + 1 > 7 => x > 3
 				proof: CASES_PROOF,
 				tests: [reject("2", "false-on-numbers")]
 			}),
-			R`<p>בהוכחה בשלילה רוצים להוכיח שטענה $P$ נכונה. מניחים את ההפך, ומגיעים לסתירה.
-כאן: אם $2x + 1 \gt 7$ אז $x \gt 3$.</p>
-<p>הבלוק מניח $x \le 3$, ומגיע ל-<code>false</code>. אז הליבה מסיקה שההנחה שגויה,
-כלומר $x \gt 3$. בלי הגעה ל-<code>false</code> היא לא מסיקה כלום.</p>`,
+			R`<p>בהוכחה בשלילה הבלוק מניח את ההפך מהטענה ומגיע ל-<code>false</code>, והליבה מסיקה את הטענה. בלי <code>false</code> היא לא מסיקה כלום.</p>
+<p>כאן: אם $2x + 1 \gt 7$ אז $x \gt 3$, והבלוק מניח $x \le 3$.</p>`,
 			example({
 				id: "core-contra-worked",
 				title: "הוכחה בשלילה",
 				code: "proof two-x-plus-one\n" + CON_HEAD + CON_OPEN + CON_BODY + CON_END,
 				proof: CON_PROOF
 			}),
-			R`<p>ההנחה בבלוק חייבת להיות ההפך של מה שרוצים להוכיח. כאן הנחנו $x \le 4$ במקום $x \le 3$.
-מההנחה הזאת אין סתירה, ולכן שורה 2.1 נדחית, וההודעה מראה מספר שמפריך אותה.</p>`,
+			R`<p>ההנחה חייבת להיות ההפך של הטענה, וכאן הנחנו $x \le 4$. אין סתירה, ולכן שורה 2.1 נדחית עם מספר שמפריך אותה.</p>`,
 			example({
 				id: "core-contra-wrong",
 				title: "הנחה שאינה ההפך",
@@ -32469,8 +34075,8 @@ goal forall x in real: 2x + 1 > 7 => x > 3
 				proof: CON_PROOF,
 				tests: [reject("2.1", "false-on-numbers")]
 			}),
-			R`<p>עכשיו תורכם. הסתירה כבר כתובה בשורה 2.1, אבל שורה 2 מניחה את ההנחה הלא נכונה.</p>
-<div class="callout"><b>רמז</b><p>רוצים להוכיח $x \gt 3$. ההפך של זה הוא $x \le 3$.</p></div>`,
+			R`<p>שורה 2 מניחה הנחה לא נכונה.</p>
+<div class="callout"><b>רמז</b><p>רוצים $x \gt 3$, ולכן ההפך הוא $x \le 3$.</p></div>`,
 			exercise({
 				id: "core-contra-exercise",
 				title: "הניחו את ההפך",
@@ -32497,21 +34103,21 @@ goal lim(n->oo) b_n = L + 3
 `;
 		const L1_2 = R`1 unfold limit(b, L + 3)
 2 let eps > 0
-3 obtain N1 in nat with forall n in nat, n > N1: |a_n - L| < eps      by def from a
+3 obtain N1 in nat with forall n in nat, n > N1: |a_n - L| < eps   by def from a
 `;
 		const L4 = R`4 choose N = N1
 `;
-		const L4_TODO = R`4 choose N = 0                                   # TODO: choose N from the N1 of line 3
+		const L4_TODO = R`4 choose N = 0                          # TODO: choose N from the N1 of line 3
 `;
 		const L5_7 = R`5 let n in nat, n > N
-6 have |a_n - L| < eps                           by inst from 3, 4, 5
-7 have b_n = a_n + 3                             by inst from b
+6 have |a_n - L| < eps                  by inst from 3, 4, 5
+7 have b_n = a_n + 3                    by inst from b
 `;
-		const L8 = R`8 have |b_n - (L + 3)| < eps                     by arith from 6, 7
+		const L8 = R`8 have |b_n - (L + 3)| < eps            by arith from 6, 7
 `;
-		const L8_BAD = R`8 have |b_n - (L + 3)| < eps/2                   by arith from 6, 7
+		const L8_BAD = R`8 have |b_n - (L + 3)| < eps/2          by arith from 6, 7
 `;
-		const L9 = R`9 qed                                            by def from 8
+		const L9 = R`9 qed                                   by def from 8
 `;
 		const PROOF = {
 			course: "core@1",
@@ -32522,19 +34128,15 @@ goal lim(n->oo) b_n = L + 3
 			id: "core-use-limit",
 			title: "שימוש בגבול נתון",
 			body: body([
-				R`<p>עד עכשיו הוכחנו גבול מההגדרה. כאן הגבול כבר נתון: $a_n \to L$. צריך להוכיח גבול של סדרה אחרת,
-$b_n = a_n + 3$, שאמורה לשאוף ל-$L + 3$.</p>
-<p>השורה <code>obtain</code> פותחת את הנתון. היא אומרת: לפי ההגדרה יש $N_1$ כך שלכל $n \gt N_1$
-מתקיים $|a_n - L| \lt \varepsilon$. הליבה בודקת שזה באמת מה שההגדרה נותנת.</p>`,
+				R`<p>הגבול $a_n \to L$ נתון. נוכיח ש-$b_n = a_n + 3$ שואפת ל-$L + 3$.</p>
+<p>השורה <code>obtain</code> פותחת את הנתון: יש $N_1$ כך שלכל $n \gt N_1$ מתקיים $|a_n - L| \lt \varepsilon$. הליבה בודקת שזה מה שההגדרה נותנת.</p>`,
 				example({
 					id: "core-use-worked",
 					title: "הזזת גבול",
 					code: "proof shift-limit\n" + HEAD + "\n" + L1_2 + L4 + L5_7 + L8 + L9,
 					proof: PROOF
 				}),
-				R`<p>ההוכחה נשענת על כך ש-$|b_n - (L+3)| = |a_n - L|$. שורה 8 כאן אומרת שהמרחק קטן מ-$\varepsilon/2$.
-זה לא נובע מ-$|a_n - L| \lt \varepsilon$.</p>
-<p>הריצו את הבדיקה וראו שהליבה דוחה את שורה 8.</p>`,
+				R`<p>$|b_n - (L+3)| = |a_n - L|$, אבל שורה 8 אומרת שהמרחק קטן מ-$\varepsilon/2$. הריצו: היא נדחית.</p>`,
 				example({
 					id: "core-use-wrong",
 					title: "ε קטן מדי",
@@ -32542,8 +34144,8 @@ $b_n = a_n + 3$, שאמורה לשאוף ל-$L + 3$.</p>
 					proof: PROOF,
 					tests: [reject("8", "does-not-follow")]
 				}),
-				R`<p>תורכם. בשורה 4 בוחרים את $N$. הבחירה נכונה אם כל $n \gt N$ מקיים גם $n \gt N_1$, כדי ששורה 6 תוכל להשתמש בנתון.</p>
-<div class="callout"><b>רמז</b><p>הדבר הפשוט ביותר: $N = N_1$.</p></div>`,
+				R`<p>בשורה 4 בוחרים $N$ כך שכל $n \gt N$ מקיים גם $n \gt N_1$.</p>
+<div class="callout"><b>רמז</b><p>הכי פשוט: $N = N_1$.</p></div>`,
 				exercise({
 					id: "core-use-choose",
 					title: "בחרו את N",
@@ -32576,13 +34178,13 @@ goal continuous(f, 1)
 		const LIN_REST = R`4 let x
 5 assume |x - 1| < delta
 6 calc |f(x) - f(1)|
-     = |(2x + 5) - (2*1 + 5)|                   by given from f
-     = |2(x - 1)|                               by algebra
-     = |2| * |x - 1|                            by abs-mul
-     = 2 * |x - 1|                              by algebra
-     < 2delta                                   by arith from 5
-     = eps                                      by arith from 3
-7 qed                                           by def from 6
+     = |(2x + 5) - (2*1 + 5)|   by given from f
+     = |2(x - 1)|               by algebra
+     = |2| * |x - 1|            by abs-mul
+     = 2 * |x - 1|              by algebra
+     < 2delta                   by arith from 5
+     = eps                      by arith from 3
+7 qed                           by def from 6
 `;
 		const LIN_PROOF = {
 			course: "core@1",
@@ -32599,22 +34201,22 @@ goal continuous(f, 2)
 3 choose delta = min(1, eps/5)
 4 let x
 5 assume |x - 2| < delta
-6 have delta <= 1                               by min-first from 3
-7 have delta <= eps/5                           by min-second from 3
-8 have |x - 2| < 1                              by trans from 5, 6
+6 have delta <= 1               by min-first from 3
+7 have delta <= eps/5           by min-second from 3
+8 have |x - 2| < 1              by trans from 5, 6
 9 calc |x + 2|
-     = |(x - 2) + 4|                            by algebra
-     <= |x - 2| + |4|                           by triangle
-     < 1 + 4                                    by arith from 8
-     = 5                                        by algebra
+     = |(x - 2) + 4|            by algebra
+     <= |x - 2| + |4|           by triangle
+     < 1 + 4                    by arith from 8
+     = 5                        by algebra
 10 calc |f(x) - f(2)|
-     = |x^2 - 4|                                by given from f
-     = |(x - 2)(x + 2)|                         by algebra
-     = |x - 2| * |x + 2|                        by abs-mul
-     < delta * 5                                by mul-lt from 5, 9
-     <= (eps/5) * 5                             by arith from 7
-     = eps                                      by algebra
-11 qed                                          by def from 10
+     = |x^2 - 4|                by given from f
+     = |(x - 2)(x + 2)|         by algebra
+     = |x - 2| * |x + 2|        by abs-mul
+     < delta * 5                by mul-lt from 5, 9
+     <= (eps/5) * 5             by arith from 7
+     = eps                      by algebra
+11 qed                          by def from 10
 `;
 		const QUAD_PROOF = {
 			course: "core@1",
@@ -32631,38 +34233,32 @@ goal continuous(f, 2)
 `;
 		const EX_DELTA = R`3 choose delta = eps/4
 `;
-		const EX_DELTA_TODO = R`3 choose delta = 1                                 # TODO: choose delta so that line 6 ends at eps
+		const EX_DELTA_TODO = R`3 choose delta = 1              # TODO: choose delta so that line 6 ends at eps
 `;
 		const EX_REST = R`4 let x
 5 assume |x - 2| < delta
 6 calc |f(x) - f(2)|
-     = |(4x - 3) - (4*2 - 3)|                   by given from f
-     = |4(x - 2)|                               by algebra
-     = |4| * |x - 2|                            by abs-mul
-     = 4 * |x - 2|                              by algebra
-     < 4delta                                   by arith from 5
-     = eps                                      by arith from 3
-7 qed                                           by def from 6
+     = |(4x - 3) - (4*2 - 3)|   by given from f
+     = |4(x - 2)|               by algebra
+     = |4| * |x - 2|            by abs-mul
+     = 4 * |x - 2|              by algebra
+     < 4delta                   by arith from 5
+     = eps                      by arith from 3
+7 qed                           by def from 6
 `;
 		U.push({
 			id: "core-continuity",
 			title: "רציפות, אפסילון ודלתא",
 			body: body([
-				R`<p>פונקציה $f$ רציפה בנקודה $c$ אם לכל $\varepsilon \gt 0$ יש $\delta \gt 0$, כך שכש-$|x - c| \lt \delta$
-מתקיים $|f(x) - f(c)| \lt \varepsilon$. נתחיל בפונקציה קווית: $f(x) = 2x + 5$ בנקודה $1$.</p>
-<p>הליבה לא מחפשת את $\delta$ בשבילכם. אתם בוחרים אותו בשורה 3, והליבה בודקת שהוא עובד:
-שרשרת השוויונות והאי-שוויונות בשורה 6 צריכה להגיע בדיוק ל-$\varepsilon$. כל חוליה בשרשרת נבדקת לחוד.</p>`,
+				R`<p>$f$ רציפה ב-$c$ אם לכל $\varepsilon \gt 0$ יש $\delta \gt 0$, כך שכש-$|x - c| \lt \delta$ מתקיים $|f(x) - f(c)| \lt \varepsilon$. נתחיל ב-$f(x) = 2x + 5$ בנקודה $1$.</p>
+<p>אתם בוחרים את $\delta$ בשורה 3. שרשרת שורה 6 חייבת להגיע בדיוק ל-$\varepsilon$, וכל חוליה בה נבדקת לחוד.</p>`,
 				example({
 					id: "core-cont-linear",
 					title: F("2x + 5") + " רציפה ב-1",
 					code: "proof cont-linear\n" + LIN_HEAD + LIN_DELTA + LIN_REST,
 					proof: LIN_PROOF
 				}),
-				R`<p>מה קורה אם בוחרים $\delta$ גדול מדי? כאן בחרנו $\delta = \varepsilon$. הפונקציה מותחת מרחקים פי 2,
-ולכן מקבלים רק $2\varepsilon$, ולא $\varepsilon$.</p>
-<p>הריצו את הבדיקה. החוליה האחרונה של שורה 6 נדחית, כי $2\delta = \varepsilon$ לא נובע מ-$\delta = \varepsilon$.
-ההודעה אומרת שהטענה אינה נכונה, ומראה מספרים שמפריכים אותה.
-הליבה לא מקבלת את ההוכחה, גם אם כל החוליות שלפניה נכונות.</p>`,
+				R`<p>כאן $\delta = \varepsilon$, אבל הפונקציה מותחת פי 2 ומקבלים $2\varepsilon$. הריצו: החוליה האחרונה בשורה 6 נדחית, עם מספרים שמפריכים אותה.</p>`,
 				example({
 					id: "core-cont-wrong",
 					title: "דלתא גדולה מדי",
@@ -32670,18 +34266,19 @@ goal continuous(f, 2)
 					proof: LIN_PROOF,
 					tests: [reject("6/6", "false-on-numbers")]
 				}),
-				R`<p>בפונקציה ריבועית המרחק לא מתנפח פי קבוע. $|x^2 - 4| = |x - 2| \cdot |x + 2|$, והגורם $|x + 2|$ תלוי ב-$x$.</p>
-<p>הפתרון: מגבילים את $\delta$ גם ל-$1$. אז $|x - 2| \lt 1$ ו-$|x + 2| \lt 5$, ואפשר לבחור $\delta = \min(1, \varepsilon/5)$.
-שורות 6 ו-7 מוציאות מהבחירה את שני הכיוונים, ושורה 9 מראה ש-$|x + 2| \lt 5$.</p>`,
+				R`<p>בריבועית $|x^2 - 4| = |x - 2| \cdot |x + 2|$, והגורם $|x + 2|$ תלוי ב-$x$. לכן מגבילים גם $\delta \le 1$, ובוחרים $\delta = \min(1, \varepsilon/5)$.</p>
+<table class="tbl"><tr><th>שורה</th><th>מה היא נותנת</th></tr>
+<tr><td>6</td><td>$\delta \le 1$</td></tr>
+<tr><td>7</td><td>$\delta \le \varepsilon/5$</td></tr>
+<tr><td>9</td><td>$|x + 2| \lt 5$</td></tr></table>`,
 				example({
 					id: "core-cont-quad",
 					title: F("x") + "² רציפה ב-2",
 					code: "proof cont-quad\n" + QUAD,
 					proof: QUAD_PROOF
 				}),
-				R`<p>עכשיו תורכם. ההוכחה מוכנה, חוץ מבחירת $\delta$ בשורה 3.</p>
-<div class="callout"><b>רמז</b><p>הפונקציה מותחת מרחקים פי $4$. כדי שהתוצאה תהיה קטנה מ-$\varepsilon$,
-$\delta$ צריך להיות $\varepsilon$ חלקי המקדם.</p></div>`,
+				R`<p>חסרה רק הבחירה של $\delta$ בשורה 3.</p>
+<div class="callout"><b>רמז</b><p>הפונקציה מותחת פי $4$, ולכן $\delta$ הוא $\varepsilon$ חלקי המקדם.</p></div>`,
 				exercise({
 					id: "core-cont-choose",
 					title: "בחרו את דלתא",
@@ -32713,16 +34310,16 @@ goal derivative(f, 1, 6)
 3 choose delta = eps/3
 4 let h
 5 assume 0 < |h| < delta
-6 have h != 0                                   by abs-ne from 5
+6 have h != 0                         by abs-ne from 5
 `;
 		const CHAIN = R`7 calc |(f(1 + h) - f(1))/h - 6|
-     = |(3(1 + h)^2 - 3*1^2)/h - 6|             by given from f, 6
-     = |3h|                                     by algebra from 6
-     = |3| * |h|                                by abs-mul
-     = 3 * |h|                                  by algebra
-     < 3delta                                   by arith from 5
-     = eps                                      by arith from 3
-8 qed                                           by def from 7
+     = |(3(1 + h)^2 - 3*1^2)/h - 6|   by given from f, 6
+     = |3h|                           by algebra from 6
+     = |3| * |h|                      by abs-mul
+     = 3 * |h|                        by algebra
+     < 3delta                         by arith from 5
+     = eps                            by arith from 3
+8 qed                                 by def from 7
 `;
 		const HEAD_BAD = R`uses core@1
 title "הנגזרת של 3x² בנקודה 1 היא 5"
@@ -32734,16 +34331,16 @@ goal derivative(f, 1, 5)
 3 choose delta = eps/3
 4 let h
 5 assume 0 < |h| < delta
-6 have h != 0                                   by abs-ne from 5
+6 have h != 0                         by abs-ne from 5
 `;
 		const CHAIN_BAD = R`7 calc |(f(1 + h) - f(1))/h - 5|
-     = |(3(1 + h)^2 - 3*1^2)/h - 5|             by given from f, 6
-     = |3h|                                     by algebra from 6
-     = |3| * |h|                                by abs-mul
-     = 3 * |h|                                  by algebra
-     < 3delta                                   by arith from 5
-     = eps                                      by arith from 3
-8 qed                                           by def from 7
+     = |(3(1 + h)^2 - 3*1^2)/h - 5|   by given from f, 6
+     = |3h|                           by algebra from 6
+     = |3| * |h|                      by abs-mul
+     = 3 * |h|                        by algebra
+     < 3delta                         by arith from 5
+     = eps                            by arith from 3
+8 qed                                 by def from 7
 `;
 		const EX_HEAD_OK = R`uses core@1
 title "הנגזרת של 2x² בנקודה 1 היא 4"
@@ -32755,28 +34352,26 @@ goal derivative(f, 1, 4)
 `;
 		const EX_DELTA = R`3 choose delta = eps/2
 `;
-		const EX_DELTA_TODO = R`3 choose delta = eps                              # TODO: choose delta so that the last step reaches eps
+		const EX_DELTA_TODO = R`3 choose delta = eps                  # TODO: choose delta so that the last step reaches eps
 `;
 		const EX_REST = R`4 let h
 5 assume 0 < |h| < delta
-6 have h != 0                                   by abs-ne from 5
+6 have h != 0                         by abs-ne from 5
 7 calc |(f(1 + h) - f(1))/h - 4|
-     = |(2(1 + h)^2 - 2*1^2)/h - 4|             by given from f, 6
-     = |2h|                                     by algebra from 6
-     = |2| * |h|                                by abs-mul
-     = 2 * |h|                                  by algebra
-     < 2delta                                   by arith from 5
-     = eps                                      by arith from 3
-8 qed                                           by def from 7
+     = |(2(1 + h)^2 - 2*1^2)/h - 4|   by given from f, 6
+     = |2h|                           by algebra from 6
+     = |2| * |h|                      by abs-mul
+     = 2 * |h|                        by algebra
+     < 2delta                         by arith from 5
+     = eps                            by arith from 3
+8 qed                                 by def from 7
 `;
 		U.push({
 			id: "core-derivative",
 			title: "נגזרת לפי ההגדרה",
 			body: body([
-				R`<p>הנגזרת של $f$ ב-$c$ היא $L$ אם מנת ההפרשים $\frac{f(c + h) - f(c)}{h}$ שואפת ל-$L$ כש-$h$ שואף ל-$0$.
-בניסוח של אפסילון ודלתא: לכל $\varepsilon \gt 0$ יש $\delta \gt 0$, כך שאם $0 \lt |h| \lt \delta$ אז המנה קרובה ל-$L$ עד $\varepsilon$.</p>
-<p>כאן $f(x) = 3x^2$ והנקודה היא $1$. הטענה: הנגזרת היא $6$. שורה 6 חשובה: היא אומרת $h \ne 0$, כדי שמותר יהיה לצמצם ב-$h$.
-בשרשרת, הצעד של הצמצום נבדק בעזרת השורה הזאת.</p>`,
+				R`<p>הנגזרת של $f$ ב-$c$ היא $L$ אם מנת ההפרשים $\frac{f(c + h) - f(c)}{h}$ שואפת ל-$L$ כש-$h \to 0$. כלומר לכל $\varepsilon \gt 0$ יש $\delta \gt 0$, כך שאם $0 \lt |h| \lt \delta$ המנה קרובה ל-$L$ עד $\varepsilon$.</p>
+<p>כאן $f(x) = 3x^2$, $c = 1$ והנגזרת $6$. שורה 6 אומרת $h \ne 0$, וצעד הצמצום ב-$h$ נשען עליה.</p>`,
 				example({
 					id: "core-deriv-worked",
 					title: "הנגזרת של " + F("3x") + "² ב-1",
@@ -32787,9 +34382,7 @@ goal derivative(f, 1, 4)
 						level: 1
 					}
 				}),
-				R`<p>מה אם מנסים להוכיח שהנגזרת היא $5$? אין דרך לסגור את השרשרת, כי המנה שואפת ל-$6$.
-המנה פחות $5$ היא $1 + 3h$, ולא $3h$.</p>
-<p>הריצו את הבדיקה. הצעד השני בשרשרת נדחה, ואחריו כל השורות שנשענות עליו.</p>`,
+				R`<p>המנה פחות $5$ היא $1 + 3h$ ולא $3h$. הריצו: הצעד השני בשרשרת נדחה, ואחריו כל מה שנשען עליו.</p>`,
 				example({
 					id: "core-deriv-wrong",
 					title: "ערך שגוי של הנגזרת",
@@ -32801,8 +34394,8 @@ goal derivative(f, 1, 4)
 					},
 					tests: [reject("7/2", "false-on-numbers")]
 				}),
-				R`<p>עכשיו תורכם. הפונקציה היא $f(x) = 2x^2$ והנגזרת בנקודה $1$ היא $4$. השרשרת מוכנה, חוץ מבחירת $\delta$.</p>
-<div class="callout"><b>רמז</b><p>בשרשרת המנה פחות $4$ שווה ל-$2|h|$. כדי שזה יהיה קטן מ-$\varepsilon$ צריך $\delta = \varepsilon/2$.</p></div>`,
+				R`<p>כאן $f(x) = 2x^2$ והנגזרת ב-$1$ היא $4$. חסרה רק הבחירה של $\delta$.</p>
+<div class="callout"><b>רמז</b><p>המנה פחות $4$ שווה ל-$2|h|$, ולכן $\delta = \varepsilon/2$.</p></div>`,
 				exercise({
 					id: "core-deriv-choose",
 					title: "בחרו את דלתא",
@@ -32828,22 +34421,22 @@ goal derivative(f, 1, 4)
 title "הגבול של (5n + 2)/(n + 7) לפי משפטי הגבולות"
 goal lim(n->oo) (5n+2)/(n+7) = 5
 
-1 have lim(n->oo) 1/n = 0                          by lim-inv-n
-2 have lim(n->oo) 2/n = 0                          by lim-scalar from 1
-3 have lim(n->oo) 5 = 5                            by lim-const
+1 have lim(n->oo) 1/n = 0               by lim-inv-n
+2 have lim(n->oo) 2/n = 0               by lim-scalar from 1
+3 have lim(n->oo) 5 = 5                 by lim-const
 `;
-		const L4 = R`4 have lim(n->oo) (5 + 2/n) = 5                    by lim-sum from 3, 2
+		const L4 = R`4 have lim(n->oo) (5 + 2/n) = 5         by lim-sum from 3, 2
 `;
-		const L4_BAD = R`4 have lim(n->oo) (5 + 2/n) = 7                    by lim-sum from 3, 2
+		const L4_BAD = R`4 have lim(n->oo) (5 + 2/n) = 7         by lim-sum from 3, 2
 `;
-		const L4_TODO = R`4 have lim(n->oo) (5 + 2/n) = 0                    by lim-sum from 3, 2   # TODO: the limit of the sum
+		const L4_TODO = R`4 have lim(n->oo) (5 + 2/n) = 0         by lim-sum from 3, 2   # TODO: the limit of the sum
 `;
-		const REST = R`5 have lim(n->oo) 7/n = 0                          by lim-scalar from 1
-6 have lim(n->oo) 1 = 1                            by lim-const
-7 have lim(n->oo) (1 + 7/n) = 1                    by lim-sum from 6, 5
-8 have lim(n->oo) (5 + 2/n)/(1 + 7/n) = 5          by lim-quot from 4, 7
-9 have lim(n->oo) (5n+2)/(n+7) = 5                 by lim-ext from 8
-10 qed                                             by def from 9
+		const REST = R`5 have lim(n->oo) 7/n = 0               by lim-scalar from 1
+6 have lim(n->oo) 1 = 1                 by lim-const
+7 have lim(n->oo) (1 + 7/n) = 1         by lim-sum from 6, 5
+8 have lim(n->oo) (5 + 2/n)/(1 + 7/n) = 5   by lim-quot from 4, 7
+9 have lim(n->oo) (5n+2)/(n+7) = 5      by lim-ext from 8
+10 qed                                  by def from 9
 `;
 		const PROOF = {
 			course: "core@1",
@@ -32854,20 +34447,15 @@ goal lim(n->oo) (5n+2)/(n+7) = 5
 			id: "core-limit-theorems",
 			title: "גבולות לפי משפטי הגבולות",
 			body: body([
-				R`<p>לא תמיד צריך להוכיח גבול מההגדרה. אפשר להשתמש במשפטים: גבול של סכום הוא סכום הגבולות, ויש כללים דומים למכפלה ולמנה.
-כאן נוכיח ש-$\frac{5n + 2}{n + 7}$ שואף ל-$5$. הרעיון: מחלקים את המונה והמכנה ב-$n$.</p>
-<p>כל שורה <code>have lim(...) = ...</code> היא מקרה של משפט מהספרייה של הליבה, והליבה בונה אותה בעצמה מהשורות שציטטתם.
-השלב האחרון, <code>lim-ext</code>, צריך שהביטוי החדש והביטוי המקורי יהיו שווים לכל $n$ טבעי.
-הליבה בודקת את זה באלגברה, כש-"$n$ אינו $0$".</p>`,
+				R`<p>אפשר להוכיח גבול בלי ההגדרה, בעזרת משפטי הגבולות. כאן $\frac{5n + 2}{n + 7} \to 5$, אחרי חלוקה ב-$n$.</p>
+<p>כל שורה <code>have lim(...)</code> היא מקרה של משפט מהספרייה של הליבה, והליבה בונה אותה מהשורות שציטטתם. ב-<code>lim-ext</code> היא בודקת באלגברה ששני הביטויים שווים, כש-"$n$ אינו $0$".</p>`,
 				example({
 					id: "core-lim-worked",
 					title: "מנה של שני ביטויים",
 					code: "proof limit-quotient\n" + HEAD + L4 + REST,
 					proof: PROOF
 				}),
-				R`<p>הליבה בונה את הטענה של כל שורה מהמשפט, ולא סומכת על מה שכתבתם. בשורה 4 כתבנו שהגבול של $5 + \frac{2}{n}$ הוא $7$.
-המשפט נותן $5 + 0 = 5$.</p>
-<p>הריצו את הבדיקה. שורה 4 נדחית, והשורות שנשענות עליה נעצרות איתה.</p>`,
+				R`<p>בשורה 4 כתוב שהגבול של $5 + \frac{2}{n}$ הוא $7$, אבל המשפט נותן $5 + 0 = 5$. הריצו: היא נדחית, והשורות שנשענות עליה נעצרות.</p>`,
 				example({
 					id: "core-lim-wrong",
 					title: "גבול שגוי של סכום",
@@ -32875,9 +34463,8 @@ goal lim(n->oo) (5n+2)/(n+7) = 5
 					proof: PROOF,
 					tests: [reject("4", "does-not-follow")]
 				}),
-				R`<p>תורכם. בשורה 4 הגבול של הסכום כתוב לא נכון.</p>
-<div class="callout"><b>רמז</b><p>שורה 3 אומרת שהגבול של $5$ הוא $5$, ושורה 2 אומרת שהגבול של $\frac{2}{n}$ הוא $0$.
-הגבול של הסכום הוא סכום הגבולות.</p></div>`,
+				R`<p>בשורה 4 הגבול של הסכום כתוב לא נכון.</p>
+<div class="callout"><b>רמז</b><p>הגבול של סכום הוא סכום הגבולות, ושורות 2 ו-3 נותנות אותם.</p></div>`,
 				exercise({
 					id: "core-lim-fill",
 					title: "השלימו את הגבול",
@@ -32899,25 +34486,25 @@ title "סדרה בין -1/n ל-1/n שואפת ל-0"
 given b : seq, forall n in nat: -1/n <= b_n, forall n in nat: b_n <= 1/n
 goal lim(n->oo) b_n = 0
 
-1 have lim(n->oo) 1/n = 0                        by lim-inv-n
-2 have lim(n->oo) (-1/n) = 0                     by lim-neg from 1
+1 have lim(n->oo) 1/n = 0               by lim-inv-n
+2 have lim(n->oo) (-1/n) = 0            by lim-neg from 1
 `;
-	const SW_BOTH = R`3 have forall n in nat: -1/n <= b_n and b_n <= 1/n  by given from b
+	const SW_BOTH = R`3 have forall n in nat: -1/n <= b_n and b_n <= 1/n   by given from b
 `;
-	const SW_TODO = R`3 have forall n in nat: 0 <= b_n and b_n <= 1/n        by given from b   # TODO: the lower bound is not the given one
+	const SW_TODO = R`3 have forall n in nat: 0 <= b_n and b_n <= 1/n   by given from b   # TODO: the lower bound is not the given one
 `;
-	const SW_END = R`4 have lim(n->oo) b_n = 0                        by sandwich from 2, 1, 3
-5 qed                                            by def from 4
+	const SW_END = R`4 have lim(n->oo) b_n = 0               by sandwich from 2, 1, 3
+5 qed                                   by def from 4
 `;
 	const SW_WRONG = R`uses core@1
 title "יש רק חסם אחד: הסנדוויץ' לא חל"
 given b : seq, forall n in nat: b_n <= 1/n
 goal lim(n->oo) b_n = 0
 
-1 have lim(n->oo) 1/n = 0                        by lim-inv-n
-2 have lim(n->oo) (-1/n) = 0                     by lim-neg from 1
-3 have lim(n->oo) b_n = 0                        by sandwich from 2, 1, b
-4 qed                                            by def from 3
+1 have lim(n->oo) 1/n = 0               by lim-inv-n
+2 have lim(n->oo) (-1/n) = 0            by lim-neg from 1
+3 have lim(n->oo) b_n = 0               by sandwich from 2, 1, b
+4 qed                                   by def from 3
 `;
 	const SW_PROOF = {
 		course: "core@1",
@@ -32932,26 +34519,23 @@ goal exists L: lim(n->oo) a_n = L and L <= 10
 1 show increasing(a)
     1.1 unfold increasing(a)
     1.2 let n in nat
-    1.3 have a_n < a_(n+1)                       by given from a
-2 have exists L: lim(n->oo) a_n = L and L <= 10  by mono-conv from 1, a
-3 qed                                            by def from 2
+    1.3 have a_n < a_(n+1)              by given from a
+2 have exists L: lim(n->oo) a_n = L and L <= 10   by mono-conv from 1, a
+3 qed                                   by def from 2
 `;
 	U.push({
 		id: "core-sandwich-monotone",
 		title: "סנדוויץ' וסדרה מונוטונית",
 		body: body([
-			R`<p>כלל הסנדוויץ': אם $b_n$ נמצאת בין שתי סדרות ששואפות לאותו גבול, גם $b_n$ שואפת אליו.
-כאן $-\frac{1}{n} \le b_n \le \frac{1}{n}$, ושני הצדדים שואפים ל-$0$.</p>
-<p>הכלל הזה, וגם הכלל על סדרה מונוטונית בהמשך, נלקחו מהספרייה של הקורס. הם לא מוכחים בעמוד הזה.
-הליבה בודקת שמשתמשים בהם נכון: כל תנאי של הכלל חייב להיות מוצג בשורה משלו.</p>`,
+			R`<p>סנדוויץ': אם $b_n$ בין שתי סדרות עם אותו גבול, גם היא שואפת אליו. כאן $-\frac{1}{n} \le b_n \le \frac{1}{n}$ והגבול $0$.</p>
+<div class="callout"><b>לא מוכח כאן</b><p>הסנדוויץ', וגם הכלל על סדרה מונוטונית בהמשך, נלקחו מהספרייה של הקורס. הליבה בודקת שמשתמשים בהם נכון: כל תנאי בשורה משלו.</p></div>`,
 			example({
 				id: "core-sw-worked",
 				title: "כלל הסנדוויץ'",
 				code: "proof sandwich-two-sides\n" + SW_HEAD + SW_BOTH + SW_END,
 				proof: SW_PROOF
 			}),
-			R`<p>מה אם נתון רק חסם אחד? כאן יודעים ש-$b_n \le \frac{1}{n}$ ותו לא. הסדרה יכולה להיות $-n$, והיא לא שואפת ל-$0$.</p>
-<p>הריצו את הבדיקה. שורה 3 נדחית, כי אחד התנאים של הסנדוויץ' לא הוצג.</p>`,
+			R`<p>נתון רק $b_n \le \frac{1}{n}$, והסדרה יכולה להיות $-n$. הריצו: שורה 3 נדחית, כי תנאי אחד של הסנדוויץ' לא הוצג.</p>`,
 			example({
 				id: "core-sw-wrong",
 				title: "חסם אחד לא מספיק",
@@ -32959,10 +34543,8 @@ goal exists L: lim(n->oo) a_n = L and L <= 10
 				proof: SW_PROOF,
 				tests: [reject("3", "does-not-follow")]
 			}),
-			R`<p>סדרה עולה וחסומה מלמעלה מתכנסת. הגבול קיים, והוא לא גדול מהחסם.
-כאן הסדרה עולה, וכל איבר שלה קטן או שווה ל-$10$.</p>
-<p>לפני שמשתמשים בכלל צריך להראות שהסדרה עולה. זה נעשה בשורה 1, מההגדרה של "עולה".
-אחר כך שורה 2 מפעילה את הכלל, <code>mono-conv</code>, על שורה 1 ועל הנתון.</p>`,
+			R`<p>סדרה עולה וחסומה מלמעלה מתכנסת, והגבול לא גדול מהחסם. כאן החסם הוא $10$.</p>
+<p>שורה 1 מראה שהיא עולה, ושורה 2 מפעילה את <code>mono-conv</code>.</p>`,
 			example({
 				id: "core-mono-worked",
 				title: "סדרה עולה וחסומה",
@@ -32973,8 +34555,8 @@ goal exists L: lim(n->oo) a_n = L and L <= 10
 					level: 1
 				}
 			}),
-			R`<p>תורכם. שורה 3 מציגה חסם תחתון שאינו הנתון.</p>
-<div class="callout"><b>רמז</b><p>הנתון אומר $-\frac{1}{n} \le b_n$ וגם $b_n \le \frac{1}{n}$. </p></div>`,
+			R`<p>שורה 3 מציגה חסם תחתון שאינו הנתון.</p>
+<div class="callout"><b>רמז</b><p>הנתון: $-\frac{1}{n} \le b_n$ וגם $b_n \le \frac{1}{n}$.</p></div>`,
 			exercise({
 				id: "core-sw-fill",
 				title: "השלימו את החסמים",
@@ -33000,7 +34582,7 @@ goal not continuous(h, 1)
 `;
 		const EPS = R`2 choose eps = 1
 `;
-		const EPS_TODO = R`2 choose eps = 4                                # TODO: choose eps so that the end of line 9 holds
+		const EPS_TODO = R`2 choose eps = 4   # TODO: choose eps so that the end of line 9 holds
 `;
 		const D3 = R`3 let delta > 0
 `;
@@ -33008,18 +34590,18 @@ goal not continuous(h, 1)
 `;
 		const X_BAD = R`4 choose x = 1 - delta/2
 `;
-		const REST = R`5 have x > 1                                    by arith from 3, 4
+		const REST = R`5 have x > 1       by arith from 3, 4
 6 calc |x - 1|
-     = x - 1                                    by abs-pos from 5
-     = delta/2                                  by arith from 4
-     < delta                                    by arith from 3
-7 have h(x) = 5                                 by given from h, 5
-8 have h(1) = 2                                 by given from h
+     = x - 1       by abs-pos from 5
+     = delta/2     by arith from 4
+     < delta       by arith from 3
+7 have h(x) = 5    by given from h, 5
+8 have h(1) = 2    by given from h
 9 calc |h(x) - h(1)|
-     = |5 - 2|                                  by arith from 7, 8
-     = 3                                        by arith
-     >= eps                                     by arith from 2
-10 qed                                          by def from 6, 9
+     = |5 - 2|     by arith from 7, 8
+     = 3           by arith
+     >= eps        by arith from 2
+10 qed             by def from 6, 9
 `;
 		const PROOF = {
 			course: "core@1",
@@ -33030,18 +34612,16 @@ goal not continuous(h, 1)
 			id: "core-not-continuous",
 			title: "פונקציה שאינה רציפה",
 			body: body([
-				R`<p>כדי להראות ש"$f$ לא רציפה ב-$c$" מראים את הטענה ההפוכה: יש $\varepsilon \gt 0$, כך שלכל $\delta \gt 0$
-יש $x$ עם $|x - c| \lt \delta$ ו-$|f(x) - f(c)| \ge \varepsilon$. כלומר, לא משנה כמה קרובים, תמיד יש נקודה שהערך שלה רחוק.</p>
-<p>את הטענה ההפוכה הליבה גוזרת בעצמה מההגדרה, בכללי הלוגיקה שלה. אתם לא צריכים לסמוך עלינו על הדרך להפוך את ההגדרה.
-כאן הפונקציה קופצת מ-$2$ ל-$5$ בנקודה $1$. בוחרים $\varepsilon = 1$, ולכל $\delta$ לוקחים נקודה מימין: $x = 1 + \frac{\delta}{2}$.</p>`,
+				R`<p>"$f$ לא רציפה ב-$c$" אומר: יש $\varepsilon \gt 0$ כך שלכל $\delta \gt 0$ יש $x$ עם $|x - c| \lt \delta$ ו-$|f(x) - f(c)| \ge \varepsilon$.</p>
+<p>את ההפוך של ההגדרה הליבה גוזרת בעצמה, ב-<code>unfold not</code>. כאן $f$ קופצת מ-$2$ ל-$5$ ב-$1$, ולכן $\varepsilon = 1$ ו-$x = 1 + \frac{\delta}{2}$.</p>`,
 				example({
 					id: "core-nc-worked",
 					title: "קפיצה ב-1",
 					code: "proof not-continuous-jump\n" + HEAD + EPS + D3 + X_OK + REST,
 					proof: PROOF
 				}),
-				R`<p>הנקודה $x$ חייבת להיות בצד שבו הפונקציה קופצת. כאן בחרנו $x = 1 - \frac{\delta}{2}$, משמאל. שם הערך הוא $2$, בדיוק כמו ב-$1$.</p>
-<p>הריצו את הבדיקה. שורה 5 נדחית: $x \gt 1$ לא נכון תמיד, וההודעה מראה מספרים שמפריכים אותו. כל מה שבא אחריה נעצר.</p>`,
+				R`<p>הנקודה $x$ חייבת להיות בצד של הקפיצה. כאן $x = 1 - \frac{\delta}{2}$ משמאל, שם הערך הוא $2$ כמו ב-$1$.</p>
+<p>הריצו: שורה 5 נדחית, כי $x \gt 1$ לא נכון תמיד, וכל מה שאחריה נעצר.</p>`,
 				example({
 					id: "core-nc-wrong",
 					title: "הנקודה בצד הלא נכון",
@@ -33049,8 +34629,8 @@ goal not continuous(h, 1)
 					proof: PROOF,
 					tests: [reject("5", "false-on-numbers")]
 				}),
-				R`<p>תורכם. $x$ כבר נבחר נכון. צריך לבחור את $\varepsilon$ בשורה 2.</p>
-<div class="callout"><b>רמז</b><p>הקפיצה היא מ-$2$ ל-$5$, כלומר $3$. השורה האחרונה בשרשרת צריכה להראות $3 \ge \varepsilon$. בחרו $\varepsilon$ קטן מספיק.</p></div>`,
+				R`<p>בחרו את $\varepsilon$ בשורה 2.</p>
+<div class="callout"><b>רמז</b><p>הקפיצה היא $3$, וסוף שורה 9 צריך להראות $3 \ge \varepsilon$.</p></div>`,
 				exercise({
 					id: "core-nc-eps",
 					title: "בחרו את אפסילון",
@@ -33099,9 +34679,9 @@ window.LabCourse = {
     <div class="kick">proof · core · ε-N</div>
     <h1>הוכחות על ליבה לוגית</h1>
     <p>כל ✓ בעמוד הזה ניתן על ידי ליבה לוגית קטנה. הליבה בונה את הטענה של כל שורה
-      מהשורות שהיא נשענת עליהן. אם הטענה שנבנתה אינה הטענה שכתבתם, השורה נדחית.
-      הקורס מראה הוכחות לפי ההגדרה (אפסילון-N, אפסילון-דלתא, נגזרת), הוכחות לפי משפטי הגבולות,
-      כלל הסנדוויץ' וסדרה מונוטונית, פונקציה שאינה רציפה, אינדוקציה, הוכחה במקרים והוכחה בשלילה.</p>
+      מהשורות שהיא נשענת עליהן, ושורה שאינה הטענה שכתבתם נדחית.
+      הנושאים: הגדרות (אפסילון-N, אפסילון-דלתא, נגזרת), משפטי הגבולות, סנדוויץ' וסדרה מונוטונית,
+      פונקציה שאינה רציפה, אינדוקציה, מקרים ושלילה.</p>
     <div class="chips"><span>ליבה קטנה</span><span>✓ לכל שורה</span><span>שורה שגויה נדחית</span></div>
     <p class="fine">העבודה שלכם נשמרת בדפדפן הזה.</p>`
 };
@@ -55052,7 +56632,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 24f119f מ-2026-11-15 21:21"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 24f119f</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 5492897 מ-2026-11-15 22:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 5492897</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
