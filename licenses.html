@@ -826,14 +826,88 @@ body.hub {
   font-weight: 500;
 }
 
-/* a narrow card (a phone): the long "continue" button gets a row of its own under the names */
+/* its two buttons, side by side: the red "× הפסקת מעקב" next to the names, then "▶ המשך"
+   (the owner, 2026-11-15: the course leaves "my courses", its saved work stays; hub-recent.js).
+   The size of the hub's main buttons (.btn: 42 px, 15 px text; the owner tried a smaller one and
+   chose this) */
+.recent-card .acts {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.recent-card .acts .btn {
+  position: relative;
+}
+
+/* red as the lab's stop and "yes, reset" buttons: outline and text in --err, a light tint on
+   hover (src/core/style.css .b.stop) */
+.hub .btn.stop {
+  border-color: var(--err);
+  background: transparent;
+  color: var(--err);
+}
+
+.hub .btn.stop:hover {
+  background: color-mix(in srgb, var(--err) 12%, transparent);
+}
+
+.btn.stop .x {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* the card leaving "my courses": it fades, then hides (hub-recent.js times it; at once when the
+   lab's motion is off) */
+.recent-card.leaving {
+  opacity: 0;
+  transform: scale(0.98);
+  transition:
+    opacity var(--leave-ms, 180ms) ease-in,
+    transform var(--leave-ms, 180ms) ease-in;
+}
+
+/* in its place for 10 s: what happened, and "↶ ביטול" (like the code box's reset) */
+.recent-undo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.recent-undo .u-t {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.recent-undo .u-name {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.recent-undo .btn {
+  height: 34px;
+  padding: 0 14px;
+  margin-inline-start: auto;
+}
+
+/* a narrow card (a phone): the two buttons get a row of their own under the names, sharing it */
 @container card (max-width: 479px) {
   .recent-card .card-h {
     flex-wrap: wrap;
   }
 
-  .recent-card .continue {
+  .recent-card .acts {
     flex-basis: 100%;
+  }
+
+  .recent-card .acts .btn {
+    flex: 1;
     justify-content: center;
   }
 }
