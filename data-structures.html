@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-G55hu6t5p3biWbqDNcQTavfz0WJOl2H/FUEJjxRmd8U=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-U8G/Se/eW30dtO6FXNbYOP7B7I3eHwoyukw84N+Q9VY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -27206,7 +27206,8 @@ title.put(5);`),
 			]
 		}));
 	}
-	const LIST_TITLES = R`import java.util.ArrayList;
+	{
+		const LIST_TITLES = R`import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
@@ -27222,7 +27223,7 @@ public class Main {
     }
 }
 `;
-	const LIST_NUMBERS = R`import java.util.ArrayList;
+		const LIST_NUMBERS = R`import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
@@ -27243,7 +27244,7 @@ public class Main {
     }
 }
 `;
-	const ADD_START = R`import java.util.ArrayList;
+		const ADD_START = R`import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
@@ -27256,8 +27257,8 @@ public class Main {
     }
 }
 `;
-	const ADD_SOLVED = ADD_START.replace("        // TODO: add \"Outro\" at the end\n", "        queue.add(\"Outro\");\n");
-	const LONG_START = R`import java.util.ArrayList;
+		const ADD_SOLVED = ADD_START.replace("        // TODO: add \"Outro\" at the end\n", "        queue.add(\"Outro\");\n");
+		const LONG_START = R`import java.util.ArrayList;
 
 public class Main {
     // the lengths of at least min seconds, in their order
@@ -27278,7 +27279,7 @@ public class Main {
     }
 }
 `;
-	const LONG_SOLVED = R`import java.util.ArrayList;
+		const LONG_SOLVED = R`import java.util.ArrayList;
 
 public class Main {
     // the lengths of at least min seconds, in their order
@@ -27306,105 +27307,105 @@ public class Main {
     }
 }
 `;
-	U.push(withOutputs({
-		id: "obj-arraylist",
-		title: "רשימה שגדלה",
-		body: [
-			R`<p><code>ArrayList&lt;T&gt;</code> היא מחלקה גנרית מוכנה של <bdi dir="ltr">Java</bdi>: מערך שגדל לבד כשמוסיפים לו.
+		U.push(withOutputs({
+			id: "obj-arraylist",
+			title: "רשימה שגדלה",
+			body: [
+				R`<p><code>ArrayList&lt;T&gt;</code> היא מחלקה גנרית מוכנה של <bdi dir="ltr">Java</bdi>: מערך שגדל לבד כשמוסיפים לו.
 היא יושבת ב-<code>java.util</code>, <b>חבילה</b>: קבוצה של מחלקות. לכן הקובץ מתחיל ב-<code>import</code>.</p>
 <table class="tbl"><tr><th>קריאה</th><th>פירוש</th></tr>
 <tr><td class="mono">add(x)</td><td>מוסיף בסוף</td></tr>
 <tr><td class="mono">get(i)</td><td>האיבר במקום <code>i</code>, מ-0 עד <code>size() - 1</code></td></tr>
 <tr><td class="mono">set(i, x)</td><td>מחליף את האיבר במקום <code>i</code></td></tr>
 <tr><td class="mono">size()</td><td>כמה איברים יש</td></tr></table>`,
-			{
-				id: "obj-arraylist-titles",
-				title: "רשימה של שירים",
-				code: LIST_TITLES,
-				tests: [io("size, the second song and the list", "", "3\nBlue Hour\n[Opening, Blue Hour, Outro]\n")]
-			},
-			R`<p>ברשימה יושבים רק אובייקטים, ולכן מספרים נשמרים בה כ-<code>Integer</code>. <code>add(95)</code> עוטף את 95 לבד,
+				{
+					id: "obj-arraylist-titles",
+					title: "רשימה של שירים",
+					code: LIST_TITLES,
+					tests: [io("size, the second song and the list", "", "3\nBlue Hour\n[Opening, Blue Hour, Outro]\n")]
+				},
+				R`<p>ברשימה יושבים רק אובייקטים, ולכן מספרים נשמרים בה כ-<code>Integer</code>. <code>add(95)</code> עוטף את 95 לבד,
 וה-<code>for</code> פותח כל אחד בחזרה ל-<code>int</code>.</p>
 <p>שני <code>Integer</code> משווים ב-<code>equals</code>, כמו מחרוזות: <code>==</code> שואל אם זה <b>אותו אובייקט</b>. הריצו.</p>`,
-			{
-				id: "obj-arraylist-numbers",
-				title: "רשימה של מספרים",
-				code: LIST_NUMBERS,
-				tests: [io("the total, equals and ==", "", "397\ntrue\nfalse\n")]
-			},
-			R`<p>תורכם: בתור חסר השיר האחרון.</p>`,
-			{
-				id: "obj-arraylist-add",
-				title: "השיר האחרון בתור",
-				task: "במקום ה-TODO הוסיפו את <code>\"Outro\"</code> בסוף הרשימה.",
-				code: ADD_START,
-				solution: ADD_SOLVED,
-				tests: [io("three songs", "", "3 [Intro, Blue Hour, Outro]\n")]
-			},
-			R`<p>עכשיו מתודה שמחזירה רשימה. מראש לא ידוע כמה אורכים יעברו את הסף, ולכן רשימה ולא מערך.</p>`,
-			{
-				id: "obj-arraylist-long",
-				title: "השירים הארוכים",
-				task: R`1. השלימו את <code>longOnes</code>: היא מוסיפה ל-<code>result</code> כל אורך של לפחות <code>min</code>, לפי הסדר.<br>
+				{
+					id: "obj-arraylist-numbers",
+					title: "רשימה של מספרים",
+					code: LIST_NUMBERS,
+					tests: [io("the total, equals and ==", "", "397\ntrue\nfalse\n")]
+				},
+				R`<p>תורכם: בתור חסר השיר האחרון.</p>`,
+				{
+					id: "obj-arraylist-add",
+					title: "השיר האחרון בתור",
+					task: "במקום ה-TODO הוסיפו את <code>\"Outro\"</code> בסוף הרשימה.",
+					code: ADD_START,
+					solution: ADD_SOLVED,
+					tests: [io("three songs", "", "3 [Intro, Blue Hour, Outro]\n")]
+				},
+				R`<p>עכשיו מתודה שמחזירה רשימה. מראש לא ידוע כמה אורכים יעברו את הסף, ולכן רשימה ולא מערך.</p>`,
+				{
+					id: "obj-arraylist-long",
+					title: "השירים הארוכים",
+					task: R`1. השלימו את <code>longOnes</code>: היא מוסיפה ל-<code>result</code> כל אורך של לפחות <code>min</code>, לפי הסדר.<br>
 2. ב-<code>main</code>, חברו את <code>longs</code> והדפיסו <code>total: </code> ואת הסכום.`,
-				code: LONG_START,
-				solution: LONG_SOLVED,
-				tests: [
-					io("the long lengths and their total", "", "[241, 300]\ntotal: 541\n"),
-					unit("longOnes keeps the order and includes min", R`int[] s = {120, 30, 100, 99, 200};
+					code: LONG_START,
+					solution: LONG_SOLVED,
+					tests: [
+						io("the long lengths and their total", "", "[241, 300]\ntotal: 541\n"),
+						unit("longOnes keeps the order and includes min", R`int[] s = {120, 30, 100, 99, 200};
 
 Check.eq("longOnes(s, 100)", Main.longOnes(s, 100).toString(), "[120, 100, 200]");`),
-					unit("no long songs gives an empty list", R`int[] s = {10, 20};
+						unit("no long songs gives an empty list", R`int[] s = {10, 20};
 
 Check.eq("longOnes(s, 100)", Main.longOnes(s, 100).toString(), "[]");`)
-				]
-			}
-		],
-		quiz: [
-			{
-				s: "מה מודפס?" + codeBlock(R`ArrayList<Integer> list = new ArrayList<>();
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "מה מודפס?" + codeBlock(R`ArrayList<Integer> list = new ArrayList<>();
 
 list.add(1);
 list.add(5);
 list.add(7);
 list.set(0, 9);
 System.out.println(list);`),
-				o: [
-					"<code>[1, 5, 7]</code>",
-					"<code>[9, 5, 7]</code>",
-					"<code>[9, 1, 5, 7]</code>",
-					"<code>[1, 9, 7]</code>"
-				],
-				a: 1,
-				w: "<code>set(0, 9)</code> מחליף את האיבר שבמקום 0, ולא מוסיף."
-			},
-			{
-				s: "ברשימה <code>list</code> שלושה איברים. מה קורה ב-<code>list.get(3)</code>?",
-				o: [
-					"מוחזר <code>null</code>",
-					"מוחזר האיבר האחרון",
-					"מוחזר 0",
-					"נזרקת חריגה, כמו במערך"
-				],
-				a: 3,
-				w: "המקומות הם 0 עד <code>size() - 1</code>, כלומר 0 עד 2."
-			},
-			{
-				s: "מה מודפס?" + codeBlock(R`Integer a = 1000;
+					o: [
+						"<code>[1, 5, 7]</code>",
+						"<code>[9, 5, 7]</code>",
+						"<code>[9, 1, 5, 7]</code>",
+						"<code>[1, 9, 7]</code>"
+					],
+					a: 1,
+					w: "<code>set(0, 9)</code> מחליף את האיבר שבמקום 0, ולא מוסיף."
+				},
+				{
+					s: "ברשימה <code>list</code> שלושה איברים. מה קורה ב-<code>list.get(3)</code>?",
+					o: [
+						"מוחזר <code>null</code>",
+						"מוחזר האיבר האחרון",
+						"מוחזר 0",
+						"נזרקת חריגה, כמו במערך"
+					],
+					a: 3,
+					w: "המקומות הם 0 עד <code>size() - 1</code>, כלומר 0 עד 2."
+				},
+				{
+					s: "מה מודפס?" + codeBlock(R`Integer a = 1000;
 Integer b = 1000;
 
 System.out.println(a.equals(b) + " " + (a == b));`),
-				o: [
-					"<code>true false</code>",
-					"<code>true true</code>",
-					"<code>false false</code>",
-					"<code>false true</code>"
-				],
-				a: 0,
-				w: "<code>equals</code> משווה את הערך, ו-<code>==</code> שואל אם זה אותו אובייקט, ואלה שני אובייקטים."
-			},
-			{
-				s: "מה מודפס?" + codeBlock(R`ArrayList<Integer> list = new ArrayList<>();
+					o: [
+						"<code>true false</code>",
+						"<code>true true</code>",
+						"<code>false false</code>",
+						"<code>false true</code>"
+					],
+					a: 0,
+					w: "<code>equals</code> משווה את הערך, ו-<code>==</code> שואל אם זה אותו אובייקט, ואלה שני אובייקטים."
+				},
+				{
+					s: "מה מודפס?" + codeBlock(R`ArrayList<Integer> list = new ArrayList<>();
 int t = 0;
 
 list.add(2);
@@ -27414,45 +27415,46 @@ for (int x : list) {
     t += x;
 }
 System.out.println(t + list.size());`),
-				o: [
-					"<code>93</code>",
-					"<code>9</code>",
-					"<code>12</code>",
-					"<code>3</code>"
-				],
-				a: 2,
-				w: "הסכום הוא 9, ויש 3 איברים: <code>9 + 3</code> בין שני מספרים הוא 12."
-			},
-			{
-				s: "איזו שורה <b>לא</b> עוברת הידור?",
-				o: [
-					"<code>ArrayList&lt;String&gt; a = new ArrayList&lt;&gt;();</code>",
-					"<code>ArrayList&lt;int&gt; b = new ArrayList&lt;&gt;();</code>",
-					"<code>ArrayList&lt;Integer&gt; c = new ArrayList&lt;&gt;();</code>",
-					"<code>ArrayList&lt;Box&lt;String&gt;&gt; d = new ArrayList&lt;&gt;();</code>"
-				],
-				a: 1,
-				w: "ברשימה יושבים רק אובייקטים: <code>Integer</code>, לא <code>int</code>."
-			},
-			{
-				s: "מה מודפס?" + codeBlock(R`ArrayList<String> q = new ArrayList<>();
+					o: [
+						"<code>93</code>",
+						"<code>9</code>",
+						"<code>12</code>",
+						"<code>3</code>"
+					],
+					a: 2,
+					w: "הסכום הוא 9, ויש 3 איברים: <code>9 + 3</code> בין שני מספרים הוא 12."
+				},
+				{
+					s: "איזו שורה <b>לא</b> עוברת הידור?",
+					o: [
+						"<code>ArrayList&lt;String&gt; a = new ArrayList&lt;&gt;();</code>",
+						"<code>ArrayList&lt;int&gt; b = new ArrayList&lt;&gt;();</code>",
+						"<code>ArrayList&lt;Integer&gt; c = new ArrayList&lt;&gt;();</code>",
+						"<code>ArrayList&lt;Box&lt;String&gt;&gt; d = new ArrayList&lt;&gt;();</code>"
+					],
+					a: 1,
+					w: "ברשימה יושבים רק אובייקטים: <code>Integer</code>, לא <code>int</code>."
+				},
+				{
+					s: "מה מודפס?" + codeBlock(R`ArrayList<String> q = new ArrayList<>();
 
 q.add("a");
 q.add("b");
 q.set(0, "c");
 q.add("d");
 System.out.println(q.get(0) + q.size());`),
-				o: [
-					"<code>a3</code>",
-					"<code>c2</code>",
-					"<code>d3</code>",
-					"<code>c3</code>"
-				],
-				a: 3,
-				w: "<code>set</code> החליף את <code>\"a\"</code> ב-<code>\"c\"</code>, ו-<code>add(\"d\")</code> הביא את הגודל ל-3."
-			}
-		]
-	}));
+					o: [
+						"<code>a3</code>",
+						"<code>c2</code>",
+						"<code>d3</code>",
+						"<code>c3</code>"
+					],
+					a: 3,
+					w: "<code>set</code> החליף את <code>\"a\"</code> ב-<code>\"c\"</code>, ו-<code>add(\"d\")</code> הביא את הגודל ל-3."
+				}
+			]
+		}));
+	}
 	{
 		const SONG_CLASS = R`public class Song {
     String title;
@@ -28316,6 +28318,7 @@ System.out.println(total);`),
     }
 }
 `;
+	const STEPS_FOUR = STEPS_TOTAL.replace("total(10)", "total(4)");
 	const STEPS_FORMULA_MAIN = R`
     // the length of a playlist of n songs, each 180 seconds long
     static int total(int n) {
@@ -28328,53 +28331,91 @@ System.out.println(total);`),
     }
 
     public static void main(String[] args) {
-        System.out.println("steps grow with n: 10 -> " + steps(10) + ", 20 -> " + steps(20));
+        System.out.println("steps grow with n: 10 -> " + steps(10)
+            + ", 20 -> " + steps(20));
     }
 }
 `;
 	const STEPS_FORMULA_START = R`public class Main {
-    // how many steps total(n) takes
+    // how many steps total(n) takes: s = 0, the header, the body, return
     static int steps(int n) {
-        return 0; // TODO: one line, a formula in n
+        // TODO: add the body's term: s += 180 runs n times
+        return 1 + (n + 2) + 1;
     }
 ` + STEPS_FORMULA_MAIN;
 	const STEPS_FORMULA_SOLVED = R`public class Main {
-    // how many steps total(n) takes
+    // how many steps total(n) takes: s = 0, the header, the body, return
     static int steps(int n) {
-        return 2 * n + 4;
+        return 1 + (n + 2) + n + 1;
     }
 ` + STEPS_FORMULA_MAIN;
+	const STEPS_MINUTES_MAIN = R`
+    // the seconds in n minutes, adding one minute at a time
+    static int seconds(int n) {
+        int s = 0;
+        int m = 0;
+
+        while (m < n) {
+            s += 60;
+            m++;
+        }
+        return s;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("steps: 0 -> " + steps(0)
+            + ", 10 -> " + steps(10));
+    }
+}
+`;
+	const STEPS_MINUTES_START = R`public class Main {
+    // how many steps seconds(n) takes
+    static int steps(int n) {
+        // TODO: count every line of seconds(n), then add them up
+        return 0;
+    }
+` + STEPS_MINUTES_MAIN;
+	const STEPS_MINUTES_SOLVED = R`public class Main {
+    // how many steps seconds(n) takes
+    static int steps(int n) {
+        return 2 + (n + 2) + 2 * n + 1;
+    }
+` + STEPS_MINUTES_MAIN;
 	U.push(withOutputs({
 		id: "cost-steps",
 		title: "מה סופרים כשמודדים קוד",
 		body: [
-			R`<p>שעון נותן תשובה אחרת בכל מחשב. לכן סופרים <b>צעדים</b>: פקודה שרצה היא צעד, וכל בדיקה
-של תנאי לולאה היא צעד. המספר תלוי רק בקוד ובקלט <code>n</code>.</p>
-<table class="tbl"><tr><th>נספר כצעד</th><th>לא נספר בנפרד</th></tr>
-<tr><td>פקודה: <code>int s = 0;</code>, <code>s += 180;</code>, <code>return s;</code></td>
-<td>ה-<code>i++</code> שבכותרת: הוא חלק מהסיבוב</td></tr>
-<tr><td>כניסה ללולאה (האתחול <code>int i = 1</code>), וכל בדיקה של <code>i &lt;= n</code></td>
-<td>הזמן שלוקח כל צעד: מניחים שכל הצעדים שווים</td></tr></table>
-<p>הריצו עד הסוף ופתחו את האי <b>ספירות</b>.</p>`,
+			R`<p>שעון נותן תשובה אחרת בכל מחשב, ולכן סופרים <b>צעדים</b>: מספר שתלוי רק בקוד ובקלט <code>n</code>.</p>
+<table class="tbl"><tr><th>צעד</th><th>דוגמה</th></tr>
+<tr><td>פקודה שרצה</td><td><code>int s = 0;</code>, <code>s += 180;</code>, <code>return s;</code></td></tr>
+<tr><td>כניסה ללולאה</td><td>פעם אחת, עם האתחול <code>int i = 1</code></td></tr>
+<tr><td>בדיקה של התנאי</td><td>כל בדיקה של <code>i &lt;= n</code>, גם זו שנכשלת</td></tr></table>
+<p>הריצו עד הסוף ופתחו את האי <b>ספירות</b>: תחת <bdi dir="ltr">steps, whole run</bdi> כתוב 25.</p>`,
 			{
 				id: "cost-steps-total",
 				title: "אורך רשימת השמעה",
 				code: STEPS_TOTAL,
 				tests: [io("prints 1800", "", "1800\n")]
 			},
-			R`<p>באי <b>ספירות</b>, תחת <bdi dir="ltr">steps, whole run</bdi>, כתוב <code>25</code>: צעד אחד של
-<code>main</code> (שורת ה-<code>println</code>) ו-24 של <code>total(10)</code>. בטבלה
-<bdi dir="ltr">lines run most</bdi> שורה 6 רצה 12 פעמים ושורה 7 רצה 10. ה-24:</p>
-<table class="tbl"><tr><th>שורה</th><th>כמה פעמים</th><th>למה</th></tr>
-<tr><td class="mono">int s = 0;</td><td>1</td><td>פעם אחת לפני הלולאה</td></tr>
-<tr><td class="mono">for (...; i &lt;= n; ...)</td><td>1 + 11</td><td>כניסה, 10 בדיקות שעוברות ואחת שנכשלת</td></tr>
-<tr><td class="mono">s += 180;</td><td>10</td><td>פעם בכל סיבוב</td></tr>
-<tr><td class="mono">return s;</td><td>1</td><td>פעם אחת בסוף</td></tr></table>
-<p>יחד <code>1 + 12 + 10 + 1 = 24</code>. ב-<code>n</code> כללי: <code>1 + (n + 2) + n + 1</code>.</p>`,
+			R`<p>עכשיו סופרים ביד, לרשימה של 4 שירים, ואז לכל <code>n</code>. שורת ה-<code>for</code> רצה פעם בכניסה
+ועוד <code>n + 1</code> בדיקות: <code>n</code> שעוברות ואחת שנכשלת.</p>
+<table class="tbl"><tr><th>שורה</th><th>n = 4</th><th>כל n</th></tr>
+<tr><td><code>int s = 0;</code></td><td>1</td><td>1</td></tr>
+<tr><td><code>for (...)</code></td><td><bdi dir="ltr">1 + 5</bdi></td><td>n + 2</td></tr>
+<tr><td><code>s += 180;</code></td><td>4</td><td>n</td></tr>
+<tr><td><code>return s;</code></td><td>1</td><td>1</td></tr></table>
+<p>יחד 12, ובכלל <code>1 + (n + 2) + n + 1 = 2n + 4</code>. באי כתוב 13: עוד צעד אחד של <code>main</code>.</p>`,
+			{
+				id: "cost-steps-four",
+				title: "ספירה ביד",
+				code: STEPS_FOUR,
+				tests: [io("prints 720", "", "720\n")]
+			},
+			R`<p>תורכם: בנוסחה של <code>steps</code> חסרה השורה של הגוף.</p>`,
 			{
 				id: "cost-steps-formula",
-				title: "steps",
-				task: R`השלימו את <code>steps(n)</code> <b>בשורה אחת</b>: נוסחה ב-<code>n</code> לצעדים של <code>total(n)</code>.`,
+				title: "האיבר החסר",
+				task: "במקום ה-TODO, הוסיפו לנוסחה את האיבר של <code>s += 180;</code>, שרץ <code>n</code> פעמים.",
 				code: STEPS_FORMULA_START,
 				solution: STEPS_FORMULA_SOLVED,
 				example: { output: "steps(10) -> 24\nsteps(20) -> 44" },
@@ -28390,6 +28431,29 @@ System.out.println(total);`),
 						20,
 						100
 					], { c0: 4 })
+				]
+			},
+			R`<p>עכשיו ספירה שלמה משלכם, ללולאת <code>while</code>. גם ל-<code>while</code> יש כניסה, ועוד בדיקה אחת יותר מהסיבובים.</p>`,
+			{
+				id: "cost-steps-minutes",
+				title: "צעדים של לולאת while",
+				task: R`השלימו את <code>steps(n)</code>, הצעדים של <code>seconds(n)</code>:<br>
+1. ספרו כמה פעמים רצה כל שורה, כמו בטבלה של העמוד הקודם.<br>
+2. החזירו את הסכום, נוסחה ב-<code>n</code>.`,
+				code: STEPS_MINUTES_START,
+				solution: STEPS_MINUTES_SOLVED,
+				example: { output: "steps(0) -> 5\nsteps(10) -> 35" },
+				tests: [
+					unit("steps(0) is 5", R`Check.eq("steps(0) is 5", Main.steps(0), 5);`),
+					unit("steps(1) is 8", R`Check.eq("steps(1) is 8", Main.steps(1), 8);`),
+					unit("steps(10) is 35", R`Check.eq("steps(10) is 35", Main.steps(10), 35);`),
+					io("main prints both counts", "", "steps: 0 -> 5, 10 -> 35\n"),
+					ops("seconds(n) really takes at most 3n + 5 steps", "Main.seconds(n)", "n", 3, [
+						0,
+						10,
+						20,
+						100
+					], { c0: 5 })
 				]
 			}
 		],
@@ -28410,7 +28474,7 @@ System.out.println(total);`),
 					"<code>16</code>"
 				],
 				a: 1,
-				w: "1 + 1 + 6 + 5 + 1 = 14, כלומר 2n + 4."
+				w: "1 + (1 + 6) + 5 + 1 = 14, כלומר 2n + 4."
 			},
 			{
 				s: "כמה פעמים נבדק התנאי <code>k &gt; 0</code> עבור <code>k = 4</code>?" + codeBlock(R`while (k > 0) {
@@ -28429,35 +28493,35 @@ System.out.println(total);`),
 			{
 				s: "קוד רץ 2 שניות במחשב אחד ו-0.5 שניות במחשב מהיר יותר. מה אפשר לומר על מספר הצעדים שלו, לאותו קלט?",
 				o: [
-					"במחשב המהיר הוא קטן פי 4",
 					"הוא אותו מספר בשני המחשבים",
+					"במחשב המהיר הוא קטן פי 4",
 					"אי אפשר לדעת בלי למדוד בשני המחשבים",
 					"הוא תלוי בכמה תוכניות אחרות רצות"
 				],
-				a: 1,
+				a: 0,
 				w: "הצעדים נקבעים לפי הקוד והקלט, לא לפי המחשב."
 			},
 			{
-				s: "לשיטה יש לולאה של <code>n</code> סיבובים, ובגוף שלה <b>שלוש</b> פקודות. לפני הלולאה פקודה אחת ואחריה <code>return</code>. כמה צעדים היא עושה?",
+				s: "לשיטה יש לולאת <code>for</code> של <code>n</code> סיבובים, ובגוף שלה <b>שלוש</b> פקודות. לפני הלולאה פקודה אחת ואחריה <code>return</code>. כמה צעדים היא עושה?",
 				o: [
 					"<code>3n + 4</code>",
-					"<code>4n + 4</code>",
 					"<code>3n + 3</code>",
-					"<code>4n + 5</code>"
+					"<code>4n + 5</code>",
+					"<code>4n + 4</code>"
 				],
-				a: 1,
-				w: "1 + 1 + (n + 1) + 3n + 1 = 4n + 4."
+				a: 3,
+				w: "1 + (n + 2) + 3n + 1 = 4n + 4."
 			},
 			{
-				s: "מה הדבר <b>היחיד</b> ששינוי מ-<code>total(10)</code> ל-<code>total(20)</code> משנה בטבלת הספירה?",
+				s: "מה <b>לא</b> משתנה בטבלת הספירה כשעוברים מ-<code>total(10)</code> ל-<code>total(20)</code>?",
 				o: [
-					"השורות שמחוץ ללולאה",
-					"מספר הפעמים של שורות הלולאה",
-					"מספר הצעדים של <code>main</code>",
-					"כמה זמן לוקח כל צעד"
+					"מספר הבדיקות של התנאי",
+					"מספר הפעמים של <code>return s;</code>",
+					"מספר הפעמים של <code>s += 180;</code>",
+					"סך הצעדים"
 				],
 				a: 1,
-				w: "מחוץ ללולאה הכול רץ פעם אחת; רק הכותרת והגוף גדלים."
+				w: "מחוץ ללולאה הכול רץ פעם אחת, לכל <code>n</code>."
 			}
 		]
 	}));
@@ -28477,10 +28541,26 @@ System.out.println(total);`),
     }
 
     public static void main(String[] args) {
-        System.out.println(countShort(new int[]{200, 95, 310, 150, 240}, 180));
+        int[] secs = {200, 95, 310, 150, 240};
+
+        System.out.println(countShort(secs, 180));
     }
 }
 `;
+	const TABLE_ALL_SHORT = TABLE_SHORT.replace("{200, 95, 310, 150, 240}", "{100, 95, 110, 150, 90}");
+	const TABLE_TESTS_START = R`public class Main {
+    // how many times countShort tests i < secs.length, for n songs
+    static int tests(int n) {
+        // TODO: one line: the test runs once more than the rounds
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("5 songs: " + tests(5) + " tests");
+    }
+}
+`;
+	const TABLE_TESTS_SOLVED = TABLE_TESTS_START.replace("        // TODO: one line: the test runs once more than the rounds\n        return 0;\n", "        return n + 1;\n");
 	const TABLE_INTRO_MAIN = R`
     // the seconds of n intros, 15 seconds each
     static int introSeconds(int n) {
@@ -28495,8 +28575,8 @@ System.out.println(total);`),
     }
 
     public static void main(String[] args) {
-        System.out.println("header tests " + tests(5) + ", body runs " + bodyRuns(5)
-            + ", steps " + steps(5));
+        System.out.println("header tests " + tests(5)
+            + ", body runs " + bodyRuns(5) + ", steps " + steps(5));
     }
 }
 `;
@@ -28534,33 +28614,52 @@ System.out.println(total);`),
 ` + TABLE_INTRO_MAIN;
 	U.push(withOutputs({
 		id: "cost-table",
-		title: "טבלת עלות: שורה כפול פעמים",
+		title: "טבלת עלות: כמה פעמים כל שורה",
 		body: [
-			R`<p>בונים לכל שיטה טבלה: לכל שורה, <b>כמה עולה</b> פעם אחת <b>וכמה פעמים</b> היא רצה. העלות
-היא סכום המכפלות. שורה פשוטה היא צעד; שורה שקוראת לשיטה עולה את כל צעדיה, בכל פעם.</p>
-<p>הדוגמה סופרת שירים קצרים מ-180 שניות. הריצו, והשוו לטבלה
-<bdi dir="ltr">lines run most</bdi> באי <b>ספירות</b>.</p>`,
+			R`<p><b>טבלת עלות</b> רושמת לכל שורה כמה פעמים היא רצה, והעלות היא הסכום. כאן חמישה שירים, ושניים קצרים מ-180 (95 ו-150):</p>
+<table class="tbl"><tr><th>קוד</th><th>פעמים</th><th>למה</th></tr>
+<tr><td><code>int count = 0;</code></td><td>1</td><td>לפני הלולאה</td></tr><tr><td><code>int i = 0;</code></td><td>1</td><td>לפני הלולאה</td></tr>
+<tr><td><code>while (i &lt; secs.length)</code></td><td><bdi dir="ltr">1 + 6</bdi></td><td>כניסה, 5 בדיקות שעוברות ואחת שנכשלת</td></tr>
+<tr><td><code>if (secs[i] &lt; limit)</code></td><td>5</td><td>בכל סיבוב</td></tr>
+<tr><td><code>count++;</code></td><td>2</td><td>רק כשהשיר קצר</td></tr>
+<tr><td><code>i++;</code></td><td>5</td><td>בכל סיבוב</td></tr>
+<tr><td><code>return count;</code></td><td>1</td><td>בסוף</td></tr></table>
+<p>יחד 22. הריצו: באי <b>ספירות</b> כתוב 24, עם שני הצעדים של <code>main</code>.</p>`,
 			{
 				id: "cost-table-short",
 				title: "שירים קצרים",
 				code: TABLE_SHORT,
 				tests: [io("prints 2", "", "2\n")]
 			},
-			R`<p>חמישה שירים, שניים קצרים מ-180 (95 ו-150):</p>
-<table class="tbl"><tr><th>שורה</th><th>קוד</th><th>פעמים</th><th>למה</th></tr>
-<tr><td>4, 5</td><td class="mono">int count = 0; int i = 0;</td><td>1 + 1</td><td>לפני הלולאה</td></tr>
-<tr><td>7</td><td class="mono">while (i &lt; secs.length)</td><td>1 + 6</td><td>כניסה, 5 בדיקות שעוברות ואחת שנכשלת</td></tr>
-<tr><td>8</td><td class="mono">if (secs[i] &lt; limit)</td><td>5</td><td>בכל סיבוב</td></tr>
-<tr><td>9</td><td class="mono">count++;</td><td>2</td><td>רק כשהשיר קצר</td></tr>
-<tr><td>11</td><td class="mono">i++;</td><td>5</td><td>בכל סיבוב</td></tr>
-<tr><td>13</td><td class="mono">return count;</td><td>1</td><td>בסוף</td></tr></table>
-<p>יחד 22 צעדים, ועוד צעד של <code>main</code>: באי כתוב 23. התנאי נבדק <b>פעם אחת יותר</b>
-מהגוף. שורה 9 תלויה בנתונים, לא רק ב-<code>n</code>.</p>`,
+			R`<p>אותו קוד, נתונים אחרים: עכשיו כל חמשת השירים קצרים, ו-<code>count++</code> רץ 5 פעמים במקום 2.</p>
+<p>יחד 25, ובאי 27. שורה בתוך <code>if</code> תלויה <b>בנתונים</b>, לא רק במספר השירים; כל השאר לא זז.</p>`,
+			{
+				id: "cost-table-all",
+				title: "כל השירים קצרים",
+				code: TABLE_ALL_SHORT,
+				tests: [io("prints 5", "", "5\n")]
+			},
+			R`<p>תורכם: כמה פעמים נבדק התנאי של <code>countShort</code> כשיש <code>n</code> שירים.</p>`,
+			{
+				id: "cost-table-tests",
+				title: "בדיקות התנאי",
+				task: "במקום ה-TODO, החזירו בשורה אחת את מספר הבדיקות של <code>i &lt; secs.length</code> ל-<code>n</code> שירים.",
+				code: TABLE_TESTS_START,
+				solution: TABLE_TESTS_SOLVED,
+				tests: [
+					unit("tests(5) is 6", R`Check.eq("tests(5) is 6", Main.tests(5), 6);`),
+					unit("tests(0) is 1: one failed test", R`Check.eq("tests(0) is 1", Main.tests(0), 1);`),
+					io("main prints 6", "", "5 songs: 6 tests\n")
+				]
+			},
+			R`<p>עכשיו טבלה שלמה ב-<code>n</code>, ללולאת <code>for</code> שבגוף שלה שתי שורות.</p>`,
 			{
 				id: "cost-table-intro",
-				title: "tests, bodyRuns, steps",
-				task: R`השלימו את שלוש השיטות של <code>introSeconds(n)</code>: בדיקות <code>song &lt; n</code>, ריצות הגוף,
-ו-<code>steps(n)</code>: <b>סכום הטבלה</b>, כשהכניסה ל-<code>for</code> היא צעד משלה.`,
+				title: "הטבלה של לולאת for",
+				task: R`השלימו את שלוש המתודות של <code>introSeconds(n)</code>:<br>
+1. <code>tests(n)</code>: כמה פעמים נבדק <code>song &lt; n</code>.<br>
+2. <code>bodyRuns(n)</code>: כמה פעמים רצה כל שורה בגוף.<br>
+3. <code>steps(n)</code>: סכום הטבלה, כשהכניסה ל-<code>for</code> היא צעד משלה.`,
 				code: TABLE_INTRO_START,
 				solution: TABLE_INTRO_SOLVED,
 				example: { output: "header tests 6, body runs 5, steps 20" },
@@ -28582,7 +28681,7 @@ Check.eq("tests(0) is 1", Main.tests(0), 1);`),
 		],
 		quiz: [
 			{
-				s: "כמה פעמים רצה שורה 4 עבור <code>n = 8</code>?" + codeBlock(R`int c = 0;
+				s: "כמה פעמים רצה <code>c++</code> עבור <code>n = 8</code>?" + codeBlock(R`int c = 0;
 
 for (int i = 0; i < n; i += 2) {
     c++;
@@ -28594,7 +28693,7 @@ for (int i = 0; i < n; i += 2) {
 					"<code>3</code>"
 				],
 				a: 1,
-				w: "<code>i</code> הוא 0, 2, 4 ו-6: הגוף רץ 4 פעמים, והתנאי נבדק 5."
+				w: "<code>i</code> הוא 0, 2, 4 ו-6: הגוף רץ 4 פעמים."
 			},
 			{
 				s: "כמה פעמים נבדק התנאי של הלולאה עבור <code>n = 8</code>, באותו קוד?",
@@ -28608,18 +28707,18 @@ for (int i = 0; i < n; i += 2) {
 				w: "ארבע שעוברות ואחת שנכשלת: חמש."
 			},
 			{
-				s: "בלולאה של <code>n</code> סיבובים, הגוף קורא בכל סיבוב ל-<code>total(m)</code>, שעולה <code>2m + 4</code> צעדים. כמה עולה שורת הקריאה בסך הכול?",
+				s: "כמה פעמים רץ <code>count++</code> ב-<code>countShort</code> על <code>{200, 300, 400}</code> עם <code>limit = 180</code>?",
 				o: [
-					"<code>n · (2m + 4)</code>",
-					"<code>n + 2m + 4</code>",
-					"<code>2m + 4</code>",
-					"<code>n</code>"
+					"<code>0</code>",
+					"<code>3</code>",
+					"<code>4</code>",
+					"<code>1</code>"
 				],
 				a: 0,
-				w: "n פעמים, וכל פעם כל הצעדים של <code>total(m)</code>."
+				w: "אף שיר לא קצר מ-180, ולכן התנאי של ה-<code>if</code> לא מתקיים אף פעם."
 			},
 			{
-				s: "כמה פעמים רצה <code>hits++</code>?" + codeBlock(R`int[] secs = {120, 300, 45, 300, 210};
+				s: "כמה פעמים רץ <code>hits++</code>?" + codeBlock(R`int[] secs = {120, 300, 45, 300, 210};
 int hits = 0;
 
 for (int i = 0; i < secs.length; i++) {
@@ -28637,7 +28736,7 @@ for (int i = 0; i < secs.length; i++) {
 				w: "<code>hits++</code> רץ רק כשהתנאי נכון: בתא 1 ובתא 3."
 			},
 			{
-				s: "באי <b>ספירות</b>, כמה פעמים תופיע שורת הכותרת של <code>for (int i = 0; i &lt; 3; i++)</code>?",
+				s: "באי <b>הספירות</b>, כמה פעמים נספרת שורת הכותרת של <code>for (int i = 0; i &lt; 3; i++)</code>?",
 				o: [
 					"<code>3</code>",
 					"<code>4</code>",
@@ -28645,6 +28744,17 @@ for (int i = 0; i < secs.length; i++) {
 				],
 				a: 2,
 				w: "כניסה אחת ועוד 4 בדיקות: 5."
+			},
+			{
+				s: "מה <b>לא</b> משתנה בטבלה של <code>countShort</code> כשמחליפים שירים, בלי לשנות את מספרם?",
+				o: [
+					"מספר הפעמים של <code>count++</code>",
+					"מספר הבדיקות של <code>i &lt; secs.length</code>",
+					"סך הצעדים",
+					"הערך שחוזר"
+				],
+				a: 1,
+				w: "הבדיקות תלויות רק במספר השירים, לא בתוכן שלהם."
 			}
 		]
 	}));
@@ -28666,6 +28776,43 @@ for (int i = 0; i < secs.length; i++) {
     }
 }
 `;
+	const SINGLE_THIRD = R`public class Main {
+    // the sum of every third song: songs 0, 3, 6, ...
+    static int everyThird(int[] secs) {
+        int s = 0;
+
+        for (int i = 0; i < secs.length; i += 3) {
+            s += secs[i];
+        }
+        return s;
+    }
+
+    public static void main(String[] args) {
+        int[] secs = {200, 95, 310, 150, 240, 180, 120};
+
+        System.out.println(everyThird(secs));
+    }
+}
+`;
+	const SINGLE_ADD_START = R`public class Main {
+    // the length of a playlist: the sum of its songs' seconds
+    static int totalSeconds(int[] secs) {
+        int s = 0;
+
+        for (int i = 0; i < secs.length; i++) {
+            // TODO: add the seconds of song i to s
+        }
+        return s;
+    }
+
+    public static void main(String[] args) {
+        int[] secs = {180, 240, 65};
+
+        System.out.println(totalSeconds(secs));
+    }
+}
+`;
+	const SINGLE_ADD_SOLVED = SINGLE_ADD_START.replace("            // TODO: add the seconds of song i to s\n", "            s += secs[i];\n");
 	const SINGLE_SUM_MAIN = R`
     public static void main(String[] args) {
         System.out.println(sumTo(100));
@@ -28697,9 +28844,9 @@ for (int i = 0; i < secs.length; i++) {
 		title: "לולאה אחת",
 		body: [
 			R`<p>לולאה של <code>n</code> סיבובים עם עבודה קבועה היא שורה של <code>n</code> קופסאות:</p>
-<pre class="code-static"><span>n = 4:  [s += secs[0]] [s += secs[1]] [s += secs[2]] [s += secs[3]]</span><span>n = 8:  [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]   twice as many boxes</span></pre>
-<p>כל קופסה היא 2 צעדים (תנאי וגוף), ועוד 4 קבועים: <code>totalSeconds</code> עושה
-<code>2n + 4</code>. הריצו, ובאי <b>ספירות</b> לחצו <b>מדידת גדילה</b>.</p>`,
+<pre class="code-static"><span>n = 4:  [ ] [ ] [ ] [ ]</span><span>n = 8:  [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]</span></pre>
+<p>כל קופסה היא סיבוב אחד: 2 צעדים (בדיקה ו-<code>s += secs[i]</code>), ועוד 4 קבועים: <code>totalSeconds</code> עושה <code>2n + 4</code>.
+הריצו, ובאי <b>ספירות</b> לחצו <b>מדידת גדילה</b>: הנקודות יושבות על קו ישר.</p>`,
 			{
 				id: "cost-single-total",
 				title: "אורך רשימה, לגדלים שונים",
@@ -28714,18 +28861,42 @@ for (int i = 0; i < secs.length; i++) {
 					setup: "int[] a = Check.range(n);"
 				})]
 			},
-			R`<p>המדידה על רשימות באורך 10, 20, 40 ו-80:</p>
-<table class="tbl"><tr><th><code>n</code></th><th>צעדים</th><th>פי כמה מהשורה הקודמת</th></tr>
-<tr><td>10</td><td>24</td><td></td></tr>
-<tr><td>20</td><td>44</td><td>1.83</td></tr>
-<tr><td>40</td><td>84</td><td>1.91</td></tr>
-<tr><td>80</td><td>164</td><td>1.95</td></tr></table>
-<p>קו ישר: פי 2 בקלט נותן כמעט פי 2 בצעדים. שיטה כזו <b>לינארית</b>: גדלה כמו <code>n</code>.
-גם <code>5n + 30</code> לינארית: המספרים רק משנים את השיפוע.</p>`,
+			R`<p>לולאה שקופצת ב-3 בכל סיבוב עושה בערך <code>n / 3</code> סיבובים, וגם הם גדלים פי 2 כשהקלט גדל פי 2:</p>
+<table class="tbl"><tr><th>n</th><th>סיבובים</th><th>צעדים</th></tr>
+<tr><td>30</td><td>10</td><td>24</td></tr>
+<tr><td>60</td><td>20</td><td>44</td></tr>
+<tr><td>120</td><td>40</td><td>84</td></tr></table>
+<p>שיטה כזו <b>לינארית</b>: הצעדים גדלים כמו <code>n</code>, פי 2 בקלט ובערך פי 2 בצעדים. המספר שמול <code>n</code> רק משנה את השיפוע.</p>`,
+			{
+				id: "cost-single-third",
+				title: "כל שיר שלישי",
+				code: SINGLE_THIRD,
+				tests: [io("prints 470", "", "470\n"), ops("everyThird takes at most n + 6 steps", "Main.everyThird(a)", "n", 1, [
+					30,
+					60,
+					120,
+					240
+				], {
+					c0: 6,
+					setup: "int[] a = Check.range(n);"
+				})]
+			},
+			R`<p>תורכם: בגוף הלולאה של <code>totalSeconds</code> חסרה השורה שמוסיפה.</p>`,
+			{
+				id: "cost-single-add",
+				title: "השורה שבגוף",
+				task: "במקום ה-TODO, הוסיפו ל-<code>s</code> את השניות של שיר <code>i</code>.",
+				code: SINGLE_ADD_START,
+				solution: SINGLE_ADD_SOLVED,
+				tests: [io("prints 485", "", "485\n"), unit("totalSeconds({1, 2, 3}) is 6", R`Check.eq("totalSeconds({1, 2, 3})", Main.totalSeconds(new int[]{1, 2, 3}), 6);`)]
+			},
+			R`<p>עכשיו לולאה לינארית משלכם, מההתחלה.</p>`,
 			{
 				id: "cost-single-sum",
-				title: "sumTo",
-				task: R`השלימו את <code>sumTo(n)</code>, שמחזירה <code>1 + 2 + ... + n</code>, <b>בלולאה אחת</b>.`,
+				title: "סכום עד n",
+				task: R`השלימו את <code>sumTo(n)</code>, שמחזירה <code>1 + 2 + ... + n</code>:<br>
+1. לולאה אחת, מ-<code>1</code> עד <code>n</code>.<br>
+2. בכל סיבוב, הוסיפו את <code>i</code> ל-<code>sum</code>.`,
 				code: SINGLE_SUM_START,
 				solution: SINGLE_SUM_SOLVED,
 				example: { output: "sumTo(100) -> 5050" },
@@ -28763,7 +28934,7 @@ for (int i = 0; i < n; i += 3) {
 					"<code>5</code>"
 				],
 				a: 2,
-				w: "<code>i</code> הוא 0, 3, 6 ו-9: ארבעה סיבובים, n/3, לינארי."
+				w: "<code>i</code> הוא 0, 3, 6 ו-9: ארבעה סיבובים, בערך n/3, לינארי."
 			},
 			{
 				s: "שיטה לינארית עשתה 1,000 צעדים עבור <code>n = 500</code>. בערך כמה צעדים היא תעשה עבור <code>n = 1500</code>?",
@@ -28817,6 +28988,17 @@ for (int i = 0; i < n; i += 3) {
 				],
 				a: 1,
 				w: "n ועוד n הם 2n: עדיין קו ישר."
+			},
+			{
+				s: "<code>everyThird</code> מהדוגמה השנייה, על 9 שירים. כמה סיבובים עושה הלולאה?",
+				o: [
+					"<code>9</code>",
+					"<code>4</code>",
+					"<code>2</code>",
+					"<code>3</code>"
+				],
+				a: 3,
+				w: "<code>i</code> הוא 0, 3 ו-6, ו-9 כבר לא קטן מ-9: שלושה סיבובים."
 			}
 		]
 	}));
@@ -28836,6 +29018,44 @@ for (int i = 0; i < n; i += 3) {
     }
 }
 `;
+	const NESTED_SAME = R`public class Main {
+    // how many pairs of indexes (i, j) have the same genre
+    static int sameGenre(String[] g) {
+        int count = 0;
+
+        for (int i = 0; i < g.length; i++) {
+            for (int j = 0; j < g.length; j++) {
+                if (g[i].equals(g[j])) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        String[] g = {"rock", "jazz", "rock"};
+
+        System.out.println(sameGenre(g));
+    }
+}
+`;
+	const CHART_START = R`public class Main {
+    // a chart with the number of each day in front of its row
+    static void printChart(int days, int songs) {
+        for (int d = 1; d <= days; d++) {
+            System.out.print(d + ": ");
+            // TODO: a loop over s that prints "# " songs times
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        printChart(2, 3);
+    }
+}
+`;
+	const CHART_SOLVED = CHART_START.replace("            // TODO: a loop over s that prints \"# \" songs times\n", "            for (int s = 0; s < songs; s++) {\n                System.out.print(\"# \");\n            }\n");
 	const NESTED_COUNT_MAIN = R`
     public static void main(String[] args) {
         System.out.println(countGrid(3, 4));
@@ -28847,7 +29067,8 @@ for (int i = 0; i < n; i += 3) {
     static int countGrid(int rows, int cols) {
         int count = 0;
 
-        // TODO: a loop over the rows, and inside it a loop over the columns that adds 1
+        // TODO: a loop over the rows, and inside it a loop over the
+        // columns that adds 1
         return count;
     }
 ` + NESTED_COUNT_MAIN;
@@ -28868,23 +29089,51 @@ for (int i = 0; i < n; i += 3) {
 		id: "cost-nested",
 		title: "לולאה בתוך לולאה",
 		body: [
-			R`<p>הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. שורה בפלט היא סיבוב של
-<code>d</code>, וכל <code>#</code> היא סיבוב של <code>s</code>.</p>`,
+			R`<p>הלולאה הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. שורה בפלט היא סיבוב של
+<code>d</code>, וכל <code>#</code> היא סיבוב של <code>s</code>:</p>
+<pre class="code-static"><span>d = 0:  #  #  #  #  #     5 rounds of s</span><span>d = 1:  #  #  #  #  #     5 rounds of s</span><span>d = 2:  #  #  #  #  #     5 rounds of s</span><span>                          3 × 5 = 15</span></pre>
+<p>הגוף הפנימי רץ <code>days · songs</code> פעמים: השטח של המלבן. הריצו.</p>`,
 			{
 				id: "cost-nested-grid",
 				title: "טבלה של ימים ושירים",
 				code: NESTED_GRID,
 				tests: [io("prints 3 rows of 5", "", "# # # # # \n# # # # # \n# # # # # \n")]
 			},
-			R`<p>החיצונית היא השורות, הפנימית העמודות:</p>
-<pre class="code-static"><span>          s = 0  1  2  3  4</span><span>d = 0:        #  #  #  #  #     5 rounds of s</span><span>d = 1:        #  #  #  #  #     5 rounds of s</span><span>d = 2:        #  #  #  #  #     5 rounds of s</span><span>                                 3 × 5 = 15</span></pre>
-<p>הגוף הפנימי רץ <code>days · songs</code> פעמים: שטח מלבן. כשהצלעות שוות זה
-<code>n · n</code>: <b>ריבועית</b>. פי 2 בקלט נותן פי 4 בצעדים.</p>
-<p>באי <b>ספירות</b>: שורה 6 רצה 15 פעמים, ושורה 8, בחיצונית בלבד, רק 3.</p>`,
+			R`<p>כאן כל שיר מושווה לכל שיר, גם לעצמו: <code>n</code> סיבובים בחוץ כפול <code>n</code> בפנים, כלומר
+<code>n · n</code> השוואות. שיטה כזו <b>ריבועית</b>: גדלה כמו <code>n²</code>.</p>
+<p>פי 2 בקלט נותן פי 4 בצעדים, כי המלבן גדל לשני הכיוונים. הריצו, ובאי <b>ספירות</b> לחצו
+<b>מדידת גדילה</b>.</p>`,
+			{
+				id: "cost-nested-same",
+				title: "כל שיר מול כל שיר",
+				code: NESTED_SAME,
+				tests: [io("prints 5", "", "5\n"), ops("sameGenre takes O(n²) steps", "Main.sameGenre(a)", "n2", 5, [
+					5,
+					10,
+					20,
+					40
+				], {
+					c0: 10,
+					setup: "String[] a = new String[n]; for (int k = 0; k < n; k++) { a[k] = \"x\"; }"
+				})]
+			},
+			R`<p>תורכם: בכל שורה של הטבלה חסרה הלולאה הפנימית.</p>`,
+			{
+				id: "cost-nested-chart",
+				title: "הלולאה הפנימית החסרה",
+				task: "במקום ה-TODO כתבו לולאה על <code>s</code> שמדפיסה <code>\"# \"</code> בדיוק <code>songs</code> פעמים.",
+				code: CHART_START,
+				solution: CHART_SOLVED,
+				tests: [io("two rows of three", "", "1: # # # \n2: # # # \n")]
+			},
+			R`<p>עכשיו ספירה: במקום להדפיס כל תא, מוסיפים 1. התוצאה היא השטח, <code>rows · cols</code>.</p>`,
 			{
 				id: "cost-nested-count",
-				title: "countGrid",
-				task: R`השלימו את <code>countGrid(rows, cols)</code>: <b>שתי לולאות, אחת בתוך השנייה</b>, והוסיפו 1 על כל תא.`,
+				title: "ספירת התאים",
+				task: R`השלימו את <code>countGrid(rows, cols)</code>:<br>
+1. לולאה על השורות.<br>
+2. בתוכה, לולאה על העמודות.<br>
+3. בגוף הפנימי, הוסיפו 1 ל-<code>count</code>.`,
 				code: NESTED_COUNT_START,
 				solution: NESTED_COUNT_SOLVED,
 				example: { output: "countGrid(3, 4) -> 12" },
@@ -28922,7 +29171,7 @@ Check.eq("countGrid(5, 0) is 0", Main.countGrid(5, 0), 0);`),
 					"<code>36</code>"
 				],
 				a: 2,
-				w: "8 סיבובים בחוץ, 4 בפנים: 32. הפנימית קבועה, אז זה גדל כמו n."
+				w: "8 סיבובים בחוץ כפול 4 בפנים הם 32, וזה גדל כמו <code>n</code> כי הפנימית קבועה."
 			},
 			{
 				s: "מה מודפס?" + codeBlock(R`int c = 0;
@@ -28947,12 +29196,12 @@ System.out.println(c);`),
 				s: "שיטה ריבועית עשתה 400 צעדים עבור <code>n = 10</code>. בערך כמה צעדים היא תעשה עבור <code>n = 20</code>?",
 				o: [
 					"<code>800</code>",
-					"<code>1,600</code>",
+					"<code>420</code>",
 					"<code>4,000</code>",
-					"<code>420</code>"
+					"<code>1,600</code>"
 				],
-				a: 1,
-				w: "הריבוע גדל לשני הכיוונים: פי 2 בכל צלע הוא פי 4 בשטח, 400 · 4."
+				a: 3,
+				w: "פי 2 בכל צלע הוא פי 4 בשטח: 400 · 4."
 			},
 			{
 				s: "כמה פעמים רץ <code>work++</code> עבור <code>n = 6</code>?" + codeBlock(R`for (int i = 0; i < n; i += 2) {
@@ -28967,7 +29216,7 @@ System.out.println(c);`),
 					"<code>21</code>"
 				],
 				a: 0,
-				w: "<code>i</code> הוא 0, 2 ו-4: שלוש שורות של 6. 3 · 6 = 18, עדיין ריבועי."
+				w: "<code>i</code> הוא 0, 2 ו-4: שלוש שורות של 6, כלומר 18, ועדיין ריבועי."
 			},
 			{
 				s: "איזה מהקטעים <b>אינו</b> גדל כמו <code>n²</code>?",
@@ -28978,7 +29227,7 @@ System.out.println(c);`),
 					"לולאה עד <code>n</code> ובתוכה לולאה עד <code>n / 3</code>"
 				],
 				a: 1,
-				w: "הפנימית קבועה (10), אז זה 10n: לינארי."
+				w: "הפנימית קבועה (10), ולכן זה <code>10n</code>: לינארי."
 			}
 		]
 	}));
@@ -28999,6 +29248,48 @@ System.out.println(c);`),
     }
 }
 `;
+	const DEP_SUM = R`public class Main {
+    // the rounds of the inner loop of the triangle, counted one by one
+    static int rounds(int n) {
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        int[] sizes = {5, 10, 20};
+
+        for (int n : sizes) {
+            int formula = n * (n - 1) / 2;
+
+            System.out.println(n + ": " + rounds(n) + " = " + formula);
+        }
+    }
+}
+`;
+	const AFTER_START = R`public class Main {
+    // every pair of songs once: song i with each song after it
+    static void printPairs(int n) {
+        for (int i = 0; i < n; i++) {
+            // TODO: start j right after i, so each pair is printed once
+            for (int j = 0; j < n; j++) {
+                System.out.print(i + "-" + j + " ");
+            }
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        printPairs(4);
+    }
+}
+`;
+	const AFTER_SOLVED = AFTER_START.replace("            // TODO: start j right after i, so each pair is printed once\n            for (int j = 0; j < n; j++) {\n", "            for (int j = i + 1; j < n; j++) {\n");
 	const DEP_PAIRS_MAIN = R`
     public static void main(String[] args) {
         System.out.println(countPairs(5));
@@ -29006,8 +29297,8 @@ System.out.println(c);`),
 }
 `;
 	const DEP_PAIRS_START = R`public class Main {
-    // how many pairs of two different songs a playlist of n songs has, counted one by one:
-    // song i with every song j after it
+    // how many pairs of two different songs a playlist of n songs has,
+    // counted one by one: song i with every song j after it
     static long countPairs(int n) {
         long count = 0;
 
@@ -29018,8 +29309,8 @@ System.out.println(c);`),
     }
 ` + DEP_PAIRS_MAIN;
 	const DEP_PAIRS_SOLVED = R`public class Main {
-    // how many pairs of two different songs a playlist of n songs has, counted one by one:
-    // song i with every song j after it
+    // how many pairs of two different songs a playlist of n songs has,
+    // counted one by one: song i with every song j after it
     static long countPairs(int n) {
         long count = 0;
 
@@ -29035,25 +29326,42 @@ System.out.println(c);`),
 		id: "cost-dependent",
 		title: "לולאה שתלויה בחיצונית",
 		body: [
-			R`<p>הגבול של הפנימית הוא <code>i</code>, אז כל שורה ארוכה בתא אחד מהקודמת. הריצו.</p>`,
+			R`<p>כאן הגבול של הלולאה הפנימית הוא <code>i</code>, המשתנה של החיצונית. לכן כל שורה ארוכה בתא אחד
+מהשורה שלפניה, והשורה הראשונה ריקה. הריצו.</p>`,
 			{
 				id: "cost-dependent-triangle",
 				title: "משולש של השוואות",
 				code: DEP_TRIANGLE,
 				tests: [io("prints the triangle", "", "0: \n1: # \n2: # # \n3: # # # \n4: # # # # \n")]
 			},
-			R`<p>משולש: חצי מהריבוע <code>n × n</code>, בלי האלכסון.</p>
-<pre class="code-static"><span>i = 0:                 0</span><span>i = 1:  #              1</span><span>i = 2:  #  #           2</span><span>i = 3:  #  #  #        3</span><span>i = 4:  #  #  #  #     4</span><span>                  0 + 1 + 2 + 3 + 4 = 10</span></pre>
-<p>מחברים בזוגות (ראשון עם אחרון): כל זוג נותן <code>n − 1</code>, ויש <code>n / 2</code> זוגות.
-הסכום <code>0 + 1 + ... + (n − 1)</code> הוא <code>n(n − 1) / 2</code>; עבור <code>n = 5</code>:
-<code>5 · 4 / 2 = 10</code>.</p>
-<p>חצי ריבוע הוא עדיין ריבוע: פי 2 ב-<code>n</code> נותן כמעט פי 4. הלולאה <b>גדלה כמו
-<code>n²</code></b>.</p>`,
+			R`<p>אורכי השורות הם 0, 1, עד <code>n − 1</code>, והסכום שלהם <code>0 + 1 + ... + (n − 1)</code>. מחברים ראשון עם אחרון, שני עם לפני אחרון: כל זוג
+נותן <code>n − 1</code>, ויש <code>n / 2</code> זוגות, ולכן הסכום הוא <code>n(n − 1) / 2</code>.</p>
+<pre class="code-static"><span>i = 0:                 0</span><span>i = 1:  #              1</span><span>i = 2:  #  #           2</span><span>i = 3:  #  #  #        3</span><span>i = 4:  #  #  #  #     4      0 + 1 + 2 + 3 + 4 = 10</span></pre>
+<p>זה חצי מהריבוע <code>n · n</code>, וחצי ריבוע הוא עדיין <b>ריבועי</b>: מ-10 ל-20 הסיבובים
+עולים מ-45 ל-190, קצת יותר מפי 4. הריצו.</p>`,
+			{
+				id: "cost-dependent-sum",
+				title: "הספירה מול הנוסחה",
+				code: DEP_SUM,
+				tests: [io("the count equals the formula", "", "5: 10 = 10\n10: 45 = 45\n20: 190 = 190\n")]
+			},
+			R`<p>תורכם: <code>printPairs</code> מדפיסה כל זוג פעמיים, ועוד כל שיר עם עצמו. הזוג <code>0-1</code>
+צריך להופיע פעם אחת, בלי <code>1-0</code>.</p>`,
+			{
+				id: "cost-dependent-after",
+				title: "כל זוג פעם אחת",
+				task: "החליפו את שורת הלולאה הפנימית, כך ש-<code>j</code> יתחיל ב-<code>i + 1</code>.",
+				code: AFTER_START,
+				solution: AFTER_SOLVED,
+				tests: [io("six pairs, each once", "", "0-1 0-2 0-3 1-2 1-3 2-3 \n")]
+			},
+			R`<p>עכשיו ספירה של הזוגות במקום הדפסה. עבור 5 שירים יוצא <code>5 · 4 / 2 = 10</code>.</p>`,
 			{
 				id: "cost-dependent-pairs",
-				title: "countPairs",
-				task: R`השלימו את <code>countPairs(n)</code> עם <b>לולאה פנימית שמתחילה ב-<code>j = i + 1</code></b>:
-כל זוג נספר פעם אחת.`,
+				title: "ספירת הזוגות",
+				task: R`השלימו את <code>countPairs(n)</code>:<br>
+1. במקום ה-TODO, לולאה פנימית על <code>j</code> מ-<code>i + 1</code> עד <code>n - 1</code>.<br>
+2. בגוף שלה, הוסיפו 1 ל-<code>count</code>.`,
 				code: DEP_PAIRS_START,
 				solution: DEP_PAIRS_SOLVED,
 				example: { output: "countPairs(5) -> 10" },
@@ -29086,7 +29394,7 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"<code>32</code>"
 				],
 				a: 2,
-				w: "0 + 1 + ... + 7 = 8 · 7 / 2 = 28: המשולש בלי האלכסון."
+				w: "<code>0 + 1 + ... + 7 = 8 · 7 / 2 = 28</code>: המשולש בלי האלכסון."
 			},
 			{
 				s: "ואם הפנימית היא <code>for (int j = 0; j &lt;= i; j++)</code>, כמה פעמים עבור <code>n = 8</code>?",
@@ -29097,7 +29405,7 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"<code>45</code>"
 				],
 				a: 1,
-				w: "עכשיו כל שורה ארוכה באחד: 1 + 2 + ... + 8 = 8 · 9 / 2 = 36. המשולש עם האלכסון."
+				w: "כל שורה ארוכה עכשיו באחד: <code>1 + 2 + ... + 8 = 36</code>, המשולש עם האלכסון."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 6</code>?" + codeBlock(R`for (int i = n; i > 0; i--) {
@@ -29112,7 +29420,7 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"<code>6</code>"
 				],
 				a: 0,
-				w: "השורות הפעם יורדות: 6 + 5 + 4 + 3 + 2 + 1 = 21. אותו משולש הפוך, וגם הוא גדל כמו n²."
+				w: "השורות יורדות, <code>6 + 5 + 4 + 3 + 2 + 1 = 21</code>: אותו משולש, הפוך."
 			},
 			{
 				s: "משולש של <code>n = 1000</code>: בערך כמה פעמים רץ הגוף של <code>for (j = 0; j &lt; i; j++)</code>?",
@@ -29123,7 +29431,7 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"<code>10,000</code>"
 				],
 				a: 2,
-				w: "1000 · 999 / 2 = 499,500: כמעט חצי מיליון, חצי מהריבוע."
+				w: "<code>1000 · 999 / 2 = 499,500</code>: כמעט חצי מיליון, חצי מהריבוע."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 5</code>?" + codeBlock(R`for (int i = 0; i < n; i++) {
@@ -29138,15 +29446,15 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"<code>15</code>"
 				],
 				a: 3,
-				w: "כש-<code>i = 0</code> הפנימית רצה 5 פעמים, אחר כך 4, 3, 2 ו-1: 15. משולש עם האלכסון."
+				w: "הפנימית רצה 5, 4, 3, 2 ואז 1 פעמים: 15, המשולש עם האלכסון."
 			},
 			{
-				s: "למה <code>countPairs</code> מתחילה את <code>j</code> ב-<code>i + 1</code> ולא ב-0?",
+				s: "למה <code>countPairs</code> <b>לא</b> מתחילה את <code>j</code> ב-0?",
 				o: [
-					"כדי שהקוד ירוץ מהר יותר, התשובה יוצאת אותה תשובה",
+					"כדי שהקוד ירוץ מהר יותר, והתשובה יוצאת אותה תשובה",
 					"כדי שכל זוג ייספר פעם אחת, ושיר לא ייספר עם עצמו",
 					"כי <code>j = 0</code> לא עובר הידור",
-					"אין הבדל: שתי הדרכים נותנות 10 עבור 5"
+					"אין סיבה: שתי הדרכים נותנות 10 עבור 5"
 				],
 				a: 1,
 				w: "מ-0 כל זוג נספר פעמיים, ועוד כל שיר עם עצמו: 25."
@@ -29154,7 +29462,8 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 		]
 	}));
 	const HALF_VALUES = R`public class Main {
-    // a playlist of n songs is cut in half again and again, until one song is left
+    // a playlist of n songs is cut in half again and again,
+    // until one song is left
     static void printHalves(int n) {
         int i = n;
 
@@ -29171,6 +29480,46 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
     }
 }
 `;
+	const HALF_ROUNDS = R`public class Main {
+    // how many numbers printHalves prints for n
+    static int rounds(int n) {
+        int count = 0;
+
+        for (int i = n; i >= 1; i /= 2) {
+            count++;
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        int[] sizes = {100, 200, 400, 1000, 1000000};
+
+        for (int n : sizes) {
+            System.out.println(n + ": " + rounds(n));
+        }
+    }
+}
+`;
+	const THIRDS_START = R`public class Main {
+    // how many times n can be divided by 3 until it is 1 or less
+    static int thirds(int n) {
+        int count = 0;
+        int i = n;
+
+        while (i > 1) {
+            i /= 3;
+            // TODO: count this round
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(thirds(81));
+        System.out.println(thirds(243));
+    }
+}
+`;
+	const THIRDS_SOLVED = THIRDS_START.replace("            // TODO: count this round\n", "            count++;\n");
 	const HALF_COUNT_MAIN = R`
     public static void main(String[] args) {
         System.out.println(halvings(100));
@@ -29204,25 +29553,42 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 		id: "cost-halving",
 		title: "לולאה שחוצה את n",
 		body: [
-			R`<p>כאן כל סיבוב <b>חוצה</b> את מה שנשאר: <code>i /= 2</code>. במספרים שלמים החלוקה מעגלת
-למטה: 25 / 2 הוא 12. הריצו.</p>`,
+			R`<p>כאן כל סיבוב <b>חוצה</b> את מה שנשאר: <code>i /= 2</code>. בחילוק של שלמים התוצאה מעוגלת
+למטה, ולכן 25 / 2 הוא 12. הריצו.</p>`,
 			{
 				id: "cost-halving-values",
 				title: "חצי, ועוד חצי",
 				code: HALF_VALUES,
 				tests: [io("prints the halves of 100 and of 200", "", "100 50 25 12 6 3 1 \n200 100 50 25 12 6 3 1 \n")]
 			},
-			R`<p>הסיבובים של <code>n = 100</code>:</p>
-<pre class="code-static"><span>100 → 50 → 25 → 12 → 6 → 3 → 1 → 0   (stop)</span><span> 1     2    3    4   5   6   7         rounds</span></pre>
-<p>7 סיבובים, לא 100. כל הכפלה של <code>n</code> מוסיפה סיבוב אחד:</p>
-<table class="tbl"><tr><th><code>n</code></th><th>100</th><th>200</th><th>400</th><th>1,000</th><th>1,000,000</th></tr>
-<tr><td>סיבובים</td><td>7</td><td>8</td><td>9</td><td>10</td><td>20</td></tr></table>
-<p>מספר החציות עד 1 הוא בערך <code>log₂ n</code>: <code>log₂ 1024 = 10</code>, כי
-<code>2¹⁰ = 1024</code>. הלולאה <b>גדלה כמו <code>log n</code></b>: מיליון שירים הם 20 סיבובים.</p>`,
+			R`<p>עבור 100 הלולאה רצה 7 פעמים, לא 100: על 100 עצמו ועוד 6 חציות. כל הכפלה של <code>n</code> מוסיפה סיבוב <b>אחד</b>: 200 הם 8.</p>
+<p><code>log₂ n</code> (לוג בבסיס 2) הוא <b>כמה פעמים אפשר לחצות את <code>n</code> עד שמגיעים ל-1</b>:
+<code>log₂ 1024 = 10</code>, כי <code>2¹⁰ = 1024</code>. לולאה שחוצה <b>גדלה כמו <code>log n</code></b>:
+מיליון הם רק 20 סיבובים. הריצו.</p>`,
+			{
+				id: "cost-halving-rounds",
+				title: "סיבוב אחד לכל הכפלה",
+				code: HALF_ROUNDS,
+				tests: [io("7, 8, 9, 10 and 20 rounds", "", "100: 7\n200: 8\n400: 9\n1000: 10\n1000000: 20\n")]
+			},
+			R`<p>תורכם: אותה לולאה, אבל חלוקה ב-3. היא מקטינה מהר יותר, ולכן יש פחות סיבובים: <code>log₃ n</code>.
+חסרה הספירה.</p>`,
+			{
+				id: "cost-halving-thirds",
+				title: "חלוקה ב-3",
+				task: "במקום ה-TODO הוסיפו 1 ל-<code>count</code>.",
+				code: THIRDS_START,
+				solution: THIRDS_SOLVED,
+				tests: [io("81 takes 4 rounds and 243 takes 5", "", "4\n5\n")]
+			},
+			R`<p>עכשיו הלולאה כולה. הפעם סופרים רק את החציות, בלי <code>n</code> עצמו: עבור 100 יוצא 6, כלומר 50, 25, 12, 6, 3 ו-1.</p>`,
 			{
 				id: "cost-halving-count",
-				title: "halvings",
-				task: R`השלימו את <code>halvings(n)</code>: <b>כל עוד <code>i &gt; 1</code></b>, חצו את <code>i</code> וספרו.`,
+				title: "כמה חציות",
+				task: R`השלימו את <code>halvings(n)</code>:<br>
+1. לולאה שרצה <b>כל עוד <code>i &gt; 1</code></b>.<br>
+2. בכל סיבוב, חצו את <code>i</code>.<br>
+3. וספרו את הסיבוב ב-<code>count</code>.`,
 				code: HALF_COUNT_START,
 				solution: HALF_COUNT_SOLVED,
 				example: { output: "halvings(100) -> 6" },
@@ -29257,7 +29623,7 @@ while (i > 1) {
 					"<code>8</code>"
 				],
 				a: 0,
-				w: "64, 32, 16, 8, 4, 2, ואז 1 עוצר: שש חלוקות, כי <code>2⁶ = 64</code>."
+				w: "64, 32, 16, 8, 4, 2 ואז 1 עוצר: שש חלוקות, כי <code>2⁶ = 64</code>."
 			},
 			{
 				s: "ובאותו קוד, כמה פעמים עבור <code>n = 100</code>?",
@@ -29268,7 +29634,7 @@ while (i > 1) {
 					"<code>10</code>"
 				],
 				a: 2,
-				w: "50, 25, 12, 6, 3, 1: שש חלוקות."
+				w: "50, 25, 12, 6, 3 ו-1: שש חלוקות."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 81</code>?" + codeBlock(R`for (int i = n; i > 0; i /= 3) {
@@ -29289,10 +29655,10 @@ while (i > 1) {
 					"<code>for (int i = n; i &gt; 0; i /= 2)</code>",
 					"<code>for (int i = n; i &gt; 1; i /= 10)</code>",
 					"<code>for (int i = n; i &gt; 0; i -= 2)</code>",
-					"<code>for (int i = 1; i &lt; n; i *= 2)</code>"
+					"<code>for (int i = n; i &gt; 2; i /= 4)</code>"
 				],
 				a: 2,
-				w: "<code>i -= 2</code> מוריד כמות קבועה: בערך n/2 סיבובים, לינארית."
+				w: "<code>i -= 2</code> מוריד כמות קבועה, בערך <code>n / 2</code> סיבובים: לינארית."
 			},
 			{
 				s: "לולאה שחוצה את <code>n</code> עשתה 15 סיבובים. כמה סיבובים תעשה עבור <code>4n</code>?",
@@ -29303,12 +29669,13 @@ while (i > 1) {
 					"<code>17</code>"
 				],
 				a: 3,
-				w: "כל הכפלה מוסיפה סיבוב, וכפל פי 4 הוא שתי הכפלות: 17."
+				w: "כפל פי 4 הוא שתי הכפלות, וכל הכפלה מוסיפה סיבוב: 17."
 			}
 		]
 	}));
-	const DOUBLE_VALUES = R`public class Main {
-    // the queue of a party grows: 1 song, then 2, then 4, ... while it is shorter than n
+	const CD_VALUES = R`public class Main {
+    // a party queue grows: 1 song, then 2, then 4, ...
+    // while it is shorter than n
     static void printDoubles(int n) {
         for (int i = 1; i < n; i *= 2) {
             System.out.print(i + " ");
@@ -29322,13 +29689,25 @@ while (i > 1) {
     }
 }
 `;
-	const DOUBLE_ZERO = R`public class Main {
+	const CD_ROUNDS = R`public class Main {
+    public static void main(String[] args) {
+        int n = 100;
+        int round = 0;
+
+        for (int i = 1; i < n; i *= 2) {
+            round++;
+            System.out.println("round " + round + ": i = " + i);
+        }
+    }
+}
+`;
+	const CD_ZERO = R`public class Main {
     public static void main(String[] args) {
         int n = 100;
         int rounds = 0;
         int i = 0;
 
-        // the guard rounds < 10 stops the loop; without it the loop never ends
+        // rounds < 10 stops it; without it the loop never ends
         while (i < n && rounds < 10) {
             i *= 2;
             rounds++;
@@ -29337,13 +29716,29 @@ while (i > 1) {
     }
 }
 `;
-	const DOUBLE_COUNT_MAIN = R`
+	const CD_START_ONE = R`public class Main {
+    public static void main(String[] args) {
+        int n = 100;
+        int rounds = 0;
+        // TODO: start i at 1, so that doubling moves it
+        int i = 0;
+
+        while (i < n && rounds < 10) {
+            i *= 2;
+            rounds++;
+        }
+        System.out.println("after " + rounds + " rounds i is " + i);
+    }
+}
+`;
+	const CD_START_ONE_SOLVED = CD_START_ONE.replace("        // TODO: start i at 1, so that doubling moves it\n        int i = 0;\n", "        int i = 1;\n");
+	const CD_COUNT_MAIN = R`
     public static void main(String[] args) {
         System.out.println(doublings(100));
     }
 }
 `;
-	const DOUBLE_COUNT_START = R`public class Main {
+	const CD_COUNT_START = R`public class Main {
     // how many rounds of for (i = 1; i < n; i *= 2) there are
     static int doublings(int n) {
         int count = 0;
@@ -29351,8 +29746,8 @@ while (i > 1) {
         // TODO: that loop, counting its rounds
         return count;
     }
-` + DOUBLE_COUNT_MAIN;
-	const DOUBLE_COUNT_SOLVED = R`public class Main {
+` + CD_COUNT_MAIN;
+	const CD_COUNT_SOLVED = R`public class Main {
     // how many rounds of for (i = 1; i < n; i *= 2) there are
     static int doublings(int n) {
         int count = 0;
@@ -29362,38 +29757,53 @@ while (i > 1) {
         }
         return count;
     }
-` + DOUBLE_COUNT_MAIN;
+` + CD_COUNT_MAIN;
 	U.push(withOutputs({
 		id: "cost-doubling",
 		title: "לולאה שמכפילה",
 		body: [
-			R`<p>מתחילים ב-1 ו<b>מכפילים</b> את <code>i</code> בכל סיבוב, עד ש-<code>i</code> מגיע ל-<code>n</code>.</p>`,
+			R`<p>מתחילים ב-1 ו<b>מכפילים</b> את <code>i</code> בכל סיבוב, עד ש-<code>i</code> מגיע ל-<code>n</code>. הריצו.</p>`,
 			{
 				id: "cost-doubling-values",
 				title: "פי 2, ועוד פי 2",
-				code: DOUBLE_VALUES,
+				code: CD_VALUES,
 				tests: [io("prints the doubles below 100 and below 64", "", "1 2 4 8 16 32 64 \n1 2 4 8 16 32 \n")]
 			},
-			R`<p>אלה ערכי החלוקה, בסדר הפוך:</p>
-<pre class="code-static"><span>i:      1   2   4   8   16   32   64   128 (stop: not &lt; 100)</span><span>round:  1   2   3   4    5    6    7</span></pre>
-<p>אחרי <code>k</code> סיבובים <code>i</code> הוא <code>2ᵏ</code>, אז הלולאה רצה בערך
-<code>log₂ n</code> פעמים: 7 עבור 100, ו-6 בדיוק עבור 64. היא גדלה כמו <code>log n</code>.</p>
-<p>ומה אם <code>i</code> מתחיל ב-0?</p>`,
+			R`<p>אחרי <code>k</code> סיבובים <code>i</code> הוא <code>2<sup>k</sup></code>. הלולאה נעצרת כש-<code>2<sup>k</sup></code>
+מגיע ל-<code>n</code>, ולכן היא רצה בערך <code>log₂ n</code> פעמים: 7 עבור 100.</p>
+<p>זו לולאת החציה מהשיעור הקודם, בכיוון ההפוך, וגם היא גדלה כמו <code>log n</code>. הריצו.</p>`,
+			{
+				id: "cost-doubling-rounds",
+				title: "סיבוב אחר סיבוב",
+				code: CD_ROUNDS,
+				tests: [io("seven rounds, i from 1 to 64", "", "round 1: i = 1\nround 2: i = 2\nround 3: i = 4\nround 4: i = 8\nround 5: i = 16\nround 6: i = 32\nround 7: i = 64\n")]
+			},
+			R`<p>ומה אם <code>i</code> מתחיל ב-0? <b>0 כפול 2 הוא 0</b>: <code>i</code> לא זז, ו-<code>i &lt; n</code> נשאר נכון תמיד.</p>
+<p>כאן השומר <code>rounds &lt; 10</code> עוצר אותה; בלעדיו הלולאה לא נגמרת. הריצו.</p>`,
 			{
 				id: "cost-doubling-zero",
 				title: "מתחילים מ-0",
-				code: DOUBLE_ZERO,
+				code: CD_ZERO,
 				tests: [io("i stays 0", "", "after 10 rounds i is 0\n")]
 			},
-			R`<div class="callout warn"><b>0 כפול 2 הוא 0</b><p><code>i</code> לא זז, ו-<code>i &lt; n</code> נשאר נכון תמיד. בלי השומר
-<code>rounds &lt; 10</code> הלולאה אינסופית. לולאה שמכפילה מתחילה ב-1 או בכל מספר חיובי.</p></div>`,
+			R`<p>תורכם: <code>i</code> מתחיל ב-0, ולכן הוא לא זז. לולאה שמכפילה מתחילה ב-1.</p>`,
+			{
+				id: "cost-doubling-start",
+				title: "ההתחלה הנכונה",
+				task: "במקום ה-TODO והשורה שאחריו, התחילו את <code>i</code> ב-<code>1</code>.",
+				code: CD_START_ONE,
+				solution: CD_START_ONE_SOLVED,
+				tests: [io("seven rounds reach 128", "", "after 7 rounds i is 128\n")]
+			},
+			R`<p>עכשיו אותה ספירה כמו בדוגמה השנייה, במתודה שמחזירה את מספר הסיבובים.</p>`,
 			{
 				id: "cost-doubling-count",
-				title: "doublings",
-				task: R`השלימו את <code>doublings(n)</code>: הריצו <b>בדיוק את הלולאה <code>for (i = 1; i &lt; n; i *= 2)</code></b>
-וספרו סיבובים.`,
-				code: DOUBLE_COUNT_START,
-				solution: DOUBLE_COUNT_SOLVED,
+				title: "כמה הכפלות",
+				task: R`השלימו את <code>doublings(n)</code>:<br>
+1. כתבו בדיוק את הלולאה <code>for (int i = 1; i &lt; n; i *= 2)</code>.<br>
+2. בכל סיבוב הוסיפו 1 ל-<code>count</code>.`,
+				code: CD_COUNT_START,
+				solution: CD_COUNT_SOLVED,
 				example: { output: "doublings(100) -> 7" },
 				tests: [
 					unit("doublings(100) is 7: 1, 2, 4, 8, 16, 32, 64", R`Check.eq("doublings(100) is 7", Main.doublings(100), 7);`),
@@ -29413,7 +29823,7 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 		],
 		quiz: [
 			{
-				s: "כמה פעמים רצה שורה 2 עבור <code>n = 40</code>?" + codeBlock(R`for (int i = 1; i < n; i *= 2) {
+				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 40</code>?" + codeBlock(R`for (int i = 1; i < n; i *= 2) {
     c++;
 }`),
 				o: [
@@ -29423,7 +29833,7 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 					"<code>7</code>"
 				],
 				a: 1,
-				w: "<code>i</code> הוא 1, 2, 4, 8, 16 ו-32; 64 כבר לא קטן מ-40. שישה סיבובים."
+				w: "<code>i</code> עובר על 1, 2, 4, 8, 16 ו-32, שישה סיבובים, ו-64 כבר לא קטן מ-40."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 100</code>?" + codeBlock(R`for (int i = 1; i <= n; i *= 3) {
@@ -29432,24 +29842,24 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 				o: [
 					"<code>4</code>",
 					"<code>33</code>",
-					"<code>5</code>",
-					"<code>6</code>"
+					"<code>6</code>",
+					"<code>5</code>"
 				],
-				a: 2,
-				w: "1, 3, 9, 27 ו-81; 243 כבר גדול מ-100. חמישה סיבובים."
+				a: 3,
+				w: "<code>i</code> עובר על 1, 3, 9, 27 ו-81, ו-243 כבר גדול מ-100."
 			},
 			{
 				s: "מה קורה בלולאה הזאת עבור <code>n = 10</code>?" + codeBlock(R`for (int i = 0; i < n; i *= 2) {
     System.out.println(i);
 }`),
 				o: [
+					"היא מדפיסה 0 שוב ושוב ולא נגמרת",
 					"מודפסים 0, 2, 4, 8",
 					"לא מודפס כלום",
-					"היא מדפיסה 0 שוב ושוב ולא נגמרת",
 					"מודפס 0 פעם אחת"
 				],
-				a: 2,
-				w: "<code>i</code> מתחיל ב-0, ו-0 כפול 2 נשאר 0: התנאי <code>0 &lt; 10</code> תמיד נכון."
+				a: 0,
+				w: "0 כפול 2 נשאר 0, ולכן התנאי <code>0 &lt; 10</code> נכון תמיד."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 16</code>?" + codeBlock(R`for (int i = 1; i < n; i *= 2) {
@@ -29458,29 +29868,41 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
     }
 }`),
 				o: [
-					"<code>12</code>",
 					"<code>48</code>",
 					"<code>15</code>",
+					"<code>12</code>",
 					"<code>4</code>"
 				],
-				a: 0,
-				w: "ארבעה סיבובים (1, 2, 4, 8), ובכל אחד 3: 12."
+				a: 2,
+				w: "ארבעה סיבובים בחוץ (1, 2, 4, 8), ובכל אחד 3 בפנים: 12."
 			},
 			{
-				s: "איזה ערך התחלה של <code>i</code> עושה את <code>for (...; i &lt; 1000; i *= 2)</code> ללולאה הקצרה ביותר שעדיין נגמרת?",
+				s: "מאיזה ערך התחלה של <code>i</code> הלולאה <code>for (...; i &lt; 1000; i *= 2)</code> הכי קצרה, ועדיין נגמרת?",
 				o: [
 					"<code>i = 0</code>",
 					"<code>i = 1</code>",
-					"<code>i = 500</code>",
-					"<code>i = 100</code>"
+					"<code>i = 100</code>",
+					"<code>i = 500</code>"
+				],
+				a: 3,
+				w: "מ-500 יש סיבוב אחד, מ-100 ארבעה, מ-1 עשרה, ומ-0 היא לא נגמרת."
+			},
+			{
+				s: "איזו לולאה <b>לא</b> רצה בערך <code>log₂ n</code> פעמים?",
+				o: [
+					"<code>for (int i = 1; i &lt; n; i *= 2)</code>",
+					"<code>for (int i = n; i &gt;= 1; i /= 2)</code>",
+					"<code>for (int i = 1; i &lt; n; i += 2)</code>",
+					"<code>for (int i = 2; i &lt; n; i *= 2)</code>"
 				],
 				a: 2,
-				w: "מ-500 יש סיבוב אחד; מ-100 ארבעה, מ-1 עשרה, ומ-0 היא לא נגמרת."
+				w: "<code>i += 2</code> מוסיף כמות קבועה, ולכן היא רצה בערך <code>n/2</code> פעמים: לינארית."
 			}
 		]
 	}));
-	const TRAPS_FIXED = R`public class Main {
-    // compares the 100 most played songs with each other, however many songs the app has
+	const CF_CHART = R`public class Main {
+    // compares the 100 most played songs with each other,
+    // however many songs the app has
     static int chartWork(int n) {
         int work = 0;
 
@@ -29498,15 +29920,279 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
     }
 }
 `;
-	const TRAPS_SHRINK_MAIN = R`
+	const CF_WEEK = R`public class Main {
+    // on how many days of a fixed week a song had at least n plays
+    static int busyDays(int n) {
+        int[] plays = {12, 40, 7, 55, 30, 9, 61};
+        int days = 0;
+
+        for (int d = 0; d < 7; d++) {
+            if (plays[d] >= n) {
+                days++;
+            }
+        }
+        return days;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(busyDays(10));
+        System.out.println(busyDays(1000000));
+    }
+}
+`;
+	const CF_TOP_START = R`public class Main {
+    // the plays of the 10 first songs; plays has at least 10 cells
+    static int topTen(int[] plays) {
+        int sum = 0;
+
+        // TODO: go over the first 10 cells only, whatever the length
+        for (int i = 0; i < plays.length; i++) {
+            sum += plays[i];
+        }
+        return sum;
+    }
+
+    public static void main(String[] args) {
+        int[] plays = {9, 9, 8, 8, 7, 7, 6, 6, 5, 5, 1, 1, 1};
+
+        System.out.println(topTen(plays));
+    }
+}
+`;
+	const CF_TOP_SOLVED = CF_TOP_START.replace("        // TODO: go over the first 10 cells only, whatever the length\n        for (int i = 0; i < plays.length; i++) {\n", "        for (int i = 0; i < 10; i++) {\n");
+	const CF_PAIRS_MAIN = R`
+    public static void main(String[] args) {
+        int[] plays = {7, 3, 7, 3, 7, 7, 7, 7};
+
+        System.out.println(topPairs(plays));
+    }
+}
+`;
+	const CF_PAIRS_START = R`public class Main {
+    // how many pairs i < j among the first 5 cells have the same plays
+    static int topPairs(int[] plays) {
+        int pairs = 0;
+
+        // TODO: two loops over the first 5 cells only, j from i + 1
+        return pairs;
+    }
+` + CF_PAIRS_MAIN;
+	const CF_PAIRS_SOLVED = R`public class Main {
+    // how many pairs i < j among the first 5 cells have the same plays
+    static int topPairs(int[] plays) {
+        int pairs = 0;
+
+        for (int i = 0; i < 5; i++) {
+            for (int j = i + 1; j < 5; j++) {
+                if (plays[i] == plays[j]) {
+                    pairs++;
+                }
+            }
+        }
+        return pairs;
+    }
+` + CF_PAIRS_MAIN;
+	const CF_ARRAY = { setup: "int[] a = new int[n];" };
+	U.push(withOutputs({
+		id: "cost-fixed",
+		title: "גבולות קבועים",
+		body: [
+			R`<p>שתי לולאות מקוננות, ובכל זאת שום גבול לא תלוי ב-<code>n</code>: תמיד <code>100 · 100</code> סיבובים.</p>
+<p>עבודה <b>קבועה</b> היא עבודה שלא גדלה כש-<code>n</code> גדל. <code>chartWork(10)</code> ו-<code>chartWork(5000)</code>
+עושות אותה עבודה. הריצו.</p>`,
+			{
+				id: "cost-traps-fixed",
+				title: "מאה כפול מאה",
+				code: CF_CHART,
+				tests: [io("the same work for 10 and for 5000", "", "10000\n10000\n"), ops("chartWork takes at most 25,000 steps for every n", "Main.chartWork(n)", "1", 1, [
+					10,
+					1e3,
+					1e5
+				], { c0: 24999 })]
+			},
+			R`<p>כאן <code>n</code> מופיע <b>בתוך</b> הלולאה, אבל לא בגבול שלה: תמיד 7 סיבובים, אחד לכל יום.</p>
+<p>העלות נקבעת לפי <b>כמה פעמים הלולאה רצה</b>, לא לפי הערכים שהיא בודקת. הריצו.</p>`,
+			{
+				id: "cost-fixed-week",
+				title: "שבוע של שבעה ימים",
+				code: CF_WEEK,
+				tests: [io("5 busy days for 10, none for a million", "", "5\n0\n"), ops("busyDays takes the same steps for every n", "Main.busyDays(n)", "1", 1, [
+					10,
+					1e3,
+					1e6
+				], { c0: 100 })]
+			},
+			R`<p>תורכם: <code>topTen</code> צריכה לסכם רק את 10 השירים הראשונים, אבל הלולאה שלה רצה על כל המערך.</p>`,
+			{
+				id: "cost-fixed-top",
+				title: "רק עשרה",
+				task: "במקום ה-TODO והשורה שאחריו, כתבו לולאה שרצה בדיוק 10 סיבובים.",
+				code: CF_TOP_START,
+				solution: CF_TOP_SOLVED,
+				tests: [io("the first ten add up to 70", "", "70\n"), ops("topTen takes the same steps for every length", "Main.topTen(a)", "1", 1, [
+					10,
+					1e3,
+					1e5
+				], Object.assign({ c0: 40 }, CF_ARRAY))]
+			},
+			R`<p>עכשיו שתי לולאות משלכם, שתיהן בגבול קבוע: גם במערך של מיליון שירים הן בודקות רק את חמשת הראשונים.
+<code>j</code> מתחיל אחרי <code>i</code>, כמו בשיעור "לולאה שתלויה בחיצונית".</p>`,
+			{
+				id: "cost-fixed-pairs",
+				title: "זוגות בראש הרשימה",
+				task: R`השלימו את <code>topPairs</code>:<br>
+1. לולאה על <code>i</code> מ-0 עד 5, לא כולל.<br>
+2. בתוכה, לולאה על <code>j</code> מ-<code>i + 1</code> עד 5, לא כולל.<br>
+3. כש-<code>plays[i] == plays[j]</code>, הוסיפו 1 ל-<code>pairs</code>.`,
+				code: CF_PAIRS_START,
+				solution: CF_PAIRS_SOLVED,
+				example: { output: "topPairs({7, 3, 7, 3, 7, 7, 7, 7}) -> 4" },
+				tests: [
+					io("main prints 4: three pairs of 7 and one of 3", "", "4\n"),
+					unit("five equal cells make 10 pairs", R`Check.eq("topPairs({1, 1, 1, 1, 1, 1, 1})", Main.topPairs(new int[] {1, 1, 1, 1, 1, 1, 1}), 10);`),
+					unit("the sixth cell is not counted", R`Check.eq("topPairs({1, 2, 3, 4, 5, 1})", Main.topPairs(new int[] {1, 2, 3, 4, 5, 1}), 0);`),
+					ops("topPairs takes the same steps for every length", "Main.topPairs(a)", "1", 1, [
+						10,
+						1e3,
+						1e5
+					], Object.assign({ c0: 120 }, CF_ARRAY))
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "איך גדל מספר הסיבובים של הקוד הזה כש-<code>n</code> גדל?" + codeBlock(R`for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1000; j++) {
+        if (j == n) {
+            hits++;
+        }
+    }
+}`),
+				o: [
+					"הוא קבוע: מיליון סיבובים לכל <code>n</code>",
+					"כמו <code>n²</code>",
+					"כמו <code>n</code>",
+					"כמו <code>log n</code>"
+				],
+				a: 0,
+				w: "<code>n</code> לא מופיע בגבול של אף לולאה, ולכן תמיד <code>1000 · 1000</code> סיבובים."
+			},
+			{
+				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 5</code>?" + codeBlock(R`for (int i = 0; i < n; i++) {
+    for (int j = 0; j < 3; j++) {
+        c++;
+    }
+}
+for (int k = 0; k < n; k++) {
+    c++;
+}`),
+				o: [
+					"<code>15</code>",
+					"<code>75</code>",
+					"<code>23</code>",
+					"<code>20</code>"
+				],
+				a: 3,
+				w: "<code>5 · 3 = 15</code> בלולאות הראשונות, ועוד 5 בשנייה: 20."
+			},
+			{
+				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 1000</code>?" + codeBlock(R`for (int h = 0; h < 24; h++) {
+    c++;
+}`),
+				o: [
+					"<code>1000</code>",
+					"<code>24</code>",
+					"<code>24000</code>",
+					"<code>0</code>"
+				],
+				a: 1,
+				w: "הגבול הוא 24, ו-<code>n</code> לא מופיע בלולאה בכלל."
+			},
+			{
+				s: "איזה קטע <b>לא</b> עושה עבודה קבועה?",
+				o: [
+					"לולאה עד <code>100</code>",
+					"לולאה עד <code>10</code> ובתוכה לולאה עד <code>10</code>",
+					"לולאה עד <code>n / 100</code>",
+					"לולאה עד <code>7</code> שבודקת <code>x == n</code>"
+				],
+				a: 2,
+				w: "<code>n / 100</code> גדל עם <code>n</code>: עבור מיליון זה 10,000 סיבובים."
+			},
+			{
+				s: "כמה סיבובים עושה <code>busyDays</code> של הדוגמה עבור <code>n = 0</code>, וכמה עבור <code>n = 1000</code>?",
+				o: [
+					"7 בשני המקרים",
+					"אף סיבוב עבור 0, ו-7 עבור 1000",
+					"7 עבור 0, ואף סיבוב עבור 1000",
+					"7 עבור 0, ו-1000 עבור 1000"
+				],
+				a: 0,
+				w: "הגבול הוא 7 ימים, ו-<code>n</code> משנה רק את התשובה, לא את מספר הסיבובים."
+			}
+		]
+	}));
+	const CS_ROWS = R`public class Main {
+    public static void main(String[] args) {
+        int n = 16;
+        int total = 0;
+
+        for (int len = n; len > 0; len /= 2) {
+            total += len;
+            System.out.println("len = " + len + ", total " + total);
+        }
+    }
+}
+`;
+	const CS_BOUND = R`public class Main {
+    // n + n/2 + n/4 + ... + 1
+    static int halvesSum(int n) {
+        int total = 0;
+
+        for (int len = n; len > 0; len /= 2) {
+            total += len;
+        }
+        return total;
+    }
+
+    public static void main(String[] args) {
+        int[] sizes = {16, 100, 1000, 1000000};
+
+        for (int k = 0; k < sizes.length; k++) {
+            int n = sizes[k];
+
+            System.out.println(n + ": " + halvesSum(n) + " < " + (2 * n));
+        }
+    }
+}
+`;
+	const CS_THIRDS_START = R`public class Main {
+    // n + n/3 + n/9 + ... + 1
+    static int thirdsSum(int n) {
+        int total = 0;
+
+        for (int len = n; len > 0; len /= 3) {
+            // TODO: add len to total
+        }
+        return total;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(thirdsSum(27));
+        System.out.println(thirdsSum(100));
+    }
+}
+`;
+	const CS_THIRDS_SOLVED = CS_THIRDS_START.replace("            // TODO: add len to total\n", "            total += len;\n");
+	const CS_SHRINK_MAIN = R`
     public static void main(String[] args) {
         System.out.println(shrinkingWork(16));
     }
 }
 `;
-	const TRAPS_SHRINK_START = R`public class Main {
-    // a playlist of n songs is played, then its first half, then the half of that, ...
-    // returns how many songs are played in all
+	const CS_SHRINK_START = R`public class Main {
+    // a playlist of n songs is played, then its first half, then the
+    // half of that, ...; returns how many songs are played in all
     static int shrinkingWork(int n) {
         int work = 0;
 
@@ -29515,10 +30201,10 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
         }
         return work;
     }
-` + TRAPS_SHRINK_MAIN;
-	const TRAPS_SHRINK_SOLVED = R`public class Main {
-    // a playlist of n songs is played, then its first half, then the half of that, ...
-    // returns how many songs are played in all
+` + CS_SHRINK_MAIN;
+	const CS_SHRINK_SOLVED = R`public class Main {
+    // a playlist of n songs is played, then its first half, then the
+    // half of that, ...; returns how many songs are played in all
     static int shrinkingWork(int n) {
         int work = 0;
 
@@ -29529,37 +30215,46 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
         }
         return work;
     }
-` + TRAPS_SHRINK_MAIN;
+` + CS_SHRINK_MAIN;
 	U.push(withOutputs({
-		id: "cost-traps",
-		title: "מלכודות בספירה",
+		id: "cost-shrinking",
+		title: "עבודה שקטנה",
 		body: [
-			R`<p>שתי לולאות מקוננות, ובכל זאת השיטה <b>לא</b> ריבועית: שום גבול לא תלוי ב-<code>n</code>.
-<code>chartWork(10)</code> ו-<code>chartWork(5000)</code> עושות אותה עבודה.</p>`,
+			R`<p>לולאה שחוצה את <code>len</code>, ובכל סיבוב עבודה באורך <code>len</code>. נדמה שזה <code>n · log n</code>,
+אבל כל שורה היא חצי מהקודמת: <code>16 + 8 + 4 + 2 + 1 = 31</code>. הריצו.</p>`,
 			{
-				id: "cost-traps-fixed",
-				title: "גבולות קבועים",
-				code: TRAPS_FIXED,
-				tests: [io("the same work for 10 and for 5000", "", "10000\n10000\n"), ops("chartWork takes at most 25,000 steps for every n", "Main.chartWork(n)", "1", 1, [
-					10,
-					1e3,
-					1e5
-				], { c0: 24999 })]
+				id: "cost-shrinking-rows",
+				title: "שורה אחר שורה",
+				code: CS_ROWS,
+				tests: [io("the total grows to 31", "", "len = 16, total 16\nlen = 8, total 24\nlen = 4, total 28\nlen = 2, total 30\nlen = 1, total 31\n")]
 			},
-			R`<p><code>100 · 100</code> סיבובים לכל <code>n</code>: השיטה <b>קבועה</b>. בדיקת ה-<code>ops</code>
-מתירה <code>25,000</code> צעדים לכל <code>n</code> (השיטה עושה <code>20,304</code>).</p>
-<p>מלכודת שנייה: לולאה חיצונית לוגריתמית, ובתוכה לולאה עד <code>len</code> שקטן. נדמה
-<code>n · log n</code>, אבל ספרו:</p>
-<pre class="code-static"><span>len = 16:  ################   16</span><span>len =  8:  ########            8</span><span>len =  4:  ####                4</span><span>len =  2:  ##                  2</span><span>len =  1:  #                   1</span><span>                    total     31</span></pre>
-<p>כל שורה חצי מהקודמת: <code>16 + 8 + 4 + 2 + 1 = 31 &lt; 2 · 16</code>. הסכום
-<code>n + n/2 + n/4 + ...</code> קטן מ-<code>2n</code>: לינארי.</p>`,
+			R`<p>הסכום <code>n + n/2 + n/4 + ...</code> תמיד קטן מ-<code>2n</code>: כל איבר ממלא רק חצי מהמרווח שנשאר עד
+<code>2n</code>.</p>
+<p>לכן העבודה <b>לינארית</b>, ולא <code>n · log n</code>. הריצו.</p>`,
+			{
+				id: "cost-shrinking-bound",
+				title: "תמיד פחות מפעמיים",
+				code: CS_BOUND,
+				tests: [io("each sum is below 2n", "", "16: 31 < 32\n100: 197 < 200\n1000: 1994 < 2000\n1000000: 1999993 < 2000000\n")]
+			},
+			R`<p>תורכם: כאן כל שורה היא <b>שליש</b> מהקודמת, וגם הסכום הזה קטן מ-<code>2n</code>. חסרה שורת החיבור.</p>`,
+			{
+				id: "cost-shrinking-thirds",
+				title: "שליש מהקודמת",
+				task: "במקום ה-TODO הוסיפו את <code>len</code> ל-<code>total</code>.",
+				code: CS_THIRDS_START,
+				solution: CS_THIRDS_SOLVED,
+				tests: [io("27 + 9 + 3 + 1 is 40, and 148 for 100", "", "40\n148\n"), unit("thirdsSum(81) is 121", R`Check.eq("thirdsSum(81)", Main.thirdsSum(81), 121);`)]
+			},
+			R`<p>עכשיו העבודה עצמה, בלולאה פנימית: בכל שורה מנגנים <code>len</code> שירים, אחד אחד.</p>`,
 			{
 				id: "cost-traps-shrink",
-				title: "shrinkingWork",
-				task: R`השלימו את <code>shrinkingWork(n)</code>: בתוך הלולאה של <code>len</code>, <b>לולאה של <code>len</code>
-סיבובים</b> שמוסיפה 1.`,
-				code: TRAPS_SHRINK_START,
-				solution: TRAPS_SHRINK_SOLVED,
+				title: "שירים שמתקצרים",
+				task: R`השלימו את <code>shrinkingWork(n)</code>:<br>
+1. בתוך הלולאה של <code>len</code>, כתבו לולאה של <code>len</code> סיבובים.<br>
+2. בכל סיבוב שלה הוסיפו 1 ל-<code>work</code>.`,
+				code: CS_SHRINK_START,
+				solution: CS_SHRINK_SOLVED,
 				example: { output: "shrinkingWork(16) -> 31" },
 				tests: [
 					unit("shrinkingWork(16) is 31", R`Check.eq("shrinkingWork(16) is 31", Main.shrinkingWork(16), 31);`),
@@ -29578,81 +30273,73 @@ Check.eq("shrinkingWork(0) is 0", Main.shrinkingWork(0), 0);`),
 		],
 		quiz: [
 			{
-				s: "איך גדל מספר הצעדים של הקוד הזה כש-<code>n</code> גדל?" + codeBlock(R`for (int i = 0; i < 1000; i++) {
-    for (int j = 0; j < 1000; j++) {
-        if (j == n) {
-            hits++;
-        }
-    }
-}`),
-				o: [
-					"כמו <code>n²</code>",
-					"כמו <code>n</code>",
-					"הוא קבוע: מיליון סיבובים לכל <code>n</code>",
-					"כמו <code>log n</code>"
-				],
-				a: 2,
-				w: "<code>n</code> לא בגבול של אף לולאה: תמיד 1000 · 1000 סיבובים."
-			},
-			{
 				s: "כמה פעמים רץ <code>work++</code> עבור <code>n = 32</code>?" + codeBlock(R`for (int len = n; len > 0; len /= 2) {
     for (int j = 0; j < len; j++) {
         work++;
     }
 }`),
 				o: [
-					"<code>63</code>",
 					"<code>160</code>",
+					"<code>63</code>",
 					"<code>192</code>",
 					"<code>64</code>"
 				],
-				a: 0,
-				w: "32 + 16 + 8 + 4 + 2 + 1 = 63, פחות מ-2 · 32."
+				a: 1,
+				w: "<code>32 + 16 + 8 + 4 + 2 + 1 = 63</code>, פחות מ-<code>2 · 32</code>."
 			},
 			{
-				s: "וכמה פעמים רץ <code>work++</code> עבור <code>n = 32</code> כשהפנימית היא <code>for (int j = 0; j &lt; n; j++)</code>?",
+				s: "ואם הלולאה הפנימית היא <code>for (int j = 0; j &lt; n; j++)</code>, כמה פעמים רץ <code>work++</code> עבור <code>n = 32</code>?",
 				o: [
 					"<code>63</code>",
-					"<code>192</code>",
 					"<code>1024</code>",
+					"<code>192</code>",
 					"<code>32</code>"
 				],
-				a: 1,
-				w: "שש שורות באורך 32: 192. זה באמת n · log n."
-			},
-			{
-				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 5</code>?" + codeBlock(R`for (int i = 0; i < n; i++) {
-    for (int j = 0; j < 3; j++) {
-        c++;
-    }
-}
-for (int k = 0; k < n; k++) {
-    c++;
-}`),
-				o: [
-					"<code>15</code>",
-					"<code>75</code>",
-					"<code>20</code>",
-					"<code>23</code>"
-				],
 				a: 2,
-				w: "5 · 3 = 15 ועוד 5: 20. הפנימית קבועה."
+				w: "שש שורות, כל אחת באורך 32: <code>192</code>, וזה באמת <code>n · log n</code>."
 			},
 			{
-				s: "איזה מהקטעים <b>אינו</b> לינארי ב-<code>n</code>?",
+				s: "איזה קטע <b>אינו</b> לינארי ב-<code>n</code>?",
 				o: [
 					"<code>n + n/2 + n/4 + ...</code> סיבובים",
-					"לולאה עד <code>n</code> ובתוכה לולאה עד <code>50</code>",
+					"לולאה עד <code>n</code> ובתוכה לולאה שחוצה את <code>n</code>",
 					"לולאה עד <code>n</code> ואחריה לולאה עד <code>n</code>",
-					"לולאה עד <code>n</code> ובתוכה לולאה שחוצה את <code>n</code>"
+					"לולאה עד <code>n</code> ובתוכה לולאה עד <code>50</code>"
+				],
+				a: 1,
+				w: "בכל אחד מ-<code>n</code> הסיבובים יש <code>log n</code> חציות, ולכן <code>n · log n</code>."
+			},
+			{
+				s: "כמה פעמים רץ <code>work++</code> עבור <code>n = 81</code>?" + codeBlock(R`for (int len = n; len > 0; len /= 3) {
+    for (int j = 0; j < len; j++) {
+        work++;
+    }
+}`),
+				o: [
+					"<code>121</code>",
+					"<code>162</code>",
+					"<code>405</code>",
+					"<code>81</code>"
+				],
+				a: 0,
+				w: "<code>81 + 27 + 9 + 3 + 1 = 121</code>."
+			},
+			{
+				s: "<code>halvesSum(1000)</code> של הדוגמה השנייה קרוב ל:",
+				o: [
+					"<code>n/2</code>, כ-500",
+					"<code>log n</code>, כ-10",
+					"<code>n · log n</code>, כ-10,000",
+					"<code>2n</code>, כ-2,000"
 				],
 				a: 3,
-				w: "בכל סיבוב log n חלוקות: n · log n. השאר לינאריים."
+				w: "הסכום הוא 1994: כמעט <code>2n</code>, ותמיד פחות ממנו."
 			}
 		]
 	}));
-	const CASES_FIND = R`public class Main {
-    // the index of the first song with this id, or -1 when the playlist does not have it
+	{
+		const CASES_FIND = R`public class Main {
+    // the index of the first song with this id, or -1 when it is missing
     static int indexOf(int[] ids, int id) {
         for (int i = 0; i < ids.length; i++) {
             if (ids[i] == id) {
@@ -29666,30 +30353,60 @@ for (int k = 0; k < n; k++) {
         int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
 
         System.out.println(indexOf(ids, 42));
+        System.out.println(indexOf(ids, 3));
+        System.out.println(indexOf(ids, 64));
         System.out.println(indexOf(ids, 99));
     }
 }
 `;
-	const CASES_CHECKS_MAIN = R`
+		const LONG_MAIN = R`
     public static void main(String[] args) {
-        int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
+        int[] first = {700, 200, 300, 250};
+        int[] none = {200, 300, 250, 180};
 
-        System.out.println("found at 0 after " + checks(ids, 42) + " check; missing after "
-            + checks(ids, 99) + " checks");
+        System.out.println(longChecks(first));
+        System.out.println(longChecks(none));
     }
 }
 `;
-	const CASES_CHECKS_START = R`public class Main {
+		const LONG_COUNT = R`public class Main {
+    // how many songs are compared to 600 until a long one is found
+    static int longChecks(int[] secs) {
+        int count = 0;
+
+        for (int i = 0; i < secs.length; i++) {
+            count++;
+            if (secs[i] > 600) {
+                return count;
+            }
+        }
+        return count;
+    }
+` + LONG_MAIN;
+		const LONG_START = LONG_COUNT.replace("            count++;\n", "            // TODO: count this comparison\n");
+		const CASES_CHECKS_MAIN = R`
+    public static void main(String[] args) {
+        int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
+        int best = checks(ids, 42);
+        int worst = checks(ids, 99);
+
+        System.out.print("found at 0 after " + best + " check; ");
+        System.out.println("missing after " + worst + " checks");
+    }
+}
+`;
+		const CASES_CHECKS_START = R`public class Main {
     // how many cells the search for id compares before it stops:
     // it stops at the first cell equal to id, or after the last cell
     static int checks(int[] ids, int id) {
         int count = 0;
 
-        // TODO: go over the cells; count each comparison; stop when one is equal to id
+        // TODO: go over the cells and count each comparison;
+        //       return the count as soon as a cell is equal to id
         return count;
     }
 ` + CASES_CHECKS_MAIN;
-	const CASES_CHECKS_SOLVED = R`public class Main {
+		const CASES_CHECKS_SOLVED = R`public class Main {
     // how many cells the search for id compares before it stops:
     // it stops at the first cell equal to id, or after the last cell
     static int checks(int[] ids, int id) {
@@ -29704,63 +30421,82 @@ for (int k = 0; k < n; k++) {
         return count;
     }
 ` + CASES_CHECKS_MAIN;
-	const CASES_RANGE = { setup: "int[] a = Check.range(n);" };
-	U.push(withOutputs({
-		id: "cost-cases",
-		title: "המקרה הטוב והמקרה הגרוע",
-		body: [
-			R`<p>בחיפוש מספר הצעדים תלוי גם <b>במקום</b> של מה שמחפשים. הריצו וספרו כמה פעמים רצה שורת
-ה-<code>if</code> בכל חיפוש.</p>`,
-			{
-				id: "cost-cases-find",
-				title: "חיפוש שיר ברשימה",
-				code: CASES_FIND,
-				tests: [io("42 is at 0, 99 is missing", "", "0\n-1\n")]
-			},
-			R`<p>אותו <code>n = 8</code>, מספר בדיקות שונה:</p>
-<table class="tbl"><tr><th>מחפשים</th><th>איפה</th><th>בדיקות</th><th>המקרה</th></tr>
-<tr><td class="mono">42</td><td>תא 0</td><td>1</td><td>הטוב ביותר</td></tr>
-<tr><td class="mono">3</td><td>תא 3</td><td>4</td><td>באמצע</td></tr>
-<tr><td class="mono">64</td><td>תא 7, האחרון</td><td>8</td><td>הגרוע ביותר</td></tr>
-<tr><td class="mono">99</td><td>אין</td><td>8</td><td>הגרוע ביותר</td></tr></table>
-<p>מקרה טוב: קבוע, בדיקה אחת. מקרה גרוע: לינארי, <code>n</code> בדיקות.
-כשאומרים כמה קוד עולה, מתכוונים ל<b>מקרה הגרוע</b>: זו הבטחה לכל קלט.</p>`,
-			{
-				id: "cost-cases-checks",
-				title: "checks",
-				task: R`השלימו את <code>checks(ids, id)</code>: ספרו <b>כל השוואה</b>, והחזירו <b>מיד</b> כשתא שווה
-ל-<code>id</code>.`,
-				code: CASES_CHECKS_START,
-				solution: CASES_CHECKS_SOLVED,
-				tests: [
-					unit("the first cell: 1 check", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
+		const CASES_RANGE = { setup: "int[] a = Check.range(n);" };
+		U.push(withOutputs({
+			id: "cost-cases",
+			title: "המקרה הטוב והמקרה הגרוע",
+			body: [
+				R`<p>בחיפוש, מספר הבדיקות תלוי <b>במקום</b> של מה שמחפשים, לא רק ב-<code>n</code>. לכל מספר, כמה פעמים
+רצה שורת ה-<code>if</code> כשמחפשים אותו ב-8 התאים:</p>
+<table class="tbl"><tr><th>מחפשים</th><th>איפה</th><th>בדיקות</th></tr>
+<tr><td><code>42</code></td><td>תא 0, הראשון</td><td>1</td></tr>
+<tr><td><code>3</code></td><td>תא 3</td><td>4</td></tr>
+<tr><td><code>64</code></td><td>תא 7, האחרון</td><td>8</td></tr>
+<tr><td><code>99</code></td><td>אין</td><td>8</td></tr></table>
+<p>הריצו.</p>`,
+				{
+					id: "cost-cases-find",
+					title: "חיפוש שיר ברשימה",
+					code: CASES_FIND,
+					tests: [io("42 at 0, 3 at 3, 64 at 7, 99 missing", "", "0\n3\n7\n-1\n")]
+				},
+				R`<p>ה<b>מקרה הטוב</b> הוא הקלט באורך <code>n</code> שעולה הכי מעט: כאן שיר ארוך בתא 0, בדיקה אחת.
+ה<b>מקרה הגרוע</b> הוא הקלט שעולה הכי הרבה: כאן אין שיר ארוך, ו-<code>n</code> בדיקות.</p>
+<p>כשאומרים כמה קוד עולה, מתכוונים למקרה הגרוע: זו הבטחה לכל קלט. הריצו.</p>`,
+				{
+					id: "cost-cases-long",
+					title: "סופרים את הבדיקות",
+					code: LONG_COUNT,
+					tests: [io("the best case is 1 check, the worst 4", "", "1\n4\n")]
+				},
+				R`<p>תורכם: <code>longChecks</code> מחזירה עכשיו 0, כי אף שורה לא מוסיפה לספירה.</p>`,
+				{
+					id: "cost-cases-count",
+					title: "הספירה החסרה",
+					task: "במקום ה-TODO הוסיפו 1 ל-<code>count</code>, לפני הבדיקה.",
+					code: LONG_START,
+					solution: LONG_COUNT,
+					tests: [io("1 check, then 4", "", "1\n4\n")]
+				},
+				R`<p>עכשיו אותה ספירה בחיפוש של <code>id</code>, כמו בטבלה של העמוד הראשון.</p>`,
+				{
+					id: "cost-cases-checks",
+					title: "כמה בדיקות בחיפוש",
+					task: R`השלימו את <code>checks(ids, id)</code>:<br>
+1. עברו על התאים מהראשון.<br>
+2. הוסיפו 1 לספירה על <b>כל השוואה</b>.<br>
+3. החזירו את הספירה <b>מיד</b> כשתא שווה ל-<code>id</code>, או אחרי התא האחרון.`,
+					code: CASES_CHECKS_START,
+					solution: CASES_CHECKS_SOLVED,
+					tests: [
+						unit("the first cell: 1 check", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
 
 Check.eq("checks(ids, 42) is 1", Main.checks(ids, 42), 1);`),
-					unit("cell 3: 4 checks", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
+						unit("cell 3: 4 checks", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
 
 Check.eq("checks(ids, 3) is 4", Main.checks(ids, 3), 4);`),
-					unit("the last cell and a missing id: 8 checks each", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
+						unit("the last cell and a missing id: 8 checks each", R`int[] ids = {42, 7, 19, 3, 88, 51, 26, 64};
 
 Check.eq("checks(ids, 64) is 8", Main.checks(ids, 64), 8);
 Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
-					unit("an empty playlist: 0 checks", R`Check.eq("checks({}, 5) is 0", Main.checks(new int[0], 5), 0);`),
-					io("main prints both cases", "", "found at 0 after 1 check; missing after 8 checks\n"),
-					ops("the worst case (missing) takes O(n) steps", "Main.checks(a, -1)", "n", 4, [
-						10,
-						1e3,
-						1e5
-					], Object.assign({ c0: 10 }, CASES_RANGE)),
-					ops("the best case (cell 0) takes O(1) steps", "Main.checks(a, 0)", "1", 1, [
-						10,
-						1e3,
-						1e5
-					], Object.assign({ c0: 10 }, CASES_RANGE))
-				]
-			}
-		],
-		quiz: [
-			{
-				s: "כמה פעמים רצה שורה 2 בקריאה <code>first(new int[]{5, 8, 3, 8, 1}, 8)</code>?" + codeBlock(R`static int first(int[] a, int x) {
+						unit("an empty playlist: 0 checks", R`Check.eq("checks({}, 5) is 0", Main.checks(new int[0], 5), 0);`),
+						io("main prints both cases", "", "found at 0 after 1 check; missing after 8 checks\n"),
+						ops("the worst case (missing) takes O(n) steps", "Main.checks(a, -1)", "n", 4, [
+							10,
+							1e3,
+							1e5
+						], Object.assign({ c0: 10 }, CASES_RANGE)),
+						ops("the best case (cell 0) takes O(1) steps", "Main.checks(a, 0)", "1", 1, [
+							10,
+							1e3,
+							1e5
+						], Object.assign({ c0: 10 }, CASES_RANGE))
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "כמה פעמים רצה שורת ה-<code>if</code> בקריאה <code>first(new int[]{5, 8, 3, 8, 1}, 8)</code>?" + codeBlock(R`static int first(int[] a, int x) {
     for (int i = 0; i < a.length; i++) {
         if (a[i] == x) {
             return i;
@@ -29768,28 +30504,28 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
     }
     return -1;
 }`),
-				o: [
-					"<code>2</code>",
-					"<code>4</code>",
-					"<code>5</code>",
-					"<code>3</code>"
-				],
-				a: 3,
-				w: "שורה 2 היא כותרת הלולאה: הכניסה ושתי בדיקות תנאי, ואז <code>return</code> בתא 1 יוצא."
-			},
-			{
-				s: "כמה פעמים רצה שורת ה-<code>if</code> של אותה שיטה בקריאה <code>first(new int[]{5, 8, 3, 8, 1}, 7)</code>?",
-				o: [
-					"<code>1</code>",
-					"<code>4</code>",
-					"<code>5</code>",
-					"<code>6</code>"
-				],
-				a: 2,
-				w: "7 לא נמצא, אז נבדקים כל חמשת התאים: המקרה הגרוע, n בדיקות."
-			},
-			{
-				s: "מה המקרה הגרוע של השיטה הזאת, שבודקת אם יש ברשימה שיר ארוך מ-600 שניות?" + codeBlock(R`static boolean hasLong(int[] secs) {
+					o: [
+						"<code>1</code>",
+						"<code>4</code>",
+						"<code>5</code>",
+						"<code>2</code>"
+					],
+					a: 3,
+					w: "תא 0 הוא 5, ותא 1 הוא 8: הבדיקה השנייה מוצאת, ו-<code>return</code> יוצא."
+				},
+				{
+					s: "ובקריאה <code>first(new int[]{5, 8, 3, 8, 1}, 7)</code>, כמה פעמים רצה שורת ה-<code>if</code>?",
+					o: [
+						"<code>1</code>",
+						"<code>4</code>",
+						"<code>5</code>",
+						"<code>6</code>"
+					],
+					a: 2,
+					w: "7 לא נמצא, ולכן נבדקים כל חמשת התאים: המקרה הגרוע."
+				},
+				{
+					s: "מה המקרה הגרוע של השיטה הזאת?" + codeBlock(R`static boolean hasLong(int[] secs) {
     for (int i = 0; i < secs.length; i++) {
         if (secs[i] > 600) {
             return true;
@@ -29797,39 +30533,53 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
     }
     return false;
 }`),
-				o: [
-					"כשהשיר הראשון ארוך",
-					"כשאין אף שיר ארוך: n בדיקות",
-					"כשכל השירים ארוכים",
-					"אין מקרה גרוע: תמיד n בדיקות"
-				],
-				a: 1,
-				w: "השיטה עוצרת בשיר הארוך הראשון. רק כשאין כזה היא עוברת על כל n התאים."
-			},
-			{
-				s: "איזו שיטה עושה <b>אותו</b> מספר בדיקות בכל קלט באורך <code>n</code>, בלי מקרה טוב ומקרה גרוע?",
-				o: [
-					"חיפוש שעוצר במציאה הראשונה",
-					"סכום של כל התאים",
-					"בדיקה אם יש תא שלילי",
-					"חיפוש של המקום הראשון שבו שני תאים סמוכים שווים"
-				],
-				a: 1,
-				w: "סכום חייב לקרוא כל תא, תמיד n. כל השאר יכולים לעצור מוקדם כשהתשובה נמצאה."
-			},
-			{
-				s: "בדיקות ה-<code>ops</code> של <code>checks</code>: למה המקרה הגרוע נבדק מול <code>c·n</code> והטוב מול קבוע?",
-				o: [
-					"כי המקרה הטוב נבדק על מערך קטן יותר",
-					"כי בגרוע מספר ההשוואות גדל עם n, ובטוב הוא 1 לכל n",
-					"כי לבדיקת המקרה הטוב יש פחות זמן",
-					"אין סיבה, אפשר להחליף ביניהם"
-				],
-				a: 1,
-				w: "בגרוע ההשוואות גדלות עם n; בטוב, בתא 0, תמיד השוואה אחת."
-			}
-		]
-	}));
+					o: [
+						"כשהשיר הראשון ארוך",
+						"כשאין אף שיר ארוך: <code>n</code> בדיקות",
+						"כשכל השירים ארוכים",
+						"כשיש שיר ארוך אחד, באמצע"
+					],
+					a: 1,
+					w: "השיטה עוצרת בשיר הארוך הראשון, ורק כשאין כזה היא עוברת על כל התאים."
+				},
+				{
+					s: "באיזו שיטה <b>אין</b> הבדל בין המקרה הטוב למקרה הגרוע?",
+					o: [
+						"חיפוש שעוצר במציאה הראשונה",
+						"בדיקה אם יש תא שלילי",
+						"חיפוש של שני תאים סמוכים שווים",
+						"סכום של כל התאים"
+					],
+					a: 3,
+					w: "סכום חייב לקרוא כל תא בכל קלט, ואילו השאר יכולים לעצור מוקדם."
+				},
+				{
+					s: "כמה בדיקות עושה <code>first</code> <b>במקרה הטוב</b>, על מערך של 1000 תאים?",
+					o: [
+						"<code>1</code>",
+						"<code>500</code>",
+						"<code>1000</code>",
+						"<code>0</code>"
+					],
+					a: 0,
+					w: "כשמה שמחפשים נמצא בתא 0, הבדיקה הראשונה מוצאת אותו."
+				},
+				{
+					s: "מה מודפס, עם <code>longChecks</code> של הדוגמה?" + codeBlock(R`int[] secs = {100, 900, 900};
+
+System.out.println(longChecks(secs));`),
+					o: [
+						"<code>1</code>",
+						"<code>3</code>",
+						"<code>2</code>",
+						"<code>0</code>"
+					],
+					a: 2,
+					w: "100 נבדק ולא ארוך, ו-900 בתא 1 עוצר את הספירה ב-2."
+				}
+			]
+		}));
+	}
 	const OPS_MAIN = R`
     public static void main(String[] args) {
         System.out.println(countAboveAverage(new int[]{5, 1, 9, 3}));
@@ -29853,15 +30603,19 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
     }
 `;
 	const OPS_NAIVE = R`public class Main {
-    // how many songs were played more than the average: a[i] > sum / n, written as a[i] * n > sum
+    // how many songs were played more than the average:
+    // a[i] > sum / n, written as a[i] * n > sum
     // (the sum is computed again for every song)
 ` + OPS_NAIVE_BODY + OPS_MAIN;
 	const OPS_FAST_START = R`public class Main {
-    // how many songs were played more than the average: a[i] > sum / n, written as a[i] * n > sum
-    // TODO: it gives the right answer, but takes about 2n² steps; make it O(n)
+    // how many songs were played more than the average:
+    // a[i] > sum / n, written as a[i] * n > sum
+    // TODO: the answer is right, but it takes about 2n² steps;
+    //       make it O(n)
 ` + OPS_NAIVE_BODY + OPS_MAIN;
 	const OPS_FAST_SOLVED = R`public class Main {
-    // how many songs were played more than the average: a[i] > sum / n, written as a[i] * n > sum
+    // how many songs were played more than the average:
+    // a[i] > sum / n, written as a[i] * n > sum
     static int countAboveAverage(int[] a) {
         int sum = 0;
         int count = 0;
@@ -29877,6 +30631,31 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
         return count;
     }
 ` + OPS_MAIN;
+	const HALF_SOLVED = R`public class Main {
+    // how many songs are at least half as long as the longest one
+    static int countHalfOfMax(int[] a) {
+        int max = 0;
+        int count = 0;
+
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] > max) {
+                max = a[i];
+            }
+        }
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] * 2 >= max) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(countHalfOfMax(new int[]{200, 90, 400, 150}));
+    }
+}
+`;
+	const HALF_START = HALF_SOLVED.replace("                max = a[i];\n", "                // TODO: keep this larger value in max\n");
 	const OPS_PLAYS = { setup: "int[] a = Check.random(n, 1000, 3);" };
 	const OPS_UNITS = [
 		unit("{5, 1, 9, 3} gives 2 (the average is 4.5)", R`Check.eq("{5, 1, 9, 3} gives 2", Main.countAboveAverage(new int[]{5, 1, 9, 3}), 2);`),
@@ -29886,20 +30665,29 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
 Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 		io("main prints 2", "", "2\n")
 	];
+	const HALF_TESTS = [
+		io("main prints 2", "", "2\n"),
+		unit("{10, 4, 5} gives 2", R`Check.eq("{10, 4, 5} gives 2", Main.countHalfOfMax(new int[]{10, 4, 5}), 2);`),
+		ops("countHalfOfMax takes O(n) steps", "Main.countHalfOfMax(a)", "n", 8, [
+			100,
+			1e3,
+			1e4
+		], Object.assign({ c0: 10 }, OPS_PLAYS))
+	];
 	U.push(withOutputs({
 		id: "cost-ops",
 		title: "בדיקת סיבוכיות",
 		body: [
-			R`<p>בדיקת <code>ops</code> מריצה את השיטה על <code>n</code> שגדל, סופרת צעדים ובודקת חסם:</p>
-<table class="tbl"><tr><th>החלק</th><th>בקופסה ליד</th><th>מה הוא</th></tr>
-<tr><td>הקריאה</td><td class="mono">Main.countAboveAverage(a)</td><td>מה נספר; הכנת <code>a</code> לא נספרת</td></tr>
-<tr><td>הגדילה</td><td class="mono">n2</td><td>הצורה: <code>1</code>, <code>log</code>, <code>n</code>, <code>nlogn</code>, <code>n2</code></td></tr>
-<tr><td>המקדם</td><td class="mono">c = 3, c0 = 10</td><td>החסם הוא <code>3 · n² + 10</code></td></tr>
-<tr><td>הגדלים</td><td class="mono">10, 50, 100</td><td>כל <code>n</code> חייב לעבור</td></tr></table>
+			R`<p><b>בדיקת <code>ops</code></b> מריצה את השיטה על <code>n</code> שגדל, סופרת את הצעדים שלה, ובודקת שהם
+לא עוברים חסם. החלקים שלה, בבדיקה של הקופסה ליד:</p>
+<table class="tbl"><tr><th>החלק</th><th>כאן</th><th>מה הוא</th></tr>
+<tr><td>הגדילה</td><td><code>n2</code></td><td>הצורה: <code>1</code>, <code>log</code>, <code>n</code>, <code>nlogn</code> או <code>n2</code></td></tr>
+<tr><td>המקדם</td><td><code>c = 3, c0 = 10</code></td><td>החסם הוא <code>3 · n² + 10</code></td></tr>
+<tr><td>הגדלים</td><td><code>10, 50, 100</code></td><td>כל <code>n</code> חייב לעבור</td></tr></table>
 <p>לחצו <b>✓ בדיקות</b>: תודפס טבלה של <code>n</code>, צעדים וחסם.</p>`,
 			{
 				id: "cost-ops-naive",
-				title: "מעל הממוצע, בשתי לולאות",
+				title: "מעל הממוצע, לולאה בתוך לולאה",
 				code: OPS_NAIVE,
 				tests: OPS_UNITS.concat([ops("countAboveAverage takes O(n²) steps", "Main.countAboveAverage(a)", "n2", 3, [
 					10,
@@ -29907,20 +30695,36 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					100
 				], Object.assign({ c0: 10 }, OPS_PLAYS))])
 			},
-			R`<p>השיטה נכונה, אבל לכל שיר מחברת מחדש את כל הרשימה: <code>n · n</code>.</p>
-<pre class="code-static"><span>n = 10       steps = 259        limit 310</span><span>n = 50       steps = 5278       limit 7510</span><span>n = 100      steps = 20551      limit 30010</span></pre>
-<p>פי 2 ב-<code>n</code> נותן כמעט פי 4 בצעדים.</p>
-<p>הסכום לא משתנה בין שיר לשיר: מחשבים אותו <b>פעם אחת</b>, בלולאה לפני הספירה. שתי לולאות
-<b>אחת אחרי השנייה</b>: פחות מ-<code>5n + 10</code> צעדים. בדיקת ה-<code>ops</code> בתרגיל היא
-<code>O(n)</code>: <code>8 · n + 10</code>. הקוד ההתחלתי נכשל בה, והטבלה מראה באיזה <code>n</code>.
-הכפתור <b>מדידת גדילה</b> באי <b>ספירות</b> מצייר צעדים מול <code>n</code>.</p>`,
+			R`<p>הדוגמה הקודמת מחשבת את הסכום מחדש לכל שיר, ולכן היא <code>n · n</code>. ערך שלא משתנה בין סיבוב
+לסיבוב מחשבים <b>פעם אחת</b>, בלולאה לפני הספירה.</p>
+<p>כאן זה השיר הארוך ביותר: שתי לולאות <b>אחת אחרי השנייה</b> הן <code>n + n</code> צעדים, ובדיקת
+ה-<code>ops</code> היא <code>O(n)</code>. לחצו <b>✓ בדיקות</b>.</p>`,
+			{
+				id: "cost-ops-half",
+				title: "פעם אחת, לפני הספירה",
+				code: HALF_SOLVED,
+				tests: HALF_TESTS
+			},
+			R`<p>תורכם: בלולאה הראשונה חסרה השורה ששומרת את הערך הגדול.</p>`,
+			{
+				id: "cost-ops-max",
+				title: "השורה ששומרת את הגדול",
+				task: "במקום ה-TODO שמרו את <code>a[i]</code> ב-<code>max</code>.",
+				code: HALF_START,
+				solution: HALF_SOLVED,
+				tests: HALF_TESTS
+			},
+			R`<p>עכשיו הדוגמה הראשונה. הקוד ההתחלתי נכשל בבדיקת <code>O(n)</code>, והטבלה שלה מראה באיזה
+<code>n</code>.</p>`,
 			{
 				id: "cost-ops-fast",
-				title: "countAboveAverage",
-				task: R`כתבו מחדש את <code>countAboveAverage(a)</code> <b>ב-<code>O(n)</code> צעדים</b>.`,
+				title: "מעל הממוצע, בזמן לינארי",
+				task: R`כתבו מחדש את <code>countAboveAverage(a)</code> <b>ב-<code>O(n)</code> צעדים</b>:<br>
+1. חשבו את הסכום פעם אחת, בלולאה הראשונה.<br>
+2. בלולאה שנייה, אחריה, ספרו את השירים שמעל הממוצע.`,
 				code: OPS_FAST_START,
 				solution: OPS_FAST_SOLVED,
-				example: { output: "countAboveAverage([5, 1, 9, 3]) -> 2" },
+				example: { output: "countAboveAverage({5, 1, 9, 3}) -> 2" },
 				tests: OPS_UNITS.concat([ops("countAboveAverage takes O(n) steps", "Main.countAboveAverage(a)", "n", 8, [
 					100,
 					1e3,
@@ -29938,10 +30742,10 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"<code>64</code>"
 				],
 				a: 1,
-				w: "c · n + c0 = 4 · 50 + 10 = 210."
+				w: "<code>4 · 50 + 10 = 210</code>."
 			},
 			{
-				s: "שיטה עושה בדיוק <code>3n + 4</code> צעדים. איזו בדיקת <code>ops</code> היא <b>נכשלת</b>?",
+				s: "שיטה עושה בדיוק <code>3n + 4</code> צעדים. איזו בדיקת <code>ops</code> <b>נכשלת</b>?",
 				o: [
 					"<code>n</code>, <code>c = 3</code>, <code>c0 = 4</code>",
 					"<code>n</code>, <code>c = 4</code>, <code>c0 = 0</code> עם <code>n = 10, 100</code>",
@@ -29949,40 +30753,66 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"<code>n2</code>, <code>c = 1</code>, <code>c0 = 10</code> עם <code>n = 10, 100</code>"
 				],
 				a: 2,
-				w: "3n + 4 גדול מ-3n: 4 צעדים מעל החסם."
+				w: "<code>3n + 4</code> גדול מ-<code>3n</code> ב-4 צעדים, בכל <code>n</code>."
 			},
 			{
-				s: "כמה צעדים בערך עושה השיטה הנאיבית עבור <code>n = 1000</code>, אם עבור <code>n = 100</code> היא עשתה כ-20,000?",
+				s: "השיטה הנאיבית עשתה כ-20,000 צעדים עבור <code>n = 100</code>. כמה בערך עבור <code>n = 1000</code>?",
 				o: [
 					"<code>200,000</code>",
-					"<code>2,000,000</code>",
+					"<code>21,000</code>",
 					"<code>20,000,000</code>",
-					"<code>21,000</code>"
+					"<code>2,000,000</code>"
 				],
-				a: 1,
-				w: "היא ריבועית: פי 10 בקלט, פי 100 בצעדים."
+				a: 3,
+				w: "היא ריבועית: פי 10 בקלט הוא פי 100 בצעדים."
 			},
 			{
-				s: "מה עושה <code>Check.random(n, 1000, 3)</code> ב-<code>setup</code> של בדיקת <code>ops</code>, ולמה הוא לא נספר?",
+				s: "כמה פעמים רצה השורה <code>sum += a[j];</code> עבור <code>n = 5</code>?" + codeBlock(R`for (int i = 0; i < n; i++) {
+    sum = 0;
+    for (int j = 0; j < n; j++) {
+        sum += a[j];
+    }
+}`),
 				o: [
-					"ממלא מערך של n מספרים מ-0 עד 999; הכנת הקלט היא לא חלק מהשיטה שבודקים",
-					"מגריל n משלו בכל ריצה",
-					"בוחר 3 גדלים של n",
-					"מריץ את השיטה 1000 פעמים ומחשב ממוצע"
+					"<code>10</code>",
+					"<code>25</code>",
+					"<code>5</code>",
+					"<code>15</code>"
+				],
+				a: 1,
+				w: "הלולאה הפנימית רצה 5 פעמים בכל אחד מ-5 הסיבובים: <code>5 · 5</code>."
+			},
+			{
+				s: "איך גדל מספר הצעדים של הקוד הזה?" + codeBlock(R`int total = 0;
+int c = 0;
+
+for (int i = 0; i < n; i++) {
+    total += a[i];
+}
+for (int j = 0; j < n; j++) {
+    if (a[j] * n > total) {
+        c++;
+    }
+}`),
+				o: [
+					"כמו <code>n</code>",
+					"כמו <code>n²</code>",
+					"כמו <code>n · log n</code>",
+					"הוא קבוע"
 				],
 				a: 0,
-				w: "ה-<code>setup</code> בונה את הקלט (אותו גרעין 3); רק הקריאה נספרת."
+				w: "שתי לולאות אחת אחרי השנייה הן <code>n + n</code>, לא <code>n · n</code>."
 			},
 			{
 				s: "איזה מהשינויים <b>לא</b> הופך את <code>countAboveAverage</code> הנאיבית ללינארית?",
 				o: [
-					"חישוב הסכום לפני הלולאה",
+					"חישוב הסכום בלולאה לפני הספירה",
 					"שמירת הסכום במשתנה שמחושב פעם אחת",
-					"החלפת הלולאה הפנימית ב-<code>while</code> שעושה אותם סיבובים",
+					"החלפת הלולאה הפנימית ב-<code>while</code> עם אותם סיבובים",
 					"שתי לולאות נפרדות: סכום ואז ספירה"
 				],
 				a: 2,
-				w: "<code>while</code> עם אותם סיבובים הוא אותו n · n."
+				w: "<code>while</code> עם אותם סיבובים הוא אותו <code>n · n</code>."
 			}
 		]
 	}));
@@ -29992,7 +30822,7 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 }
 `;
 		const REVIEW_SOLVED = R`public class Main {
-    // how many ways there are to choose 3 different songs of n, counted one by one (i < j < k)
+    // how many ways to choose 3 different songs of n (i < j < k)
     static long countTriples(int n) {
         long count = 0;
 
@@ -30014,19 +30844,16 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 		U.push(withOutputs({
 			id: "cost-review",
 			title: "חזרה: כמה עולה קוד",
-			body: [R`<p>כמה מיקסים של שלושה שירים שונים אפשר לבנות מ-<code>n</code> שירים, כשהסדר לא חשוב?
-בקובץ כמעט ריק כתבו:</p>
-<table class="tbl"><tr><th>שיטה</th><th>מה היא עושה</th></tr>
-<tr><td class="mono">static long countTriples(int n)</td><td>סופרת אחת אחת את השלשות <code>i &lt; j &lt; k</code> מתוך
-<code>0</code> עד <code>n − 1</code>, בשלוש לולאות</td></tr>
-<tr><td class="mono">main</td><td>מדפיסה את <code>countTriples(5)</code></td></tr></table>
-<p>רמז: <code>countPairs</code> עם עוד קומה. עבור <code>n = 5</code>, לפי <code>i</code>:</p>
+			body: [R`<p>כמה מיקסים של שלושה שירים שונים אפשר לבנות מ-<code>n</code> שירים, כשהסדר לא חשוב? זה
+<code>countPairs</code> עם עוד קומה. עבור <code>n = 5</code>, לפי <code>i</code>:</p>
 <pre class="code-static"><span>i = 0:  (j, k) from 1..4   6 triples</span><span>i = 1:  (j, k) from 2..4   3 triples</span><span>i = 2:  (j, k) from 3..4   1 triple</span><span>                     6 + 3 + 1 = 10</span></pre>
-<p>הסכום הוא <code>n(n − 1)(n − 2) / 6</code>: גדל כמו <code>n³</code>.</p>`, {
+<p>הסכום הוא <code>n(n − 1)(n − 2) / 6</code>: הוא גדל כמו <code>n³</code>.</p>`, {
 				id: "cost-review-triples",
-				title: "countTriples",
-				task: R`בקובץ הכמעט ריק כתבו את <code>countTriples(n)</code> <b>בשלוש לולאות מקוננות</b>, ו-<code>main</code> שמדפיסה את
-<code>countTriples(5)</code>.`,
+				title: "שלשות של שירים",
+				task: R`בקובץ הכמעט ריק כתבו:<br>
+1. <code>static long countTriples(int n)</code>, שסופרת אחת אחת את השלשות <code>i &lt; j &lt; k</code> מתוך <code>0</code> עד <code>n − 1</code>.<br>
+2. בתוכה <b>שלוש לולאות מקוננות</b>.<br>
+3. <code>main</code> שמדפיסה את <code>countTriples(5)</code>.`,
 				code: REVIEW_START,
 				solution: REVIEW_SOLVED,
 				example: { output: "countTriples(5) -> 10" },
@@ -30059,7 +30886,7 @@ Check.eq("countTriples(0) is 0", Main.countTriples(0), 0);`),
 						"<code>30</code>"
 					],
 					a: 1,
-					w: "1 + 2 + 4 + 8 = 15: פחות מ-2n, לינארי."
+					w: "<code>1 + 2 + 4 + 8 = 15</code>: פחות מ-<code>2n</code>, לינארי."
 				},
 				{
 					s: "איזה מהקטעים <b>אינו</b> גדל כמו <code>n²</code>?",
@@ -30070,7 +30897,7 @@ Check.eq("countTriples(0) is 0", Main.countTriples(0), 0);`),
 						"<code>for (i &lt; n * n)</code> לבדה"
 					],
 					a: 2,
-					w: "הפנימית מכפילה: log n סיבובים, אז n · log n."
+					w: "הפנימית מכפילה ורצה <code>log n</code> סיבובים, ולכן הכול <code>n · log n</code>."
 				},
 				{
 					s: "מה מודפס?" + codeBlock(R`int c = 0;
@@ -30084,16 +30911,16 @@ for (int i = 0; i < 4; i++) {
 }
 System.out.println(c);`),
 					o: [
+						"<code>20</code>",
 						"<code>4</code>",
 						"<code>64</code>",
-						"<code>20</code>",
 						"<code>10</code>"
 					],
-					a: 2,
-					w: "10 + 6 + 3 + 1 = 20: הלולאות מתחילות ב-<code>i</code> וב-<code>j</code>, לא אחריהם."
+					a: 0,
+					w: "<code>10 + 6 + 3 + 1 = 20</code>, כי הלולאות מתחילות ב-<code>i</code> וב-<code>j</code> ולא אחריהם."
 				},
 				{
-					s: "כמה פעמים רצה שורה 4 עבור <code>n = 10</code>?" + codeBlock(R`int i = n;
+					s: "כמה פעמים רצה השורה <code>c++;</code> עבור <code>n = 10</code>?" + codeBlock(R`int i = n;
 
 while (i > 0) {
     i -= 3;
@@ -30101,12 +30928,12 @@ while (i > 0) {
 }`),
 					o: [
 						"<code>3</code>",
-						"<code>4</code>",
 						"<code>10</code>",
-						"<code>2</code>"
+						"<code>2</code>",
+						"<code>4</code>"
 					],
-					a: 1,
-					w: "<code>i</code> הוא 10, 7, 4 ו-1: ארבעה סיבובים. n/3, לינארי."
+					a: 3,
+					w: "<code>i</code> הוא 10, 7, 4 ו-1: ארבעה סיבובים, כ-<code>n / 3</code>."
 				},
 				{
 					s: "עבור <code>n = 1000</code>, איזה קטע עושה <b>הכי מעט</b> סיבובים?",
@@ -30117,23 +30944,20 @@ while (i > 0) {
 						"<code>for (i &lt; n)</code> ובתוכה <code>for (j = n; j &gt; 0; j /= 2)</code>"
 					],
 					a: 2,
-					w: "החלוקה עושה 10 סיבובים; האחרות 10,000, 1,000 וכ-10,000."
+					w: "החלוקה עושה 10 סיבובים, והאחרים 10,000, 1,000 וכ-10,000."
 				},
 				{
-					s: "איך גדל מספר הצעדים של הקוד הזה כש-<code>n</code> גדל מעבר ל-5?" + codeBlock(R`for (int i = 0; i < n; i++) {
-    if (i == 5) {
-        break;
-    }
+					s: "איך גדל מספר הסיבובים כש-<code>n</code> גדל מעבר ל-6?" + codeBlock(R`for (int i = 0; i < n && i < 6; i++) {
     c++;
 }`),
 					o: [
 						"כמו <code>n</code>",
 						"הוא קבוע",
 						"כמו <code>log n</code>",
-						"כמו <code>n / 5</code>"
+						"כמו <code>n / 6</code>"
 					],
 					a: 1,
-					w: "ה-<code>break</code> יוצא כש-<code>i</code> מגיע ל-5: תמיד 6 סיבובים."
+					w: "התנאי <code>i &lt; 6</code> עוצר את הלולאה אחרי 6 סיבובים, בכל <code>n</code>."
 				},
 				{
 					s: "<code>sumTo(i)</code> היא לולאה של <code>i</code> סיבובים. איך גדל הקוד הזה?" + codeBlock(R`long total = 0;
@@ -30143,15 +30967,15 @@ for (int i = 0; i < n; i++) {
 }`),
 					o: [
 						"כמו <code>n</code>: יש רק לולאה אחת",
-						"כמו <code>n²</code>: משולש",
 						"כמו <code>n · log n</code>",
-						"כמו <code>n³</code>"
+						"כמו <code>n³</code>",
+						"כמו <code>n²</code>: משולש"
 					],
-					a: 1,
-					w: "הקריאה עולה כ-i צעדים: 0 + 1 + ... + (n − 1), משולש. הלולאה השנייה בתוך השיטה."
+					a: 3,
+					w: "כל קריאה עולה כ-<code>i</code> צעדים, וביחד <code>0 + 1 + … + (n − 1)</code>: משולש."
 				},
 				{
-					s: "השיטה עוצרת ב-<code>return true</code> כשהיא מוצאת שני תאים שווים. כמה פעמים נבדק <code>a[i] == a[j]</code> במערך של 6 ערכים <b>שונים</b>?" + codeBlock(R`for (int i = 0; i < a.length; i++) {
+					s: "כמה פעמים נבדק <code>a[i] == a[j]</code> במערך של 6 ערכים <b>שונים</b>?" + codeBlock(R`for (int i = 0; i < a.length; i++) {
     for (int j = i + 1; j < a.length; j++) {
         if (a[i] == a[j]) {
             return true;
@@ -30166,7 +30990,7 @@ return false;`),
 						"<code>1</code>"
 					],
 					a: 0,
-					w: "המקרה הגרוע: כל 6 · 5 / 2 = 15 הזוגות. במקרה הטוב יש בדיקה אחת."
+					w: "אין שני ערכים שווים, ולכן נבדקים כל <code>6 · 5 / 2 = 15</code> הזוגות: המקרה הגרוע."
 				}
 			]
 		}));
@@ -33656,6 +34480,7 @@ Check.eq("{1, 2, 1, 2, 1, 2, 1} gives 3", Main.countValue(new int[]{1, 2, 1, 2, 
 		"ds-objects",
 		"ds-objects",
 		"ds-objects",
+		"ds-cost",
 		"ds-cost",
 		"ds-cost",
 		"ds-cost",
@@ -57975,7 +58800,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 354ff479 מ-2026-11-16 17:36"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 354ff479</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 3d174a64 מ-2026-11-16 18:48"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 3d174a64</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
