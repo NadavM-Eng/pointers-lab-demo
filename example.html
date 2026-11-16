@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-/cw2WqNQpUb6Yu0F4M1IE4riC4+A1Miy2ronaFVfIcc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ifRr1OQflvTVId5P21SXU3TznUiOlHpTnStBCtJsdO4=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -880,6 +880,16 @@ body:not(.admin) .admin-tab{display:none}
 .pv-switch button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
 .ed-ta{height:calc(var(--n) * var(--ed-lh));position:absolute;top:8px;left:0;color:transparent;caret-color:var(--ink);background:transparent;resize:none;outline:none;overflow:hidden}
 .ed-ta::selection{background:color-mix(in srgb,var(--accent) 35%,transparent);color:transparent}
+/* the completion list (completion.ts, CompletionList.tsx): fixed under the typed word, on body */
+.ed-cmp{position:fixed;z-index:90;min-width:260px;max-width:min(440px,calc(100vw - 16px));max-height:244px;overflow:auto;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px var(--shadow);font:13.5px/26px var(--f-mono);text-align:left;font-variant-ligatures:none}
+.ed-cmp-i{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;border-radius:4px;color:var(--ink);white-space:nowrap;cursor:pointer}
+.ed-cmp-i.on{background:var(--sel)}
+.ed-cmp-k{flex:0 0 16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 var(--f-body);color:var(--bg)}
+.ed-cmp-k.keyword{background:var(--syn-kw)}.ed-cmp-k.function{background:var(--syn-fn)}.ed-cmp-k.name{background:var(--ok)}
+.ed-cmp-k.type{background:var(--syn-pp)}.ed-cmp-k.unit{background:var(--syn-num)}
+.ed-cmp-l b{color:var(--accent-text);font-weight:700}
+.ed-cmp-n{margin-left:auto;padding-left:18px;color:var(--muted);font-size:12px}
+.ed-cmp-foot{position:sticky;bottom:-4px;margin-top:4px;padding:0 8px;border-top:1px solid var(--line-2);background:var(--panel);color:var(--muted);font:12px/22px var(--f-body)}
 .ro .ed-ta{caret-color:transparent;cursor:default}
 .ed i,.code-static i{font-style:normal}
 .ed .k,.code-static .k{color:var(--syn-kw)}.ed .s,.code-static .s{color:var(--syn-str)}.ed .c,.code-static .c{color:var(--syn-com);font-style:italic}
@@ -12383,24 +12393,189 @@ function colourCommentStart(line, highlight) {
 	const rest = line.slice(commentEnd);
 	return (comment ? "<i class=\"c\">" + escapeHtml$1(comment) + "</i>" : "") + (rest ? highlight(rest) : "");
 }
-// src/core/code-box/editor-keys.js
+// src/core/code-box/key-plans.js
 var INDENT = "    ";
-var MAKEFILE_EDITOR = /[:\s](GNUmakefile|[Mm]akefile)$/;
-var OUTDENT_STEP = /^( {1,4}|\t)/;
+var STEP = 4;
+var OPENERS = {
+	"(": ")",
+	"[": "]",
+	"{": "}",
+	"\"": "\"",
+	"'": "'"
+};
+var CLOSERS = {
+	")": "(",
+	"]": "[",
+	"}": "{"
+};
+var BLOCK_OPENERS = "([{";
+var WORD_CHAR = /[\p{L}\p{N}_]/u;
+var CLOSES_BEFORE = /^(?:$|[\s)\]};,:])/;
 var OPENS_BLOCK = /\{\s*$/;
 var LEADING_SPACE = /^\s*/;
 var INDENTED_EMPTY_LINE = /^\s{4,}$/;
+var LEADING_SPACES = /^ +$/;
+function lineAround(text, at) {
+	const start = at === 0 ? 0 : text.lastIndexOf("\n", at - 1) + 1;
+	const end = text.indexOf("\n", at);
+	return {
+		start,
+		end: end < 0 ? text.length : end
+	};
+}
+function lineAt(text, at) {
+	const { start, end } = lineAround(text, at);
+	return text.slice(start, end);
+}
+function countQuotes(line, quote) {
+	let count = 0;
+	for (let index = 0; index < line.length; index++) if (line[index] === "\\") index++;
+	else if (line[index] === quote) count++;
+	return count;
+}
+function bracketBalance(line, opener) {
+	const closer = OPENERS[opener];
+	let balance = 0;
+	for (const character of line) balance += character === opener ? 1 : character === closer ? -1 : 0;
+	return balance;
+}
+function stepsOver(text, start, end, closer) {
+	if (start !== end || text[start] !== closer) return false;
+	const line = lineAt(text, start);
+	return closer in CLOSERS ? bracketBalance(line, CLOSERS[closer]) <= 0 : countQuotes(line, closer) % 2 === 0;
+}
+function getsCloser(text, at, opener) {
+	if (!CLOSES_BEFORE.test(text.slice(at))) return false;
+	const line = lineAt(text, at);
+	if (opener === OPENERS[opener]) return !WORD_CHAR.test(text[at - 1] || "") && countQuotes(line, opener) % 2 === 0;
+	return !(text[at] === OPENERS[opener] && bracketBalance(line, opener) < 0);
+}
+function planOpener(text, start, end, opener) {
+	const closer = OPENERS[opener];
+	if (start !== end) return {
+		edit: {
+			text: opener + text.slice(start, end) + closer,
+			start,
+			end
+		},
+		caret: start + 1,
+		selectEnd: end + 1
+	};
+	if (opener === closer && stepsOver(text, start, end, closer)) return {
+		edit: null,
+		caret: start + 1
+	};
+	if (!getsCloser(text, start, opener)) return null;
+	return {
+		edit: {
+			text: opener + closer,
+			start,
+			end
+		},
+		caret: start + 1
+	};
+}
+function planCloser(text, start, end, closer) {
+	if (stepsOver(text, start, end, closer)) return {
+		edit: null,
+		caret: start + 1
+	};
+	const lineStart = lineAround(text, start).start;
+	if (closer === "}" && INDENTED_EMPTY_LINE.test(text.slice(lineStart, start))) return {
+		edit: {
+			text: "}",
+			start: start - STEP,
+			end
+		},
+		caret: start - STEP + 1
+	};
+	return null;
+}
+function planBackspace(text, start, end, isMakefile) {
+	if (start !== end || start === 0) return null;
+	const before = text[start - 1];
+	if (before in OPENERS && OPENERS[before] === text[start]) return {
+		edit: {
+			text: "",
+			start: start - 1,
+			end: start + 1
+		},
+		caret: start - 1
+	};
+	const lineStart = lineAround(text, start).start;
+	const leading = text.slice(lineStart, start);
+	if (isMakefile || leading.length < 2 || !LEADING_SPACES.test(leading)) return null;
+	const stop = lineStart + Math.floor((leading.length - 1) / STEP) * STEP;
+	return {
+		edit: {
+			text: "",
+			start: stop,
+			end: start
+		},
+		caret: stop
+	};
+}
+function planTab(text, start, end, isMakefile) {
+	let insert = INDENT;
+	if (isMakefile) insert = "	";
+	else if (start === end) {
+		const column = start - lineAround(text, start).start;
+		insert = " ".repeat(STEP - column % STEP);
+	}
+	return {
+		edit: {
+			text: insert,
+			start,
+			end
+		},
+		caret: start + insert.length
+	};
+}
+function planEnter(text, start, end) {
+	const lineStart = lineAround(text, start).start;
+	const lineBefore = text.slice(lineStart, start);
+	const indentation = (lineBefore.match(LEADING_SPACE) || [""])[0];
+	const before = text[start - 1] || "";
+	if (before && BLOCK_OPENERS.includes(before) && OPENERS[before] === text[end]) {
+		const inner = "\n" + indentation + INDENT;
+		return {
+			edit: {
+				text: inner + "\n" + indentation,
+				start,
+				end
+			},
+			caret: start + inner.length
+		};
+	}
+	const insert = "\n" + indentation + (OPENS_BLOCK.test(lineBefore) ? INDENT : "");
+	return {
+		edit: {
+			text: insert,
+			start,
+			end
+		},
+		caret: start + insert.length
+	};
+}
+// src/core/code-box/editor-keys.js
+var MAKEFILE_EDITOR = /[:\s](GNUmakefile|[Mm]akefile)$/;
+var OUTDENT_STEP = /^( {1,4}|\t)/;
 var EDITING_SHORTCUT = /^[vxVX]$/;
 function replaceText(textArea, text, start, end) {
+	const before = textArea.value;
+	const expected = before.slice(0, start) + text + before.slice(end);
 	textArea.setSelectionRange(start, end);
-	let isInserted = false;
+	let isDone = false;
 	try {
-		isInserted = document.execCommand("insertText", false, text);
+		isDone = document.execCommand(text ? "insertText" : "delete", false, text);
 	} catch {}
-	if (!isInserted || textArea.value.slice(start, start + text.length) !== text) {
+	if (!isDone || textArea.value !== expected && textArea.value === before) {
 		textArea.setRangeText(text, start, end, "end");
 		textArea.dispatchEvent(new Event("input"));
 	}
+}
+function isMakefileEditor(textArea) {
+	return MAKEFILE_EDITOR.test(textArea.getAttribute("aria-label") || "");
 }
 function selectedLines(text, start, end) {
 	const lineStart = start === 0 ? 0 : text.lastIndexOf("\n", start - 1) + 1;
@@ -12414,7 +12589,7 @@ function selectedLines(text, start, end) {
 function shiftLine(line, isOutdent) {
 	if (!isOutdent) return {
 		line: INDENT + line,
-		change: 4
+		change: INDENT.length
 	};
 	const step = line.match(OUTDENT_STEP);
 	if (!step) return {
@@ -12438,30 +12613,21 @@ function shiftSelectedLines(textArea, isOutdent) {
 	const newStart = Math.max(lineStart, start + shifted[0].change);
 	textArea.setSelectionRange(newStart, Math.max(newStart, end + totalChange));
 }
-function pressTab(textArea, event) {
-	const start = textArea.selectionStart;
-	const end = textArea.selectionEnd;
-	event.preventDefault();
-	if (!event.shiftKey && !textArea.value.slice(start, end).includes("\n")) replaceText(textArea, MAKEFILE_EDITOR.test(textArea.getAttribute("aria-label") || "") ? "	" : INDENT, start, end);
-	else shiftSelectedLines(textArea, event.shiftKey);
-}
-function pressEnter(textArea, event) {
-	const start = textArea.selectionStart;
-	const textBefore = textArea.value.slice(0, start);
-	const currentLine = textBefore.slice(textBefore.lastIndexOf("\n") + 1);
-	let indentation = (currentLine.match(LEADING_SPACE) || [""])[0];
-	if (OPENS_BLOCK.test(currentLine)) indentation += INDENT;
-	event.preventDefault();
-	replaceText(textArea, "\n" + indentation, start, textArea.selectionEnd);
-}
-function pressClosingBrace(textArea, event) {
-	const start = textArea.selectionStart;
-	const textBefore = textArea.value.slice(0, start);
-	const lineStart = textBefore.lastIndexOf("\n") + 1;
-	if (INDENTED_EMPTY_LINE.test(textBefore.slice(lineStart))) {
-		event.preventDefault();
-		replaceText(textArea, "}", start - 4, textArea.selectionEnd);
+function planFor(textArea, event) {
+	const { value: text, selectionStart: start, selectionEnd: end } = textArea;
+	const key = event.key;
+	if (key === "Tab") {
+		const isOneLine = !text.slice(start, end).includes("\n");
+		return event.shiftKey || !isOneLine ? null : planTab(text, start, end, isMakefileEditor(textArea));
 	}
+	if (key === "Enter") return event.shiftKey ? null : planEnter(text, start, end);
+	if (key === "Backspace") return planBackspace(text, start, end, isMakefileEditor(textArea));
+	if (key in OPENERS) return planOpener(text, start, end, key);
+	return key in CLOSERS ? planCloser(text, start, end, key) : null;
+}
+function carryOut(textArea, plan) {
+	if (plan.edit) replaceText(textArea, plan.edit.text, plan.edit.start, plan.edit.end);
+	textArea.setSelectionRange(plan.caret, plan.selectEnd ?? plan.caret);
 }
 function caretLine(textArea) {
 	return textArea.value.slice(0, textArea.selectionStart).split("\n").length;
@@ -12472,7 +12638,11 @@ function isEditingKey(event) {
 	const key = event.key;
 	return key.length === 1 || key === "Enter" || key === "Backspace" || key === "Delete";
 }
-function handleEditorKey(textArea, event, actions) {
+function isTypingKey(event) {
+	if (event.isComposing || event.metaKey) return false;
+	return event.ctrlKey && event.altKey && event.key.length === 1 || !event.ctrlKey && !event.altKey;
+}
+function handleEditorKey(textArea, event, actions, insideCallAt = -1) {
 	if (event.key === "F9") {
 		event.preventDefault();
 		actions.toggleBreakpoint(caretLine(textArea));
@@ -12482,10 +12652,292 @@ function handleEditorKey(textArea, event, actions) {
 		if (isEditingKey(event)) actions.reportLocked();
 		return;
 	}
-	const hasCtrlOrCmd = event.ctrlKey || event.metaKey;
-	if (event.key === "Tab" && !hasCtrlOrCmd && !event.altKey) pressTab(textArea, event);
-	else if (event.key === "Enter" && !hasCtrlOrCmd && !event.shiftKey) pressEnter(textArea, event);
-	else if (event.key === "}" && !hasCtrlOrCmd) pressClosingBrace(textArea, event);
+	if (!isTypingKey(event)) return;
+	const { selectionStart: start, selectionEnd: end } = textArea;
+	if (event.key === "(" && start === end && start === insideCallAt) {
+		event.preventDefault();
+		return;
+	}
+	if (event.key === "Tab" && !event.ctrlKey && !event.altKey) event.preventDefault();
+	const plan = planFor(textArea, event);
+	if (plan) {
+		event.preventDefault();
+		carryOut(textArea, plan);
+	} else if (event.key === "Tab" && !event.ctrlKey && !event.altKey) shiftSelectedLines(textArea, event.shiftKey);
+}
+// src/core/code-box/completion.ts
+var CARET_MARK = "$0";
+var CARET_KEYS = /^(Arrow(Left|Right)|Home|End|PageUp|PageDown)$/;
+var ENDS_IN_WORD = /[\p{L}\p{N}_]$/u;
+function engineHook() {
+	const engine = window.LabEngine;
+	return engine && typeof engine.complete === "function" ? engine.complete.bind(engine) : void 0;
+}
+function textPlace(lineElement, column) {
+	const walker = document.createTreeWalker(lineElement, NodeFilter.SHOW_TEXT);
+	let left = column;
+	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+		if (left <= node.data.length) return {
+			node,
+			offset: left
+		};
+		left -= node.data.length;
+	}
+	return null;
+}
+function placeOnScreen(textArea, colourLayer, at) {
+	const before = textArea.value.slice(0, at);
+	const lineIndex = before.split("\n").length - 1;
+	const column = at - (before.lastIndexOf("\n") + 1);
+	const lineElement = colourLayer?.children[lineIndex];
+	const place = lineElement ? textPlace(lineElement, column) : null;
+	if (lineElement && place) {
+		const range = document.createRange();
+		range.setStart(place.node, place.offset);
+		range.collapse(true);
+		const rect = range.getClientRects()[0] || range.getBoundingClientRect();
+		const line = lineElement.getBoundingClientRect();
+		return {
+			left: rect.left,
+			top: line.top,
+			bottom: line.bottom
+		};
+	}
+	const box = textArea.getBoundingClientRect();
+	const style = getComputedStyle(textArea);
+	const lineHeight = parseFloat(style.lineHeight);
+	const charWidth = parseFloat(style.fontSize) * .6;
+	const top = box.top + lineIndex * lineHeight;
+	return {
+		left: box.left + parseFloat(style.paddingLeft) + column * charWidth,
+		top,
+		bottom: top + lineHeight
+	};
+}
+function askEngine$1(hook, textArea) {
+	const { value, selectionStart, selectionEnd } = textArea;
+	if (selectionStart !== selectionEnd) return null;
+	try {
+		const result = hook(value, selectionStart);
+		return result && result.items.length && result.from <= selectionStart ? result : null;
+	} catch {
+		return null;
+	}
+}
+function isInside$1(anchor, element) {
+	if (!element) return true;
+	const box = element.getBoundingClientRect();
+	return anchor.left >= box.left && anchor.left <= box.right && anchor.top >= box.top - 1 && anchor.bottom <= box.bottom + 1;
+}
+function takeListKey(event, list) {
+	if (event.key === "ArrowDown" || event.key === "ArrowUp") list.move(event.key === "ArrowDown" ? 1 : -1);
+	else if (event.key === "Tab" || event.key === "Enter") list.accept(list.snapshot().index);
+	else if (event.key === "Escape") list.close();
+	else return false;
+	event.preventDefault();
+	event.stopPropagation();
+	return true;
+}
+var EditorCompletion = class {
+	listeners = /* @__PURE__ */ new Set();
+	view = null;
+	isAccepting = false;
+	insideCallAt = -1;
+	textArea;
+	colourLayer = null;
+	listId;
+	constructor(listId) {
+		this.listId = listId;
+	}
+	attach(textArea, colourLayer) {
+		this.textArea = textArea;
+		this.colourLayer = colourLayer;
+		textArea.addEventListener("blur", this.close);
+		textArea.addEventListener("mousedown", this.close);
+		window.addEventListener("scroll", this.follow, true);
+		window.addEventListener("resize", this.close);
+	}
+	subscribe = (listener) => {
+		this.listeners.add(listener);
+		return () => this.listeners.delete(listener);
+	};
+	snapshot = () => this.view;
+	close = () => {
+		this.show(null);
+	};
+	follow = () => {
+		if (!this.view) return;
+		const anchor = placeOnScreen(this.textArea, this.colourLayer, this.view.from);
+		const isSeen = isInside$1(anchor, this.textArea.closest(".ed"));
+		this.show(isSeen ? {
+			...this.view,
+			anchor
+		} : null);
+	};
+	afterInput(event) {
+		const input = event;
+		const isTyped = input.inputType === "insertText" && ENDS_IN_WORD.test(input.data || "");
+		const isErased = input.inputType === "deleteContentBackward" && this.view !== null;
+		if (!this.isAccepting && !this.textArea.readOnly && (isTyped || isErased)) this.refresh();
+		else this.close();
+	}
+	handleKey(event) {
+		if (CARET_KEYS.test(event.key)) this.close();
+		if (!this.view || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return false;
+		return takeListKey(event, this);
+	}
+	takeInsideCallAt() {
+		const at = this.insideCallAt;
+		this.insideCallAt = -1;
+		return at;
+	}
+	accept(index) {
+		const item = this.view && this.view.items[index];
+		if (!this.view || !item) return;
+		const { from } = this.view;
+		const caretAt = item.insert.indexOf(CARET_MARK);
+		this.close();
+		this.isAccepting = true;
+		replaceText(this.textArea, item.insert.replace(CARET_MARK, ""), from, this.textArea.selectionStart);
+		this.isAccepting = false;
+		if (caretAt >= 0) {
+			this.textArea.setSelectionRange(from + caretAt, from + caretAt);
+			this.insideCallAt = item.insert[caretAt - 1] === "(" ? from + caretAt : -1;
+		}
+	}
+	move(step) {
+		if (this.view) {
+			const count = this.view.items.length;
+			this.show({
+				...this.view,
+				index: (this.view.index + step + count) % count
+			});
+		}
+	}
+	destroy() {
+		this.close();
+		this.textArea.removeEventListener("blur", this.close);
+		this.textArea.removeEventListener("mousedown", this.close);
+		window.removeEventListener("scroll", this.follow, true);
+		window.removeEventListener("resize", this.close);
+	}
+	refresh() {
+		const hook = engineHook();
+		const isMakefile = isMakefileEditor(this.textArea);
+		const result = hook && !isMakefile ? askEngine$1(hook, this.textArea) : null;
+		if (!result) {
+			this.close();
+			return;
+		}
+		const kept = this.view ? this.view.items[this.view.index].label : "";
+		const index = Math.max(0, result.items.findIndex((item) => item.label === kept));
+		const typed = this.textArea.selectionStart - result.from;
+		const anchor = placeOnScreen(this.textArea, this.colourLayer, result.from);
+		this.show({
+			...result,
+			index,
+			typed,
+			anchor
+		});
+	}
+	show(next) {
+		if (!this.view && !next) return;
+		this.view = next;
+		if (next) {
+			this.textArea.setAttribute("aria-controls", this.listId);
+			this.textArea.setAttribute("aria-activedescendant", this.listId + "-" + next.index);
+		} else {
+			this.textArea.removeAttribute("aria-controls");
+			this.textArea.removeAttribute("aria-activedescendant");
+		}
+		this.listeners.forEach((listener) => listener());
+	}
+};
+function makeCompletion(listId) {
+	return new EditorCompletion(listId);
+}
+// src/core/code-box/CompletionList.tsx
+var KIND_LETTERS = {
+	keyword: "k",
+	function: "f",
+	name: "v",
+	type: "t",
+	unit: "u"
+};
+var LABEL_INSET = 37;
+var GAP = 2;
+var MARGIN = 8;
+function placeList(list, view) {
+	const { anchor } = view;
+	const height = list.offsetHeight;
+	const width = list.offsetWidth;
+	let top = anchor.bottom + GAP;
+	if (top + height > window.innerHeight - MARGIN && anchor.top - height - GAP >= MARGIN) top = anchor.top - height - GAP;
+	const left = Math.min(anchor.left - LABEL_INSET, window.innerWidth - width - MARGIN);
+	list.style.left = Math.max(MARGIN, left) + "px";
+	list.style.top = top + "px";
+	list.querySelector(".on")?.scrollIntoView({ block: "nearest" });
+}
+function Row$1(props) {
+	const { item, index, view, listId } = props;
+	const kind = item.kind || "name";
+	const isChosen = index === view.index;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: isChosen ? "ed-cmp-i on" : "ed-cmp-i",
+		role: "option",
+		id: listId + "-" + index,
+		"aria-selected": isChosen,
+		"data-i": index,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "ed-cmp-k " + kind,
+				"aria-hidden": "true",
+				children: KIND_LETTERS[kind]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "ed-cmp-l",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.label.slice(0, view.typed) }), item.label.slice(view.typed)]
+			}),
+			item.note ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "ed-cmp-n",
+				children: item.note
+			}) : null
+		]
+	});
+}
+function pickRow(event, control) {
+	event.preventDefault();
+	const row = event.target.closest("[data-i]");
+	if (row) control.accept(Number(row.dataset.i));
+}
+function CompletionList(props) {
+	const { control, listId } = props;
+	const view = (0, import_react.useSyncExternalStore)(control.subscribe, control.snapshot);
+	const listRef = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		if (view && listRef.current) placeList(listRef.current, view);
+	}, [view]);
+	if (!view) return null;
+	return (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "ed-cmp",
+		id: listId,
+		role: "listbox",
+		"aria-label": "השלמות",
+		dir: "ltr",
+		lang: "en",
+		ref: listRef,
+		onMouseDown: (event) => pickRow(event.nativeEvent, control),
+		children: [view.items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Row$1, {
+			item,
+			index,
+			view,
+			listId
+		}, item.label)), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "ed-cmp-foot",
+			"aria-hidden": "true",
+			children: "Tab / Enter · Esc"
+		})]
+	}), document.body);
 }
 // src/core/code-box/editor-preview.ts
 var STORAGE_KEY = "lab:editor-view";
@@ -12624,6 +13076,7 @@ function useLivePreview(hasPreview, textAreaRef, lines) {
 var SPARE_WIDTH_CHARS = 3;
 var highlightCache = /* @__PURE__ */ new Map();
 var HIGHLIGHT_CACHE_SIZE = 4e3;
+var nextListNumber = 1;
 function highlightingEngine() {
 	return window.LabEngine;
 }
@@ -12647,19 +13100,22 @@ function lineClasses(baseClasses, marks, lineNumber) {
 function useTextArea(model, refs) {
 	(0, import_react.useLayoutEffect)(() => {
 		const textArea = refs.textArea.current;
+		const { completion } = refs;
 		model.attach({
 			textArea,
 			scroller: refs.scroller.current,
 			colourLayer: refs.colourLayer.current
 		});
+		completion.attach(textArea, refs.colourLayer.current);
 		const onLockedEdit = () => {
 			if (textArea.readOnly) model.reportLocked();
 		};
 		const onKey = (event) => {
-			handleEditorKey(textArea, event, model);
+			if (!completion.handleKey(event)) handleEditorKey(textArea, event, model, completion.takeInsideCallAt());
 		};
-		const onInput = () => {
+		const onInput = (event) => {
 			model.takeTypedText();
+			completion.afterInput(event);
 		};
 		textArea.addEventListener("input", onInput);
 		textArea.addEventListener("paste", onLockedEdit);
@@ -12670,6 +13126,7 @@ function useTextArea(model, refs) {
 			textArea.removeEventListener("paste", onLockedEdit);
 			textArea.removeEventListener("cut", onLockedEdit);
 			textArea.removeEventListener("keydown", onKey);
+			completion.destroy();
 		};
 	}, [model, refs]);
 }
@@ -12715,11 +13172,16 @@ function Editor({ model, hasPreview }) {
 	const textArea = (0, import_react.useRef)(null);
 	const scroller = (0, import_react.useRef)(null);
 	const colourLayer = (0, import_react.useRef)(null);
-	const [refs] = (0, import_react.useState)(() => ({
-		textArea,
-		scroller,
-		colourLayer
-	}));
+	const [refs] = (0, import_react.useState)(() => {
+		const listId = "ed-cmp-" + nextListNumber++;
+		return {
+			textArea,
+			scroller,
+			colourLayer,
+			completion: makeCompletion(listId),
+			listId
+		};
+	});
 	useTextArea(model, refs);
 	const lines = marks.text.split("\n");
 	const preview = useLivePreview(hasPreview, textArea, lines);
@@ -12730,33 +13192,40 @@ function Editor({ model, hasPreview }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: preview ? "ed ed-pv" : "ed",
 		dir: "ltr",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Gutter, {
-			marks,
-			lines,
-			model
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "ed-scroll",
-			ref: scroller,
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "ed-area",
-				style: areaStyle,
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColourLayer, {
-					marks,
-					lines,
-					ref: colourLayer,
-					preview
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
-					className: "ed-ta",
-					spellCheck: "false",
-					autoCapitalize: "off",
-					autoComplete: "off",
-					wrap: "off",
-					"aria-label": marks.label,
-					readOnly: marks.isReadOnly,
-					ref: textArea
-				})]
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Gutter, {
+				marks,
+				lines,
+				model
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "ed-scroll",
+				ref: scroller,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "ed-area",
+					style: areaStyle,
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ColourLayer, {
+						marks,
+						lines,
+						ref: colourLayer,
+						preview
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
+						className: "ed-ta",
+						spellCheck: "false",
+						autoCapitalize: "off",
+						autoComplete: "off",
+						wrap: "off",
+						"aria-label": marks.label,
+						readOnly: marks.isReadOnly,
+						ref: textArea
+					})]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompletionList, {
+				control: refs.completion,
+				listId: refs.listId
 			})
-		})]
+		]
 	});
 }
 function EditorHost(props) {
@@ -29709,7 +30178,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a742bba7 מ-2026-11-16 06:40"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a742bba7</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 95940c7a מ-2026-11-16 12:52"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 95940c7a</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
