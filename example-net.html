@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-2o+xSAKafJJWk5i5INoI8heOKx4isQk143FcL+TPEzY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-lo21zWlVy3rK8CmdMyvEedxuwIoNYDiaBDX9nC0D7y4=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -4587,6 +4587,291 @@ table.net-stack td + td {
   color: var(--ink);
   font: inherit;
 }
+
+/* ── The demo blocks in the lessons (demos/, docs/engines/net.md 17) ── */
+.nd-block {
+  margin: 18px 0 22px;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+
+.nd-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0 2px 8px;
+}
+
+.nd-meta {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nd-scroll {
+  max-height: 520px;
+  overflow-y: auto;
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.nd-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  direction: ltr;
+  font-family: var(--f-body);
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+.nd-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.nd-bar .b:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.nd-bar .b[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--sel);
+}
+
+.nd-group {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.nd-pos {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.nd-caption {
+  margin: 10px 2px 0;
+  min-height: 3.5em;
+}
+
+.nd-t {
+  font-family: var(--f-mono);
+  font-size: 0.86em;
+  color: var(--accent-text);
+}
+
+.nd-fine {
+  margin: 6px 2px 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.nd-problem {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--err);
+}
+
+.nd-lane,
+.nd-cell-t,
+.nd-label,
+.nd-outcome,
+.nd-tick,
+.nd-timer,
+.nd-legend text {
+  fill: var(--ink-2);
+  font-size: 11px;
+}
+
+.nd-lane {
+  font-size: 12.5px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.nd-cell-t {
+  fill: var(--ink);
+  font-family: var(--f-mono);
+}
+
+.nd-cell {
+  stroke-width: 1.2;
+}
+
+.nd-acked {
+  fill: var(--ok);
+  fill-opacity: 0.35;
+  stroke: var(--ok);
+}
+
+.nd-out {
+  fill: var(--orange);
+  fill-opacity: 0.3;
+  stroke: var(--orange);
+}
+
+.nd-buf {
+  fill: var(--ptr);
+  fill-opacity: 0.3;
+  stroke: var(--ptr);
+}
+
+.nd-free {
+  fill: var(--panel);
+  stroke: var(--accent-text);
+}
+
+.nd-later {
+  fill: var(--panel-2);
+  stroke: var(--line);
+}
+
+.nd-window {
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.nd-timer {
+  fill: var(--warn);
+  font-family: var(--f-mono);
+}
+
+.nd-lane-line {
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.nd-now {
+  stroke: var(--accent-text);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.nd-msg {
+  cursor: pointer;
+  outline: none;
+}
+
+.nd-hit {
+  stroke: transparent;
+  stroke-width: 12;
+}
+
+.nd-line {
+  stroke-width: 2;
+}
+
+.nd-pkt .nd-line,
+.nd-pkt .nd-head {
+  stroke: var(--accent-text);
+  fill: var(--accent-text);
+}
+
+.nd-resent .nd-line,
+.nd-resent .nd-head {
+  stroke: var(--orange);
+  fill: var(--orange);
+}
+
+.nd-ack .nd-line,
+.nd-ack .nd-head {
+  stroke: var(--ok);
+  fill: var(--ok);
+}
+
+.nd-lost .nd-line {
+  stroke: var(--err);
+  stroke-dasharray: 5 4;
+}
+
+.nd-cross,
+.nd-lost .nd-label,
+.nd-loss {
+  fill: var(--err);
+  font-weight: 700;
+}
+
+.nd-loss {
+  font-size: 12px;
+}
+
+.nd-msg:hover .nd-line,
+.nd-msg:focus-visible .nd-line {
+  stroke-width: 3.5;
+}
+
+.nd-msg:focus-visible .nd-hit {
+  stroke: var(--sel);
+}
+
+.nd-o-discard,
+.nd-o-duplicate,
+.nd-o-ignore {
+  fill: var(--muted);
+}
+
+.nd-o-deliver {
+  fill: var(--ok);
+}
+
+.nd-o-buffer {
+  fill: var(--ptr);
+}
+
+.nd-timeout line {
+  stroke: var(--err);
+  stroke-width: 2;
+}
+
+.nd-timeout text {
+  fill: var(--err);
+  font-size: 11px;
+}
+
+.nd-grid {
+  stroke: var(--line-2);
+  stroke-width: 1;
+}
+
+.nd-sel {
+  fill: var(--sel);
+  fill-opacity: 0.55;
+}
+
+.nd-thresh {
+  fill: none;
+  stroke: var(--warn);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.nd-cwnd {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+
+.nd-ss {
+  fill: var(--accent-text);
+}
+
+.nd-ca {
+  fill: var(--ok);
+}
+
+.nd-col {
+  fill: transparent;
+  cursor: pointer;
+}
 /* Content that can come from outside the page stays in its own box (docs/changes/
    2026-11-10-safe-html.md): a formula (its MathML, stored or rendered from a LaTeX source
    someone else wrote), a figure (its drawing) and the course title in the sidebar. Each box has
@@ -5685,25 +5970,25 @@ function propagationTex(link, hasOwnSpeed) {
 	return "d_{\\text{prop}," + k + "} = \\frac{d_{" + k + "}}{" + speed + "}";
 }
 // src/engines/net/texts/he-happenings.ts
-function packetName(packet) {
+function packetName$1(packet) {
 	return "חבילה " + packet;
 }
 var HAPPENINGS = {
 	begin: (fact) => fact.packets === 1 ? `החבילה ב-${fact.source.name}` : `כל ${fact.packets} החבילות ב-${fact.source.name}`,
 	prepared: (fact) => `${fact.node.name} סיים להכין את הנתונים`,
-	processed: (fact) => `${fact.node.name} סיים לעבד את ${packetName(fact.packet)}`,
+	processed: (fact) => `${fact.node.name} סיים לעבד את ${packetName$1(fact.packet)}`,
 	startsSending: (fact) => {
-		const head = fact.waited ? `${fact.node.name} מוציא את ${packetName(fact.packet)} מהתור ושולח אותה` : `${fact.node.name} מתחיל לשלוח את ${packetName(fact.packet)}`;
+		const head = fact.waited ? `${fact.node.name} מוציא את ${packetName$1(fact.packet)} מהתור ושולח אותה` : `${fact.node.name} מתחיל לשלוח את ${packetName$1(fact.packet)}`;
 		const notes = [fact.waited ? `חיכתה ${timeText$1(fact.waited)}` : "", fact.atOnce ? `הקו באורך 0: הביט הראשון כבר ב-${fact.to.name}` : ""].filter(Boolean);
 		return head + (notes.length ? ` (${notes.join("; ")})` : "");
 	},
 	queued: (fact) => {
-		return `${fact.processed ? `${fact.node.name} סיים לעבד את ${packetName(fact.packet)}` : `${packetName(fact.packet)} הגיעה ל-${fact.node.name}`}, אבל ${fact.busyWith ? `הקו עסוק ב${packetName(fact.busyWith)}` : "הקו עסוק"}: ${packetName(fact.packet)} נכנסת לתור`;
+		return `${fact.processed ? `${fact.node.name} סיים לעבד את ${packetName$1(fact.packet)}` : `${packetName$1(fact.packet)} הגיעה ל-${fact.node.name}`}, אבל ${fact.busyWith ? `הקו עסוק ב${packetName$1(fact.busyWith)}` : "הקו עסוק"}: ${packetName$1(fact.packet)} נכנסת לתור`;
 	},
 	bottleneck: (fact) => `הקו ${fact.link.from.name} → ${fact.link.to.name}, האיטי בדרך, קבע את הקצב: בגללו החבילות חיכו בתור`,
-	firstArrives: (fact) => `הביט הראשון של ${packetName(fact.packet)} מגיע ל-${fact.node.name}`,
-	lastLeaves: (fact) => `הביט האחרון של ${packetName(fact.packet)} יוצא מ-${fact.node.name}` + (fact.atOnce ? `, ו${packetName(fact.packet)} כולה ב-${fact.to.name}` : ""),
-	allArrived: (fact) => fact.node.role === "destination" ? `${fact.node.name} קיבל את כל ${packetName(fact.packet)}` : `${packetName(fact.packet)} כולה ב-${fact.node.name}`,
+	firstArrives: (fact) => `הביט הראשון של ${packetName$1(fact.packet)} מגיע ל-${fact.node.name}`,
+	lastLeaves: (fact) => `הביט האחרון של ${packetName$1(fact.packet)} יוצא מ-${fact.node.name}` + (fact.atOnce ? `, ו${packetName$1(fact.packet)} כולה ב-${fact.to.name}` : ""),
+	allArrived: (fact) => fact.node.role === "destination" ? `${fact.node.name} קיבל את כל ${packetName$1(fact.packet)}` : `${packetName$1(fact.packet)} כולה ב-${fact.node.name}`,
 	finish: (fact) => `הכול הגיע ל-${fact.destination.name} אחרי ${timeText$1(fact.total)}`
 };
 var RLI = "⁧";
@@ -5736,14 +6021,14 @@ function start(fact) {
 }
 function firstBitLeaves(fact) {
 	const { packet, node, afterWait } = fact;
-	if (afterWait) return `${packetName(packet)} הייתה מוכנה ב-${nodeHtml(node)} כבר ב-${math("t = " + timeTex$1(afterWait.readyAt))}, אבל הקו היוצא עוד שידר את החבילה הקודמת. היא חיכתה בתור ${math(timeTex$1(afterWait.waited))}: עיכוב תור (queueing delay). עכשיו היא יוצאת.`;
+	if (afterWait) return `${packetName$1(packet)} הייתה מוכנה ב-${nodeHtml(node)} כבר ב-${math("t = " + timeTex$1(afterWait.readyAt))}, אבל הקו היוצא עוד שידר את החבילה הקודמת. היא חיכתה בתור ${math(timeTex$1(afterWait.waited))}: עיכוב תור (queueing delay). עכשיו היא יוצאת.`;
 	const atRouter = node.role === "router" ? " החבילה כולה כבר בנתב, והקו פנוי." : "";
-	return `הביט הראשון של ${packetName(packet)} יוצא מ-${nodeHtml(node)}.${atRouter}`;
+	return `הביט הראשון של ${packetName$1(packet)} יוצא מ-${nodeHtml(node)}.${atRouter}`;
 }
 function lastBitLeaves(fact) {
 	const { packet, link } = fact;
 	const atOnce = fact.arrivesAtOnce ? ` הקו קצר מאוד (${math("d_{" + link.number + "} \\approx 0")}), ולכן הביט מגיע ל-${nodeHtml(link.to)} באותו רגע.${forwardNote(link.to)}` : "";
-	return `הביט האחרון של ${packetName(packet)} יוצא מ-${nodeHtml(link.from)}. השידור לקח את זמן השידור ${math(transmissionTex(link))}.${atOnce}`;
+	return `הביט האחרון של ${packetName$1(packet)} יוצא מ-${nodeHtml(link.from)}. השידור לקח את זמן השידור ${math(transmissionTex(link))}.${atOnce}`;
 }
 function arrived(fact, isOnePacket) {
 	return `הביט האחרון ${isOnePacket ? "" : "של החבילה האחרונה "}הגיע ל-${nodeHtml(fact.destination)}. העיכוב הכולל: ${math("T = " + timeTex$1(fact.total))}.`;
@@ -5772,7 +6057,7 @@ var TEXTS = {
 	steps: {
 		start,
 		prepared: (fact) => `${nodeHtml(fact.node)} מעבד את הנתונים (למשל מכין את החבילה) לפני השידור.${PROCESSING_DELAY}`,
-		processed: (fact) => `${nodeHtml(fact.node)} סיים לעבד את ${packetName(fact.packet)}.${PROCESSING_DELAY}`,
+		processed: (fact) => `${nodeHtml(fact.node)} סיים לעבד את ${packetName$1(fact.packet)}.${PROCESSING_DELAY}`,
 		firstBitLeaves,
 		firstBitArrives: (fact) => {
 			const { link } = fact;
@@ -5780,7 +6065,7 @@ var TEXTS = {
 			return `הביט הראשון מגיע ל-${nodeHtml(link.to)} אחרי זמן ההתפשטות ${math(propagationTex(link, fact.hasOwnSpeed))}.${waits}`;
 		},
 		lastBitLeaves,
-		lastBitArrives: (fact) => `הביט האחרון של ${packetName(fact.packet)} מגיע ל-${nodeHtml(fact.node)}: החבילה כולה שם.${forwardNote(fact.node)}`,
+		lastBitArrives: (fact) => `הביט האחרון של ${packetName$1(fact.packet)} מגיע ל-${nodeHtml(fact.node)}: החבילה כולה שם.${forwardNote(fact.node)}`,
 		endOnePacket,
 		endPipeline,
 		endBottleneck
@@ -5805,7 +6090,7 @@ var TEXTS = {
 	},
 	happenings: HAPPENINGS,
 	words: {
-		packet: packetName,
+		packet: packetName$1,
 		sentence,
 		transmission: "זמן שידור",
 		propagation: "זמן התפשטות",
@@ -8185,10 +8470,10 @@ function chipX(nodeX, slots, index) {
 	return nodeX - 6 - slots * 7 - 7 - 3 - index * 16;
 }
 var PLOT_TOP = 12;
-var RIGHT = 30;
+var RIGHT$1 = 30;
 var MIN_COL_PX = 110;
 var TICK_GAP_PX = 15;
-var MAX_TICKS = 80;
+var MAX_TICKS$1 = 80;
 function visiblePlot(areaHeight) {
 	return Math.max(120, areaHeight - 78 - PLOT_TOP - 20);
 }
@@ -8198,8 +8483,8 @@ function scalesOf(scenario, boxWidth, map, rooms = {
 }) {
 	const columns = Math.max(1, scenario.nodes.length - 1);
 	const gutter = axisGutter(map.keys);
-	const left = gutter + Math.max(rooms.left, RIGHT);
-	const right = Math.max(RIGHT, rooms.right + 6);
+	const left = gutter + Math.max(rooms.left, RIGHT$1);
+	const right = Math.max(RIGHT$1, rooms.right + 6);
 	const column = Math.max(MIN_COL_PX, (boxWidth - left - right) / columns);
 	return {
 		width: Math.round(left + right + column * columns),
@@ -8217,7 +8502,7 @@ function tickTimes(scales) {
 	const { map } = scales;
 	const ticks = [];
 	let lastY = -Infinity;
-	for (let i = map.from; i <= map.to && ticks.length < MAX_TICKS; i++) {
+	for (let i = map.from; i <= map.to && ticks.length < MAX_TICKS$1; i++) {
 		const y = scales.y(map.keys[i]);
 		if (y - lastY >= TICK_GAP_PX) {
 			ticks.push(map.keys[i]);
@@ -8246,7 +8531,7 @@ function AxisBreaks({ scales }) {
 		})
 	});
 }
-function GridLines({ scales }) {
+function GridLines$1({ scales }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
 		className: "nt-axis",
 		children: tickTimes(scales).map((time) => {
@@ -8816,7 +9101,7 @@ function useFollowNow(boxRef, nowY, header) {
 	};
 }
 // src/engines/net/view/Timeline.tsx
-var BOTTOM = 16;
+var BOTTOM$1 = 16;
 var SCROLL_MARGIN = 10;
 var SCROLL_MARGIN_RIGHT = 160;
 var lastSize = {
@@ -8921,14 +9206,14 @@ function Happenings(props) {
 		})
 	] });
 }
-var StaticGrid = (0, import_react.memo)(GridLines);
+var StaticGrid = (0, import_react.memo)(GridLines$1);
 var StaticFrame = (0, import_react.memo)(Frame$1);
 var StaticHappenings = (0, import_react.memo)(Happenings);
 var StaticShapes = (0, import_react.memo)(NoteShapes);
 var StaticGivens = (0, import_react.memo)(Givens);
 var StaticScaleNote = (0, import_react.memo)(ScaleNote);
 function heightOf(scales) {
-	return scales.top + scales.plot + BOTTOM;
+	return scales.top + scales.plot + BOTTOM$1;
 }
 function Diagram(props) {
 	const { scenario, now, label, scales, notes } = props;
@@ -9060,7 +9345,7 @@ function describeTimeline(scenario, time, caption) {
 	return "timeline of " + scenario.nodes.join(", ") + ", " + scenario.packets + " packet(s); t = " + timeText(scenario, time) + (caption ? ": " + caption : "");
 }
 // src/engines/net/view/ScenarioView.tsx
-function useSweep(props, moments, layout) {
+function useSweep$1(props, moments, layout) {
 	const { index, transition, previous } = props;
 	const time = moments[index]?.time ?? 0;
 	const typical = (0, import_react.useMemo)(() => typicalGap(moments.map((moment) => moment.time)), [moments]);
@@ -9159,7 +9444,7 @@ function ScenarioFigure(props) {
 	const moments = (0, import_react.useMemo)(() => momentsOf(scenario), [scenario]);
 	const moment = moments[index] ?? moments[0];
 	const layout = useTimelineLayout(scenario);
-	const { now, isSettled } = useSweep(props, moments, layout);
+	const { now, isSettled } = useSweep$1(props, moments, layout);
 	const sentence = captionOf(inChosenUnit(scenario), moments, index);
 	const node = moment.events.length ? moment.events[0].node : 0;
 	const isLast = index === moments.length - 1;
@@ -9205,7 +9490,7 @@ function Rendered(props) {
 		dangerouslySetInnerHTML: { __html: props.html }
 	});
 }
-function Legend() {
+function Legend$1() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "stk-legend",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
@@ -9412,7 +9697,7 @@ function NetValues(props) {
 		onFocus: follow,
 		onBlur: () => setLit([]),
 		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend, {}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend$1, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepCard, {
 				steps,
 				range,
@@ -9834,6 +10119,1428 @@ function highlight$1(line) {
 	}
 	return html;
 }
+function messageId(kind, seq, copy) {
+	return (kind === "packet" ? "p" : "a") + seq + (copy > 1 ? "#" + copy : "");
+}
+function putOnWire(sim, kind, seq, time) {
+	const counts = kind === "packet" ? sim.copies : sim.ackCopies;
+	const copy = (counts.get(seq) || 0) + 1;
+	counts.set(seq, copy);
+	const id = messageId(kind, seq, copy);
+	sim.messages.push({
+		id,
+		kind,
+		seq,
+		copy,
+		sent: time,
+		arrives: time + sim.s.delay,
+		lost: sim.lose.has(id),
+		outcome: null,
+		resent: kind === "packet" && copy > 1
+	});
+}
+function receiveGbn(sim, msg, time) {
+	if (msg.seq === sim.rcvBase) {
+		sim.rcvBase++;
+		msg.outcome = "deliver";
+		putOnWire(sim, "ack", msg.seq, time);
+		return;
+	}
+	msg.outcome = msg.seq < sim.rcvBase ? "duplicate" : "discard";
+	if (sim.rcvBase > 0) putOnWire(sim, "ack", sim.rcvBase - 1, time);
+}
+function receiveSr(sim, msg, time) {
+	const seq = msg.seq;
+	if (seq >= sim.rcvBase && seq < sim.rcvBase + sim.n) {
+		if (sim.buffered.has(seq)) msg.outcome = "duplicate";
+		else if (seq === sim.rcvBase) {
+			msg.outcome = "deliver";
+			sim.rcvBase++;
+			while (sim.buffered.delete(sim.rcvBase)) sim.rcvBase++;
+		} else {
+			msg.outcome = "buffer";
+			sim.buffered.add(seq);
+		}
+		putOnWire(sim, "ack", seq, time);
+	} else if (seq < sim.rcvBase && seq >= sim.rcvBase - sim.n) {
+		msg.outcome = "duplicate";
+		putOnWire(sim, "ack", seq, time);
+	} else msg.outcome = "ignore";
+}
+function ackGbn(sim, msg, time) {
+	if (msg.seq < sim.base || msg.seq >= sim.next) {
+		msg.outcome = "duplicate";
+		return;
+	}
+	for (let k = sim.base; k <= msg.seq; k++) sim.acked.add(k);
+	sim.base = msg.seq + 1;
+	msg.outcome = "moves";
+	sim.queue = sim.queue.filter((k) => k >= sim.base);
+	sim.timerStart = sim.base < sim.next ? time : -1;
+}
+function ackSr(sim, msg) {
+	const seq = msg.seq;
+	if (seq < sim.base || seq >= sim.next || sim.acked.has(seq)) {
+		msg.outcome = "duplicate";
+		return;
+	}
+	sim.acked.add(seq);
+	sim.deadlines.delete(seq);
+	sim.queue = sim.queue.filter((k) => k !== seq);
+	const before = sim.base;
+	while (sim.acked.has(sim.base)) sim.base++;
+	msg.outcome = sim.base > before ? "moves" : "marks";
+}
+function runOutTimers(sim, time) {
+	if (!sim.sr) {
+		if (sim.timerStart >= 0 && sim.timerStart + sim.s.timeout <= time && sim.base < sim.next) {
+			const resend = [];
+			for (let k = sim.base; k < sim.next; k++) resend.push(k);
+			sim.timeouts.push({
+				time,
+				seq: sim.base,
+				resend
+			});
+			sim.queue = resend.slice();
+			sim.timerStart = time;
+		}
+		return;
+	}
+	const due = [...sim.deadlines.entries()].filter(([, at]) => at <= time).map(([seq]) => seq);
+	for (const seq of due.sort((a, b) => a - b)) {
+		sim.deadlines.delete(seq);
+		sim.timeouts.push({
+			time,
+			seq,
+			resend: [seq]
+		});
+		if (!sim.queue.includes(seq)) sim.queue.push(seq);
+	}
+}
+function sendOne(sim, time) {
+	while (sim.queue.length && (sim.queue[0] < sim.base || sim.acked.has(sim.queue[0]))) sim.queue.shift();
+	let seq = -1;
+	if (sim.queue.length) seq = sim.queue.shift();
+	else if (sim.next < sim.s.packets && sim.next < sim.base + sim.n) seq = sim.next++;
+	if (seq < 0) return;
+	putOnWire(sim, "packet", seq, time);
+	if (sim.sr) sim.deadlines.set(seq, time + sim.s.timeout);
+	else if (sim.timerStart < 0) sim.timerStart = time;
+}
+function playTick(sim, time) {
+	for (const msg of sim.messages.filter((m) => m.arrives === time && !m.lost)) if (msg.kind === "packet") (sim.sr ? receiveSr : receiveGbn)(sim, msg, time);
+	else if (sim.sr) ackSr(sim, msg);
+	else ackGbn(sim, msg, time);
+	runOutTimers(sim, time);
+	sendOne(sim, time);
+}
+function startSim(settings) {
+	return {
+		s: settings,
+		n: settings.protocol === "sw" ? 1 : settings.window,
+		sr: settings.protocol === "sr",
+		lose: new Set(settings.lose),
+		messages: [],
+		timeouts: [],
+		base: 0,
+		next: 0,
+		acked: /* @__PURE__ */ new Set(),
+		queue: [],
+		timerStart: -1,
+		deadlines: /* @__PURE__ */ new Map(),
+		copies: /* @__PURE__ */ new Map(),
+		rcvBase: 0,
+		buffered: /* @__PURE__ */ new Set(),
+		ackCopies: /* @__PURE__ */ new Map()
+	};
+}
+function runWindow(settings) {
+	const sim = startSim(settings);
+	const frames = [];
+	let time = 0;
+	for (; time <= 400; time++) {
+		playTick(sim, time);
+		frames.push(frameOf(sim, time));
+		const onWire = sim.messages.some((m) => !m.lost && m.arrives > time);
+		if (sim.base >= settings.packets && !onWire) break;
+	}
+	const cut = time > 400;
+	const end = Math.min(time, 400);
+	return {
+		settings,
+		messages: sim.messages,
+		timeouts: sim.timeouts,
+		frames,
+		end,
+		cut
+	};
+}
+function frameOf(sim, time) {
+	const gbnTimer = sim.timerStart >= 0 && sim.base < sim.next ? [{
+		seq: sim.base,
+		at: sim.timerStart + sim.s.timeout
+	}] : [];
+	const srTimers = [...sim.deadlines.entries()].map(([seq, at]) => ({
+		seq,
+		at
+	}));
+	return {
+		time,
+		base: sim.base,
+		next: sim.next,
+		acked: [...sim.acked].sort((a, b) => a - b),
+		delivered: sim.rcvBase,
+		buffered: [...sim.buffered].sort((a, b) => a - b),
+		rcvBase: sim.rcvBase,
+		timers: sim.sr ? srTimers.sort((a, b) => a.seq - b.seq) : gbnTimer
+	};
+}
+function windowTotals(run) {
+	const packets = run.messages.filter((m) => m.kind === "packet");
+	return {
+		packets: packets.length,
+		resent: packets.filter((m) => m.resent).length,
+		acks: run.messages.filter((m) => m.kind === "ack").length,
+		lost: run.messages.filter((m) => m.lost).length,
+		timeouts: run.timeouts.length
+	};
+}
+function shownSeq(seq, seqMod) {
+	return seqMod > 0 ? seq % seqMod : seq;
+}
+// src/engines/net/demos/texts-he.ts
+function packetName(seq, seqMod) {
+	return "חבילה " + shownSeq(seq, seqMod);
+}
+function ackName(seq, seqMod) {
+	return "ACK " + shownSeq(seq, seqMod);
+}
+function packetArrives(run, msg) {
+	const mod = run.settings.seqMod;
+	const time = msg.arrives;
+	const ack = run.messages.find((m) => m.kind === "ack" && m.sent === time);
+	const answer = ack ? " ושולח " + ackName(ack.seq, mod) : "";
+	const name = packetName(msg.seq, mod);
+	if (msg.outcome === "deliver") {
+		const delivered = time > 0 ? run.frames[time].delivered - run.frames[time - 1].delivered : 1;
+		const more = delivered > 1 ? ", ואיתה עוד " + (delivered - 1) + " מהחוצץ" : "";
+		return name + " מגיעה. המקבל מעביר אותה ליישום" + more + answer + ".";
+	}
+	if (msg.outcome === "buffer") return name + " מגיעה לפני תורה. המקבל שומר אותה בחוצץ" + answer + ".";
+	if (msg.outcome === "discard") {
+		const why = ack ? answer : " ולא שולח ACK: עוד לא קיבל אף חבילה לפי הסדר";
+		return name + " מגיעה שלא לפי הסדר. המקבל זורק אותה" + why + ".";
+	}
+	if (msg.outcome === "duplicate") return name + " מגיעה שוב. המקבל כבר קיבל אותה: הוא לא מעביר אותה שוב" + answer + ".";
+	return name + " מגיעה מחוץ לחלון של המקבל, והוא מתעלם ממנה.";
+}
+function ackArrives(run, msg) {
+	const mod = run.settings.seqMod;
+	const name = ackName(msg.seq, mod);
+	const base = shownSeq(run.frames[msg.arrives].base, mod);
+	if (msg.outcome === "moves") return name + " מגיע. החלון זז: הבסיס עכשיו " + base + ".";
+	if (msg.outcome === "marks") return name + " מגיע. החבילה מסומנת כמאושרת, אבל הבסיס נשאר " + base + ".";
+	return name + " מגיע שוב. השולח כבר יודע את זה, ולא קורה כלום.";
+}
+function arrives(run, msg) {
+	const mod = run.settings.seqMod;
+	if (msg.lost) return msg.kind === "packet" ? packetName(msg.seq, mod) + " אבדה בדרך ולא מגיעה." : ackName(msg.seq, mod) + " אבד בדרך ולא מגיע.";
+	return msg.kind === "packet" ? packetArrives(run, msg) : ackArrives(run, msg);
+}
+function tickSentences(run, time) {
+	const mod = run.settings.seqMod;
+	const out = run.messages.filter((m) => m.arrives === time).map((m) => arrives(run, m));
+	for (const timeout of run.timeouts.filter((o) => o.time === time)) {
+		const name = packetName(timeout.seq, mod);
+		if (timeout.resend.length === 1) out.push("הטיימר של " + name + " נגמר: השולח שולח שוב רק אותה.");
+		else {
+			const first = shownSeq(timeout.resend[0], mod);
+			const last = shownSeq(timeout.resend[timeout.resend.length - 1], mod);
+			out.push("הטיימר של " + name + " נגמר: השולח שולח שוב את החבילות " + first + " עד " + last + ".");
+		}
+	}
+	for (const msg of run.messages.filter((m) => m.sent === time && m.kind === "packet")) out.push("השולח שולח " + (msg.resent ? "שוב " : "") + "את " + packetName(msg.seq, mod) + ".");
+	if (time === run.end && !run.cut) out.push("כל החבילות הגיעו ואושרו.");
+	return out;
+}
+var WINDOW_LABELS = {
+	sender: "שולח",
+	receiver: "מקבל",
+	back: "→ צעד אחורה",
+	next: "צעד הבא ←",
+	play: "▶ הפעלה",
+	pause: "⏸ עצירה",
+	restart: "↺ מההתחלה",
+	noLoss: "בלי אובדנים",
+	asSet: "כמו בשיעור",
+	hint: "לחצו על חץ כדי להפיל אותו בדרך, ועוד פעם כדי להחזיר אותו.",
+	nothing: "שום דבר לא קורה בטיק הזה: מחכים.",
+	protocol: {
+		sw: "עצור וחכה",
+		gbn: "Go-Back-N",
+		sr: "Selective Repeat"
+	}
+};
+function windowSummary(packets, resent, end) {
+	const again = resent ? " (" + resent + " מהן שוב)" : "";
+	return "בסך הכול נשלחו " + packets + " חבילות" + again + ", והכול נגמר ב-t = " + end + ".";
+}
+function roundSentence(row, variant) {
+	const head = "סבב " + row.round + ": cwnd = " + row.cwnd + ", ssthresh = " + row.ssthresh + ". ";
+	const drop = "ssthresh יורד ל-" + row.nextSsthresh;
+	if (row.event === "timeout") return head + "פסק זמן: " + drop + ", ובסבב הבא cwnd = 1 ומתחילים שוב slow start.";
+	if (row.event === "dup3" && variant === "reno") {
+		const half = ", ובסבב הבא cwnd = " + row.nextCwnd + " (Reno: חצי, וממשיכים בקו ישר).";
+		return head + "שלושה ACK כפולים: " + drop + half;
+	}
+	if (row.event === "dup3") return head + "שלושה ACK כפולים: " + drop + ", ובסבב הבא cwnd = 1 (Tahoe: מתחילים מחדש).";
+	const next = ", ובסבב הבא cwnd = " + row.nextCwnd + ".";
+	if (row.phase === "slow-start") return row.nextCwnd < 2 * row.cwnd ? head + "slow start: החלון היה מוכפל, אבל נעצר ב-ssthresh" + next : head + "slow start: החלון מוכפל" + next;
+	return head + "הימנעות מעומס: החלון גדל ב-1" + next;
+}
+var CWND_LABELS = {
+	back: "→ סבב קודם",
+	next: "סבב הבא ←",
+	event: "אובדן בסבב הזה:",
+	none: "אין",
+	dup3: "3 ACK כפולים",
+	timeout: "פסק זמן",
+	asSet: "כמו בשיעור",
+	hint: "לחצו על סבב בגרף כדי לבחור אותו, ושימו בו אובדן כדי לראות מה קורה.",
+	round: "סבב"
+};
+// src/engines/net/demos/cwnd-parts.tsx
+var roundAfter = (current) => current + 1;
+var roundBefore = (current) => current - 1;
+var LEFT = 48;
+var RIGHT = 620;
+var TOP = 18;
+var BOTTOM = 258;
+function plotOf(rows) {
+	const top = Math.max(...rows.map((r) => Math.max(r.cwnd, r.ssthresh)), 4) + 2;
+	const step = 572 / rows.length;
+	return {
+		top,
+		step,
+		x: (round) => LEFT + (round - .5) * step,
+		y: (value) => BOTTOM - value / top * 240
+	};
+}
+function thresholdPath(rows, plot) {
+	const { x, y, step } = plot;
+	return rows.map((r, i) => (i ? "L" : "M") + (x(r.round) - step / 2) + "," + y(r.ssthresh) + " L" + (x(r.round) + step / 2) + "," + y(r.ssthresh)).join(" ");
+}
+function GridLines(props) {
+	const { top, y } = props.plot;
+	const yTicks = top <= 12 ? 2 : top <= 30 ? 4 : top <= 50 ? 8 : 16;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: Array.from({ length: Math.floor(top / yTicks) + 1 }, (_, i) => i * yTicks).map((v) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+		className: "nd-grid",
+		x1: LEFT,
+		y1: y(v),
+		x2: RIGHT,
+		y2: y(v)
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+		className: "nd-tick",
+		x: 40,
+		y: y(v) + 4,
+		textAnchor: "end",
+		children: v
+	})] }, "y" + v)) });
+}
+function Legend() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: "nd-legend",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				className: "nd-ss",
+				cx: 370,
+				cy: 22,
+				r: 4
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				x: 380,
+				y: 26,
+				children: "slow start"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				className: "nd-ca",
+				x: 457,
+				y: 18.5,
+				width: 7,
+				height: 7
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				x: 470,
+				y: 26,
+				children: "avoidance"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "nd-thresh",
+				x1: 540,
+				y1: 22,
+				x2: 555,
+				y2: 22
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				x: 558,
+				y: 26,
+				children: "ssthresh"
+			})
+		]
+	});
+}
+function RoundPoint(props) {
+	const { r, selected, plot } = props;
+	const { x, y } = plot;
+	if (r.phase === "slow-start") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		className: "nd-ss",
+		cx: x(r.round),
+		cy: y(r.cwnd),
+		r: selected ? 5.5 : 4
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: "nd-ca",
+		x: x(r.round) - (selected ? 5 : 3.5),
+		y: y(r.cwnd) - (selected ? 5 : 3.5),
+		width: selected ? 10 : 7,
+		height: selected ? 10 : 7
+	});
+}
+function RoundMarks(props) {
+	const { r, count, plot } = props;
+	const { x, y, step } = plot;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RoundPoint, {
+			r,
+			selected: props.selected,
+			plot
+		}),
+		r.event && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-loss",
+			x: x(r.round),
+			y: y(r.cwnd) - 10,
+			textAnchor: "middle",
+			children: r.event === "dup3" ? "✗ 3dup" : "✗ TO"
+		}),
+		(count <= 20 || r.round % 2 === 1) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-tick",
+			x: x(r.round),
+			y: 274,
+			textAnchor: "middle",
+			children: r.round
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			className: "nd-col",
+			x: x(r.round) - step / 2,
+			y: TOP,
+			width: step,
+			height: 260,
+			onClick: () => props.onSelect(r.round)
+		})
+	] });
+}
+function ChartLines(props) {
+	const { rows, row, plot } = props;
+	const linePoints = rows.map((r) => plot.x(r.round) + "," + plot.y(r.cwnd)).join(" ");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			className: "nd-sel",
+			x: plot.x(row.round) - plot.step / 2,
+			y: TOP,
+			width: plot.step,
+			height: 240
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			className: "nd-thresh",
+			d: thresholdPath(rows, plot)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("polyline", {
+			className: "nd-cwnd",
+			points: linePoints
+		})
+	] });
+}
+function CwndChart(props) {
+	const { rows, row } = props;
+	const plot = plotOf(rows);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		viewBox: "0 0 640 300",
+		className: "nd-svg",
+		role: "group",
+		"aria-label": CWND_LABELS.hint,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GridLines, { plot }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				className: "nd-tick",
+				x: 40,
+				y: 14,
+				textAnchor: "end",
+				children: "MSS"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartLines, {
+				rows,
+				row,
+				plot
+			}),
+			rows.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RoundMarks, {
+				r,
+				selected: r.round === row.round,
+				count: rows.length,
+				plot,
+				onSelect: props.onSelect
+			}, r.round)),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				className: "nd-tick",
+				x: 334,
+				y: 294,
+				textAnchor: "middle",
+				children: "round (RTT)"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Legend, {})
+		]
+	});
+}
+function VariantSwitch(props) {
+	const { variant } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "nd-group",
+		role: "group",
+		"aria-label": "TCP",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "b",
+			"aria-pressed": variant === "reno",
+			onClick: () => props.onVariant("reno"),
+			children: "Reno"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "b",
+			"aria-pressed": variant === "tahoe",
+			onClick: () => props.onVariant("tahoe"),
+			children: "Tahoe"
+		})]
+	});
+}
+function CwndNav(props) {
+	const { selected, count, variant } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nd-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: () => props.onSelect(roundBefore),
+				disabled: selected <= 1,
+				children: CWND_LABELS.back
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: () => props.onSelect(roundAfter),
+				disabled: selected >= count,
+				children: CWND_LABELS.next
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "nd-pos",
+				children: [
+					CWND_LABELS.round,
+					" ",
+					props.round,
+					" / ",
+					count
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariantSwitch, {
+				variant,
+				onVariant: props.onVariant
+			})
+		]
+	});
+}
+function CwndEvents(props) {
+	const { event } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nd-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "nd-pos",
+				children: CWND_LABELS.event
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "nd-group",
+				role: "group",
+				"aria-label": CWND_LABELS.event,
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						className: "b",
+						"aria-pressed": !event,
+						onClick: () => props.onEvent(null),
+						children: CWND_LABELS.none
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						className: "b",
+						"aria-pressed": event === "dup3",
+						onClick: () => props.onEvent("dup3"),
+						children: CWND_LABELS.dup3
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						className: "b",
+						"aria-pressed": event === "timeout",
+						onClick: () => props.onEvent("timeout"),
+						children: CWND_LABELS.timeout
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				disabled: !props.changed,
+				onClick: props.onReset,
+				children: CWND_LABELS.asSet
+			})
+		]
+	});
+}
+// src/engines/net/demos/cwnd-model.ts
+function runCwnd(settings) {
+	const rows = [];
+	let cwnd = 1;
+	let ssthresh = settings.ssthresh;
+	let sent = 0;
+	for (let round = 1; round <= settings.rounds; round++) {
+		const event = settings.events[round] || null;
+		const phase = cwnd < ssthresh ? "slow-start" : "avoidance";
+		let nextCwnd;
+		let nextSsthresh = ssthresh;
+		if (event) {
+			nextSsthresh = Math.max(Math.floor(cwnd / 2), 1);
+			nextCwnd = event === "dup3" && settings.variant === "reno" ? nextSsthresh : 1;
+		} else if (cwnd < ssthresh) nextCwnd = Math.min(2 * cwnd, ssthresh);
+		else nextCwnd = cwnd + 1;
+		sent += cwnd;
+		rows.push({
+			round,
+			cwnd,
+			ssthresh,
+			phase,
+			event,
+			nextCwnd,
+			nextSsthresh,
+			sentSoFar: sent
+		});
+		cwnd = nextCwnd;
+		ssthresh = nextSsthresh;
+	}
+	return rows;
+}
+// src/engines/net/demos/CwndDemo.tsx
+function cwndKeys(event, selected, count, select) {
+	const keys = {
+		ArrowLeft: roundAfter,
+		ArrowRight: roundBefore,
+		Home: 1,
+		End: count
+	};
+	if (event.key in keys && !event.altKey && !event.ctrlKey && !event.metaKey) {
+		event.preventDefault();
+		select(keys[event.key]);
+	}
+}
+function useCwndState(settings) {
+	const [variant, setVariant] = (0, import_react.useState)(settings.variant);
+	const [events, setEvents] = (0, import_react.useState)(settings.events);
+	const [selected, setSelected] = (0, import_react.useState)(1);
+	const select = (target) => {
+		setSelected((old) => {
+			const round = typeof target === "number" ? target : target(old);
+			return Math.max(1, Math.min(settings.rounds, round));
+		});
+	};
+	const rows = (0, import_react.useMemo)(() => runCwnd({
+		...settings,
+		variant,
+		events
+	}), [
+		settings,
+		variant,
+		events
+	]);
+	const row = rows[Math.min(selected, rows.length) - 1];
+	const changed = variant !== settings.variant || JSON.stringify(events) !== JSON.stringify(settings.events);
+	const setEvent = (event) => {
+		const next = { ...events };
+		if (event) next[row.round] = event;
+		else delete next[row.round];
+		setEvents(next);
+	};
+	const reset = () => {
+		setVariant(settings.variant);
+		setEvents(settings.events);
+	};
+	return {
+		rows,
+		row,
+		selected,
+		variant,
+		changed,
+		select,
+		setVariant,
+		setEvent,
+		reset
+	};
+}
+function CwndDemo(props) {
+	const st = useCwndState(props.settings);
+	const { rows, row, variant } = st;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nd-block",
+		onKeyDown: (event) => cwndKeys(event, st.selected, rows.length, st.select),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "nd-head-row",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: props.title || "cwnd" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+					className: "nd-meta",
+					dir: "ltr",
+					children: [
+						"TCP ",
+						variant === "reno" ? "Reno" : "Tahoe",
+						" · ssthresh₀ = ",
+						props.settings.ssthresh,
+						" MSS"
+					]
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CwndChart, {
+				rows,
+				row,
+				onSelect: st.select
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CwndNav, {
+				selected: st.selected,
+				count: rows.length,
+				round: row.round,
+				variant,
+				onSelect: st.select,
+				onVariant: st.setVariant
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CwndEvents, {
+				event: row.event,
+				changed: st.changed,
+				onEvent: st.setEvent,
+				onReset: st.reset
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "nd-caption",
+				"aria-live": "polite",
+				children: roundSentence(row, variant)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+				className: "nd-fine",
+				children: ["עד סוף הסבב נשלחו " + row.sentSoFar + " מקטעים. ", CWND_LABELS.hint]
+			})
+		]
+	});
+}
+// src/engines/net/demos/settings.ts
+var FIELDS$1 = {
+	window: [
+		"kind",
+		"title",
+		"protocol",
+		"packets",
+		"window",
+		"delay",
+		"timeout",
+		"lose",
+		"seqMod"
+	],
+	cwnd: [
+		"kind",
+		"title",
+		"variant",
+		"ssthresh",
+		"rounds",
+		"events"
+	]
+};
+var LOSS_ID = /^[pa](\d{1,2})(#([2-9]))?$/;
+function wholeIn(value, name, low, high, fallback) {
+	if (value === void 0 && fallback !== void 0) return fallback;
+	if (typeof value !== "number" || !Number.isInteger(value) || value < low || value > high) return name + ": a whole number from " + low + " to " + high;
+	return value;
+}
+function readDemo(input) {
+	let value = input;
+	if (typeof input === "string") try {
+		value = JSON.parse(input);
+	} catch {
+		return {
+			ok: false,
+			problem: "the settings are not JSON"
+		};
+	}
+	if (!value || typeof value !== "object" || Array.isArray(value)) return {
+		ok: false,
+		problem: "the settings must be an object, like {\"kind\": \"window\"}"
+	};
+	const raw = value;
+	const kind = raw.kind;
+	if (kind !== "window" && kind !== "cwnd") return {
+		ok: false,
+		problem: "kind: 'window' or 'cwnd'"
+	};
+	const unknown = Object.keys(raw).find((key) => !FIELDS$1[kind].includes(key));
+	if (unknown) return {
+		ok: false,
+		problem: "unknown field " + unknown + " (a " + kind + " demo has " + FIELDS$1[kind].join(", ") + ")"
+	};
+	if (raw.title !== void 0 && (typeof raw.title !== "string" || raw.title.length > 80)) return {
+		ok: false,
+		problem: "title: a text of at most 80 characters"
+	};
+	const title = typeof raw.title === "string" ? raw.title : "";
+	return kind === "window" ? readWindow(raw, title) : readCwnd(raw, title);
+}
+function readWindowNumbers(raw, protocol) {
+	const packets = wholeIn(raw.packets, "packets", 1, 12, 6);
+	const win = protocol === "sw" ? wholeIn(raw.window, "window", 1, 1, 1) : wholeIn(raw.window, "window", 1, 8, 4);
+	const delay = wholeIn(raw.delay, "delay", 1, 6, 2);
+	if (typeof win === "string") return protocol === "sw" ? "window: stop-and-wait has a window of 1" : win;
+	if (typeof packets === "string" || typeof delay === "string") return typeof packets === "string" ? packets : delay;
+	const timeout = wholeIn(raw.timeout, "timeout", 1, 30, 2 * delay + 2);
+	const seqMod = wholeIn(raw.seqMod, "seqMod", 0, 16, 0);
+	if (typeof timeout === "string" || typeof seqMod === "string") return typeof timeout === "string" ? timeout : seqMod;
+	return {
+		packets,
+		window: win,
+		delay,
+		timeout,
+		seqMod
+	};
+}
+function readLosses(value, packets) {
+	const lose = value === void 0 ? [] : value;
+	if (!Array.isArray(lose) || lose.length > 12) return "lose: a list of at most 12 ids, like ['p2', 'a3#2']";
+	for (const id of lose) {
+		const match = typeof id === "string" ? LOSS_ID.exec(id) : null;
+		if (!match || Number(match[1]) >= packets) return "lose: '" + String(id) + "' is not a message: p<n> or a<n> (n from 0 to " + (packets - 1) + "), with #2, #3 for a later copy";
+	}
+	return [...new Set(lose)];
+}
+function readWindow(raw, title) {
+	const protocol = raw.protocol === void 0 ? "gbn" : raw.protocol;
+	if (protocol !== "sw" && protocol !== "gbn" && protocol !== "sr") return {
+		ok: false,
+		problem: "protocol: 'sw', 'gbn' or 'sr'"
+	};
+	const numbers = readWindowNumbers(raw, protocol);
+	if (typeof numbers === "string") return {
+		ok: false,
+		problem: numbers
+	};
+	const lose = readLosses(raw.lose, numbers.packets);
+	if (typeof lose === "string") return {
+		ok: false,
+		problem: lose
+	};
+	return {
+		ok: true,
+		demo: {
+			kind: "window",
+			title,
+			window: {
+				protocol,
+				lose,
+				...numbers
+			}
+		}
+	};
+}
+function readCwnd(raw, title) {
+	const variant = raw.variant === void 0 ? "reno" : raw.variant;
+	if (variant !== "reno" && variant !== "tahoe") return {
+		ok: false,
+		problem: "variant: 'reno' or 'tahoe'"
+	};
+	const ssthresh = wholeIn(raw.ssthresh, "ssthresh", 1, 64, 8);
+	const rounds = wholeIn(raw.rounds, "rounds", 2, 40, 16);
+	if (typeof ssthresh === "string") return {
+		ok: false,
+		problem: ssthresh
+	};
+	if (typeof rounds === "string") return {
+		ok: false,
+		problem: rounds
+	};
+	const events = {};
+	const given = raw.events === void 0 ? {} : raw.events;
+	if (!given || typeof given !== "object" || Array.isArray(given)) return {
+		ok: false,
+		problem: "events: an object of rounds, like {\"8\": 'dup3', \"14\": 'timeout'}"
+	};
+	for (const [key, event] of Object.entries(given)) {
+		const round = Number(key);
+		if (!Number.isInteger(round) || round < 1 || round > rounds) return {
+			ok: false,
+			problem: "events: round " + key + " is not a round from 1 to " + rounds
+		};
+		if (event !== "dup3" && event !== "timeout") return {
+			ok: false,
+			problem: "events: round " + key + " has '" + String(event) + "' (use 'dup3' or 'timeout')"
+		};
+		events[round] = event;
+	}
+	return {
+		ok: true,
+		demo: {
+			kind: "cwnd",
+			title,
+			cwnd: {
+				variant,
+				ssthresh,
+				rounds,
+				events
+			}
+		}
+	};
+}
+function SeqCell(props) {
+	const { x0, y, size, seq } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+		className: "nd-cell nd-" + props.state,
+		x: x0 + seq * size + 1,
+		y,
+		width: size - 2,
+		height: size - 2,
+		rx: 3
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+		className: "nd-cell-t",
+		x: x0 + (seq + .5) * size,
+		y: y + size / 2 + 3,
+		textAnchor: "middle",
+		children: shownSeq(seq, props.seqMod)
+	})] });
+}
+function SeqStrip(props) {
+	const size = Math.min(24, Math.floor(270 / props.count));
+	const x0 = props.cx - size * props.count / 2;
+	const from = Math.min(props.windowFrom, props.count);
+	const to = Math.min(props.windowFrom + props.windowSize, props.count);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-lane",
+			x: props.cx,
+			y: props.y - 10,
+			textAnchor: "middle",
+			children: props.label
+		}),
+		Array.from({ length: props.count }, (_, seq) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SeqCell, {
+			x0,
+			y: props.y,
+			size,
+			seq,
+			state: props.stateOf(seq),
+			seqMod: props.seqMod
+		}, seq)),
+		to > from && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			className: "nd-window",
+			x: x0 + from * size - 1,
+			y: props.y - 3,
+			width: (to - from) * size + 2,
+			height: size + 4,
+			rx: 5
+		})
+	] });
+}
+function arrowGeometry(msg, now, y) {
+	const fromX = msg.kind === "packet" ? 170 : 470;
+	const toX = msg.kind === "packet" ? 470 : 170;
+	const reach = msg.lost ? .5 : 1;
+	const part = Math.min(reach, Math.max(0, (now - msg.sent) / (msg.arrives - msg.sent)));
+	const y1 = y(msg.sent);
+	return {
+		x1: fromX,
+		y1,
+		x2: fromX + (toX - fromX) * part,
+		y2: y1 + (y(msg.arrives) - y1) * part,
+		done: part >= reach
+	};
+}
+function arrowLabel(msg, seqMod) {
+	const name = msg.kind === "packet" ? packetName(msg.seq, seqMod) : ackName(msg.seq, seqMod);
+	const copy = msg.copy > 1 ? " (שליחה " + msg.copy + ")" : "";
+	return (msg.lost ? "להחזיר את " : "להפיל את ") + name + copy;
+}
+function arrowKind(msg) {
+	if (msg.lost) return "nd-lost";
+	if (msg.kind === "ack") return "nd-ack";
+	return msg.resent ? "nd-resent" : "nd-pkt";
+}
+function ArrowParts(props) {
+	const { msg, g } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			className: "nd-hit",
+			x1: g.x1,
+			y1: g.y1,
+			x2: g.x2,
+			y2: g.y2
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			className: "nd-line",
+			x1: g.x1,
+			y1: g.y1,
+			x2: g.x2,
+			y2: g.y2
+		}),
+		g.done && !msg.lost && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			className: "nd-head",
+			cx: g.x2,
+			cy: g.y2,
+			r: 3.2
+		}),
+		g.done && msg.lost && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-cross",
+			x: g.x2,
+			y: g.y2 + 4,
+			textAnchor: "middle",
+			children: "✗"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-label",
+			x: msg.kind === "packet" ? 162 : 478,
+			y: g.y1 + 4,
+			textAnchor: msg.kind === "packet" ? "end" : "start",
+			children: props.label
+		})
+	] });
+}
+function Arrow$1(props) {
+	const { msg } = props;
+	if (props.now < msg.sent) return null;
+	const g = arrowGeometry(msg, props.now, props.y);
+	const label = (msg.kind === "packet" ? "p" : "ACK ") + shownSeq(msg.seq, props.seqMod);
+	const onKey = (event) => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			event.stopPropagation();
+			props.onToggle(msg.id);
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+		className: "nd-msg " + arrowKind(msg),
+		role: "button",
+		tabIndex: 0,
+		"aria-label": arrowLabel(msg, props.seqMod),
+		"aria-pressed": msg.lost,
+		onClick: () => props.onToggle(msg.id),
+		onKeyDown: onKey,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowParts, {
+			msg,
+			g,
+			label
+		})
+	});
+}
+var OUTCOME_WORD = {
+	deliver: "✓",
+	buffer: "buffer",
+	discard: "discard",
+	duplicate: "dup",
+	ignore: "ignore"
+};
+function Timeouts(props) {
+	const { run, shown, y } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: run.timeouts.filter((o) => o.time <= shown).map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
+		className: "nd-timeout",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+			x1: 156,
+			y1: y(o.time),
+			x2: 184,
+			y2: y(o.time)
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			x: 130,
+			y: y(o.time) + 4,
+			textAnchor: "end",
+			children: "timeout ⏱"
+		})]
+	}, "to" + o.time + "-" + o.seq)) });
+}
+function Outcomes(props) {
+	const { run, shown, y } = props;
+	const arrived = run.messages.filter((m) => m.kind === "packet" && !m.lost && m.arrives <= shown && m.outcome);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: arrived.map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+		className: "nd-outcome nd-o-" + m.outcome,
+		x: 478,
+		y: y(m.arrives) - 6,
+		children: OUTCOME_WORD[m.outcome]
+	}, "o" + m.id)) });
+}
+function ChartMarks(props) {
+	const { run, shown, y } = props;
+	const every = run.end > 24 ? 5 : 2;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-tick",
+			x: 22,
+			y: props.top,
+			textAnchor: "middle",
+			children: "t"
+		}),
+		Array.from({ length: Math.floor(run.end / every) + 1 }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+			className: "nd-tick",
+			x: 22,
+			y: y(i * every) + 4,
+			textAnchor: "middle",
+			children: i * every
+		}, i)),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Timeouts, {
+			run,
+			shown,
+			y
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outcomes, {
+			run,
+			shown,
+			y
+		})
+	] });
+}
+// src/engines/net/demos/WindowDemo.tsx
+var CHART_TOP = 112;
+var SWEEP_MS = 420;
+var PLAY_MS = 900;
+function useSweep(now) {
+	const [shown, setShown] = (0, import_react.useState)(now);
+	const shownRef = (0, import_react.useRef)(now);
+	(0, import_react.useEffect)(() => {
+		const from = shownRef.current;
+		const length = scaledMs(SWEEP_MS, motionSpeed());
+		const sweeps = !reducesMotion() && now - from > 0 && now - from <= 1;
+		const started = performance.now();
+		let frame = 0;
+		const tick = (at) => {
+			const part = sweeps ? Math.min(1, Math.max(0, (at - started) / length)) : 1;
+			shownRef.current = from + (now - from) * part;
+			setShown(shownRef.current);
+			if (part < 1) frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
+	}, [now]);
+	return shown;
+}
+function usePlay(playing, now, end, setTick) {
+	(0, import_react.useEffect)(() => {
+		if (!playing || now >= end) return;
+		const timer = setTimeout(() => setTick(now + 1), scaledMs(PLAY_MS, motionSpeed()));
+		return () => clearTimeout(timer);
+	}, [
+		playing,
+		now,
+		end,
+		setTick
+	]);
+}
+function boxStates(run, frame) {
+	const n = run.settings.protocol === "sw" ? 1 : run.settings.window;
+	const rcvWindow = run.settings.protocol === "sr" ? n : 1;
+	const sender = (seq) => {
+		if (frame.acked.includes(seq)) return "acked";
+		return seq < frame.next ? "out" : seq < frame.base + n ? "free" : "later";
+	};
+	const receiver = (seq) => {
+		if (seq < frame.delivered) return "acked";
+		return frame.buffered.includes(seq) ? "buf" : seq < frame.rcvBase + rcvWindow ? "free" : "later";
+	};
+	return {
+		sender,
+		receiver
+	};
+}
+function WindowStrips(props) {
+	const { run, frame } = props;
+	const states = boxStates(run, frame);
+	const n = run.settings.protocol === "sw" ? 1 : run.settings.window;
+	const mod = run.settings.seqMod;
+	const packets = run.settings.packets;
+	const rcvSize = run.settings.protocol === "sr" ? n : 1;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SeqStrip, {
+		cx: 170,
+		y: 34,
+		count: packets,
+		stateOf: states.sender,
+		windowFrom: frame.base,
+		windowSize: n,
+		seqMod: mod,
+		label: "sender · " + WINDOW_LABELS.sender
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SeqStrip, {
+		cx: 470,
+		y: 34,
+		count: packets,
+		stateOf: states.receiver,
+		windowFrom: frame.rcvBase,
+		windowSize: rcvSize,
+		seqMod: mod,
+		label: "receiver · " + WINDOW_LABELS.receiver
+	})] });
+}
+function WindowChart(props) {
+	const { run, shown } = props;
+	const rowH = Math.max(14, Math.min(22, Math.floor(420 / (run.end + 1))));
+	const height = CHART_TOP + (run.end + 1) * rowH + 24;
+	const y = (t) => 122 + t * rowH;
+	const frame = run.frames[props.now];
+	const mod = run.settings.seqMod;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		viewBox: "0 0 640 " + height,
+		className: "nd-svg",
+		role: "group",
+		"aria-label": WINDOW_LABELS.hint,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(WindowStrips, {
+				run,
+				frame
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+				className: "nd-timer",
+				x: 170,
+				y: 84,
+				textAnchor: "middle",
+				children: timerText(frame, mod, run.settings.protocol === "sr")
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "nd-lane-line",
+				x1: 170,
+				y1: CHART_TOP,
+				x2: 170,
+				y2: height - 10
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "nd-lane-line",
+				x1: 470,
+				y1: CHART_TOP,
+				x2: 470,
+				y2: height - 10
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartMarks, {
+				run,
+				shown,
+				y,
+				top: CHART_TOP
+			}),
+			run.messages.map((msg) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Arrow$1, {
+				msg,
+				now: shown,
+				y,
+				seqMod: mod,
+				onToggle: props.onToggle
+			}, msg.id)),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+				className: "nd-now",
+				x1: 40,
+				y1: y(shown),
+				x2: 620,
+				y2: y(shown)
+			})
+		]
+	});
+}
+function timerText(frame, mod, sr) {
+	const timer = frame.timers[0];
+	if (!timer) return "";
+	const more = sr && frame.timers.length > 1 ? " (+" + (frame.timers.length - 1) + ")" : "";
+	return "⏱ timer p" + shownSeq(timer.seq, mod) + " → t = " + timer.at + more;
+}
+var nextTick = (current) => current + 1;
+var backTick = (current) => current - 1;
+function WindowBar(props) {
+	const { now, end } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nd-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: () => props.go(backTick),
+				disabled: now <= 0,
+				children: WINDOW_LABELS.back
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: () => props.go(nextTick),
+				disabled: now >= end,
+				children: WINDOW_LABELS.next
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: props.togglePlay,
+				disabled: !props.playing && now >= end,
+				children: props.playing ? WINDOW_LABELS.pause : WINDOW_LABELS.play
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "nd-pos",
+				dir: "ltr",
+				children: "t = " + now + " / " + end
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: () => props.go(0),
+				children: WINDOW_LABELS.restart
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "b",
+				onClick: props.resetLosses,
+				disabled: !props.changed && !props.anyLost,
+				children: props.changed ? WINDOW_LABELS.asSet : WINDOW_LABELS.noLoss
+			})
+		]
+	});
+}
+function metaLine(settings) {
+	const n = settings.protocol === "sw" ? 1 : settings.window;
+	return WINDOW_LABELS.protocol[settings.protocol] + " · N = " + n + " · delay " + settings.delay + " · timeout " + settings.timeout;
+}
+function useWindowState(settings) {
+	const [lose, setLose] = (0, import_react.useState)(settings.lose);
+	const run = (0, import_react.useMemo)(() => runWindow({
+		...settings,
+		lose
+	}), [settings, lose]);
+	const [tick, setTick] = (0, import_react.useState)(0);
+	const [playing, setPlaying] = (0, import_react.useState)(false);
+	const now = Math.min(tick, run.end);
+	const shown = useSweep(now);
+	usePlay(playing, now, run.end, setTick);
+	const go = (target) => {
+		setPlaying(false);
+		setTick((old) => {
+			const t = typeof target === "number" ? target : target(Math.min(old, run.end));
+			return Math.max(0, Math.min(run.end, t));
+		});
+	};
+	const toggleMessage = (id) => {
+		setPlaying(false);
+		setLose((old) => old.includes(id) ? old.filter((x) => x !== id) : [...old, id]);
+	};
+	const togglePlay = () => {
+		setPlaying(!playing);
+	};
+	return {
+		lose,
+		run,
+		now,
+		shown,
+		playing,
+		go,
+		toggleMessage,
+		togglePlay,
+		setLose
+	};
+}
+function windowKeys(event, now, end, go) {
+	const to = {
+		ArrowLeft: nextTick,
+		ArrowRight: backTick,
+		Home: 0,
+		End: end
+	};
+	if (event.key in to && !event.altKey && !event.ctrlKey && !event.metaKey) {
+		event.preventDefault();
+		go(to[event.key]);
+	}
+}
+function WindowCaption(props) {
+	const { run, now } = props;
+	const sentences = tickSentences(run, now);
+	const totals = windowTotals(run);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "nd-caption",
+		"aria-live": "polite",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "nd-t",
+				dir: "ltr",
+				children: ["t = ", now]
+			}),
+			" ",
+			sentences.length ? sentences.join(" ") : WINDOW_LABELS.nothing
+		]
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "nd-fine",
+		children: [now >= run.end ? windowSummary(totals.packets, totals.resent, run.end) + " " : "", WINDOW_LABELS.hint]
+	})] });
+}
+function WindowDemo(props) {
+	const state = useWindowState(props.settings);
+	const { run, now, lose } = state;
+	const changed = lose.join() !== props.settings.lose.join();
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "nd-block",
+		onKeyDown: (event) => windowKeys(event, now, run.end, state.go),
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "nd-head-row",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: props.title || WINDOW_LABELS.protocol[run.settings.protocol] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "nd-meta",
+					dir: "ltr",
+					children: metaLine(run.settings)
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "nd-scroll",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WindowChart, {
+					run,
+					now,
+					shown: Math.min(state.shown, run.end),
+					onToggle: state.toggleMessage
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(WindowBar, {
+				now,
+				end: run.end,
+				playing: state.playing && now < run.end,
+				changed,
+				anyLost: lose.length > 0,
+				go: state.go,
+				togglePlay: state.togglePlay,
+				resetLosses: () => state.setLose(changed ? props.settings.lose : [])
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(WindowCaption, {
+				run,
+				now
+			})
+		]
+	});
+}
+// src/engines/net/demos/NetDemo.tsx
+var DEMO_CLASS = "net-demo";
+function NetDemoBlock(props) {
+	const read = readDemo(props.source);
+	if (!read.ok) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+		className: "nd-problem",
+		dir: "ltr",
+		children: ["net demo settings: ", read.problem]
+	});
+	const demo = read.demo;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ViewGuard, { children: demo.kind === "window" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WindowDemo, {
+		settings: demo.window,
+		title: demo.title
+	}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CwndDemo, {
+		settings: demo.cwnd,
+		title: demo.title
+	}) });
+}
+var NET_LESSON_BLOCKS = { [DEMO_CLASS]: {
+	attribute: "data-demo",
+	render: NetDemoBlock
+} };
 // src/engines/net/lesson-html.ts
 var NET_LESSON_HTML = {
 	classes: {
@@ -9858,8 +11565,10 @@ var NET_LESSON_HTML = {
 			"hn",
 			"hl"
 		],
-		table: ["net-stack"]
+		table: ["net-stack"],
+		div: ["net-demo"]
 	},
+	blocks: { "net-demo": "data-demo" },
 	boxFields: ["net.means.*", "net.endNote"]
 };
 // src/engines/net/tour.ts
@@ -9981,6 +11690,7 @@ window.LabEngine = {
 	formula: { render: formulaMathml$1 },
 	authoring,
 	lessonHtml: NET_LESSON_HTML,
+	lessonBlocks: NET_LESSON_BLOCKS,
 	files: {
 		main: "scenario.txt",
 		solution: "solution.txt"
@@ -11261,6 +12971,12 @@ function engineClassesOf(tag) {
 	const classes = ownValue(lessonHtml && lessonHtml.classes, tag);
 	return Array.isArray(classes) ? classes : [];
 }
+function engineBlockAttribute(className) {
+	const engine = typeof window === "undefined" ? null : window.LabEngine;
+	const lessonHtml = engine && engine.lessonHtml;
+	const name = ownValue(lessonHtml && lessonHtml.blocks, className);
+	return typeof name === "string" && /^data-[a-z][a-z-]*$/.test(name) ? name : "";
+}
 function isAllowedClass(rule, tag, className) {
 	return Boolean(rule.classes && rule.classes.includes(className)) || engineClassesOf(tag).includes(className);
 }
@@ -11522,6 +13238,7 @@ function cleanCopyOf(source, tag, classes) {
 	const label = source.getAttribute("aria-label");
 	if (tag === "div" && classes.includes("schem") && label) copy.setAttribute("aria-label", label);
 	if (tag === "div" && classes.includes("step-diagram")) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
+	for (const name of tag === "div" ? classes.map(engineBlockAttribute) : []) if (name && source.hasAttribute(name)) copy.setAttribute(name, source.getAttribute(name) || "");
 	if (isGeneratorBlock(tag, classes)) {
 		const value = source.getAttribute("data-generator") || "";
 		copy.className = GENERATOR_BLOCK_CLASS;
@@ -21469,7 +23186,7 @@ function unitPage(kind, unit, unitIndex, parts) {
 	};
 }
 function quizComesLast(unit) {
-	return Boolean(unit.quiz) && (unit.body || []).some(isBoxItem);
+	return Boolean(unit.quiz) && (unit.quizLast === true || (unit.body || []).some(isBoxItem));
 }
 function splitUnitIntoPages(unit, unitIndex) {
 	const unitPages = [];
@@ -33408,26 +35125,62 @@ function Group({ label, items, isOn, onPick }) {
 	});
 }
 // src/core/lesson/LessonHtml.tsx
-function HtmlWithDiagrams(props) {
+var CORE_BLOCKS = {
+	[DIAGRAM_CLASS]: {
+		attribute: "data-diagram",
+		render: StepDiagramBlock
+	},
+	[GENERATOR_CLASS]: {
+		attribute: "data-generator",
+		render: GeneratorBlock
+	}
+};
+function engineBlocks() {
+	const engine = typeof window === "undefined" ? void 0 : window.LabEngine;
+	const blocks = engine && engine.lessonBlocks;
+	return blocks && typeof blocks === "object" ? blocks : {};
+}
+function mayHoldBlocks(html) {
+	return [...Object.keys(CORE_BLOCKS), ...Object.keys(engineBlocks())].some((c) => html.includes(c));
+}
+function collectSlots(host) {
+	const found = [];
+	const blocks = {
+		...engineBlocks(),
+		...CORE_BLOCKS
+	};
+	for (const [className, block] of Object.entries(blocks)) {
+		if (!/^[a-z][a-z0-9-]*$/.test(className) || typeof block.render !== "function") continue;
+		const Render = block.render;
+		host.querySelectorAll("div." + className).forEach((element) => {
+			found.push({
+				element,
+				attribute: block.attribute,
+				draw: (source) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Render, { source })
+			});
+		});
+	}
+	return found;
+}
+function HtmlWithBlocks(props) {
 	const hostRef = (0, import_react.useRef)(null);
 	const [slots, setSlots] = (0, import_react.useState)([]);
 	(0, import_react.useLayoutEffect)(() => {
 		const host = hostRef.current;
-		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS + ", div." + GENERATOR_CLASS)) : [];
-		setSlots(found);
+		setSlots(host ? collectSlots(host) : []);
 	}, [props.html]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		ref: hostRef,
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
-	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(slot.classList.contains("cx-generator") ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GeneratorBlock, { source: slot.getAttribute("data-generator") || "" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
+	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(slot.draw(slot.element.getAttribute(slot.attribute) || ""), slot.element, String(index)))] });
 }
 function LessonHtml(props) {
-	if (!props.html.includes("step-diagram") && !props.html.includes("cx-generator")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	if (!mayHoldBlocks(props.html)) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
 	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HtmlWithDiagrams, {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HtmlWithBlocks, {
 		html: props.html,
 		className: props.className
 	}, props.html);
@@ -35529,7 +37282,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a6660d73 מ-2026-11-16 05:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a6660d73</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 05da1dd7 מ-2026-11-16 06:39"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 05da1dd7</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
