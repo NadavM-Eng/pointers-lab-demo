@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-TPI9Ca5dW7FXoccxe1dkN0QtTpL/5ECKB6R0+uq5zFQ=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-bGbQ/aVYbrvIIPT71Eb1v3Ska+XYksp+ixdQbG0BZQo=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -3748,11 +3748,13 @@ body.debugging .tour-roomy .wb-grid {
   font-weight: 600;
 }
 
-/* ── The lesson block: the code on the start side (right in Hebrew), the pictures beside ── */
+/* ── The lesson block: one column, the code on top (every line in full), the pictures below.
+   The lesson column is narrow (44% of the window), so side by side cut the code off (the owner,
+   2026-11-16). ── */
 .cx-block {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   gap: 12px;
   margin: 18px 0 22px;
   padding: 10px;
@@ -3762,7 +3764,6 @@ body.debugging .tour-roomy .wb-grid {
 }
 
 .cx-side {
-  flex: 1 1 300px;
   min-width: 0;
 }
 
@@ -3779,7 +3780,6 @@ body.debugging .tour-roomy .wb-grid {
 }
 
 .cx-code {
-  flex: 1 1 320px;
   min-width: 0;
   margin: 0;
   padding: 8px 0;
@@ -3793,11 +3793,15 @@ body.debugging .tour-roomy .wb-grid {
   line-height: 1.6;
 }
 
+/* A line too long for the column wraps under its own text (a hanging indent past the line
+   number), never out of sight. */
 .cx-codeline {
   display: block;
-  padding: 0 10px 0 0;
+  padding: 0 10px 0 calc(3ch + 10px);
   border-inline-start: 3px solid transparent;
-  white-space: pre;
+  text-indent: calc(-3ch - 10px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .cx-codeline.has-part {
@@ -3816,6 +3820,7 @@ body.debugging .tour-roomy .wb-grid {
   color: var(--muted);
   font-style: normal;
   text-align: end;
+  text-indent: 0;
   user-select: none;
 }
 
@@ -35276,17 +35281,29 @@ function taskStatusLook(boxId) {
 		color: ""
 	};
 }
+function engineTryNote() {
+	const engine = typeof window === "undefined" ? void 0 : window.LabEngine;
+	const note = engine && engine.strings && engine.strings.tryNote;
+	return typeof note === "string" ? note : "";
+}
 function TaskCard(props) {
 	const box = props.box;
 	if (!box.task && box.try === false) return null;
-	if (!box.task) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "try",
-		children: [
-			"הקוד ליד: הריצו אותו, שנו אותו, ולחצו ",
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "⏯ שורה אחר שורה" }),
-			" כדי לראות את הזיכרון."
-		]
-	});
+	if (!box.task) {
+		const note = engineTryNote();
+		if (note) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "try",
+			dangerouslySetInnerHTML: { __html: note }
+		});
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "try",
+			children: [
+				"הקוד ליד: הריצו אותו, שנו אותו, ולחצו ",
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "⏯ שורה אחר שורה" }),
+				" כדי לראות את הזיכרון."
+			]
+		});
+	}
 	const look = taskStatusLook(box.id);
 	const style = look.color ? { color: look.color } : void 0;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -40519,7 +40536,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 95940c7a מ-2026-11-16 12:52"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 95940c7a</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 38d70b00 מ-2026-11-16 14:12"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 38d70b00</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>

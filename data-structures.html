@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-xEy7KeK1Byqsa9UKbKZ8VZ6MtnsngeuPgFAwHa85EDc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-IQEwa5InK06VYhP+af9K/RXrgSkmAMLlNRqosVtP6a0=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -3748,11 +3748,13 @@ body.debugging .tour-roomy .wb-grid {
   font-weight: 600;
 }
 
-/* ── The lesson block: the code on the start side (right in Hebrew), the pictures beside ── */
+/* ── The lesson block: one column, the code on top (every line in full), the pictures below.
+   The lesson column is narrow (44% of the window), so side by side cut the code off (the owner,
+   2026-11-16). ── */
 .cx-block {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   gap: 12px;
   margin: 18px 0 22px;
   padding: 10px;
@@ -3762,7 +3764,6 @@ body.debugging .tour-roomy .wb-grid {
 }
 
 .cx-side {
-  flex: 1 1 300px;
   min-width: 0;
 }
 
@@ -3779,7 +3780,6 @@ body.debugging .tour-roomy .wb-grid {
 }
 
 .cx-code {
-  flex: 1 1 320px;
   min-width: 0;
   margin: 0;
   padding: 8px 0;
@@ -3793,11 +3793,15 @@ body.debugging .tour-roomy .wb-grid {
   line-height: 1.6;
 }
 
+/* A line too long for the column wraps under its own text (a hanging indent past the line
+   number), never out of sight. */
 .cx-codeline {
   display: block;
-  padding: 0 10px 0 0;
+  padding: 0 10px 0 calc(3ch + 10px);
   border-inline-start: 3px solid transparent;
-  white-space: pre;
+  text-indent: calc(-3ch - 10px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .cx-codeline.has-part {
@@ -3816,6 +3820,7 @@ body.debugging .tour-roomy .wb-grid {
   color: var(--muted);
   font-style: normal;
   text-align: end;
+  text-indent: 0;
   user-select: none;
 }
 
@@ -16713,7 +16718,7 @@ function diagramsInHtml(html) {
 	return Array.from(template.content.querySelectorAll("div.step-diagram")).map((element) => element.getAttribute("data-diagram") || "");
 }
 // \0lab-diagrams
-installCourseDiagrams({});
+installCourseDiagrams({ "ruler-tree": "{\r\n  \"format\": \"step-diagram/1\",\r\n  \"style\": \"map\",\r\n  \"title\": \"העץ של ruler(4)\",\r\n  \"description\": \"עץ הקריאות של ruler(4): השורש ruler(4), מתחתיו שתי קריאות ruler(2), ומתחת לכל אחת שתי קריאות ruler(1). ליד כל רמה: כמה קריאות, באיזה גודל, וכמה מקפים יחד.\",\r\n  \"actors\": [\r\n    {\r\n      \"id\": \"r\",\r\n      \"label\": \"n = 4\",\r\n      \"sub\": \"----\",\r\n      \"x\": 30,\r\n      \"y\": 12\r\n    },\r\n    {\r\n      \"id\": \"c1\",\r\n      \"label\": \"n = 2\",\r\n      \"sub\": \"--\",\r\n      \"x\": 14,\r\n      \"y\": 50,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"c2\",\r\n      \"label\": \"n = 2\",\r\n      \"sub\": \"--\",\r\n      \"x\": 46,\r\n      \"y\": 50,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"l1\",\r\n      \"label\": \"n = 1\",\r\n      \"sub\": \"-\",\r\n      \"x\": 6,\r\n      \"y\": 88,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"l2\",\r\n      \"label\": \"n = 1\",\r\n      \"sub\": \"-\",\r\n      \"x\": 22,\r\n      \"y\": 88,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"l3\",\r\n      \"label\": \"n = 1\",\r\n      \"sub\": \"-\",\r\n      \"x\": 38,\r\n      \"y\": 88,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"l4\",\r\n      \"label\": \"n = 1\",\r\n      \"sub\": \"-\",\r\n      \"x\": 54,\r\n      \"y\": 88,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"v0\",\r\n      \"label\": \"רמה 0\",\r\n      \"sub\": \"4 מקפים\",\r\n      \"x\": 84,\r\n      \"y\": 12\r\n    },\r\n    {\r\n      \"id\": \"v1\",\r\n      \"label\": \"רמה 1\",\r\n      \"sub\": \"4 מקפים\",\r\n      \"x\": 84,\r\n      \"y\": 50,\r\n      \"hidden\": true\r\n    },\r\n    {\r\n      \"id\": \"v2\",\r\n      \"label\": \"רמה 2\",\r\n      \"sub\": \"4 מקפים\",\r\n      \"x\": 84,\r\n      \"y\": 88,\r\n      \"hidden\": true\r\n    }\r\n  ],\r\n  \"steps\": [\r\n    {\r\n      \"caption\": \"רמה 0 היא הקריאה הראשונה, ruler(4): צומת אחד בגודל 4. היא מדפיסה 4 מקפים, ואז קוראת פעמיים ל-ruler(2).\"\r\n    },\r\n    {\r\n      \"caption\": \"רמה 1: שתי קריאות, כל אחת בגודל 2. כל אחת מדפיסה 2 מקפים, ויחד 4.\",\r\n      \"show\": [\r\n        \"c1\",\r\n        \"c2\",\r\n        \"v1\"\r\n      ],\r\n      \"add\": [\r\n        { \"type\": \"link\", \"from\": \"r\", \"to\": \"c1\" },\r\n        { \"type\": \"link\", \"from\": \"r\", \"to\": \"c2\" }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"רמה 2: ארבע קריאות, כל אחת בגודל 1. כל אחת מדפיסה מקף אחד ועוצרת, ויחד 4.\",\r\n      \"show\": [\r\n        \"l1\",\r\n        \"l2\",\r\n        \"l3\",\r\n        \"l4\",\r\n        \"v2\"\r\n      ],\r\n      \"add\": [\r\n        { \"type\": \"link\", \"from\": \"c1\", \"to\": \"l1\" },\r\n        { \"type\": \"link\", \"from\": \"c1\", \"to\": \"l2\" },\r\n        { \"type\": \"link\", \"from\": \"c2\", \"to\": \"l3\" },\r\n        { \"type\": \"link\", \"from\": \"c2\", \"to\": \"l4\" }\r\n      ]\r\n    },\r\n    {\r\n      \"caption\": \"בכל רמה 4 מקפים, ויש 3 רמות. לכן ruler(4) מדפיסה 12 מקפים.\",\r\n      \"highlight\": [\r\n        \"v0\",\r\n        \"v1\",\r\n        \"v2\"\r\n      ]\r\n    }\r\n  ]\r\n}\r\n" });
 // src/courses/data-structures/content.js
 (function() {
 	"use strict";
@@ -16756,6 +16761,70 @@ installCourseDiagrams({});
 		return unit;
 	};
 	const generator = (spec) => "<div class=\"cx-generator\" data-generator=\"" + JSON.stringify(spec).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\$/g, "&#36;") + "\"></div>";
+	const RULER = R`static void ruler(int n) {
+    if (n == 1) {
+        System.out.println("-");
+        return;
+    }
+    for (int i = 0; i < n; i++) {
+        System.out.print("-");
+    }
+    System.out.println();
+    ruler(n / 2);
+    ruler(n / 2);
+}`;
+	const inMain = (method, lines) => "public class Main {\n" + method.split("\n").map((line) => line ? "    " + line : "").join("\n") + "\n\n    public static void main(String[] args) {\n" + lines.map((line) => line ? "        " + line : "").join("\n") + "\n    }\n}\n";
+	const rulerMain = (n) => inMain(RULER, ["ruler(" + n + ");"]);
+	const GRID3 = R`static int grid3(int n) {
+    int count = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            count++;
+        }
+    }
+    if (n == 1) {
+        return count;
+    }
+    count += grid3(n / 3);
+    count += grid3(n / 3);
+    count += grid3(n / 3);
+    return count;
+}`;
+	const levelProgram = (name, calls, n, levels) => R`public class Main {
+    static int[] work = new int[10];
+
+    static void ` + name + R`(int n, int level) {
+        for (int i = 0; i < n; i++) {
+            work[level]++;
+        }
+        if (n == 1) {
+            return;
+        }
+` + Array.from({ length: calls }, () => "        " + name + "(n / 2, level + 1);\n").join("") + R`    }
+
+    public static void main(String[] args) {
+        int total = 0;
+
+        ` + name + "(" + n + R`, 0);
+        for (int level = 0; level < ` + levels + R`; level++) {
+            System.out.println("level " + level + ": " + work[level]);
+            total += work[level];
+        }
+        System.out.println("total: " + total);
+    }
+}
+`;
+	const levelOutput = (calls, n) => {
+		const lines = [];
+		let total = 0;
+		for (let size = n, count = 1, level = 0; size >= 1; size = Math.floor(size / 2), count *= calls, level++) {
+			lines.push("level " + level + ": " + count * size);
+			total += count * size;
+		}
+		return lines.join("\n") + "\ntotal: " + total + "\n";
+	};
+	const diagram = (name) => window.LabDiagrams ? window.LabDiagrams.html(name) : "";
 	const U = [];
 	const MAIN_HELLO = R`public class Main {
     public static void main(String[] args) {
@@ -23876,69 +23945,1039 @@ return false;`),
 			]
 		}));
 	}
-	const WRITE_EXAMPLE = R`static int rangeSums(int[] plays, int lo, int hi) {
-    int mid = (lo + hi) / 2;
-    int sum = 0;
-
-    if (hi - lo == 1) {
-        return plays[lo];
-    }
-    for (int i = lo; i < hi; i++) {
-        sum += plays[i];
-    }
-    return sum + rangeSums(plays, lo, mid) + rangeSums(plays, mid, hi);
-}`;
-	const WRITE_START = R`public class Main {
-    static int work(int n) {
-        // TODO: W(1) = 1, and otherwise W(n) = 2 * W(n / 2) + n
-        return 0;
-    }
-
+	const STOP_EXAMPLE = rulerMain(1).replace("        ruler(1);\n", R`        ruler(1);
+        System.out.println("===");
+        ruler(2);
+`);
+	const SIZES_MAIN = R`
     public static void main(String[] args) {
-        System.out.println(work(16));
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+
+        sizes(n);
+        System.out.println();
     }
 }
 `;
-	const WRITE_SOLVED = R`public class Main {
-    static int work(int n) {
+	const SIZES_START = R`import java.util.Scanner;
+
+public class Main {
+    static void sizes(int n) {
+        System.out.print(n + " ");
         if (n == 1) {
-            return 1;
+            return;
         }
-        return 2 * work(n / 2) + n;
+        sizes(n / 2);
+        // TODO: call sizes on n / 2 a second time
     }
-
+` + SIZES_MAIN;
+	const SIZES_SOLVED = SIZES_START.replace("        // TODO: call sizes on n / 2 a second time\n", "        sizes(n / 2);\n");
+	const PARTS_MAIN = R`
     public static void main(String[] args) {
-        System.out.println(work(16));
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+
+        parts(n);
+        System.out.println();
     }
 }
 `;
+	const PARTS_START = R`import java.util.Scanner;
+
+public class Main {
+    static void parts(int n) {
+        // TODO 1: print n and a space
+        // TODO 2: stop when n is 1
+        // TODO 3: call parts on n / 3, three times
+    }
+` + PARTS_MAIN;
+	const PARTS_SOLVED = R`import java.util.Scanner;
+
+public class Main {
+    static void parts(int n) {
+        System.out.print(n + " ");
+        if (n == 1) {
+            return;
+        }
+        parts(n / 3);
+        parts(n / 3);
+        parts(n / 3);
+    }
+` + PARTS_MAIN;
 	U.push(withOutputs({
-		id: "recur-write",
-		title: "מקוד לנוסחת נסיגה",
-		body: [R`<p>נוסחת נסיגה מתארת קריאה אחת: <code>a</code> קריאות על קלט קטן פי <code>b</code>, ועוד העבודה
-<code>f(n)</code> שהשיטה עושה בעצמה.</p>` + generator({ code: WRITE_EXAMPLE }) + R`<p>לחצו על שורה בקוד: החלק שלה בנוסחה נדלק.</p>`, {
-			id: "recur-write-work",
-			title: "work",
-			task: R`כתבו את <code>work(n)</code>, שמחזירה את <code>W(n)</code>:
-<b><code>W(1) = 1</code> ו-<code>W(n) = 2 · W(n/2) + n</code></b>.`,
-			code: WRITE_START,
-			solution: WRITE_SOLVED,
-			example: { output: "work(16) -> 80" },
-			tests: [
-				unit("work(1) is 1", R`Check.eq("work(1) is 1", Main.work(1), 1);`),
-				unit("work(2) is 4 and work(16) is 80", R`Check.eq("work(2) is 4", Main.work(2), 4);
-Check.eq("work(16) is 80", Main.work(16), 80);`),
-				unit("work(3) is 5: 3 / 2 rounds down to 1", R`Check.eq("work(3) is 5", Main.work(3), 5);`),
-				unit("work(100) is 652 and work(1024) is 11264", R`Check.eq("work(100) is 652", Main.work(100), 652);
-Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
-				io("main prints 80", "", "80\n"),
-				src("work calls itself", {
-					fn: "work",
-					require: "\\bwork\\s*\\(",
-					msg: "work צריכה לקרוא לעצמה."
-				})
+		id: "recur-calls",
+		title: "שיטה שקוראת לעצמה",
+		body: [
+			R`<p>שיטה יכולה לקרוא <b>לעצמה</b>. <code>ruler(n)</code> מדפיסה שורה של <code>n</code> מקפים,
+ואז קוראת לעצמה פעמיים, על חצי:</p>
+<table class="tbl"><tr><th>בקוד</th><th>מה זה עושה</th></tr>
+<tr><td class="mono">for</td><td>שורה של <code>n</code> מקפים</td></tr>
+<tr><td class="mono">ruler(n / 2);</td><td>קוראת לעצמה על חצי, פעמיים</td></tr></table>
+<p>הריצו: <code>ruler(4)</code> מדפיסה 7 שורות.</p>`,
+			{
+				id: "recur-calls-ruler",
+				title: "ruler(4)",
+				code: rulerMain(4),
+				tests: [io("ruler(4) prints 7 lines", "", "----\n--\n-\n-\n--\n-\n-\n")]
+			},
+			R`<p>כל קריאה צריכה מקום <b>לעצור</b>. ב-<code>ruler</code> זה <code>n == 1</code>: מקף אחד, ו-<code>return</code>
+בלי לקרוא לעצמה.</p>
+<table class="tbl"><tr><th>הקריאה</th><th>מה היא מדפיסה</th></tr>
+<tr><td class="mono">ruler(1)</td><td><code>-</code>, ועוצרת</td></tr>
+<tr><td class="mono">ruler(2)</td><td><code>--</code>, ואז <code>ruler(1)</code> פעמיים</td></tr></table>
+<div class="callout warn"><b>בלי עצירה</b><p><code>1 / 2</code> הוא 0, ו-<code>ruler(0)</code> קוראת לעצמה בלי סוף:
+<code>StackOverflowError</code>. לכן כל שיטה כזו מתחילה בבדיקת העצירה.</p></div>`,
+			{
+				id: "recur-calls-stop",
+				title: "העצירה",
+				code: STOP_EXAMPLE,
+				tests: [io("ruler(1), then ruler(2)", "", "-\n===\n--\n-\n-\n")]
+			},
+			R`<p>תורכם: <code>sizes(n)</code> מדפיסה את <code>n</code>, ואז קוראת לעצמה פעמיים על חצי. חסרה לה
+הקריאה השנייה.</p>`,
+			{
+				id: "recur-calls-sizes",
+				title: "הקריאה השנייה",
+				task: R`במקום ה-TODO הוסיפו את הקריאה השנייה ל-<code>sizes(n / 2)</code>.`,
+				code: SIZES_START,
+				solution: SIZES_SOLVED,
+				tests: [
+					io("n = 8", "8\n", "8 4 2 1 1 2 1 1 4 2 1 1 2 1 1\n"),
+					io("n = 4", "4\n", "4 2 1 1 2 1 1\n"),
+					io("n = 1: no calls", "1\n", "1\n")
+				]
+			},
+			R`<p>עכשיו שיטה שלמה: שלוש קריאות במקום שתיים, וכל אחת על שליש.</p>`,
+			{
+				id: "recur-calls-parts",
+				title: "שלוש קריאות",
+				task: R`השלימו את שלושת ה-TODO ב-<code>parts(n)</code>:<br>
+1. הדפיסו את <code>n</code> ורווח.<br>
+2. כש-<code>n</code> הוא 1, עצרו.<br>
+3. קראו ל-<code>parts(n / 3)</code> שלוש פעמים.`,
+				code: PARTS_START,
+				solution: PARTS_SOLVED,
+				tests: [
+					io("n = 9", "9\n", "9 3 1 1 1 3 1 1 1 3 1 1 1\n"),
+					io("n = 3", "3\n", "3 1 1 1\n"),
+					io("n = 1: no calls", "1\n", "1\n"),
+					io("n = 27", "27\n", "27 9 3 1 1 1 3 1 1 1 3 1 1 1 9 3 1 1 1 3 1 1 1 3 1 1 1 9 3 1 1 1 3 1 1 1 3 1 1 1\n")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "כמה מקפים מדפיסה <code>ruler(2)</code>, בסך הכול?",
+				o: [
+					"<code>2</code>",
+					"<code>3</code>",
+					"<code>1</code>",
+					"<code>4</code>"
+				],
+				a: 3,
+				w: "2 בלולאה, ועוד מקף אחד בכל אחת משתי הקריאות <code>ruler(1)</code>."
+			},
+			{
+				s: "מה מדפיסה <code>show(8)</code>?" + codeBlock(R`static void show(int n) {
+    System.out.print(n + " ");
+    if (n == 1) {
+        return;
+    }
+    show(n / 2);
+}`),
+				o: [
+					"<code>8 4 2 1</code>",
+					"<code>8 4 2</code>",
+					"<code>1 2 4 8</code>",
+					"<code>8 4 2 1 1</code>"
+				],
+				a: 0,
+				w: "קריאה אחת בכל פעם: 8, 4, 2, ו-1 עוצרת."
+			},
+			{
+				s: "מה מדפיסה <code>up(8)</code>? שימו לב: ההדפסה <b>אחרי</b> הקריאה." + codeBlock(R`static void up(int n) {
+    if (n == 1) {
+        System.out.print(1 + " ");
+        return;
+    }
+    up(n / 2);
+    System.out.print(n + " ");
+}`),
+				o: [
+					"<code>8 4 2 1</code>",
+					"<code>1 2 4 8</code>",
+					"<code>1 8</code>",
+					"<code>8 1</code>"
+				],
+				a: 1,
+				w: "כל קריאה מחכה שהקריאה שלה תסתיים, ורק אז מדפיסה: 1 קודם, 8 אחרון."
+			},
+			{
+				s: "כמה פעמים נקראת <code>ruler</code> בסך הכול כש-<code>main</code> קוראת ל-<code>ruler(4)</code>?",
+				o: [
+					"<code>3</code>",
+					"<code>4</code>",
+					"<code>7</code>",
+					"<code>8</code>"
+				],
+				a: 2,
+				w: "אחת על 4, שתיים על 2, וארבע על 1: <code>1 + 2 + 4 = 7</code>, שורה לכל קריאה."
+			},
+			{
+				s: "כש-<code>ruler(4)</code> רצה, איזו שורה <b>לא</b> מודפסת אף פעם?",
+				o: [
+					"<code>----</code>",
+					"<code>---</code>",
+					"<code>--</code>",
+					"<code>-</code>"
+				],
+				a: 1,
+				w: "הגדלים הם 4, 2 ו-1 בלבד: אין קריאה על 3."
+			},
+			{
+				s: "מוחקים מ-<code>ruler</code> את ה-<code>if</code> שעוצר ב-<code>n == 1</code>. מה קורה ב-<code>ruler(4)</code>?",
+				o: [
+					"היא מדפיסה שורה אחת ועוצרת",
+					"היא לא מתקמפלת",
+					"היא עוצרת כש-<code>n</code> מגיע ל-0",
+					"היא לא עוצרת: <code>StackOverflowError</code>"
+				],
+				a: 3,
+				w: "<code>1 / 2 = 0</code>, ו-<code>ruler(0)</code> קוראת שוב ל-<code>ruler(0)</code>, בלי סוף."
+			}
+		]
+	}));
+	{
+		const MARKS_MAIN = R`
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+
+        marks(n, 0);
+    }
+}
+`;
+		const MARKS_START = R`import java.util.Scanner;
+
+public class Main {
+    static void marks(int n, int level) {
+        // TODO: print level and a space (no new line)
+        for (int i = 0; i < n; i++) {
+            System.out.print("#");
+        }
+        System.out.println();
+        if (n == 1) {
+            return;
+        }
+        marks(n / 2, level + 1);
+        marks(n / 2, level + 1);
+    }
+` + MARKS_MAIN;
+		const MARKS_SOLVED = MARKS_START.replace("        // TODO: print level and a space (no new line)\n", "        System.out.print(level + \" \");\n");
+		const STEPS_MAIN = R`
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+
+        steps(n, 0);
+    }
+}
+`;
+		const STEPS_START = R`import java.util.Scanner;
+
+public class Main {
+    static void steps(int n, int level) {
+        // TODO 1: print 2 * level spaces
+        // TODO 2: print n times '#', then a new line
+        // TODO 3: stop when n is 1
+        // TODO 4: call steps on n / 2 and level + 1, twice
+    }
+` + STEPS_MAIN;
+		const STEPS_SOLVED = R`import java.util.Scanner;
+
+public class Main {
+    static void steps(int n, int level) {
+        for (int i = 0; i < 2 * level; i++) {
+            System.out.print(" ");
+        }
+        for (int i = 0; i < n; i++) {
+            System.out.print("#");
+        }
+        System.out.println();
+        if (n == 1) {
+            return;
+        }
+        steps(n / 2, level + 1);
+        steps(n / 2, level + 1);
+    }
+` + STEPS_MAIN;
+		U.push(withOutputs({
+			id: "recur-tree",
+			title: "עץ הקריאות",
+			body: [
+				R`<p>כל קריאה היא <b>צומת</b> בעץ: הגודל שלה, ומתחת לו המקפים שהיא מדפיסה. מתחת לצומת יש את הקריאות
+שהוא עושה. <b>רמה</b> היא שורה של קריאות באותו גודל.</p>
+<p>לחצו <b>צעד הבא</b>: בכל צעד נוספת רמה.</p>` + diagram("ruler-tree"),
+				{
+					id: "recur-tree-ruler",
+					title: "העץ של ruler(4)",
+					code: rulerMain(4),
+					tests: [io("ruler(4) prints 7 lines", "", "----\n--\n-\n-\n--\n-\n-\n")]
+				},
+				R`<p>אותו עץ, בזמן ריצה. לחצו <b>⏯ שורה אחר שורה</b>: באי <b>עץ רקורסיה</b> נוסף צומת בכל קריאה.</p>
+<p>בסוף הריצה, המתג <b>עץ מלא</b> מראה את כל 15 הקריאות של <code>ruler(8)</code>.</p>`,
+				{
+					id: "recur-tree-island",
+					title: "העץ בזמן ריצה",
+					code: rulerMain(8),
+					tests: [io("ruler(8) prints 15 lines", "", "--------\n----\n--\n-\n-\n--\n-\n-\n----\n--\n-\n-\n--\n-\n-\n")]
+				},
+				R`<p>תורכם: <code>marks</code> מקבלת גם את מספר הרמה, וכל קריאה שולחת לילדים שלה <code>level + 1</code>.
+חסרה השורה שמדפיסה את הרמה.</p>`,
+				{
+					id: "recur-tree-marks",
+					title: "מספר הרמה",
+					task: R`במקום ה-TODO הדפיסו את <code>level</code> ורווח, בלי לרדת שורה.`,
+					code: MARKS_START,
+					solution: MARKS_SOLVED,
+					tests: [
+						io("n = 4: levels 0, 1, 2", "4\n", "0 ####\n1 ##\n2 #\n2 #\n1 ##\n2 #\n2 #\n"),
+						io("n = 2", "2\n", "0 ##\n1 #\n1 #\n"),
+						io("n = 8: levels 0 to 3", "8\n", "0 ########\n1 ####\n2 ##\n3 #\n3 #\n2 ##\n3 #\n3 #\n1 ####\n2 ##\n3 #\n3 #\n2 ##\n3 #\n3 #\n")
+					]
+				},
+				R`<p>עכשיו ציור של העץ: כל רמה נדחפת שני רווחים ימינה מזו שמעליה.</p>`,
+				{
+					id: "recur-tree-steps",
+					title: "עץ במדרגות",
+					task: R`השלימו את ארבעת ה-TODO ב-<code>steps(n, level)</code>:<br>
+1. הדפיסו <code>2 * level</code> רווחים.<br>
+2. הדפיסו <code>n</code> פעמים <code>#</code>, וירדו שורה.<br>
+3. כש-<code>n</code> הוא 1, עצרו.<br>
+4. קראו ל-<code>steps(n / 2, level + 1)</code> פעמיים.`,
+					code: STEPS_START,
+					solution: STEPS_SOLVED,
+					tests: [
+						io("n = 4", "4\n", "####\n  ##\n    #\n    #\n  ##\n    #\n    #\n"),
+						io("n = 2", "2\n", "##\n  #\n  #\n"),
+						io("n = 1: one line", "1\n", "#\n")
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "בעץ של <code>ruler(8)</code> השורש הוא רמה 0. כמה קריאות יש ברמה 2?",
+					o: [
+						"<code>2</code>",
+						"<code>4</code>",
+						"<code>8</code>",
+						"<code>6</code>"
+					],
+					a: 1,
+					w: "כל קריאה פותחת שתיים: 1, 2, 4."
+				},
+				{
+					s: "באיזה גודל היא כל קריאה ברמה 2 של <code>ruler(8)</code>?",
+					o: [
+						"<code>4</code>",
+						"<code>1</code>",
+						"<code>2</code>",
+						"<code>8</code>"
+					],
+					a: 2,
+					w: "הגודל נחצה בכל רמה: 8, 4, 2."
+				},
+				{
+					s: "כמה מקפים מדפיסה רמה 1 של <code>ruler(8)</code>, כל הרמה יחד?",
+					o: [
+						"<code>8</code>",
+						"<code>4</code>",
+						"<code>16</code>",
+						"<code>2</code>"
+					],
+					a: 0,
+					w: "שתי קריאות בגודל 4, כל אחת 4 מקפים: <code>2 · 4 = 8</code>."
+				},
+				{
+					s: "כמה רמות יש בעץ של <code>parts(27)</code>, שקוראת לעצמה שלוש פעמים על <code>n / 3</code>?",
+					o: [
+						"<code>3</code>",
+						"<code>27</code>",
+						"<code>9</code>",
+						"<code>4</code>"
+					],
+					a: 3,
+					w: "הגדלים 27, 9, 3, 1: ארבע רמות."
+				},
+				{
+					s: "מה השורה האחרונה ש-<code>marks(4, 0)</code> מדפיסה?",
+					o: [
+						"<code>0 ####</code>",
+						"<code>1 ##</code>",
+						"<code>2 #</code>",
+						"<code>3 #</code>"
+					],
+					a: 2,
+					w: "הקריאה האחרונה היא עלה ברמה 2, בגודל 1."
+				},
+				{
+					s: "מה <b>לא</b> נכון על העץ של <code>ruler(8)</code>?",
+					o: [
+						"ברמה 3 יש 8 קריאות",
+						"כל רמה מדפיסה 8 מקפים",
+						"יש בו 3 רמות",
+						"ברמה 1 כל קריאה בגודל 4"
+					],
+					a: 2,
+					w: "יש בו 4 רמות: 8, 4, 2, 1."
+				}
 			]
-		}],
+		}));
+	}
+	const A_TWO = R`public class Main {
+    static int[] calls = new int[10];
+
+    static void split(int n, int level) {
+        calls[level]++;
+        if (n == 1) {
+            return;
+        }
+        split(n / 2, level + 1);
+        split(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        split(8, 0);
+        for (int level = 0; level < 4; level++) {
+            System.out.println("level " + level + ": " + calls[level]);
+        }
+    }
+}
+`;
+	const A_THREE = R`public class Main {
+    static int[] calls = new int[10];
+
+    static void split(int n, int level) {
+        calls[level]++;
+        if (n == 1) {
+            return;
+        }
+        split(n / 3, level + 1);
+        split(n / 3, level + 1);
+        split(n / 3, level + 1);
+    }
+
+    public static void main(String[] args) {
+        split(27, 0);
+        for (int level = 0; level < 4; level++) {
+            System.out.println("level " + level + ": " + calls[level]);
+        }
+    }
+}
+`;
+	const QUAD_START = R`public class Main {
+    static int[] count = new int[10];
+
+    static void quad(int n, int level) {
+        count[level]++;
+        if (n == 1) {
+            return;
+        }
+        quad(n / 2, level + 1);
+        quad(n / 2, level + 1);
+        quad(n / 2, level + 1);
+        // TODO: the fourth call, quad on n / 2 and level + 1
+    }
+
+    public static void main(String[] args) {
+        quad(4, 0);
+        for (int level = 0; level < 3; level++) {
+            System.out.println("level " + level + ": " + count[level]);
+        }
+    }
+}
+`;
+	const QUAD_SOLVED = QUAD_START.replace("        // TODO: the fourth call, quad on n / 2 and level + 1\n", "        quad(n / 2, level + 1);\n");
+	const POWER_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(callsAt(2, 3));
+    }
+}
+`;
+	const POWER_START = R`public class Main {
+    // how many calls level k has when every call makes a calls: a to the power k
+    static int callsAt(int a, int k) {
+        int result = 1;
+
+        // TODO 1: a loop that runs k times
+        // TODO 2: inside it, multiply result by a
+        return result;
+    }
+` + POWER_MAIN;
+	const POWER_SOLVED = R`public class Main {
+    // how many calls level k has when every call makes a calls: a to the power k
+    static int callsAt(int a, int k) {
+        int result = 1;
+
+        for (int i = 0; i < k; i++) {
+            result *= a;
+        }
+        return result;
+    }
+` + POWER_MAIN;
+	U.push(withOutputs({
+		id: "recur-a",
+		title: "כמה קריאות: a",
+		body: [
+			R`<p><code>a</code> הוא <b>מספר הקריאות</b> שקריאה אחת עושה לעצמה. ב-<code>split</code> יש שתי שורות קריאה,
+ולכן <code>a = 2</code>.</p>
+<p>התוכנית סופרת כמה קריאות יש בכל רמה: כל קריאה מוסיפה 1 לתא של הרמה שלה, <code>calls[level]</code>.
+הריצו.</p>`,
+			{
+				id: "recur-a-two",
+				title: "שתי קריאות",
+				code: A_TWO,
+				tests: [io("1, 2, 4, 8 calls", "", "level 0: 1\nlevel 1: 2\nlevel 2: 4\nlevel 3: 8\n")]
+			},
+			R`<p>בכל רמה יש פי 2 קריאות מבזו שמעליה. למה? כל קריאה פותחת <b>שתי</b> קריאות ברמה שמתחתיה.</p>
+<p>עם שלוש קריאות על <code>n / 3</code>, <code>a = 3</code>, וכל רמה גדלה פי 3:</p>
+<table class="tbl"><tr><th>רמה</th><th>a = 2</th><th>a = 3</th></tr>
+<tr><td class="mono">0</td><td class="mono">1</td><td class="mono">1</td></tr>
+<tr><td class="mono">1</td><td class="mono">2</td><td class="mono">3</td></tr>
+<tr><td class="mono">2</td><td class="mono">4</td><td class="mono">9</td></tr>
+<tr><td class="mono">k</td><td class="mono">2<sup>k</sup></td><td class="mono">3<sup>k</sup></td></tr></table>`,
+			{
+				id: "recur-a-three",
+				title: "שלוש קריאות",
+				code: A_THREE,
+				tests: [io("1, 3, 9, 27 calls", "", "level 0: 1\nlevel 1: 3\nlevel 2: 9\nlevel 3: 27\n")]
+			},
+			R`<p>תורכם: <code>quad</code> צריכה <b>ארבע</b> קריאות, <code>a = 4</code>. חסרה הרביעית.</p>`,
+			{
+				id: "recur-a-quad",
+				title: "הקריאה הרביעית",
+				task: R`במקום ה-TODO הוסיפו את הקריאה הרביעית ל-<code>quad(n / 2, level + 1)</code>.`,
+				code: QUAD_START,
+				solution: QUAD_SOLVED,
+				tests: [io("1, 4, 16 calls", "", "level 0: 1\nlevel 1: 4\nlevel 2: 16\n")]
+			},
+			R`<p>ברמה <code>k</code> יש <code>a<sup>k</sup></code> קריאות: <code>a</code> כפול עצמו <code>k</code> פעמים.
+את זה מחשבים בלולאה, כמו <code>doublings</code> בשיעור "לולאות", שהכפילה ב-2 בכל סיבוב.</p>`,
+			{
+				id: "recur-a-power",
+				title: "callsAt",
+				task: R`השלימו את <code>callsAt(a, k)</code>, שמחזירה <code>a<sup>k</sup></code>:<br>
+1. לולאה שרצה <code>k</code> פעמים.<br>
+2. בכל סיבוב, הכפילו את <code>result</code> ב-<code>a</code>.`,
+				code: POWER_START,
+				solution: POWER_SOLVED,
+				example: { output: "callsAt(2, 3) -> 8" },
+				tests: [
+					unit("callsAt(2, 3) is 8", R`Check.eq("callsAt(2, 3)", Main.callsAt(2, 3), 8);`),
+					unit("callsAt(3, 2) is 9 and callsAt(4, 3) is 64", R`Check.eq("callsAt(3, 2)", Main.callsAt(3, 2), 9);
+Check.eq("callsAt(4, 3)", Main.callsAt(4, 3), 64);`),
+					unit("level 0 has one call: callsAt(5, 0) is 1", R`Check.eq("callsAt(5, 0)", Main.callsAt(5, 0), 1);`),
+					unit("a = 1 is a chain: callsAt(1, 7) is 1", R`Check.eq("callsAt(1, 7)", Main.callsAt(1, 7), 1);`),
+					io("main prints 8", "", "8\n")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה <code>a</code> בשיטה הזו?" + codeBlock(R`static void beep(int n) {
+    if (n == 1) {
+        return;
+    }
+    beep(n / 3);
+    beep(n / 3);
+    beep(n / 3);
+}`),
+				o: [
+					"<code>1</code>",
+					"<code>2</code>",
+					"<code>3</code>",
+					"<code>9</code>"
+				],
+				a: 2,
+				w: "שלוש שורות קריאה, וכל אחת רצה פעם אחת: <code>a = 3</code>."
+			},
+			{
+				s: "כש-<code>a = 3</code>, כמה קריאות יש ברמה 3 (השורש הוא רמה 0)?",
+				o: [
+					"<code>27</code>",
+					"<code>9</code>",
+					"<code>12</code>",
+					"<code>81</code>"
+				],
+				a: 0,
+				w: "<code>3<sup>3</sup> = 27</code>: 1, 3, 9, 27."
+			},
+			{
+				s: "בשיטה הזו יש שורת קריאה <b>אחת</b>. מה <code>a</code>?" + codeBlock(R`static int pair(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return pair(n / 2) + pair(n / 2);
+}`),
+				o: [
+					"<code>1</code>",
+					"<code>2</code>",
+					"<code>0</code>",
+					"<code>4</code>"
+				],
+				a: 1,
+				w: "בשורה אחת יש שתי קריאות, ושתיהן רצות: <code>a = 2</code>."
+			},
+			{
+				s: "כמה פעמים נקראת <code>split</code> בסך הכול ב-<code>split(8, 0)</code> של הדוגמה הראשונה?",
+				o: [
+					"<code>8</code>",
+					"<code>14</code>",
+					"<code>16</code>",
+					"<code>15</code>"
+				],
+				a: 3,
+				w: "<code>1 + 2 + 4 + 8 = 15</code>: מחברים את כל הרמות."
+			},
+			{
+				s: "כש-<code>a = 1</code>, כמה קריאות יש ברמה 5?",
+				o: [
+					"<code>5</code>",
+					"<code>1</code>",
+					"<code>32</code>",
+					"<code>0</code>"
+				],
+				a: 1,
+				w: "<code>1<sup>5</sup> = 1</code>: כל קריאה פותחת קריאה אחת, והעץ הוא שרשרת."
+			},
+			{
+				s: "מה <b>לא</b> נכון על <code>a</code>?",
+				o: [
+					"הוא מספר הקריאות שקריאה אחת עושה לעצמה",
+					"ברמה <code>k</code> יש <code>a<sup>k</sup></code> קריאות",
+					"הוא מספר שורות הקוד בשיטה",
+					"כש-<code>a</code> גדל, העץ מתרחב מהר יותר"
+				],
+				a: 2,
+				w: "<code>a</code> סופר קריאות, לא שורות."
+			}
+		]
+	}));
+	const B_TWO = R`public class Main {
+    static int[] size = new int[10];
+
+    static void split(int n, int level) {
+        size[level] = n;
+        if (n == 1) {
+            return;
+        }
+        split(n / 2, level + 1);
+        split(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        split(16, 0);
+        for (int level = 0; level < 5; level++) {
+            System.out.println("level " + level + ": size " + size[level]);
+        }
+    }
+}
+`;
+	const B_THREE = B_TWO.replace(/split\(n \/ 2/g, "split(n / 3").replace("split(16, 0)", "split(27, 0)").replace("level < 5", "level < 4");
+	const QUARTER_START = R`public class Main {
+    static int[] size = new int[10];
+
+    static void quarter(int n, int level) {
+        size[level] = n;
+        if (n == 1) {
+            return;
+        }
+        // TODO: call quarter on a quarter of n, and level + 1
+    }
+
+    public static void main(String[] args) {
+        quarter(64, 0);
+        for (int level = 0; level < 4; level++) {
+            System.out.println("level " + level + ": size " + size[level]);
+        }
+    }
+}
+`;
+	const QUARTER_SOLVED = QUARTER_START.replace("        // TODO: call quarter on a quarter of n, and level + 1\n", "        quarter(n / 4, level + 1);\n");
+	const LEVELS_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(levels(16, 2));
+    }
+}
+`;
+	const LEVELS_START = R`public class Main {
+    // how many levels a tree has when n shrinks b times on every level, down to 1
+    static int levels(int n, int b) {
+        int count = 1;
+
+        // TODO 1: a loop that runs while n is bigger than 1
+        // TODO 2: inside it, divide n by b and add 1 to count
+        return count;
+    }
+` + LEVELS_MAIN;
+	const LEVELS_SOLVED = R`public class Main {
+    // how many levels a tree has when n shrinks b times on every level, down to 1
+    static int levels(int n, int b) {
+        int count = 1;
+
+        while (n > 1) {
+            n /= b;
+            count++;
+        }
+        return count;
+    }
+` + LEVELS_MAIN;
+	U.push(withOutputs({
+		id: "recur-b",
+		title: "בכמה הקלט קטן: b",
+		body: [
+			R`<p><code>b</code> אומר <b>פי כמה קטן</b> הקלט של כל קריאה. ב-<code>split</code> כל קריאה היא על
+<code>n / 2</code>, ולכן <code>b = 2</code>.</p>
+<p>התוכנית שומרת את הגודל של כל רמה ב-<code>size[level]</code>. הריצו.</p>`,
+			{
+				id: "recur-b-two",
+				title: "חצי בכל רמה",
+				code: B_TWO,
+				tests: [io("16, 8, 4, 2, 1", "", "level 0: size 16\nlevel 1: size 8\nlevel 2: size 4\nlevel 3: size 2\nlevel 4: size 1\n")]
+			},
+			R`<p>הגודל נחצה בכל רמה, עד 1. ב-1 הקריאה עוצרת, ולכן זו הרמה האחרונה.</p>
+<p>עם <code>n / 3</code>, <code>b = 3</code>. הקלט קטן מהר יותר, ולכן יש פחות רמות:</p>
+<table class="tbl"><tr><th>רמה</th><th>b = 2, מ-16</th><th>b = 3, מ-27</th></tr>
+<tr><td class="mono">0</td><td class="mono">16</td><td class="mono">27</td></tr>
+<tr><td class="mono">1</td><td class="mono">8</td><td class="mono">9</td></tr>
+<tr><td class="mono">2</td><td class="mono">4</td><td class="mono">3</td></tr>
+<tr><td class="mono">3</td><td class="mono">2</td><td class="mono">1</td></tr>
+<tr><td class="mono">4</td><td class="mono">1</td><td></td></tr></table>`,
+			{
+				id: "recur-b-three",
+				title: "שליש בכל רמה",
+				code: B_THREE,
+				tests: [io("27, 9, 3, 1", "", "level 0: size 27\nlevel 1: size 9\nlevel 2: size 3\nlevel 3: size 1\n")]
+			},
+			R`<p>תורכם: <code>quarter</code> קוראת לעצמה על <b>רבע</b> מהקלט, <code>b = 4</code>. חסרה הקריאה.</p>`,
+			{
+				id: "recur-b-quarter",
+				title: "רבע בכל רמה",
+				task: R`במקום ה-TODO קראו ל-<code>quarter</code> על <code>n / 4</code> ועל <code>level + 1</code>.`,
+				code: QUARTER_START,
+				solution: QUARTER_SOLVED,
+				tests: [io("64, 16, 4, 1", "", "level 0: size 64\nlevel 1: size 16\nlevel 2: size 4\nlevel 3: size 1\n")]
+			},
+			R`<p>כמה רמות יש בעץ? סופרים כמה פעמים אפשר לחלק את <code>n</code> ב-<code>b</code> עד 1, ועוד 1 בשביל
+השורש.</p>
+<p>זו בדיוק הלולאה של <code>halvings</code> מהשיעור "לולאה שחוצה את n", עם <code>b</code> במקום 2.</p>`,
+			{
+				id: "recur-b-levels",
+				title: "levels",
+				task: R`השלימו את <code>levels(n, b)</code>, שמחזירה כמה רמות יש בעץ:<br>
+1. לולאה שרצה כל עוד <code>n</code> גדול מ-1.<br>
+2. בכל סיבוב, חלקו את <code>n</code> ב-<code>b</code> והוסיפו 1 ל-<code>count</code>.`,
+				code: LEVELS_START,
+				solution: LEVELS_SOLVED,
+				example: { output: "levels(16, 2) -> 5" },
+				tests: [
+					unit("levels(16, 2) is 5: 16, 8, 4, 2, 1", R`Check.eq("levels(16, 2)", Main.levels(16, 2), 5);`),
+					unit("levels(27, 3) is 4 and levels(64, 4) is 4", R`Check.eq("levels(27, 3)", Main.levels(27, 3), 4);
+Check.eq("levels(64, 4)", Main.levels(64, 4), 4);`),
+					unit("n = 1 is one level: levels(1, 2) is 1", R`Check.eq("levels(1, 2)", Main.levels(1, 2), 1);`),
+					unit("levels(10, 2) is 4: 10, 5, 2, 1", R`Check.eq("levels(10, 2)", Main.levels(10, 2), 4);`),
+					io("main prints 5", "", "5\n")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה <code>b</code> בשיטה הזו?" + codeBlock(R`static void beep(int n) {
+    if (n <= 1) {
+        return;
+    }
+    beep(n / 3);
+    beep(n / 3);
+}`),
+				o: [
+					"<code>2</code>",
+					"<code>1</code>",
+					"<code>6</code>",
+					"<code>3</code>"
+				],
+				a: 3,
+				w: "כל קריאה על <code>n / 3</code>: <code>b = 3</code>. מספר הקריאות, 2, הוא <code>a</code>."
+			},
+			{
+				s: "באיזה גודל היא כל קריאה ברמה 3 של <code>split(32, 0)</code>, עם <code>b = 2</code>?",
+				o: [
+					"<code>8</code>",
+					"<code>4</code>",
+					"<code>2</code>",
+					"<code>16</code>"
+				],
+				a: 1,
+				w: "32, 16, 8, 4: ברמה 3 הגודל הוא 4."
+			},
+			{
+				s: "<code>b = 3</code> ו-<code>n = 81</code>. כמה רמות יש בעץ, עד הגודל 1?",
+				o: [
+					"<code>4</code>",
+					"<code>27</code>",
+					"<code>5</code>",
+					"<code>3</code>"
+				],
+				a: 2,
+				w: "81, 27, 9, 3, 1: חמש רמות."
+			},
+			{
+				s: "מה מחזירה <code>levels(20, 2)</code>?",
+				o: [
+					"<code>5</code>",
+					"<code>4</code>",
+					"<code>6</code>",
+					"<code>10</code>"
+				],
+				a: 0,
+				w: "20, 10, 5, 2, 1: חמש רמות (החלוקה מעגלת למטה)."
+			},
+			{
+				s: "מה <code>b</code> בשיטה הזו?" + codeBlock(R`static void step(int n) {
+    if (n <= 1) {
+        return;
+    }
+    step(n - 2);
+}`),
+				o: [
+					"<code>2</code>",
+					"<code>1</code>",
+					"אין <code>b</code>: הקלט קטן <b>ב-</b>2, לא <b>פי</b> 2",
+					"<code>0</code>"
+				],
+				a: 2,
+				w: "<code>b</code> הוא חלוקה. כאן מחסרים, ונראה בהמשך מה עושים במקרה כזה."
+			},
+			{
+				s: "איזה שינוי <b>לא</b> משנה את מספר הרמות של <code>split(16, 0)</code>?",
+				o: [
+					"<code>n / 4</code> במקום <code>n / 2</code>",
+					"שלוש קריאות במקום שתיים",
+					"<code>split(64, 0)</code> במקום <code>split(16, 0)</code>",
+					"<code>n / 3</code> במקום <code>n / 2</code>"
+				],
+				a: 1,
+				w: "מספר הרמות תלוי ב-<code>n</code> וב-<code>b</code>. עוד קריאות (<code>a</code>) מוסיפות קריאות לכל רמה, לא רמות."
+			}
+		]
+	}));
+	const F_LINEAR = R`public class Main {
+    static int[] work = new int[10];
+
+    static void split(int n, int level) {
+        for (int i = 0; i < n; i++) {
+            work[level]++;
+        }
+        if (n == 1) {
+            return;
+        }
+        split(n / 2, level + 1);
+        split(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        split(8, 0);
+        for (int level = 0; level < 4; level++) {
+            System.out.println("level " + level + ": " + work[level]);
+        }
+    }
+}
+`;
+	const F_SQUARE = F_LINEAR.replace(R`        for (int i = 0; i < n; i++) {
+            work[level]++;
+        }`, R`        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                work[level]++;
+            }
+        }`);
+	const F_ONE_START = R`public class Main {
+    static int[] work = new int[10];
+
+    static void tick(int n, int level) {
+        // TODO: add 1 to work[level], once (no loop)
+        if (n == 1) {
+            return;
+        }
+        tick(n / 2, level + 1);
+        tick(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        tick(16, 0);
+        for (int level = 0; level < 5; level++) {
+            System.out.println("level " + level + ": " + work[level]);
+        }
+    }
+}
+`;
+	const F_ONE_SOLVED = F_ONE_START.replace("        // TODO: add 1 to work[level], once (no loop)\n", "        work[level]++;\n");
+	U.push(withOutputs({
+		id: "recur-f",
+		title: "העבודה של קריאה אחת",
+		body: [
+			R`<p><code>f(n)</code> היא <b>העבודה של קריאה אחת בעצמה</b>: מה שהיא עושה בלי הקריאות שלה. ב-<code>split</code>
+זו הלולאה, <code>n</code> סיבובים, ולכן <code>f(n) = n</code>.</p>
+<p>התוכנית סופרת את הסיבובים של כל רמה ב-<code>work[level]</code>. הריצו.</p>`,
+			{
+				id: "recur-f-linear",
+				title: "לולאה של n",
+				code: F_LINEAR,
+				tests: [io("8 on every level", "", "level 0: 8\nlevel 1: 8\nlevel 2: 8\nlevel 3: 8\n")]
+			},
+			R`<p>למה 8 בכל רמה? העבודה של רמה היא <b>מספר הקריאות כפול העבודה של כל אחת</b>:</p>
+<table class="tbl"><tr><th>רמה</th><th>קריאות</th><th>כל אחת</th><th>כל הרמה</th></tr>
+<tr><td class="mono">0</td><td class="mono">1</td><td class="mono">8</td><td class="mono">8</td></tr>
+<tr><td class="mono">1</td><td class="mono">2</td><td class="mono">4</td><td class="mono">8</td></tr>
+<tr><td class="mono">2</td><td class="mono">4</td><td class="mono">2</td><td class="mono">8</td></tr></table>
+<p>עם שתי לולאות מקוננות, <code>f(n) = n²</code>. עכשיו כל רמה עולה <b>חצי</b> מזו שמעליה. הריצו.</p>`,
+			{
+				id: "recur-f-square",
+				title: "שתי לולאות",
+				code: F_SQUARE,
+				tests: [io("64, 32, 16, 8", "", "level 0: 64\nlevel 1: 32\nlevel 2: 16\nlevel 3: 8\n")]
+			},
+			R`<p>תורכם: ב-<code>tick</code> כל קריאה עושה צעד <b>אחד</b>, בלי לולאה: <code>f(n) = 1</code>. מה יקרה
+לרמות?</p>`,
+			{
+				id: "recur-f-one",
+				title: "צעד אחד",
+				task: R`במקום ה-TODO הוסיפו 1 ל-<code>work[level]</code>, פעם אחת.`,
+				code: F_ONE_START,
+				solution: F_ONE_SOLVED,
+				tests: [io("1, 2, 4, 8, 16: the levels grow", "", "level 0: 1\nlevel 1: 2\nlevel 2: 4\nlevel 3: 8\nlevel 4: 16\n")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה <code>f(n)</code> בשיטה הזו?" + codeBlock(R`static void grid(int n) {
+    if (n == 1) {
+        return;
+    }
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            System.out.print("#");
+        }
+    }
+    grid(n / 2);
+    grid(n / 2);
+}`),
+				o: [
+					"<code>n</code>",
+					"<code>2n</code>",
+					"<code>n²</code>",
+					"<code>n / 2</code>"
+				],
+				a: 2,
+				w: "שתי לולאות מקוננות של <code>n</code>: <code>n · n = n²</code> סימנים בקריאה אחת."
+			},
+			{
+				s: "מה <code>f(n)</code> בשיטה הזו?" + codeBlock(R`static int pair(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return pair(n / 2) + pair(n / 2) + 1;
+}`),
+				o: [
+					"<code>1</code>, מספר קבוע",
+					"<code>n</code>",
+					"<code>2</code>",
+					"<code>n / 2</code>"
+				],
+				a: 0,
+				w: "אין לולאה: חיבור אחד ו-<code>return</code>, אותה עבודה לכל <code>n</code>."
+			},
+			{
+				s: "ב-<code>split(16, 0)</code> עם לולאה של <code>n</code>: כמה עולה רמה 2, כל הרמה?",
+				o: [
+					"<code>4</code>",
+					"<code>8</code>",
+					"<code>32</code>",
+					"<code>16</code>"
+				],
+				a: 3,
+				w: "4 קריאות בגודל 4: <code>4 · 4 = 16</code>, כמו כל רמה."
+			},
+			{
+				s: "עם שתי הלולאות (<code>f(n) = n²</code>), כמה עולה רמה 1 של <code>split(16, 0)</code>?",
+				o: [
+					"<code>256</code>",
+					"<code>128</code>",
+					"<code>64</code>",
+					"<code>32</code>"
+				],
+				a: 1,
+				w: "2 קריאות בגודל 8, כל אחת <code>8² = 64</code>: <code>2 · 64 = 128</code>."
+			},
+			{
+				s: "ב-<code>tick(16, 0)</code>, באיזו רמה יש הכי הרבה עבודה?",
+				o: [
+					"ברמה 0, השורש",
+					"בכל הרמות אותו דבר",
+					"ברמה 4, העלים",
+					"ברמה 2, באמצע"
+				],
+				a: 2,
+				w: "כל קריאה עושה 1, והעלים הם הרמה עם הכי הרבה קריאות: 16."
+			},
+			{
+				s: "מה <b>לא</b> נכלל ב-<code>f(n)</code> של <code>split</code>?",
+				o: [
+					"הסיבובים של הלולאה",
+					"הסיבובים שעושות שתי הקריאות",
+					"הבדיקה <code>n == 1</code>",
+					"ההוספה ל-<code>work[level]</code>"
+				],
+				a: 1,
+				w: "<code>f(n)</code> סופרת רק את מה שהקריאה עושה בעצמה. הקריאות נספרות ברמות שמתחתיה."
+			}
+		]
+	}));
+	U.push(withOutputs({
+		id: "recur-formula",
+		title: "נוסחת נסיגה",
+		body: [
+			R`<p><b>נוסחת נסיגה</b> (<bdi dir="ltr">recurrence</bdi>) אומרת כמה עבודה יש על קלט <code>n</code>, בעזרת
+העבודה על קלט קטן יותר. היא בנויה משלושת החלקים:</p>
+<pre class="code-static"><span>T(n) = a · T(n/b) + f(n)</span></pre>
+<table class="tbl"><tr><th>חלק</th><th>ב-<code>ruler</code></th><th>בנוסחה</th></tr>
+<tr><td>a: כמה קריאות</td><td>שתי קריאות</td><td class="mono">2 · T(...)</td></tr>
+<tr><td>b: פי כמה קטן</td><td class="mono">n / 2</td><td class="mono">T(n/2)</td></tr>
+<tr><td>f(n): העבודה של קריאה</td><td>לולאה של n</td><td class="mono">+ n</td></tr></table>
+<p>יחד: <code>T(n) = 2 · T(n/2) + n</code>.</p>`,
+			{
+				id: "recur-formula-ruler",
+				title: "הנוסחה של ruler",
+				code: rulerMain(4),
+				tests: [io("ruler(4) prints 7 lines", "", "----\n--\n-\n-\n--\n-\n-\n")]
+			},
+			R`<p><b>מחולל הסיבוכיות</b> קורא את הקוד ובונה את הנוסחה חלק אחרי חלק. לחצו ◀ כדי לעבור לחלק הבא.</p>
+<p>העבירו את העכבר על שורה בקוד: החלק שלה בנוסחה נדלק.</p>` + generator({ code: RULER }),
+			{
+				id: "recur-formula-generator",
+				title: "המחולל קורא את ruler",
+				code: rulerMain(8),
+				tests: [io("ruler(8) prints 15 lines", "", "--------\n----\n--\n-\n-\n--\n-\n-\n----\n--\n-\n-\n--\n-\n-\n")]
+			},
+			R`<p>דוגמה שנייה, עם מספרים אחרים: <code>grid3</code> קוראת לעצמה <b>שלוש</b> פעמים על <b>שליש</b>, ויש בה
+<b>שתי לולאות</b> מקוננות.</p>
+<p>לכן <code>a = 3</code>, <code>b = 3</code>, <code>f(n) = n²</code>: <code>T(n) = 3 · T(n/3) + n²</code>.
+בדקו במחולל.</p>` + generator({ code: GRID3 }),
+			{
+				id: "recur-formula-grid",
+				title: "נוסחה שנייה",
+				code: inMain(GRID3, ["System.out.println(grid3(9));"]),
+				tests: [io("grid3(9) counts 117 steps", "", "117\n")]
+			}
+		],
 		quiz: [
 			{
 				s: "מה הנוסחה של השיטה?" + codeBlock(R`static int play(int n) {
@@ -23962,7 +25001,7 @@ Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
 					"<code>T(n) = 3T(n/3) + n²</code>"
 				],
 				a: 2,
-				w: "שלוש קריאות על <code>n / 3</code>, ולולאה של <code>n</code> סיבובים."
+				w: "שלוש קריאות (<code>a = 3</code>) על <code>n / 3</code> (<code>b = 3</code>), ולולאה של <code>n</code>."
 			},
 			{
 				s: "ומה הנוסחה של זו?" + codeBlock(R`static int pairs(int n) {
@@ -23990,45 +25029,428 @@ Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
 				w: "שתי קריאות על <code>n / 2</code>, ושתי לולאות מקוננות: <code>f(n) = n²</code>."
 			},
 			{
-				s: "בעץ הקריאות של <code>T(n) = 3T(n/3) + n</code> השורש הוא רמה 0. כמה קריאות יש ברמה 3?",
+				s: "ב-<code>T(n) = 4T(n/2) + n</code>, מה <code>b</code>?",
+				o: [
+					"<code>4</code>",
+					"<code>n</code>",
+					"<code>1</code>",
+					"<code>2</code>"
+				],
+				a: 3,
+				w: "<code>b</code> הוא המספר שמחלק את <code>n</code> בתוך <code>T</code>. ה-4 הוא <code>a</code>."
+			},
+			{
+				s: "מה הנוסחה של שיטה עם קריאה אחת על <code>n / 2</code> ובלי לולאה?",
+				o: [
+					"<code>T(n) = 2T(n) + 1</code>",
+					"<code>T(n) = T(n/2) + 1</code>",
+					"<code>T(n) = T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/2)</code>"
+				],
+				a: 1,
+				w: "<code>a = 1</code>, <code>b = 2</code>, ובלי לולאה העבודה קבועה: <code>f(n) = 1</code>."
+			},
+			{
+				s: "מה מחזירה <code>grid3(3)</code>?",
 				o: [
 					"<code>9</code>",
-					"<code>81</code>",
+					"<code>3</code>",
 					"<code>12</code>",
 					"<code>27</code>"
 				],
-				a: 3,
-				w: "ברמה k יש <code>3<sup>k</sup></code> קריאות: <code>3³ = 27</code>."
+				a: 2,
+				w: "<code>3² = 9</code> בלולאות, ועוד שלוש קריאות <code>grid3(1)</code>, כל אחת 1: <code>9 + 3 = 12</code>."
 			},
 			{
-				s: "ב-<code>W(n) = 2W(n/2) + n</code> עם <code>n = 16</code>: כמה עבודה עושה <b>בעצמה</b> כל קריאה ברמה 2?",
+				s: "איזו שיטה <b>לא</b> מתאימה ל-<code>T(n) = 2T(n/2) + n</code>?",
 				o: [
-					"<code>16</code>",
-					"<code>8</code>",
-					"<code>4</code>",
-					"<code>2</code>"
+					"לולאה של <code>n</code>, ואחריה שתי קריאות על <code>n / 2</code>",
+					"שתי קריאות על <code>n / 2</code>, ואחריהן לולאה של <code>n</code>",
+					"לולאה של <code>n</code>, ואחריה קריאה אחת על <code>n / 2</code>",
+					"קריאה על <code>n / 2</code>, לולאה של <code>n</code>, ועוד קריאה על <code>n / 2</code>"
 				],
 				a: 2,
-				w: "ברמה 2 הקלט הוא <code>16 / 4 = 4</code>, וכל קריאה עושה <code>f(4) = 4</code>."
+				w: "בה יש קריאה אחת: <code>a = 1</code>. הסדר של הלולאה והקריאות לא משנה את הנוסחה."
 			}
 		]
 	}));
-	U.push({
+	{
+		const DASHES = R`static int dashes(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return dashes(n / 2) + dashes(n / 2) + n;
+}`;
+		const DASHES_TRACE = R`static int dashes(int n) {
+    int result = 0;
+
+    if (n == 1) {
+        result = 1;
+    } else {
+        result = dashes(n / 2) + dashes(n / 2) + n;
+    }
+    System.out.println("dashes(" + n + ") = " + result);
+    return result;
+}`;
+		const MARKS_START = R`public class Main {
+    // M(1) = 1, and M(n) = 2 * M(n / 2) + 1
+    static int marks(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        // TODO: return the marks of both halves, plus 1
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(marks(8));
+    }
+}
+`;
+		const MARKS_SOLVED = MARKS_START.replace(`        // TODO: return the marks of both halves, plus 1
+        return 0;
+`, `        return marks(n / 2) + marks(n / 2) + 1;
+`);
+		const WRITE_START = R`public class Main {
+    // W(1) = 1, and W(n) = 3 * W(n / 2) + n
+    static int work(int n) {
+        // TODO 1: when n is 1, return 1
+        // TODO 2: otherwise return work(n / 2) three times, plus n
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(work(8));
+    }
+}
+`;
+		const WRITE_SOLVED = R`public class Main {
+    // W(1) = 1, and W(n) = 3 * W(n / 2) + n
+    static int work(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        return work(n / 2) + work(n / 2) + work(n / 2) + n;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(work(8));
+    }
+}
+`;
+		U.push(withOutputs({
+			id: "recur-write",
+			title: "נוסחה בקוד",
+			body: [
+				R`<p>שיטה רקורסיבית יכולה גם <b>לחשב</b> נוסחת נסיגה. <code>dashes(n)</code> מחזירה כמה מקפים
+<code>ruler(n)</code> מדפיסה, <code>D(n)</code>:</p>
+<table class="tbl"><tr><th>בנוסחה</th><th>בקוד</th></tr>
+<tr><td class="mono">D(1) = 1</td><td class="mono">if (n == 1) return 1;</td></tr>
+<tr><td class="mono">2 · D(n/2)</td><td class="mono">dashes(n / 2) + dashes(n / 2)</td></tr>
+<tr><td class="mono">+ n</td><td class="mono">+ n</td></tr></table>
+<p>הריצו: <code>dashes(4)</code> מחזירה 12, כמו המקפים שספרנו בעץ.</p>`,
+				{
+					id: "recur-write-dashes",
+					title: "dashes",
+					code: inMain(DASHES, ["System.out.println(dashes(4));", "System.out.println(dashes(8));"]),
+					tests: [io("dashes(4) is 12 and dashes(8) is 32", "", "12\n32\n")]
+				},
+				R`<p>איך היא מגיעה ל-12? כל קריאה מחכה ששתי הקריאות שלה <b>יחזירו</b> תשובה, ורק אז מחברת.</p>
+<p>כאן כל קריאה מדפיסה את התשובה שלה לפני שהיא מחזירה אותה. הקטנות מסיימות ראשונות:</p>
+<table class="tbl"><tr><th><code>n</code></th><th>החישוב</th><th><code>D(n)</code></th></tr>
+<tr><td class="mono">1</td><td>עוצרת</td><td class="mono">1</td></tr>
+<tr><td class="mono">2</td><td class="mono">1 + 1 + 2</td><td class="mono">4</td></tr>
+<tr><td class="mono">4</td><td class="mono">4 + 4 + 4</td><td class="mono">12</td></tr></table>`,
+				{
+					id: "recur-write-trace",
+					title: "מהקטנה אל הגדולה",
+					code: inMain(DASHES_TRACE, ["dashes(4);"]),
+					tests: [io("every call prints its result", "", "dashes(1) = 1\ndashes(1) = 1\ndashes(2) = 4\ndashes(1) = 1\ndashes(1) = 1\ndashes(2) = 4\ndashes(4) = 12\n")]
+				},
+				R`<p>תורכם: <code>marks(n)</code> מחשבת נוסחה אחרת, <code>M(n) = 2 · M(n/2) + 1</code>. העצירה כבר כתובה,
+וחסרה שורת ה-<code>return</code> של שאר המקרים.</p>`,
+				{
+					id: "recur-write-marks",
+					title: "שורת ה-return",
+					task: R`במקום ה-TODO החזירו את <code>marks</code> של שני החצאים, ועוד 1.`,
+					code: MARKS_START,
+					solution: MARKS_SOLVED,
+					example: { output: "marks(8) -> 15" },
+					tests: [
+						unit("marks(1) is 1 and marks(2) is 3", R`Check.eq("marks(1)", Main.marks(1), 1);
+Check.eq("marks(2)", Main.marks(2), 3);`),
+						unit("marks(8) is 15 and marks(32) is 63", R`Check.eq("marks(8)", Main.marks(8), 15);
+Check.eq("marks(32)", Main.marks(32), 63);`),
+						io("main prints 15", "", "15\n")
+					]
+				},
+				R`<p>עכשיו שיטה שלמה, עם <b>שלוש</b> קריאות על חצי.</p>`,
+				{
+					id: "recur-write-work",
+					title: "work",
+					task: R`השלימו את <code>work(n)</code>, שמחזירה <code>W(n)</code>:<br>
+1. כש-<code>n</code> הוא 1, החזירו 1.<br>
+2. אחרת, החזירו את <code>work(n / 2)</code> שלוש פעמים, ועוד <code>n</code>.`,
+					code: WRITE_START,
+					solution: WRITE_SOLVED,
+					example: { output: "work(8) -> 65" },
+					tests: [
+						unit("work(1) is 1", R`Check.eq("work(1) is 1", Main.work(1), 1);`),
+						unit("work(2) is 5 and work(8) is 65", R`Check.eq("work(2) is 5", Main.work(2), 5);
+Check.eq("work(8) is 65", Main.work(8), 65);`),
+						unit("work(3) is 6: 3 / 2 rounds down to 1", R`Check.eq("work(3) is 6", Main.work(3), 6);`),
+						unit("work(100) is 2743 and work(1024) is 175099", R`Check.eq("work(100) is 2743", Main.work(100), 2743);
+Check.eq("work(1024) is 175099", Main.work(1024), 175099);`),
+						io("main prints 65", "", "65\n"),
+						src("work calls itself", {
+							fn: "work",
+							require: "\\bwork\\s*\\(",
+							msg: "work צריכה לקרוא לעצמה."
+						})
+					]
+				}
+			],
+			quiz: [
+				{
+					s: "מה מחזירה <code>dashes(2)</code>?",
+					o: [
+						"<code>2</code>",
+						"<code>3</code>",
+						"<code>4</code>",
+						"<code>1</code>"
+					],
+					a: 2,
+					w: "<code>dashes(1) + dashes(1) + 2 = 1 + 1 + 2 = 4</code>."
+				},
+				{
+					s: "מה מחזירה <code>calc(9)</code>?" + codeBlock(R`static int calc(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return calc(n / 3) + calc(n / 3) + calc(n / 3) + n;
+}`),
+					o: [
+						"<code>12</code>",
+						"<code>27</code>",
+						"<code>18</code>",
+						"<code>9</code>"
+					],
+					a: 1,
+					w: "<code>calc(3) = 1 + 1 + 1 + 3 = 6</code>, ו-<code>calc(9) = 6 + 6 + 6 + 9 = 27</code>."
+				},
+				{
+					s: "איזו שורה מחשבת <code>T(n) = T(n/2) + 1</code>?",
+					o: [
+						"<code>return t(n / 2) + t(n / 2);</code>",
+						"<code>return t(n / 2) + n;</code>",
+						"<code>return t(n - 1) + 1;</code>",
+						"<code>return t(n / 2) + 1;</code>"
+					],
+					a: 3,
+					w: "קריאה אחת על <code>n / 2</code>, ועוד 1."
+				},
+				{
+					s: "ב-<code>dashes(8)</code> של הדוגמה השנייה, איזו שורה מודפסת <b>אחרונה</b>?",
+					o: [
+						"<code>dashes(1) = 1</code>",
+						"<code>dashes(8) = 32</code>",
+						"<code>dashes(4) = 12</code>",
+						"<code>dashes(2) = 4</code>"
+					],
+					a: 1,
+					w: "הקריאה הראשונה מסיימת אחרונה: היא מחכה לכל הקריאות שמתחתיה."
+				},
+				{
+					s: "מה מחזירה <code>marks(4)</code>?",
+					o: [
+						"<code>4</code>",
+						"<code>9</code>",
+						"<code>5</code>",
+						"<code>7</code>"
+					],
+					a: 3,
+					w: "<code>marks(2) = 1 + 1 + 1 = 3</code>, ו-<code>marks(4) = 3 + 3 + 1 = 7</code>."
+				},
+				{
+					s: "מה <b>לא</b> נכון על <code>dashes(8)</code>?",
+					o: [
+						"היא מחזירה 32",
+						"היא קוראת ל-<code>dashes(4)</code>",
+						"היא מדפיסה 32 מקפים",
+						"היא מחזירה מספר, ולא מדפיסה מקפים"
+					],
+					a: 2,
+					w: "<code>dashes</code> רק <b>סופרת</b>: היא מחזירה 32 ולא מדפיסה אף מקף."
+				}
+			]
+		}));
+	}
+	const LEVEL_SUMS = R`public class Main {
+    static int[] work = new int[10];
+
+    static void ruler(int n, int level) {
+        for (int i = 0; i < n; i++) {
+            work[level]++;
+        }
+        if (n == 1) {
+            return;
+        }
+        ruler(n / 2, level + 1);
+        ruler(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        int total = 0;
+
+        ruler(16, 0);
+        for (int level = 0; level < 5; level++) {
+            System.out.println("level " + level + ": " + work[level]);
+            total += work[level];
+        }
+        System.out.println("total: " + total);
+    }
+}
+`;
+	const DASHES_SIZES = R`static int dashes(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return dashes(n / 2) + dashes(n / 2) + n;
+}`;
+	const GRID_SUM_START = R`public class Main {
+    static int[] work = new int[10];
+
+    static void grid(int n, int level) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                work[level]++;
+            }
+        }
+        if (n == 1) {
+            return;
+        }
+        grid(n / 2, level + 1);
+        grid(n / 2, level + 1);
+    }
+
+    public static void main(String[] args) {
+        int total = 0;
+
+        grid(8, 0);
+        for (int level = 0; level < 4; level++) {
+            System.out.println("level " + level + ": " + work[level]);
+            // TODO: add this level's work to total
+        }
+        System.out.println("total: " + total);
+    }
+}
+`;
+	const GRID_SUM_SOLVED = GRID_SUM_START.replace("            // TODO: add this level's work to total\n", "            total += work[level];\n");
+	const TREE_WORK_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(treeWork(16));
+    }
+}
+`;
+	const TREE_WORK_START = R`public class Main {
+    // the dashes ruler(n) prints: on every level, calls times the size of each
+    static int treeWork(int n) {
+        int total = 0;
+        int calls = 1;
+        int size = n;
+
+        // TODO 1: a loop that runs while size is at least 1
+        // TODO 2: inside it, add calls * size to total
+        // TODO 3: then double calls and halve size
+        return total;
+    }
+` + TREE_WORK_MAIN;
+	const TREE_WORK_SOLVED = R`public class Main {
+    // the dashes ruler(n) prints: on every level, calls times the size of each
+    static int treeWork(int n) {
+        int total = 0;
+        int calls = 1;
+        int size = n;
+
+        while (size >= 1) {
+            total += calls * size;
+            calls *= 2;
+            size /= 2;
+        }
+        return total;
+    }
+` + TREE_WORK_MAIN;
+	U.push(withOutputs({
 		id: "recur-cost-tree",
 		title: "עץ עלויות",
-		body: [R`<p>כל קריאה היא צומת בעץ, ובו כתוב מה היא עושה <b>בעצמה</b>: <code>f(n)</code>. מסכמים רמה אחרי רמה.</p>` + generator({
-			recurrence: {
-				a: 2,
-				b: 2,
-				f: "n"
+		body: [
+			R`<p><b>עץ עלויות</b> הוא עץ הקריאות, עם העבודה של כל רמה. מחולל הסיבוכיות מצייר אותו כטבלה: שורה לכל רמה.
+לחצו ◀: כל צעד ממלא עמודה.</p>
+<table class="tbl"><tr><th>עמודה</th><th>פירושה</th></tr>
+<tr><td>רמה</td><td>מספר הרמה, 0 בשורש</td></tr>
+<tr><td>קריאות</td><td>ריבוע לכל קריאה ברמה (ירוק: עלה, קריאה שעוצרת)</td></tr>
+<tr><td class="mono">n</td><td>הגודל של כל קריאה</td></tr>
+<tr><td class="mono">f</td><td>העבודה של קריאה אחת</td></tr>
+<tr><td class="mono">Σ</td><td>העבודה של כל הרמה: קריאות כפול <code>f</code></td></tr></table>` + generator({
+				code: RULER,
+				tree: true,
+				n: 16
+			}),
+			{
+				id: "recur-cost-tree-levels",
+				title: "רמה אחרי רמה",
+				code: LEVEL_SUMS,
+				tests: [io("16 on every level, 80 in all", "", "level 0: 16\nlevel 1: 16\nlevel 2: 16\nlevel 3: 16\nlevel 4: 16\ntotal: 80\n")]
 			},
-			tree: true,
-			n: 16
-		}) + R`<p>בכל רמה <code>n</code>, ויש <code>log n + 1</code> רמות: בערך <code>n log n</code>.</p>`]
-	});
-	U.push({
-		id: "recur-tree-quiz",
-		title: "שאלות: עץ עלויות",
+			R`<p>העבודה של כל העץ היא <b>סכום הרמות</b>. ב-<code>ruler(16)</code> כל רמה עולה 16, ויש 5 רמות: 80.</p>
+<p>מספר הרמות הוא <code>log₂ n + 1</code>. <code>log₂ n</code> הוא כמה פעמים חוצים את <code>n</code> עד 1, ועוד
+רמה אחת בשביל השורש:</p>
+<table class="tbl"><tr><th><code>n</code></th><th>רמות</th><th>העבודה</th></tr>
+<tr><td class="mono">4</td><td class="mono">3</td><td class="mono">3 · 4 = 12</td></tr>
+<tr><td class="mono">8</td><td class="mono">4</td><td class="mono">4 · 8 = 32</td></tr>
+<tr><td class="mono">16</td><td class="mono">5</td><td class="mono">5 · 16 = 80</td></tr></table>
+<p>הריצו: <code>dashes</code> משיעור "נוסחה בקוד" מחזירה בדיוק אותם מספרים.</p>`,
+			{
+				id: "recur-cost-tree-total",
+				title: "כל העץ",
+				code: inMain(DASHES_SIZES, [
+					"System.out.println(dashes(4));",
+					"System.out.println(dashes(8));",
+					"System.out.println(dashes(16));"
+				]),
+				tests: [io("12, 32, 80", "", "12\n32\n80\n")]
+			},
+			R`<p>תורכם: ב-<code>grid</code> יש שתי לולאות, <code>f(n) = n²</code>, והרמות קטנות. חסרה השורה שמוסיפה רמה
+לסכום.</p>`,
+			{
+				id: "recur-cost-tree-sum",
+				title: "הסכום",
+				task: R`במקום ה-TODO הוסיפו את <code>work[level]</code> ל-<code>total</code>.`,
+				code: GRID_SUM_START,
+				solution: GRID_SUM_SOLVED,
+				tests: [io("64, 32, 16, 8: 120 in all", "", "level 0: 64\nlevel 1: 32\nlevel 2: 16\nlevel 3: 8\ntotal: 120\n")]
+			},
+			R`<p>אפשר לחשב את הסכום בלי לקרוא לשיטה בכלל: עוברים רמה אחרי רמה. בכל רמה פי 2 קריאות (כמו
+<code>callsAt</code>), והגודל נחצה (כמו <code>levels</code>).</p>`,
+			{
+				id: "recur-cost-tree-work",
+				title: "treeWork",
+				task: R`השלימו את <code>treeWork(n)</code>, שמחזירה כמה מקפים <code>ruler(n)</code> מדפיסה:<br>
+1. לולאה שרצה כל עוד <code>size</code> הוא לפחות 1.<br>
+2. בכל סיבוב, הוסיפו <code>calls * size</code> ל-<code>total</code>.<br>
+3. אחר כך הכפילו את <code>calls</code> וחצו את <code>size</code>.`,
+				code: TREE_WORK_START,
+				solution: TREE_WORK_SOLVED,
+				example: { output: "treeWork(16) -> 80" },
+				tests: [
+					unit("treeWork(16) is 80 and treeWork(8) is 32", R`Check.eq("treeWork(16)", Main.treeWork(16), 80);
+Check.eq("treeWork(8)", Main.treeWork(8), 32);`),
+					unit("treeWork(1) is 1: the root alone", R`Check.eq("treeWork(1)", Main.treeWork(1), 1);`),
+					unit("treeWork(10) is 36: 10, 5, 2, 1", R`Check.eq("treeWork(10)", Main.treeWork(10), 36);`),
+					io("main prints 80", "", "80\n")
+				]
+			}
+		],
 		quiz: [
 			{
 				s: "בעץ של <code>T(n) = 2T(n/2) + n</code> עם <code>n = 32</code>: כמה רמות יש, כולל השורש והעלים?",
@@ -24042,15 +25464,15 @@ Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
 				w: "32, 16, 8, 4, 2, 1: <code>log₂ 32 + 1 = 6</code> רמות."
 			},
 			{
-				s: "ב-<code>T(n) = 3T(n/3) + n</code> עם <code>n = 27</code>: כמה עולה רמה אחת?",
+				s: "ב-<code>T(n) = 3T(n/3) + n</code> עם <code>n = 27</code>: כמה עולה רמה 1, כל הרמה?",
 				o: [
-					"<code>3</code>",
 					"<code>9</code>",
+					"<code>3</code>",
 					"<code>27</code>",
 					"<code>81</code>"
 				],
 				a: 2,
-				w: "ברמה k יש <code>3<sup>k</sup></code> קריאות על <code>27 / 3<sup>k</sup></code>: תמיד 27."
+				w: "3 קריאות בגודל 9, כל אחת עושה 9: <code>3 · 9 = 27</code>."
 			},
 			{
 				s: "ב-<code>T(n) = 2T(n/2) + n²</code> עם <code>n = 16</code>: כמה עולה רמה 2 (השורש הוא רמה 0)?",
@@ -24061,212 +25483,229 @@ Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
 					"<code>64</code>"
 				],
 				a: 3,
-				w: "ברמה 2 יש 4 קריאות על קלט 4, וכל אחת עושה <code>4² = 16</code>: <code>4 · 16 = 64</code>."
+				w: "4 קריאות בגודל 4, וכל אחת עושה <code>4² = 16</code>: <code>4 · 16 = 64</code>."
 			},
 			{
-				s: "ב-<code>T(n) = 2T(n/2) + n²</code>: איזו רמה עולה הכי הרבה?",
+				s: "מה מחזירה <code>treeWork(32)</code>?",
 				o: [
-					"כל הרמות שוות",
-					"העליונה, השורש",
-					"התחתונה, העלים",
-					"האמצעית"
-				],
-				a: 1,
-				w: "ברמה k העבודה היא <code>n² / 2<sup>k</sup></code>: קטנה פי 2 בכל רמה."
-			},
-			{
-				s: "<code>W(n) = 2W(n/2) + n</code> ו-<code>W(1) = 1</code>. כמה בסך הכול עבור <code>n = 16</code>?",
-				o: [
-					"<code>16</code>",
+					"<code>192</code>",
+					"<code>160</code>",
 					"<code>64</code>",
-					"<code>80</code>",
-					"<code>256</code>"
+					"<code>32</code>"
 				],
-				a: 2,
-				w: "5 רמות, ובכל אחת 16: <code>5 · 16 = 80</code>."
-			}
-		]
-	});
-	U.push({
-		id: "recur-master-idea",
-		title: "שלושה מצבים",
-		body: [R`<p>בכל נוסחה <code>a · T(n/b) + f(n)</code> מתחרים שני כוחות: <b>העלים</b>, שמספרם
-<code>n^(log_b a)</code>, ו<b>השורש</b>, שעולה <code>f(n)</code>. לחצו על <code>a</code> ועל <code>f</code>
-וראו מי מנצח.</p>` + generator({
-			recurrence: {
-				a: 2,
-				b: 2,
-				f: "n"
+				a: 0,
+				w: "6 רמות, ובכל אחת 32: <code>6 · 32 = 192</code>."
 			},
-			choose: {
-				a: [
-					1,
-					2,
-					4
-				],
-				f: [
-					"1",
-					"n",
-					"n^2"
-				]
-			}
-		}) + R`<table class="tbl"><tr><th>מי שולט</th><th>דוגמה</th><th>הפתרון</th></tr>
-<tr><td>העלים</td><td class="mono">4T(n/2) + n</td><td><code>n²</code></td></tr>
-<tr><td>תיקו</td><td class="mono">2T(n/2) + n</td><td><code>n log n</code></td></tr>
-<tr><td>השורש</td><td class="mono">T(n/2) + n</td><td><code>n</code></td></tr></table>`]
-	});
-	U.push({
-		id: "recur-cases-quiz",
-		title: "שאלות: שלושה מצבים",
-		quiz: [
 			{
-				s: "מה הפתרון של <code>T(n) = 4T(n/2) + n²</code>?",
+				s: "בטבלה של המחולל, מה פירוש העמודה <code>Σ</code>?",
 				o: [
-					"<code>n²</code>",
-					"<code>n² log n</code>",
-					"<code>n³</code>",
-					"<code>n log n</code>"
+					"הגודל של כל קריאה",
+					"העבודה של כל הרמה",
+					"מספר הקריאות ברמה",
+					"מספר הרמה"
 				],
 				a: 1,
-				w: "<code>n^(log₂ 4) = n²</code> שווה ל-<code>f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+				w: "<code>Σ</code> היא קריאות כפול <code>f</code>: כל העבודה של הרמה."
 			},
 			{
-				s: "מי שולט ב-<code>T(n) = 8T(n/2) + n²</code>?",
+				s: "מה <b>לא</b> נכון על עץ העלויות של <code>T(n) = 2T(n/2) + n</code> עם <code>n = 16</code>?",
 				o: [
-					"השורש",
-					"תיקו",
-					"העלים",
-					"אי אפשר לדעת"
-				],
-				a: 2,
-				w: "<code>n^(log₂ 8) = n³</code> גדול מ-<code>n²</code>: העלים, והפתרון <code>n³</code>."
-			},
-			{
-				s: "מה הפתרון של <code>T(n) = 2T(n/2) + n²</code>?",
-				o: [
-					"<code>n² log n</code>",
-					"<code>n</code>",
-					"<code>n log n</code>",
-					"<code>n²</code>"
+					"כל רמה עולה 16",
+					"יש בו 5 רמות",
+					"העבודה כולה היא 80",
+					"העלים עולים יותר מהשורש"
 				],
 				a: 3,
-				w: "העלים הם <code>n</code>, קטן מ-<code>n²</code>: השורש שולט, והפתרון <code>f(n) = n²</code>."
-			},
-			{
-				s: "מה הפתרון של <code>T(n) = 9T(n/3) + n</code>?",
-				o: [
-					"<code>n²</code>",
-					"<code>n log n</code>",
-					"<code>n</code>",
-					"<code>n³</code>"
-				],
-				a: 0,
-				w: "<code>n^(log₃ 9) = n²</code> גדול מ-<code>n</code>: העלים שולטים."
-			},
-			{
-				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
-				o: [
-					"<code>n</code>",
-					"<code>1</code>",
-					"<code>log n</code>",
-					"<code>n log n</code>"
-				],
-				a: 2,
-				w: "<code>n^(log₂ 1) = n⁰ = 1</code> שווה ל-<code>f(n) = 1</code>: תיקו, <code>1 · log n</code>."
-			},
-			{
-				s: "באיזו נוסחה השורש שולט?",
-				o: [
-					"<code>T(n) = T(n/2) + n</code>",
-					"<code>T(n) = 2T(n/2) + n</code>",
-					"<code>T(n) = 4T(n/2) + n</code>",
-					"<code>T(n) = 3T(n/3) + n</code>"
-				],
-				a: 0,
-				w: "בשאר <code>n^(log_b a)</code> שווה ל-<code>n</code> או גדול ממנו."
+				w: "כל רמה עולה 16, גם העלים וגם השורש."
 			}
 		]
-	});
-	const LEAVES_EXAMPLE = R`static int quadTour(int n) {
-    int work = 0;
+	}));
+	const MID_START = R`public class Main {
+    // G(1) = 1, and G(n) = 2 * G(n / 2) + n * n
+    static int grid(int n) {
+        // TODO: return G(n)
+        return 0;
+    }
 
-    if (n <= 1) {
-        return 1;
-    }
-    for (int i = 0; i < n; i++) {
-        work++;
-    }
-    work += quadTour(n / 2);
-    work += quadTour(n / 2);
-    work += quadTour(n / 2);
-    work += quadTour(n / 2);
-    return work;
-}`;
-	const LEAVES_MAIN = R`
     public static void main(String[] args) {
-        System.out.println(tour(16));
+        System.out.println(grid(8));
     }
 }
 `;
-	const LEAVES_START = R`public class Main {
-    // W(1) = 1, and W(n) = 4 * W(n / 2) + n
-    static int tour(int n) {
-        int work = 0;
-
-        // TODO: return 1 when n is 1; then a loop of n rounds
-        // adding 1 to work, then four calls tour(n / 2)
-        return work;
-    }
-` + LEAVES_MAIN;
-	const LEAVES_SOLVED = R`public class Main {
-    // W(1) = 1, and W(n) = 4 * W(n / 2) + n
-    static int tour(int n) {
-        int work = 0;
-
+	const MID_SOLVED = R`public class Main {
+    // G(1) = 1, and G(n) = 2 * G(n / 2) + n * n
+    static int grid(int n) {
         if (n == 1) {
             return 1;
         }
-        for (int i = 0; i < n; i++) {
-            work++;
-        }
-        work += tour(n / 2);
-        work += tour(n / 2);
-        work += tour(n / 2);
-        work += tour(n / 2);
-        return work;
+        return grid(n / 2) + grid(n / 2) + n * n;
     }
-` + LEAVES_MAIN;
+
+    public static void main(String[] args) {
+        System.out.println(grid(8));
+    }
+}
+`;
 	U.push(withOutputs({
-		id: "recur-leaves",
-		title: "כשהעלים שולטים",
-		body: [R`<p>כש-<code>a</code> גדול, מספר הקריאות גדל מהר יותר ממה שהעבודה בכל קריאה קטנה. כמעט כל המחיר בעלים.</p>` + generator({ code: LEAVES_EXAMPLE }) + R`<p>יש <code>n²</code> עלים, ולכן הפתרון <code>n²</code>.</p>`, {
-			id: "recur-leaves-tour",
-			title: "tour",
-			task: R`כתבו את <code>tour(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
-<b>ארבע קריאות</b> <code>tour(n / 2)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
-<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
-			code: LEAVES_START,
-			solution: LEAVES_SOLVED,
-			example: { output: "tour(16) -> 496" },
+		id: "recur-review-mid",
+		title: "חזרה: עץ ונוסחה",
+		body: [R`<p>חזרה על החצי הראשון של הפרק. כתבו את <code>grid(n)</code> לבד, כמו <code>work</code> בשיעור "נוסחה בקוד".
+התשובה היא סכום הרמות של <code>grid</code> מהשיעור "עץ עלויות".</p>`, {
+			id: "recur-review-mid-grid",
+			title: "grid",
+			task: R`השלימו את <code>grid(n)</code>, שמחזירה <code>G(n)</code>:<br>
+<code>G(1) = 1</code><br>
+<code>G(n) = 2 · G(n/2) + n²</code>`,
+			code: MID_START,
+			solution: MID_SOLVED,
+			example: { output: "grid(8) -> 120" },
 			tests: [
-				unit("tour(1) is 1 and tour(2) is 6", R`Check.eq("tour(1) is 1", Main.tour(1), 1);
-Check.eq("tour(2) is 6", Main.tour(2), 6);`),
-				unit("tour(4) is 28 and tour(16) is 496", R`Check.eq("tour(4) is 28", Main.tour(4), 28);
-Check.eq("tour(16) is 496", Main.tour(16), 496);`),
-				unit("tour(10) is 126: 10 / 2 = 5, and 5 / 2 = 2", R`Check.eq("tour(10) is 126", Main.tour(10), 126);`),
-				io("main prints 496", "", "496\n"),
-				src("four calls to tour", {
-					fn: "tour",
-					require: "(\\btour\\s*\\([\\s\\S]*){4}",
-					msg: "tour צריכה לקרוא לעצמה ארבע פעמים"
-				}),
-				ops("tour takes O(n²) steps", "Main.tour(n)", "n2", 16, [
-					16,
-					64,
-					256
-				], { c0: 20 })
+				unit("grid(1) is 1 and grid(2) is 6", R`Check.eq("grid(1)", Main.grid(1), 1);
+Check.eq("grid(2)", Main.grid(2), 6);`),
+				unit("grid(4) is 28 and grid(8) is 120", R`Check.eq("grid(4)", Main.grid(4), 28);
+Check.eq("grid(8)", Main.grid(8), 120);`),
+				unit("grid(16) is 496", R`Check.eq("grid(16)", Main.grid(16), 496);`),
+				io("main prints 120", "", "120\n"),
+				src("grid calls itself", {
+					fn: "grid",
+					require: "\\bgrid\\s*\\(",
+					msg: "grid צריכה לקרוא לעצמה."
+				})
 			]
 		}],
+		quiz: [
+			{
+				s: "מה מדפיסה <code>show(9)</code>?" + codeBlock(R`static void show(int n) {
+    System.out.print(n + " ");
+    if (n == 1) {
+        return;
+    }
+    show(n / 3);
+    show(n / 3);
+}`),
+				o: [
+					"<code>9 3 1</code>",
+					"<code>9 3 1 1 3 1 1</code>",
+					"<code>9 3 3 1 1 1 1</code>",
+					"<code>9 3 1 1</code>"
+				],
+				a: 1,
+				w: "אחרי 9 באה כל הקריאה הראשונה, <code>3 1 1</code>, ורק אז השנייה, <code>3 1 1</code>."
+			},
+			{
+				s: "מה הנוסחה של <code>show</code> שלמעלה?",
+				o: [
+					"<code>T(n) = 3T(n/2) + 1</code>",
+					"<code>T(n) = 2T(n/3) + 1</code>",
+					"<code>T(n) = 2T(n/3) + n</code>",
+					"<code>T(n) = T(n/3) + 2</code>"
+				],
+				a: 1,
+				w: "שתי קריאות (<code>a = 2</code>) על <code>n / 3</code> (<code>b = 3</code>), והדפסה אחת (<code>f(n) = 1</code>)."
+			},
+			{
+				s: "ב-<code>T(n) = 4T(n/2) + n</code> עם <code>n = 8</code>: כמה קריאות יש ברמה 2?",
+				o: [
+					"<code>8</code>",
+					"<code>4</code>",
+					"<code>16</code>",
+					"<code>64</code>"
+				],
+				a: 2,
+				w: "<code>4<sup>2</sup> = 16</code>."
+			},
+			{
+				s: "ב-<code>T(n) = 4T(n/2) + n</code> עם <code>n = 8</code>: כמה עולה רמה 2, כל הרמה?",
+				o: [
+					"<code>32</code>",
+					"<code>16</code>",
+					"<code>8</code>",
+					"<code>64</code>"
+				],
+				a: 0,
+				w: "16 קריאות בגודל 2, כל אחת עושה 2: <code>16 · 2 = 32</code>."
+			},
+			{
+				s: "מה מחזירה <code>grid(2)</code>, עם <code>G(n) = 2 · G(n/2) + n²</code>?",
+				o: [
+					"<code>4</code>",
+					"<code>5</code>",
+					"<code>8</code>",
+					"<code>6</code>"
+				],
+				a: 3,
+				w: "<code>1 + 1 + 2² = 6</code>."
+			},
+			{
+				s: "איזו שיטה <b>לא</b> עוצרת אף פעם?",
+				o: [
+					"<code>if (n == 1) return; f(n / 2);</code>",
+					"<code>if (n &lt;= 1) return; f(n / 3);</code>",
+					"<code>if (n == 1) return; f(n - 2);</code> כש-<code>n</code> זוגי",
+					"<code>if (n &lt;= 0) return; f(n - 1);</code>"
+				],
+				a: 2,
+				w: "מספר זוגי פחות 2 נשאר זוגי: הוא מדלג על 1 ויורד מתחת לאפס בלי סוף."
+			},
+			{
+				s: "מה <b>לא</b> משפיע על מספר הרמות בעץ?",
+				o: [
+					"<code>n</code>, הגודל בשורש",
+					"<code>a</code>, מספר הקריאות",
+					"<code>b</code>, פי כמה הקלט קטן",
+					"הגודל שבו הקריאה עוצרת"
+				],
+				a: 1,
+				w: "הרמות נגמרות כשהגודל מגיע לעצירה; <code>a</code> רק מוסיף קריאות לכל רמה."
+			}
+		]
+	}));
+	const LEAVES_COUNT = R`static int leaves(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return 4 * leaves(n / 2);
+}`;
+	U.push({
+		id: "recur-leaves-idea",
+		title: "כשהעלים שולטים",
+		body: [
+			R`<p>ב-<code>T(n) = 4T(n/2) + n</code> כל קריאה פותחת <b>ארבע</b>, אבל הקלט קטן רק <b>פי 2</b>.</p>
+<p>לכן כל רמה עולה <b>פי 2</b> מזו שמעליה: פי 4 קריאות, וכל אחת עושה חצי. הריצו, וראו את זה גם בעץ של
+המחולל.</p>` + generator({
+				recurrence: {
+					a: 4,
+					b: 2,
+					f: "n"
+				},
+				tree: true,
+				n: 16
+			}),
+			{
+				id: "recur-leaves-idea-levels",
+				title: "רמות שגדלות",
+				code: levelProgram("four", 4, 16, 5),
+				tests: [io("16, 32, 64, 128, 256", "", levelOutput(4, 16))]
+			},
+			R`<p><b>עלה</b> הוא קריאה שעוצרת ולא קוראת לאף אחת. כאן העלים הם הרמה התחתונה, ושם רוב העבודה: 256 מתוך
+496.</p>
+<p>כמה עלים יש? בכל רמה פי 4, ויש <code>log₂ n</code> חציות, ולכן <code>n²</code> עלים:</p>
+<table class="tbl"><tr><th><code>n</code></th><th>עלים</th><th>כל העבודה</th></tr>
+<tr><td class="mono">4</td><td class="mono">16 = 4²</td><td class="mono">28</td></tr>
+<tr><td class="mono">8</td><td class="mono">64 = 8²</td><td class="mono">120</td></tr>
+<tr><td class="mono">16</td><td class="mono">256 = 16²</td><td class="mono">496</td></tr></table>
+<p>כל העבודה קרובה לפעמיים מספר העלים. לכן הפתרון הוא <code>n²</code>: <b>העלים שולטים</b>.</p>`,
+			{
+				id: "recur-leaves-idea-count",
+				title: "כמה עלים",
+				code: inMain(LEAVES_COUNT, [
+					"System.out.println(leaves(4));",
+					"System.out.println(leaves(8));",
+					"System.out.println(leaves(16));"
+				]),
+				tests: [io("16, 64, 256 leaves", "", "16\n64\n256\n")]
+			}
+		],
 		quiz: [
 			{
 				s: "ב-<code>T(n) = 4T(n/2) + n</code> עם <code>n = 8</code>: כמה קריאות יש ברמה התחתונה, ברמת העלים?",
@@ -24277,18 +25716,18 @@ Check.eq("tour(16) is 496", Main.tour(16), 496);`),
 					"<code>64</code>"
 				],
 				a: 3,
-				w: "ברמה k יש <code>4<sup>k</sup></code> קריאות, והעלים ברמה 3: <code>4³ = 64 = n²</code>."
+				w: "ברמה k יש <code>4<sup>k</sup></code> קריאות, והעלים ברמה 3: <code>4³ = 64 = 8²</code>."
 			},
 			{
-				s: "מה הפתרון של <code>T(n) = 3T(n/2) + n</code>?",
+				s: "ב-<code>T(n) = 4T(n/2) + n</code>: מה קורה לעבודה של <b>רמה שלמה</b> מרמה לרמה, למטה?",
 				o: [
-					"<code>n log n</code>",
-					"<code>n^(log₂ 3)</code>",
-					"<code>n²</code>",
-					"<code>n</code>"
+					"קטנה פי 2",
+					"גדלה פי 2",
+					"גדלה פי 4",
+					"לא משתנה"
 				],
 				a: 1,
-				w: "<code>3 &gt; 2</code>: העלים, <code>n^(log₂ 3)</code>, גדולים מ-<code>n</code>. בערך <code>n<sup>1.58</sup></code>."
+				w: "פי 4 קריאות, וכל אחת עושה חצי: <code>4 · ½ = 2</code>."
 			},
 			{
 				s: "מה מחזירה <code>reach(8)</code>?" + codeBlock(R`static int reach(int n) {
@@ -24304,36 +25743,316 @@ Check.eq("tour(16) is 496", Main.tour(16), 496);`),
 					"<code>9</code>"
 				],
 				a: 2,
-				w: "3 קריאות בכל רמה, ו-3 רמות של חלוקה: <code>3³ = 27</code> עלים, שכל אחד מחזיר 1."
+				w: "3 קריאות בכל רמה, ו-3 רמות של חלוקה: <code>3³ = 27</code> עלים, וכל אחד מחזיר 1."
 			},
 			{
-				s: "ב-<code>T(n) = 4T(n/2) + n</code>: מה קורה לעבודת <b>רמה שלמה</b> מרמה לרמה למטה?",
+				s: "ב-<code>T(n) = 8T(n/2) + n</code>: כמה עלים יש כש-<code>n = 4</code>?",
 				o: [
-					"קטנה פי 2",
-					"גדלה פי 2",
-					"גדלה פי 4",
-					"לא משתנה"
+					"<code>16</code>",
+					"<code>64</code>",
+					"<code>32</code>",
+					"<code>8</code>"
 				],
 				a: 1,
-				w: "פי 4 קריאות, וכל אחת עושה חצי: <code>4 · n/2 = 2n</code>."
+				w: "שתי חציות מ-4 עד 1, ובכל אחת פי 8: <code>8² = 64 = 4³</code>."
 			},
 			{
-				s: "<code>W(1) = 1</code> ו-<code>W(n) = 4W(n/2) + n</code>. כמה <code>W(8)</code>?",
+				s: "מה <b>לא</b> נכון על <code>T(n) = 4T(n/2) + n</code>?",
 				o: [
-					"<code>32</code>",
-					"<code>64</code>",
-					"<code>120</code>",
-					"<code>112</code>"
+					"יש בו <code>n²</code> עלים",
+					"הרמה התחתונה היא היקרה ביותר",
+					"כל הרמות עולות אותו דבר",
+					"הפתרון הוא <code>n²</code>"
 				],
 				a: 2,
-				w: "<code>W(2) = 6</code>, <code>W(4) = 28</code>, <code>W(8) = 4 · 28 + 8 = 120</code>."
+				w: "כל רמה עולה פי 2 מזו שמעליה, לא אותו דבר."
+			}
+		]
+	});
+	const QUAD_TOUR = R`static int quadTour(int n) {
+    int work = 0;
+
+    if (n == 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    return work;
+}`;
+	const FOURS_START = R`public class Main {
+    // F(1) = 1, and F(n) = 4 * F(n / 2) + n
+    static int fours(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            // TODO: count one step
+        }
+        work += fours(n / 2);
+        work += fours(n / 2);
+        work += fours(n / 2);
+        work += fours(n / 2);
+        return work;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(fours(8));
+    }
+}
+`;
+	const FOURS_SOLVED = FOURS_START.replace("            // TODO: count one step\n", "            work++;\n");
+	const NINE_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(nine(9));
+    }
+}
+`;
+	const NINE_START = R`public class Main {
+    // W(1) = 1, and W(n) = 9 * W(n / 3) + n
+    static int nine(int n) {
+        int work = 0;
+
+        // TODO 1: when n is 1, return 1
+        // TODO 2: a loop of n rounds, adding 1 to work
+        // TODO 3: add nine(n / 3) to work, nine times
+        return work;
+    }
+` + NINE_MAIN;
+	const NINE_SOLVED = R`public class Main {
+    // W(1) = 1, and W(n) = 9 * W(n / 3) + n
+    static int nine(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        for (int c = 0; c < 9; c++) {
+            work += nine(n / 3);
+        }
+        return work;
+    }
+` + NINE_MAIN;
+	U.push(withOutputs({
+		id: "recur-leaves",
+		title: "עלים שולטים: קוד",
+		body: [
+			R`<p><code>quadTour</code> סופרת את הצעדים שלה: לולאה של <code>n</code>, ועוד ארבע קריאות על חצי.
+זו <code>W(n) = 4 · W(n/2) + n</code>, והעלים שולטים.</p>
+<p>הריצו: כשמכפילים את <code>n</code>, הצעדים גדלים בערך <b>פי 4</b>. כך גדל <code>n²</code>.</p>`,
+			{
+				id: "recur-leaves-quad",
+				title: "quadTour",
+				code: inMain(QUAD_TOUR, ["System.out.println(quadTour(16));", "System.out.println(quadTour(32));"]),
+				tests: [io("496 and 2016", "", "496\n2016\n")]
+			},
+			R`<p>תורכם: ב-<code>fours</code> הלולאה ריקה. חסרה השורה שסופרת צעד.</p>`,
+			{
+				id: "recur-leaves-fours",
+				title: "צעד בלולאה",
+				task: R`במקום ה-TODO הוסיפו 1 ל-<code>work</code>.`,
+				code: FOURS_START,
+				solution: FOURS_SOLVED,
+				example: { output: "fours(8) -> 120" },
+				tests: [unit("fours(2) is 6 and fours(4) is 28", R`Check.eq("fours(2)", Main.fours(2), 6);
+Check.eq("fours(4)", Main.fours(4), 28);`), io("main prints 120", "", "120\n")]
+			},
+			R`<p>עכשיו שיטה שלמה, עם <b>תשע</b> קריאות על <b>שליש</b>. גם כאן העלים שולטים: <code>9<sup>k</sup></code> קריאות
+ברמה k, והקלט קטן רק פי 3.</p>
+<p>את תשע הקריאות אפשר לכתוב בלולאה של 9 סיבובים.</p>`,
+			{
+				id: "recur-leaves-nine",
+				title: "nine",
+				task: R`השלימו את <code>nine(n)</code>, שמחזירה כמה צעדים היא עושה:<br>
+1. כש-<code>n</code> הוא 1, החזירו 1.<br>
+2. לולאה של <code>n</code> סיבובים, שמוסיפה 1 ל-<code>work</code>.<br>
+3. הוסיפו ל-<code>work</code> את <code>nine(n / 3)</code>, תשע פעמים.`,
+				code: NINE_START,
+				solution: NINE_SOLVED,
+				example: { output: "nine(9) -> 117" },
+				tests: [
+					unit("nine(1) is 1 and nine(3) is 12", R`Check.eq("nine(1)", Main.nine(1), 1);
+Check.eq("nine(3)", Main.nine(3), 12);`),
+					unit("nine(9) is 117 and nine(27) is 1080", R`Check.eq("nine(9)", Main.nine(9), 117);
+Check.eq("nine(27)", Main.nine(27), 1080);`),
+					unit("nine(10) is 118: 10 / 3 is 3", R`Check.eq("nine(10)", Main.nine(10), 118);`),
+					io("main prints 117", "", "117\n"),
+					ops("nine takes O(n²) steps", "Main.nine(n)", "n2", 24, [
+						9,
+						27,
+						81
+					], { c0: 20 })
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "מה הפתרון של <code>T(n) = 3T(n/2) + n</code>?",
+				o: [
+					"<code>n log n</code>",
+					"<code>n^(log₂ 3)</code>",
+					"<code>n²</code>",
+					"<code>n</code>"
+				],
+				a: 1,
+				w: "<code>3 &gt; 2</code>: הרמות גדלות, והעלים, <code>n^(log₂ 3)</code>, שולטים. בערך <code>n<sup>1.58</sup></code>."
+			},
+			{
+				s: "<code>W(1) = 1</code> ו-<code>W(n) = 4W(n/2) + n</code>. כמה <code>W(4)</code>?",
+				o: [
+					"<code>16</code>",
+					"<code>28</code>",
+					"<code>20</code>",
+					"<code>24</code>"
+				],
+				a: 1,
+				w: "<code>W(2) = 4 + 2 = 6</code>, ו-<code>W(4) = 4 · 6 + 4 = 28</code>."
+			},
+			{
+				s: "<code>quadTour(64)</code> עושה בערך כמה צעדים, אם <code>quadTour(32)</code> עושה 2016?",
+				o: [
+					"<code>4000</code>",
+					"<code>2100</code>",
+					"<code>8000</code>",
+					"<code>64000</code>"
+				],
+				a: 2,
+				w: "כש-<code>n</code> מוכפל, <code>n²</code> גדל פי 4: <code>4 · 2016 + 64 = 8128</code>."
+			},
+			{
+				s: "מה הנוסחה של <code>nine</code>?",
+				o: [
+					"<code>T(n) = 9T(n/3) + n</code>",
+					"<code>T(n) = 3T(n/9) + n</code>",
+					"<code>T(n) = 9T(n/3) + 9</code>",
+					"<code>T(n) = T(n/3) + 9n</code>"
+				],
+				a: 0,
+				w: "תשע קריאות (<code>a = 9</code>) על שליש (<code>b = 3</code>), ולולאה של <code>n</code>."
+			},
+			{
+				s: "איזו נוסחה <b>לא</b> שייכת למקרה שבו העלים שולטים?",
+				o: [
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 9T(n/3) + n</code>",
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = 8T(n/2) + n²</code>"
+				],
+				a: 2,
+				w: "ב-<code>2T(n/2) + n</code> כל רמה עולה <code>n</code>: זה תיקו, השיעור הבא."
 			}
 		]
 	}));
-	const TIE_EXAMPLE = R`static int pairUp(int n) {
+	const THIRDS = R`static int thirds(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return thirds(n / 3) + thirds(n / 3) + thirds(n / 3) + n;
+}`;
+	U.push({
+		id: "recur-tie-idea",
+		title: "תיקו",
+		body: [
+			R`<p>ב-<code>T(n) = 2T(n/2) + n</code> הקריאות גדלות <b>פי 2</b> בכל רמה, והגודל קטן <b>פי 2</b>.</p>
+<p>שני הכוחות שווים, ולכן <b>כל רמה עולה אותו דבר</b>: <code>n</code>. זה <b>תיקו</b>. הריצו.</p>` + generator({
+				recurrence: {
+					a: 2,
+					b: 2,
+					f: "n"
+				},
+				tree: true,
+				n: 32
+			}),
+			{
+				id: "recur-tie-idea-levels",
+				title: "רמות שוות",
+				code: levelProgram("two", 2, 32, 6),
+				tests: [io("32 on every level, 192 in all", "", levelOutput(2, 32))]
+			},
+			R`<p>בתיקו כל העבודה היא <b>רמה אחת כפול מספר הרמות</b>: <code>n · (log n + 1)</code>, כלומר בערך
+<code>n log n</code>.</p>
+<p>גם <code>T(n) = 3T(n/3) + n</code> היא תיקו: פי 3 קריאות, וכל אחת על שליש:</p>
+<table class="tbl"><tr><th><code>n</code></th><th>רמות</th><th>כל העבודה</th></tr>
+<tr><td class="mono">9</td><td class="mono">3</td><td class="mono">3 · 9 = 27</td></tr>
+<tr><td class="mono">27</td><td class="mono">4</td><td class="mono">4 · 27 = 108</td></tr></table>`,
+			{
+				id: "recur-tie-idea-thirds",
+				title: "תיקו של שלוש",
+				code: inMain(THIRDS, ["System.out.println(thirds(9));", "System.out.println(thirds(27));"]),
+				tests: [io("27 and 108", "", "27\n108\n")]
+			}
+		],
+		quiz: [
+			{
+				s: "איזו נוסחה היא <b>תיקו</b>?",
+				o: [
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 4T(n/2) + n²</code>",
+					"<code>T(n) = 2T(n/2) + n²</code>",
+					"<code>T(n) = T(n/2) + n</code>"
+				],
+				a: 1,
+				w: "פי 4 קריאות, וכל אחת עושה רבע (<code>(n/2)² = n²/4</code>): כל רמה עולה <code>n²</code>."
+			},
+			{
+				s: "ב-<code>T(n) = 2T(n/2) + n</code> עם <code>n = 64</code>: כמה עולה כל העץ?",
+				o: [
+					"<code>384</code>",
+					"<code>448</code>",
+					"<code>64</code>",
+					"<code>4096</code>"
+				],
+				a: 1,
+				w: "7 רמות (64 עד 1), בכל אחת 64: <code>7 · 64 = 448</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>log n</code>",
+					"<code>1</code>",
+					"<code>n log n</code>"
+				],
+				a: 1,
+				w: "קריאה אחת, ועבודה 1 בכל רמה: כל רמה עולה 1, תיקו. <code>log n</code> רמות."
+			},
+			{
+				s: "מה מחזירה <code>thirds(3)</code>?",
+				o: [
+					"<code>3</code>",
+					"<code>9</code>",
+					"<code>4</code>",
+					"<code>6</code>"
+				],
+				a: 3,
+				w: "<code>1 + 1 + 1 + 3 = 6</code>: שתי רמות של 3."
+			},
+			{
+				s: "מה <b>לא</b> נכון על תיקו?",
+				o: [
+					"כל הרמות עולות אותו דבר",
+					"הרמה התחתונה היקרה ביותר",
+					"מספר הרמות הוא בערך <code>log n</code>",
+					"הפתרון הוא רמה אחת כפול <code>log n</code>"
+				],
+				a: 1,
+				w: "בתיקו אין רמה יקרה ביותר: כולן שוות."
+			}
+		]
+	});
+	const PAIR_UP = R`static int pairUp(int n) {
     int work = 0;
 
-    if (n <= 1) {
+    if (n == 1) {
         return 1;
     }
     for (int i = 0; i < n; i++) {
@@ -24343,6 +26062,28 @@ Check.eq("tour(16) is 496", Main.tour(16), 496);`),
     work += pairUp(n / 2);
     return work;
 }`;
+	const HALVES_START = R`public class Main {
+    // H(1) = 1, and H(n) = 2 * H(n / 2) + n
+    static int halves(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        work += halves(n / 2);
+        // TODO: add the second half's steps to work
+        return work;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(halves(64));
+    }
+}
+`;
+	const HALVES_SOLVED = HALVES_START.replace("        // TODO: add the second half's steps to work\n", "        work += halves(n / 2);\n");
 	const TIE_MAIN = R`
     public static void main(String[] args) {
         System.out.println(spread(27));
@@ -24354,8 +26095,9 @@ Check.eq("tour(16) is 496", Main.tour(16), 496);`),
     static int spread(int n) {
         int work = 0;
 
-        // TODO: return 1 when n is 1; then a loop of n rounds
-        // adding 1 to work, then three calls spread(n / 3)
+        // TODO 1: when n is 1, return 1
+        // TODO 2: a loop of n rounds, adding 1 to work
+        // TODO 3: add spread(n / 3) to work, three times
         return work;
     }
 ` + TIE_MAIN;
@@ -24378,50 +26120,61 @@ Check.eq("tour(16) is 496", Main.tour(16), 496);`),
 ` + TIE_MAIN;
 	U.push(withOutputs({
 		id: "recur-tie",
-		title: "תיקו",
-		body: [R`<p>כש-<code>n^(log_b a)</code> שווה ל-<code>f(n)</code>, כל רמה עולה אותו דבר, ויש <code>log n</code> רמות.</p>` + generator({
-			code: TIE_EXAMPLE,
-			tree: true
-		}) + R`<p>רמה אחת עולה <code>n</code>, ולכן <code>n log n</code>.</p>`, {
-			id: "recur-tie-spread",
-			title: "spread",
-			task: R`כתבו את <code>spread(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
-<b>שלוש קריאות</b> <code>spread(n / 3)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
-<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
-			code: TIE_START,
-			solution: TIE_SOLVED,
-			example: { output: "spread(27) -> 108" },
-			tests: [
-				unit("spread(1) is 1 and spread(3) is 6", R`Check.eq("spread(1) is 1", Main.spread(1), 1);
-Check.eq("spread(3) is 6", Main.spread(3), 6);`),
-				unit("spread(9) is 27 and spread(27) is 108", R`Check.eq("spread(9) is 27", Main.spread(9), 27);
-Check.eq("spread(27) is 108", Main.spread(27), 108);`),
-				unit("spread(10) is 28: 10 / 3 = 3", R`Check.eq("spread(10) is 28", Main.spread(10), 28);`),
-				io("main prints 108", "", "108\n"),
-				src("three calls to spread", {
-					fn: "spread",
-					require: "(\\bspread\\s*\\([\\s\\S]*){3}",
-					msg: "spread צריכה לקרוא לעצמה שלוש פעמים"
-				}),
-				ops("spread takes O(n log n) steps", "Main.spread(n)", "nlogn", 6, [
-					27,
-					243,
-					2187
-				], { c0: 20 })
-			]
-		}],
-		quiz: [
+		title: "תיקו: קוד",
+		body: [
+			R`<p><code>pairUp</code> סופרת את הצעדים שלה: לולאה של <code>n</code>, ועוד שתי קריאות על חצי. זו
+<code>W(n) = 2 · W(n/2) + n</code>, תיקו.</p>
+<p>הריצו: 16 עושה <code>5 · 16 = 80</code> צעדים, ו-32 עושה <code>6 · 32 = 192</code>. כשמכפילים את
+<code>n</code>, הצעדים גדלים קצת יותר מפי 2. כך גדל <code>n log n</code>.</p>`,
 			{
-				s: "איזו נוסחה היא <b>תיקו</b>?",
-				o: [
-					"<code>T(n) = 4T(n/2) + n</code>",
-					"<code>T(n) = 4T(n/2) + n²</code>",
-					"<code>T(n) = 2T(n/2) + n²</code>",
-					"<code>T(n) = T(n/2) + n</code>"
-				],
-				a: 1,
-				w: "<code>n^(log₂ 4) = n²</code> שווה ל-<code>f(n) = n²</code>. בשאר העלים או השורש גדולים."
+				id: "recur-tie-pair",
+				title: "pairUp",
+				code: inMain(PAIR_UP, ["System.out.println(pairUp(16));", "System.out.println(pairUp(32));"]),
+				tests: [io("80 and 192", "", "80\n192\n")]
 			},
+			R`<p>תורכם: ל-<code>halves</code> חסרה הקריאה השנייה.</p>`,
+			{
+				id: "recur-tie-halves",
+				title: "החצי השני",
+				task: R`במקום ה-TODO הוסיפו ל-<code>work</code> את <code>halves(n / 2)</code>.`,
+				code: HALVES_START,
+				solution: HALVES_SOLVED,
+				example: { output: "halves(64) -> 448" },
+				tests: [unit("halves(2) is 4 and halves(8) is 32", R`Check.eq("halves(2)", Main.halves(2), 4);
+Check.eq("halves(8)", Main.halves(8), 32);`), io("main prints 448", "", "448\n")]
+			},
+			R`<p>עכשיו שיטה שלמה: <b>שלוש</b> קריאות על <b>שליש</b>, כמו <code>thirds</code> מהשיעור "תיקו".</p>`,
+			{
+				id: "recur-tie-spread",
+				title: "spread",
+				task: R`השלימו את <code>spread(n)</code>, שמחזירה כמה צעדים היא עושה:<br>
+1. כש-<code>n</code> הוא 1, החזירו 1.<br>
+2. לולאה של <code>n</code> סיבובים, שמוסיפה 1 ל-<code>work</code>.<br>
+3. הוסיפו ל-<code>work</code> את <code>spread(n / 3)</code>, שלוש פעמים.`,
+				code: TIE_START,
+				solution: TIE_SOLVED,
+				example: { output: "spread(27) -> 108" },
+				tests: [
+					unit("spread(1) is 1 and spread(3) is 6", R`Check.eq("spread(1) is 1", Main.spread(1), 1);
+Check.eq("spread(3) is 6", Main.spread(3), 6);`),
+					unit("spread(9) is 27 and spread(27) is 108", R`Check.eq("spread(9) is 27", Main.spread(9), 27);
+Check.eq("spread(27) is 108", Main.spread(27), 108);`),
+					unit("spread(10) is 28: 10 / 3 = 3", R`Check.eq("spread(10) is 28", Main.spread(10), 28);`),
+					io("main prints 108", "", "108\n"),
+					src("three calls to spread", {
+						fn: "spread",
+						require: "(\\bspread\\s*\\([\\s\\S]*){3}",
+						msg: "spread צריכה לקרוא לעצמה שלוש פעמים"
+					}),
+					ops("spread takes O(n log n) steps", "Main.spread(n)", "nlogn", 6, [
+						27,
+						243,
+						2187
+					], { c0: 20 })
+				]
+			}
+		],
+		quiz: [
 			{
 				s: "מה הפתרון של <code>T(n) = 4T(n/2) + n²</code>?",
 				o: [
@@ -24431,18 +26184,7 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
 					"<code>n log n</code>"
 				],
 				a: 2,
-				w: "תיקו: <code>f(n) · log n = n² log n</code>."
-			},
-			{
-				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
-				o: [
-					"<code>n</code>",
-					"<code>log n</code>",
-					"<code>1</code>",
-					"<code>n log n</code>"
-				],
-				a: 1,
-				w: "<code>n^(log₂ 1) = 1 = f(n)</code>: תיקו. <code>log n</code> רמות, ובכל אחת <code>1</code>."
+				w: "תיקו: כל רמה עולה <code>n²</code>, ויש <code>log n</code> רמות."
 			},
 			{
 				s: "מה מחזירה <code>split(9)</code>?" + codeBlock(R`static int split(int n) {
@@ -24466,7 +26208,18 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
 					"<code>9</code>"
 				],
 				a: 2,
-				w: "<code>split(1) = 1</code>, <code>split(3) = 3 + 3 = 6</code>, <code>split(9) = 9 + 3 · 6 = 27</code>: שתי רמות של 9 ועוד עלים."
+				w: "<code>split(3) = 3 + 3 = 6</code>, ו-<code>split(9) = 9 + 3 · 6 = 27</code>: שתי רמות של 9, ועוד העלים."
+			},
+			{
+				s: "<code>pairUp(64)</code> עושה כמה צעדים?",
+				o: [
+					"<code>384</code>",
+					"<code>448</code>",
+					"<code>512</code>",
+					"<code>4096</code>"
+				],
+				a: 1,
+				w: "7 רמות של 64: <code>7 · 64 = 448</code>."
 			},
 			{
 				s: "מה הפתרון של <code>T(n) = 8T(n/2) + n³</code>?",
@@ -24477,14 +26230,137 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
 					"<code>n² log n</code>"
 				],
 				a: 0,
-				w: "<code>n^(log₂ 8) = n³ = f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+				w: "פי 8 קריאות, וכל אחת עושה שמינית: כל רמה עולה <code>n³</code>, תיקו."
+			},
+			{
+				s: "כמה רמות יש ב-<code>spread(81)</code>?",
+				o: [
+					"<code>4</code>",
+					"<code>27</code>",
+					"<code>3</code>",
+					"<code>5</code>"
+				],
+				a: 3,
+				w: "81, 27, 9, 3, 1: חמש רמות."
+			},
+			{
+				s: "מה <b>לא</b> נכון על <code>W(n) = 2W(n/2) + n</code>?",
+				o: [
+					"כל רמה עולה <code>n</code>",
+					"הפתרון הוא <code>n log n</code>",
+					"הצעדים גדלים בדיוק פי 2 כשמכפילים את <code>n</code>",
+					"יש <code>log₂ n + 1</code> רמות"
+				],
+				a: 2,
+				w: "רמה נוספת מצטרפת, ולכן קצת יותר מפי 2: 80, ואז 192."
 			}
 		]
 	}));
-	const ROOT_EXAMPLE = R`static int skipHalf(int n) {
+	const RUNNING_SUM = R`static void halving(int n) {
+    int sum = 0;
+
+    for (int part = n; part >= 1; part /= 2) {
+        sum += part;
+        System.out.print(sum + " ");
+    }
+    System.out.println();
+}`;
+	U.push({
+		id: "recur-root-idea",
+		title: "כשהשורש שולט",
+		body: [
+			R`<p>ב-<code>T(n) = T(n/2) + n</code> יש <b>קריאה אחת</b>, והגודל נחצה. לכן כל רמה עולה <b>חצי</b> מזו
+שמעליה.</p>
+<p>הרמה הראשונה, <b>השורש</b>, היא היקרה ביותר. הריצו, וראו את זה גם בעץ של המחולל.</p>` + generator({
+				recurrence: {
+					a: 1,
+					b: 2,
+					f: "n"
+				},
+				tree: true,
+				n: 16
+			}),
+			{
+				id: "recur-root-idea-levels",
+				title: "רמות שקטנות",
+				code: levelProgram("one", 1, 16, 5),
+				tests: [io("16, 8, 4, 2, 1", "", levelOutput(1, 16))]
+			},
+			R`<p>כמה עולה כל העץ? מחברים: <code>16 + 8 + 4 + 2 + 1 = 31</code>. זה <b>פחות מ-32</b>, פעמיים השורש.</p>
+<p>למה? כל איבר הוא חצי מקודמו, ולכן הסכום לעולם לא מגיע לפעמיים הראשון. התוכנית מדפיסה את הסכום אחרי
+כל איבר, עבור 64:</p>
+<table class="tbl"><tr><th>מוסיפים</th><td class="mono">64</td><td class="mono">32</td><td class="mono">16</td><td class="mono">8</td><td class="mono">4</td><td class="mono">2</td><td class="mono">1</td></tr>
+<tr><th>הסכום</th><td class="mono">64</td><td class="mono">96</td><td class="mono">112</td><td class="mono">120</td><td class="mono">124</td><td class="mono">126</td><td class="mono">127</td></tr></table>
+<p>כל העבודה פחות מ-<code>2n</code>, ולכן הפתרון הוא <code>n</code>: <b>השורש שולט</b>.</p>`,
+			{
+				id: "recur-root-idea-sum",
+				title: "פחות מפעמיים",
+				code: inMain(RUNNING_SUM, ["halving(64);"]),
+				tests: [io("the sums stay under 128", "", "64 96 112 120 124 126 127\n")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה הסכום <code>64 + 32 + 16 + 8 + 4 + 2 + 1</code>?",
+				o: [
+					"<code>64</code>",
+					"<code>126</code>",
+					"<code>127</code>",
+					"<code>192</code>"
+				],
+				a: 2,
+				w: "<code>127 &lt; 2 · 64</code>: סכום שנחצה בכל צעד נשאר פחות מפעמיים האיבר הראשון."
+			},
+			{
+				s: "ב-<code>T(n) = T(n/2) + n</code> עם <code>n = 32</code>: כמה עולה רמה 2?",
+				o: [
+					"<code>16</code>",
+					"<code>32</code>",
+					"<code>4</code>",
+					"<code>8</code>"
+				],
+				a: 3,
+				w: "קריאה אחת בגודל <code>32 / 4 = 8</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 2T(n/2) + n²</code>?",
+				o: [
+					"<code>n² log n</code>",
+					"<code>n²</code>",
+					"<code>n log n</code>",
+					"<code>n³</code>"
+				],
+				a: 1,
+				w: "כל רמה עולה חצי מזו שמעליה (<code>2 · (n/2)² = n²/2</code>): השורש שולט."
+			},
+			{
+				s: "מה מדפיסה <code>halving(20)</code>?",
+				o: [
+					"<code>20 30 35 37 38</code>",
+					"<code>20 10 5 2 1</code>",
+					"<code>20 30 35 37</code>",
+					"<code>38</code>"
+				],
+				a: 0,
+				w: "20, ועוד 10, 5, 2 ו-1: הסכומים 20, 30, 35, 37, 38."
+			},
+			{
+				s: "מה <b>לא</b> נכון על <code>T(n) = T(n/2) + n</code>?",
+				o: [
+					"השורש לבדו הוא יותר מחצי מכל העבודה",
+					"כל העבודה פחות מ-<code>2n</code>",
+					"הפתרון הוא <code>n log n</code>",
+					"יש בו עלה אחד"
+				],
+				a: 2,
+				w: "הפתרון הוא <code>n</code>: הרמות קטנות, ולא כל אחת עולה <code>n</code>."
+			}
+		]
+	});
+	const SKIP_HALF = R`static int skipHalf(int n) {
     int work = 0;
 
-    if (n <= 1) {
+    if (n == 1) {
         return 1;
     }
     for (int i = 0; i < n; i++) {
@@ -24493,6 +26369,27 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
     work += skipHalf(n / 2);
     return work;
 }`;
+	const DROP_START = R`public class Main {
+    // D(1) = 1, and D(n) = D(n / 2) + n
+    static int drop(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        // TODO: add the steps of drop on half of n to work
+        return work;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(drop(64));
+    }
+}
+`;
+	const DROP_SOLVED = DROP_START.replace("        // TODO: add the steps of drop on half of n to work\n", "        work += drop(n / 2);\n");
 	const ROOT_MAIN = R`
     public static void main(String[] args) {
         System.out.println(skip(27));
@@ -24504,8 +26401,9 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
     static int skip(int n) {
         int work = 0;
 
-        // TODO: return 1 when n is 1; then a loop of n rounds
-        // adding 1 to work, then one call skip(n / 3)
+        // TODO 1: when n is 1, return 1
+        // TODO 2: a loop of n rounds, adding 1 to work
+        // TODO 3: add skip(n / 3) to work, once
         return work;
     }
 ` + ROOT_MAIN;
@@ -24526,63 +26424,62 @@ Check.eq("spread(27) is 108", Main.spread(27), 108);`),
 ` + ROOT_MAIN;
 	U.push(withOutputs({
 		id: "recur-root",
-		title: "כשהשורש שולט",
-		body: [R`<p>כש-<code>f(n)</code> גדולה מ-<code>n^(log_b a)</code>, כל רמה קטנה בהרבה מזו שמעליה.
-כמעט כל המחיר בשורש.</p>` + generator({
-			code: ROOT_EXAMPLE,
-			tree: true
-		}) + R`<p><code>n + n/2 + n/4 + ... &lt; 2n</code>, ולכן הפתרון <code>n</code>.</p>`, {
-			id: "recur-root-skip",
-			title: "skip",
-			task: R`כתבו את <code>skip(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
-<b>קריאה אחת</b> <code>skip(n / 3)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
-<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
-			code: ROOT_START,
-			solution: ROOT_SOLVED,
-			example: { output: "skip(27) -> 40" },
-			tests: [
-				unit("skip(1) is 1 and skip(3) is 4", R`Check.eq("skip(1) is 1", Main.skip(1), 1);
+		title: "שורש שולט: קוד",
+		body: [
+			R`<p><code>skipHalf</code> סופרת את הצעדים שלה: לולאה של <code>n</code>, ועוד קריאה <b>אחת</b> על חצי. זו
+<code>W(n) = W(n/2) + n</code>, והשורש שולט.</p>
+<p>הריצו: 16 עושה 31 צעדים, ו-32 עושה 63. כשמכפילים את <code>n</code>, הצעדים גדלים <b>פי 2</b>. כך גדל
+<code>n</code>.</p>`,
+			{
+				id: "recur-root-skip-half",
+				title: "skipHalf",
+				code: inMain(SKIP_HALF, ["System.out.println(skipHalf(16));", "System.out.println(skipHalf(32));"]),
+				tests: [io("31 and 63", "", "31\n63\n")]
+			},
+			R`<p>תורכם: ל-<code>drop</code> חסרה הקריאה לעצמה.</p>`,
+			{
+				id: "recur-root-drop",
+				title: "הקריאה",
+				task: R`במקום ה-TODO הוסיפו ל-<code>work</code> את <code>drop(n / 2)</code>.`,
+				code: DROP_START,
+				solution: DROP_SOLVED,
+				example: { output: "drop(64) -> 127" },
+				tests: [unit("drop(2) is 3 and drop(8) is 15", R`Check.eq("drop(2)", Main.drop(2), 3);
+Check.eq("drop(8)", Main.drop(8), 15);`), io("main prints 127", "", "127\n")]
+			},
+			R`<p>עכשיו שיטה שלמה: קריאה אחת על <b>שליש</b>. הרמות קטנות עוד יותר מהר, והסכום פחות מ-<code>1.5n</code>.</p>`,
+			{
+				id: "recur-root-skip",
+				title: "skip",
+				task: R`השלימו את <code>skip(n)</code>, שמחזירה כמה צעדים היא עושה:<br>
+1. כש-<code>n</code> הוא 1, החזירו 1.<br>
+2. לולאה של <code>n</code> סיבובים, שמוסיפה 1 ל-<code>work</code>.<br>
+3. הוסיפו ל-<code>work</code> את <code>skip(n / 3)</code>, פעם אחת.`,
+				code: ROOT_START,
+				solution: ROOT_SOLVED,
+				example: { output: "skip(27) -> 40" },
+				tests: [
+					unit("skip(1) is 1 and skip(3) is 4", R`Check.eq("skip(1) is 1", Main.skip(1), 1);
 Check.eq("skip(3) is 4", Main.skip(3), 4);`),
-				unit("skip(9) is 13 and skip(27) is 40", R`Check.eq("skip(9) is 13", Main.skip(9), 13);
+					unit("skip(9) is 13 and skip(27) is 40", R`Check.eq("skip(9) is 13", Main.skip(9), 13);
 Check.eq("skip(27) is 40", Main.skip(27), 40);`),
-				unit("skip(10) is 14: 10 / 3 = 3", R`Check.eq("skip(10) is 14", Main.skip(10), 14);`),
-				unit("skip(100) is 148", R`Check.eq("skip(100) is 148", Main.skip(100), 148);`),
-				io("main prints 40", "", "40\n"),
-				src("a loop and a call to skip", {
-					fn: "skip",
-					require: "\\b(for|while)\\b[\\s\\S]*\\bskip\\s*\\(",
-					msg: "skip צריכה לולאה, ואחריה קריאה לעצמה"
-				}),
-				ops("skip takes O(n) steps", "Main.skip(n)", "n", 8, [
-					27,
-					2187,
-					59049
-				], { c0: 20 })
-			]
-		}],
+					unit("skip(10) is 14: 10 / 3 = 3", R`Check.eq("skip(10) is 14", Main.skip(10), 14);`),
+					unit("skip(100) is 148", R`Check.eq("skip(100) is 148", Main.skip(100), 148);`),
+					io("main prints 40", "", "40\n"),
+					src("a loop and a call to skip", {
+						fn: "skip",
+						require: "\\b(for|while)\\b[\\s\\S]*\\bskip\\s*\\(",
+						msg: "skip צריכה לולאה, ואחריה קריאה לעצמה"
+					}),
+					ops("skip takes O(n) steps", "Main.skip(n)", "n", 8, [
+						27,
+						2187,
+						59049
+					], { c0: 20 })
+				]
+			}
+		],
 		quiz: [
-			{
-				s: "מה הפתרון של <code>T(n) = 2T(n/2) + n²</code>?",
-				o: [
-					"<code>n² log n</code>",
-					"<code>n²</code>",
-					"<code>n log n</code>",
-					"<code>n³</code>"
-				],
-				a: 1,
-				w: "העלים הם <code>n</code>, קטן מ-<code>n²</code>: השורש שולט."
-			},
-			{
-				s: "מה הסכום <code>64 + 32 + 16 + 8 + 4 + 2 + 1</code>?",
-				o: [
-					"<code>64</code>",
-					"<code>126</code>",
-					"<code>127</code>",
-					"<code>192</code>"
-				],
-				a: 2,
-				w: "<code>127 &lt; 2 · 64</code>: סכום שמתחלק בחצי בכל צעד נשאר פחות מפעמיים האיבר הראשון."
-			},
 			{
 				s: "מה מחזירה <code>shrink(20)</code>?" + codeBlock(R`static int shrink(int n) {
     int work = 0;
@@ -24614,7 +26511,7 @@ Check.eq("skip(27) is 40", Main.skip(27), 40);`),
 					"<code>T(n) = 2T(n/2) + 1</code>"
 				],
 				a: 0,
-				w: "<code>n^(log₂ 1) = 1</code> קטן מ-<code>n</code>. בשאר העלים שווים ל-<code>n</code> או גדולים ממנו."
+				w: "רק בה כל רמה עולה חצי מזו שמעליה. בשאר הרמות שוות או גדלות."
 			},
 			{
 				s: "מה הפתרון של <code>T(n) = 3T(n/4) + n</code>?",
@@ -24625,11 +26522,225 @@ Check.eq("skip(27) is 40", Main.skip(27), 40);`),
 					"<code>n²</code>"
 				],
 				a: 2,
-				w: "<code>log₄ 3</code> קטן מ-1, אז העלים קטנים מ-<code>n</code>: השורש שולט."
+				w: "פי 3 קריאות, וכל אחת על רבע: כל רמה עולה <code>¾</code> מזו שמעליה. השורש שולט."
+			},
+			{
+				s: "<code>skipHalf(64)</code> עושה כמה צעדים?",
+				o: [
+					"<code>127</code>",
+					"<code>128</code>",
+					"<code>384</code>",
+					"<code>64</code>"
+				],
+				a: 0,
+				w: "<code>64 + 32 + 16 + 8 + 4 + 2 + 1 = 127</code>."
+			},
+			{
+				s: "מה <b>לא</b> נכון כשהשורש שולט?",
+				o: [
+					"כל רמה עולה פחות מזו שמעליה",
+					"הפתרון הוא <code>f(n)</code>, העבודה של השורש",
+					"רוב העבודה בעלים",
+					"כל העבודה פחות מקבוע כפול השורש"
+				],
+				a: 2,
+				w: "כשהשורש שולט, העלים הם הרמה הזולה ביותר."
 			}
 		]
 	}));
-	const OUTSIDE_EXAMPLE = R`static int countDown(int n) {
+	const TOTAL_BY_A = R`static int total(int n, int a) {
+    int sum = n;
+
+    if (n == 1) {
+        return 1;
+    }
+    for (int c = 0; c < a; c++) {
+        sum += total(n / 2, a);
+    }
+    return sum;
+}`;
+	const LEAVES_BY_A = R`static int leaves(int n, int a) {
+    int count = 0;
+
+    if (n == 1) {
+        return 1;
+    }
+    for (int c = 0; c < a; c++) {
+        count += leaves(n / 2, a);
+    }
+    return count;
+}`;
+	const EIGHTS = R`static int eights(int n) {
+    int work = n * n;
+
+    if (n == 1) {
+        return 1;
+    }
+    for (int c = 0; c < 8; c++) {
+        work += eights(n / 2);
+    }
+    return work;
+}`;
+	U.push({
+		id: "recur-compare",
+		title: "מי מנצח",
+		body: [
+			R`<p>שלושה עצים עם <code>b = 2</code> ו-<code>f(n) = n</code>, ומשנים רק את <code>a</code>. העבודה בכל רמה,
+עבור <code>n = 16</code>:</p>
+<table class="tbl"><tr><th>רמה</th><th>a = 1</th><th>a = 2</th><th>a = 4</th></tr>
+<tr><td class="mono">0</td><td class="mono">16</td><td class="mono">16</td><td class="mono">16</td></tr>
+<tr><td class="mono">1</td><td class="mono">8</td><td class="mono">16</td><td class="mono">32</td></tr>
+<tr><td>4, העלים</td><td class="mono">1</td><td class="mono">16</td><td class="mono">256</td></tr>
+<tr><th>מי מנצח</th><td>השורש</td><td>תיקו</td><td>העלים</td></tr></table>
+<p>לחצו על <code>a</code> ועל <code>f(n)</code> במחולל, ופתחו את העץ. הריצו את הקוד: הסכומים 31, 80 ו-496.</p>` + generator({
+				recurrence: {
+					a: 2,
+					b: 2,
+					f: "n"
+				},
+				choose: {
+					a: [
+						1,
+						2,
+						4
+					],
+					f: [
+						"1",
+						"n",
+						"n^2"
+					]
+				}
+			}),
+			{
+				id: "recur-compare-trees",
+				title: "שלושה עצים",
+				code: inMain(TOTAL_BY_A, [
+					"System.out.println(total(16, 1));",
+					"System.out.println(total(16, 2));",
+					"System.out.println(total(16, 4));"
+				]),
+				tests: [io("31, 80, 496", "", "31\n80\n496\n")]
+			},
+			R`<p>הכלל נקרא <b>משפט האב</b> (<bdi dir="ltr">Master theorem</bdi>): משווים את <b>העלים</b> לעבודה של
+<b>השורש</b>, <code>f(n)</code>.</p>
+<p>מספר העלים הוא <code>n^(log_b a)</code>. <code>log_b a</code> הוא החזקה ש-<code>b</code> צריך כדי להגיע
+ל-<code>a</code>: <code>log₂ 4 = 2</code>, כי <code>2² = 4</code>.</p>
+<table class="tbl"><tr><th>ההשוואה</th><th>מי מנצח</th><th>הפתרון</th><th>דוגמה</th></tr>
+<tr><td>העלים גדולים מ-<code>f(n)</code></td><td>העלים</td><td><code>n^(log_b a)</code></td><td class="mono">4T(n/2) + n → n²</td></tr>
+<tr><td>שווים</td><td>תיקו</td><td><code>f(n) · log n</code></td><td class="mono">2T(n/2) + n → n log n</td></tr>
+<tr><td>העלים קטנים מ-<code>f(n)</code></td><td>השורש</td><td><code>f(n)</code></td><td class="mono">T(n/2) + n → n</td></tr></table>
+<p>הריצו: עם <code>n = 16</code> יש 1, 16 ו-256 עלים, כלומר <code>n⁰</code>, <code>n¹</code> ו-<code>n²</code>.</p>`,
+			{
+				id: "recur-compare-leaves",
+				title: "סופרים עלים",
+				code: inMain(LEAVES_BY_A, [
+					"System.out.println(leaves(16, 1));",
+					"System.out.println(leaves(16, 2));",
+					"System.out.println(leaves(16, 4));"
+				]),
+				tests: [io("1, 16, 256 leaves", "", "1\n16\n256\n")]
+			},
+			R`<p>דוגמה עד הסוף: <code>T(n) = 8T(n/2) + n²</code>.</p>
+<p>1. העלים: <code>log₂ 8 = 3</code>, כי <code>2³ = 8</code>. לכן <code>n³</code> עלים.<br>
+2. השורש: <code>f(n) = n²</code>.<br>
+3. <code>n³</code> גדול מ-<code>n²</code>: <b>העלים מנצחים</b>, והפתרון <code>n³</code>.</p>
+<p>במחולל, הצעד האחרון עושה את אותה השוואה. הריצו: כשמכפילים את <code>n</code>, העבודה גדלה בערך פי 8.</p>` + generator({ recurrence: {
+				a: 8,
+				b: 2,
+				f: "n^2"
+			} }),
+			{
+				id: "recur-compare-eights",
+				title: "עד הסוף",
+				code: inMain(EIGHTS, [
+					"System.out.println(eights(4));",
+					"System.out.println(eights(8));",
+					"System.out.println(eights(16));"
+				]),
+				tests: [io("112, 960, 7936", "", "112\n960\n7936\n")]
+			}
+		],
+		quiz: [
+			{
+				s: "מה הפתרון של <code>T(n) = 4T(n/2) + n²</code>?",
+				o: [
+					"<code>n²</code>",
+					"<code>n² log n</code>",
+					"<code>n³</code>",
+					"<code>n log n</code>"
+				],
+				a: 1,
+				w: "<code>n^(log₂ 4) = n²</code> שווה ל-<code>f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+			},
+			{
+				s: "מי מנצח ב-<code>T(n) = 8T(n/2) + n²</code>?",
+				o: [
+					"השורש",
+					"תיקו",
+					"העלים",
+					"אי אפשר לדעת"
+				],
+				a: 2,
+				w: "<code>n^(log₂ 8) = n³</code> גדול מ-<code>n²</code>: העלים, והפתרון <code>n³</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 9T(n/3) + n</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>n log n</code>",
+					"<code>n³</code>",
+					"<code>n²</code>"
+				],
+				a: 3,
+				w: "<code>log₃ 9 = 2</code>, כי <code>3² = 9</code>: <code>n²</code> עלים, יותר מ-<code>n</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>1</code>",
+					"<code>log n</code>",
+					"<code>n log n</code>"
+				],
+				a: 2,
+				w: "<code>log₂ 1 = 0</code>: עלה אחד, <code>n⁰ = 1</code>, שווה ל-<code>f(n) = 1</code>. תיקו: <code>1 · log n</code>."
+			},
+			{
+				s: "מה <code>log₃ 27</code>?",
+				o: [
+					"<code>9</code>",
+					"<code>3</code>",
+					"<code>24</code>",
+					"<code>2</code>"
+				],
+				a: 1,
+				w: "<code>3³ = 27</code>."
+			},
+			{
+				s: "באיזו נוסחה השורש <b>לא</b> מנצח?",
+				o: [
+					"<code>T(n) = T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/2) + n²</code>",
+					"<code>T(n) = 3T(n/3) + n</code>",
+					"<code>T(n) = T(n/3) + n</code>"
+				],
+				a: 2,
+				w: "<code>log₃ 3 = 1</code>: <code>n</code> עלים, שווה ל-<code>f(n) = n</code>. זה תיקו."
+			},
+			{
+				s: "מה <b>לא</b> נכון על משפט האב?",
+				o: [
+					"הוא משווה את העלים ל-<code>f(n)</code>",
+					"הוא עובד רק כשהקלט קטן פי <code>b</code>",
+					"כשהעלים גדולים, הפתרון הוא מספר העלים",
+					"בתיקו הפתרון הוא <code>f(n)</code> בלי תוספת"
+				],
+				a: 3,
+				w: "בתיקו מוסיפים <code>log n</code>: <code>f(n) · log n</code>."
+			}
+		]
+	});
+	const COUNT_DOWN = R`static int countDown(int n) {
     int work = 0;
 
     if (n <= 1) {
@@ -24641,56 +26752,29 @@ Check.eq("skip(27) is 40", Main.skip(27), 40);`),
     work += countDown(n - 1);
     return work;
 }`;
-	const OUTSIDE_START = R`public class Main {
-    // T(1) = 1, and T(n) = T(n - 1) + n
-    static int chain(int n) {
-        // TODO: return 1 when n is 1; otherwise chain(n - 1) + n
-        return 0;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(chain(10));
-    }
-}
-`;
-	const OUTSIDE_SOLVED = R`public class Main {
-    // T(1) = 1, and T(n) = T(n - 1) + n
-    static int chain(int n) {
-        if (n == 1) {
-            return 1;
-        }
-        return chain(n - 1) + n;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(chain(10));
-    }
-}
-`;
-	U.push(withOutputs({
+	U.push({
 		id: "recur-outside",
-		title: "כשהנוסחה לא מתאימה",
-		body: [R`<p>משפט האב צריך קלט שמתחלק: <code>n / b</code>. כשהקריאה היא על <code>n - 1</code>, אין <code>b</code>.</p>` + generator({ code: OUTSIDE_EXAMPLE }) + R`<p>במקרה כזה פותחים את הנוסחה: <code>n + (n-1) + (n-2) + ... + 1</code>.</p>`, {
-			id: "recur-outside-chain",
-			title: "chain",
-			task: R`כתבו את <code>chain(n)</code> שמחזירה את <code>T(n)</code>:
-<b><code>T(1) = 1</code> ו-<code>T(n) = T(n - 1) + n</code></b>.`,
-			code: OUTSIDE_START,
-			solution: OUTSIDE_SOLVED,
-			example: { output: "chain(10) -> 55" },
-			tests: [
-				unit("chain(1) is 1 and chain(2) is 3", R`Check.eq("chain(1) is 1", Main.chain(1), 1);
-Check.eq("chain(2) is 3", Main.chain(2), 3);`),
-				unit("chain(10) is 55", R`Check.eq("chain(10) is 55", Main.chain(10), 55);`),
-				unit("chain(100) is 5050", R`Check.eq("chain(100) is 5050", Main.chain(100), 5050);`),
-				io("main prints 55", "", "55\n"),
-				src("chain calls itself", {
-					fn: "chain",
-					require: "\\bchain\\s*\\(",
-					msg: "chain צריכה לקרוא לעצמה."
-				})
-			]
-		}],
+		title: "כשאין b",
+		body: [
+			R`<p>משפט האב צריך קלט שקטן <b>פי</b> <code>b</code>. ב-<code>countDown</code> הקריאה היא על <code>n - 1</code>:
+הקלט קטן <b>ב-</b>1, ואין <code>b</code>.</p>
+<p>המחולל אומר את זה במקום הנוסחה. הריצו: <code>countDown(10)</code> עושה 55 צעדים.</p>` + generator({ code: COUNT_DOWN }),
+			{
+				id: "recur-outside-count-down",
+				title: "countDown",
+				code: inMain(COUNT_DOWN, ["System.out.println(countDown(10));"]),
+				tests: [io("countDown(10) is 55", "", "55\n")]
+			},
+			R`<p>איך נראה העץ? לחצו <b>⏯ שורה אחר שורה</b> והסתכלו באי <b>עץ רקורסיה</b>.</p>
+<p>כל קריאה קוראת רק לאחת, ולכן העץ הוא <b>שרשרת</b>: 5, 4, 3, 2, 1. יש בו <code>n</code> רמות, לא
+<code>log n</code>.</p>`,
+			{
+				id: "recur-outside-chain-tree",
+				title: "שרשרת",
+				code: inMain(COUNT_DOWN, ["System.out.println(countDown(5));"]),
+				tests: [io("countDown(5) is 15", "", "15\n")]
+			}
+		],
 		quiz: [
 			{
 				s: "איזו נוסחה <b>מתאימה</b> למשפט האב?",
@@ -24725,26 +26809,15 @@ Check.eq("chain(2) is 3", Main.chain(2), 3);`),
 				w: "<code>4 + 3 + 2 + 1 = 10</code>."
 			},
 			{
-				s: "מה הפתרון של <code>T(n) = T(n-1) + n</code>?",
+				s: "כמה רמות יש בעץ של <code>countDown(10)</code>?",
 				o: [
-					"<code>n</code>",
-					"<code>n log n</code>",
-					"<code>n²</code>",
-					"<code>2<sup>n</sup></code>"
+					"<code>4</code>",
+					"<code>10</code>",
+					"<code>5</code>",
+					"<code>55</code>"
 				],
-				a: 2,
-				w: "<code>n + (n-1) + ... + 1 = n(n+1)/2</code>: ריבועי."
-			},
-			{
-				s: "מה הפתרון של <code>T(n) = T(n-1) + 1</code>?",
-				o: [
-					"<code>n</code>",
-					"<code>1</code>",
-					"<code>n²</code>",
-					"<code>log n</code>"
-				],
-				a: 0,
-				w: "<code>n</code> קריאות, וכל אחת עושה צעד אחד."
+				a: 1,
+				w: "שרשרת: 10, 9, ..., 1, רמה לכל מספר."
 			},
 			{
 				s: "מה מחזירה <code>twice(5)</code>?" + codeBlock(R`static int twice(int n) {
@@ -24760,7 +26833,364 @@ Check.eq("chain(2) is 3", Main.chain(2), 3);`),
 					"<code>32</code>"
 				],
 				a: 2,
-				w: "כל רמה מכפילה את הקריאות: <code>2<sup>n-1</sup> = 2⁴ = 16</code> עלים."
+				w: "כל רמה מכפילה את הקריאות, ויש 4 רמות של חיסור: <code>2⁴ = 16</code> עלים."
+			},
+			{
+				s: "למה המחולל <b>לא</b> נותן נוסחה ל-<code>countDown</code>?",
+				o: [
+					"כי יש בה לולאה",
+					"כי היא קוראת לעצמה פעם אחת",
+					"כי הקלט קטן ב-1 ולא פי <code>b</code>",
+					"כי היא מחזירה <code>int</code>"
+				],
+				a: 2,
+				w: "משפט האב צריך קריאות על <code>n / b</code>."
+			}
+		]
+	});
+	const UNROLLED = R`static void unrolled(int n) {
+    int sum = 0;
+
+    for (int i = 1; i <= n; i++) {
+        sum += i;
+        System.out.print(i);
+        if (i < n) {
+            System.out.print(" + ");
+        }
+    }
+    System.out.println(" = " + sum);
+}`;
+	const COMPARE_SUM = R`static int chainSum(int n) {
+    if (n == 1) {
+        return 1;
+    }
+    return chainSum(n - 1) + n;
+}`;
+	const OUTSIDE_START = R`public class Main {
+    // T(1) = 1, and T(n) = T(n - 1) + n
+    static int chain(int n) {
+        // TODO 1: when n is 1, return 1
+        // TODO 2: otherwise return chain(n - 1) plus n
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(chain(10));
+    }
+}
+`;
+	const OUTSIDE_SOLVED = R`public class Main {
+    // T(1) = 1, and T(n) = T(n - 1) + n
+    static int chain(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        return chain(n - 1) + n;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(chain(10));
+    }
+}
+`;
+	U.push(withOutputs({
+		id: "recur-unroll",
+		title: "פותחים את הנוסחה",
+		body: [
+			R`<p>בלי משפט האב, <b>פותחים</b> את הנוסחה: מציבים אותה בעצמה שוב ושוב, עד העצירה. כך עבור
+<code>T(n) = T(n-1) + n</code> ו-<code>n = 5</code>:</p>
+<pre class="code-static"><span>T(5) = T(4) + 5</span><span>     = T(3) + 4 + 5</span><span>     = T(2) + 3 + 4 + 5</span><span>     = T(1) + 2 + 3 + 4 + 5</span><span>     = 1 + 2 + 3 + 4 + 5 = 15</span></pre>
+<p>בכל שורה <code>T</code> אחד נפתח ל-<code>T</code> קטן ב-1, ועוד מספר. הריצו.</p>`,
+			{
+				id: "recur-unroll-five",
+				title: "שורה אחרי שורה",
+				code: inMain(UNROLLED, ["unrolled(5);"]),
+				tests: [io("1 + 2 + 3 + 4 + 5 = 15", "", "1 + 2 + 3 + 4 + 5 = 15\n")]
+			},
+			R`<p>הסכום <code>1 + 2 + ... + n</code> הוא <code>n(n+1)/2</code>. למה? מחברים את הראשון עם האחרון:
+<code>1 + 5 = 6</code>, <code>2 + 4 = 6</code>. יש <code>n/2</code> זוגות כאלה, כל אחד <code>n + 1</code>.</p>
+<table class="tbl"><tr><th><code>n</code></th><th>הסכום</th><th><code>n(n+1)/2</code></th></tr>
+<tr><td class="mono">5</td><td class="mono">15</td><td class="mono">5 · 6 / 2 = 15</td></tr>
+<tr><td class="mono">10</td><td class="mono">55</td><td class="mono">10 · 11 / 2 = 55</td></tr>
+<tr><td class="mono">100</td><td class="mono">5050</td><td class="mono">100 · 101 / 2 = 5050</td></tr></table>
+<p>זה בערך <code>n²/2</code>, ולכן הפתרון <code>n²</code>. הריצו: השיטה הרקורסיבית נותנת אותם מספרים.</p>`,
+			{
+				id: "recur-unroll-formula",
+				title: "הסכום בנוסחה",
+				code: inMain(COMPARE_SUM, ["System.out.println(chainSum(5) + \" \" + 5 * 6 / 2);", "System.out.println(chainSum(100) + \" \" + 100 * 101 / 2);"]),
+				tests: [io("the same numbers", "", "15 15\n5050 5050\n")]
+			},
+			R`<p>תורכם: כתבו את השיטה שמחשבת את <code>T(n) = T(n-1) + n</code>, כמו <code>chainSum</code>.</p>`,
+			{
+				id: "recur-outside-chain",
+				title: "chain",
+				task: R`השלימו את <code>chain(n)</code>, שמחזירה <code>T(n)</code>:<br>
+1. כש-<code>n</code> הוא 1, החזירו 1.<br>
+2. אחרת, החזירו <code>chain(n - 1)</code> ועוד <code>n</code>.`,
+				code: OUTSIDE_START,
+				solution: OUTSIDE_SOLVED,
+				example: { output: "chain(10) -> 55" },
+				tests: [
+					unit("chain(1) is 1 and chain(2) is 3", R`Check.eq("chain(1) is 1", Main.chain(1), 1);
+Check.eq("chain(2) is 3", Main.chain(2), 3);`),
+					unit("chain(10) is 55", R`Check.eq("chain(10) is 55", Main.chain(10), 55);`),
+					unit("chain(100) is 5050", R`Check.eq("chain(100) is 5050", Main.chain(100), 5050);`),
+					io("main prints 55", "", "55\n"),
+					src("chain calls itself", {
+						fn: "chain",
+						require: "\\bchain\\s*\\(",
+						msg: "chain צריכה לקרוא לעצמה."
+					})
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "פותחים את <code>T(n) = T(n-1) + 2</code> עם <code>T(1) = 2</code>. כמה <code>T(4)</code>?",
+				o: [
+					"<code>6</code>",
+					"<code>8</code>",
+					"<code>10</code>",
+					"<code>16</code>"
+				],
+				a: 1,
+				w: "<code>T(4) = T(1) + 2 + 2 + 2 = 2 + 6 = 8</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n-1) + n</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>n log n</code>",
+					"<code>n²</code>",
+					"<code>2<sup>n</sup></code>"
+				],
+				a: 2,
+				w: "<code>n(n+1)/2</code>: בערך <code>n²/2</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n-1) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>1</code>",
+					"<code>n²</code>",
+					"<code>log n</code>"
+				],
+				a: 0,
+				w: "פותחים: <code>1 + 1 + ... + 1</code>, <code>n</code> פעמים."
+			},
+			{
+				s: "מה <code>1 + 2 + ... + 20</code>?",
+				o: [
+					"<code>200</code>",
+					"<code>400</code>",
+					"<code>220</code>",
+					"<code>210</code>"
+				],
+				a: 3,
+				w: "<code>20 · 21 / 2 = 210</code>."
+			},
+			{
+				s: "מה מחזירה <code>chain(6)</code>?",
+				o: [
+					"<code>36</code>",
+					"<code>21</code>",
+					"<code>15</code>",
+					"<code>6</code>"
+				],
+				a: 1,
+				w: "<code>1 + 2 + 3 + 4 + 5 + 6 = 21</code>."
+			},
+			{
+				s: "מה <b>לא</b> נכון על <code>chain(n)</code>?",
+				o: [
+					"<code>chain(10) = 55</code>",
+					"<code>chain(100) = 5050</code>",
+					"כש-<code>n</code> גדל פי 10, היא גדלה בערך פי 100",
+					"היא גדלה כמו <code>n log n</code>"
+				],
+				a: 3,
+				w: "היא גדלה כמו <code>n²</code>: 55, ואז 5050."
+			}
+		]
+	}));
+	const SUM_RANGE = R`static int sumRange(int[] a, int lo, int hi) {
+    int len = hi - lo;
+    int cut1 = lo + len / 3;
+    int cut2 = lo + 2 * len / 3;
+
+    if (len == 0) {
+        return 0;
+    }
+    if (len == 1) {
+        return a[lo];
+    }
+    return sumRange(a, lo, cut1) + sumRange(a, cut1, cut2)
+        + sumRange(a, cut2, hi);
+}`;
+	const COUNTED = R`public class Main {
+    static int calls = 0;
+
+    static int sumRange(int[] a, int lo, int hi) {
+        int len = hi - lo;
+        int cut1 = lo + len / 3;
+        int cut2 = lo + 2 * len / 3;
+
+        calls++;
+        if (len == 0) {
+            return 0;
+        }
+        if (len == 1) {
+            return a[lo];
+        }
+        return sumRange(a, lo, cut1) + sumRange(a, cut1, cut2)
+            + sumRange(a, cut2, hi);
+    }
+
+    public static void main(String[] args) {
+        int[] nine = new int[9];
+        int[] many = new int[27];
+
+        sumRange(nine, 0, nine.length);
+        System.out.println("9 cells: " + calls + " calls");
+        calls = 0;
+        sumRange(many, 0, many.length);
+        System.out.println("27 cells: " + calls + " calls");
+    }
+}
+`;
+	const MAX_START = R`public class Main {
+    // the largest value in a[lo..hi), the range split in three
+    static int maxRange(int[] a, int lo, int hi) {
+        int len = hi - lo;
+        int cut1 = lo + len / 3;
+        int cut2 = lo + 2 * len / 3;
+        int best = Integer.MIN_VALUE;
+
+        if (len == 0) {
+            return best;
+        }
+        if (len == 1) {
+            return a[lo];
+        }
+        best = Math.max(best, maxRange(a, lo, cut1));
+        best = Math.max(best, maxRange(a, cut1, cut2));
+        // TODO: the same for the third part, cut2 to hi
+        return best;
+    }
+
+    public static void main(String[] args) {
+        int[] plays = {3, 1, 2, 7, 8};
+
+        System.out.println(maxRange(plays, 0, plays.length));
+    }
+}
+`;
+	const MAX_SOLVED = MAX_START.replace("        // TODO: the same for the third part, cut2 to hi\n", "        best = Math.max(best, maxRange(a, cut2, hi));\n");
+	U.push(withOutputs({
+		id: "recur-split3",
+		title: "פיצול לשלושה",
+		body: [
+			R`<p>אפשר לפצל גם <b>טווח של מערך</b>, מ-<code>lo</code> עד לפני <code>hi</code>. <code>sumRange</code> חותכת אותו
+בשתי נקודות לשלושה חלקים, וסוכמת כל חלק בקריאה משלו. עבור 5 תאים:</p>
+<table class="tbl"><tr><th>שם</th><th>החישוב</th><th>הערך</th></tr>
+<tr><td class="mono">len</td><td class="mono">5 - 0</td><td class="mono">5</td></tr>
+<tr><td class="mono">cut1</td><td class="mono">0 + 5 / 3</td><td class="mono">1</td></tr>
+<tr><td class="mono">cut2</td><td class="mono">0 + 10 / 3</td><td class="mono">3</td></tr></table>
+<p>החלקים: <code>[0, 1)</code>, <code>[1, 3)</code> ו-<code>[3, 5)</code>. חלק יכול להיות <b>ריק</b>, ואז הוא מחזיר 0.
+הריצו.</p>`,
+			{
+				id: "recur-split3-sum",
+				title: "sumRange",
+				code: inMain(SUM_RANGE, [
+					"int[] plays = {4, 7, 4, 4, 9};",
+					"",
+					"System.out.println(sumRange(plays, 0, plays.length));"
+				]),
+				tests: [io("the sum is 28", "", "28\n")]
+			},
+			R`<p>מה הנוסחה? שלוש קריאות (<code>a = 3</code>), כל אחת על שליש (<code>b = 3</code>), ובלי לולאה
+(<code>f(n) = 1</code>): <code>T(n) = 3T(n/3) + 1</code>.</p>
+<p>יש <code>n</code> עלים, יותר מ-<code>f(n) = 1</code>: העלים מנצחים, והפתרון <code>n</code>. הריצו: מספר
+הקריאות גדל כמו <code>n</code>.</p>` + generator({ code: SUM_RANGE }),
+			{
+				id: "recur-split3-calls",
+				title: "כמה קריאות",
+				code: COUNTED,
+				tests: [io("13 and 40 calls", "", "9 cells: 13 calls\n27 cells: 40 calls\n")]
+			},
+			R`<p>תורכם: <code>maxRange</code> מוצאת את הערך הגדול בטווח. היא כבר בודקת את שני החלקים הראשונים. חסר
+השלישי.</p>`,
+			{
+				id: "recur-split3-max",
+				title: "החלק השלישי",
+				task: R`במקום ה-TODO עדכנו את <code>best</code> גם לפי החלק השלישי, <code>maxRange(a, cut2, hi)</code>.`,
+				code: MAX_START,
+				solution: MAX_SOLVED,
+				example: { output: "maxRange({3, 1, 2, 7, 8}) -> 8" },
+				tests: [
+					unit("{3, 1, 2, 7, 8} gives 8", R`Check.eq("{3, 1, 2, 7, 8}", Main.maxRange(new int[]{3, 1, 2, 7, 8}, 0, 5), 8);`),
+					unit("{2, 9} gives 9 and {5} gives 5", R`Check.eq("{2, 9}", Main.maxRange(new int[]{2, 9}, 0, 2), 9);
+Check.eq("{5}", Main.maxRange(new int[]{5}, 0, 1), 5);`),
+					unit("negative values: {-4, -2, -7} gives -2", R`Check.eq("{-4, -2, -7}", Main.maxRange(new int[]{-4, -2, -7}, 0, 3), -2);`),
+					io("main prints 8", "", "8\n")
+				]
+			}
+		],
+		quiz: [
+			{
+				s: "ב-<code>sumRange</code> עם <code>lo = 0</code> ו-<code>hi = 9</code>: מה <code>cut2</code>?",
+				o: [
+					"<code>3</code>",
+					"<code>6</code>",
+					"<code>4</code>",
+					"<code>9</code>"
+				],
+				a: 1,
+				w: "<code>0 + 2 · 9 / 3 = 6</code>."
+			},
+			{
+				s: "ב-<code>sumRange</code> עם <code>lo = 0</code> ו-<code>hi = 2</code>: איזה חלק ריק?",
+				o: [
+					"הראשון, <code>[0, 0)</code>",
+					"השני",
+					"השלישי",
+					"אף אחד"
+				],
+				a: 0,
+				w: "<code>cut1 = 0 + 2 / 3 = 0</code>: החלק הראשון מ-0 עד לפני 0, ריק."
+			},
+			{
+				s: "מה הנוסחה של שיטה שמפצלת טווח <b>לשניים</b>, בלי לולאה?",
+				o: [
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = T(n/2) + 1</code>",
+					"<code>T(n) = 2T(n/2) + 1</code>",
+					"<code>T(n) = 3T(n/3) + 1</code>"
+				],
+				a: 2,
+				w: "שתי קריאות על חצי, ועבודה קבועה בכל קריאה."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 2T(n/2) + 1</code>?",
+				o: [
+					"<code>log n</code>",
+					"<code>n</code>",
+					"<code>n log n</code>",
+					"<code>1</code>"
+				],
+				a: 1,
+				w: "<code>n</code> עלים, יותר מ-<code>f(n) = 1</code>: העלים מנצחים."
+			},
+			{
+				s: "מה <b>לא</b> נכון על <code>sumRange</code>?",
+				o: [
+					"היא קוראת לעצמה שלוש פעמים",
+					"יש בה לולאה על כל הטווח",
+					"חלק ריק מחזיר 0",
+					"מספר הקריאות גדל כמו <code>n</code>"
+				],
+				a: 1,
+				w: "אין בה לולאה: כל קריאה עושה עבודה קבועה, ולכן <code>f(n) = 1</code>."
 			}
 		]
 	}));
@@ -24799,12 +27229,15 @@ Check.eq("chain(2) is 3", Main.chain(2), 3);`),
 		U.push(withOutputs({
 			id: "recur-review",
 			title: "חזרה: נוסחאות נסיגה",
-			body: [R`<p>כמה שירים הושמעו בדיוק <code>x</code> פעמים? בקובץ כמעט ריק כתבו שיטה שמחלקת את הטווח
-<b>לשלושה חלקים</b>, בלי לולאה. מהי הנוסחה שלה, ומי שולט בה?</p>`, {
+			body: [R`<p>חזרה על כל הפרק. כמה שירים הושמעו בדיוק <code>x</code> פעמים? כתבו את זה לבד, בקובץ כמעט ריק.</p>
+<p>הפיצול לשלושה הוא זה של <code>sumRange</code> מהשיעור "פיצול לשלושה". אחר כך: מהי הנוסחה שלה, ומי
+מנצח?</p>`, {
 				id: "recur-review-count",
 				title: "countValue",
-				task: R`בקובץ הכמעט ריק כתבו את <code>countValue(a, x)</code>: כמה פעמים <code>x</code> מופיע ב-<code>a</code>,
-<b>בלי לולאה</b>: שיטת עזר רקורסיבית על הטווח <code>lo..hi</code>, שמפצלת אותו לשלושה חלקים כמעט שווים.`,
+				task: R`כתבו את <code>countValue(a, x)</code>: כמה פעמים <code>x</code> מופיע ב-<code>a</code>.<br>
+1. <b>בלי לולאה</b>: רק רקורסיה.<br>
+2. שיטת עזר על הטווח מ-<code>lo</code> עד לפני <code>hi</code>.<br>
+3. היא מפצלת את הטווח לשלושה חלקים, כמו <code>sumRange</code>.`,
 				code: REVIEW_START,
 				solution: REVIEW_SOLVED,
 				example: { output: "countValue({4, 7, 4, 4, 9}, 4) -> 3" },
@@ -24833,26 +27266,26 @@ Check.eq("{1, 2, 1, 2, 1, 2, 1} gives 3", Main.countValue(new int[]{1, 2, 1, 2, 
 			}],
 			quiz: [
 				{
-					s: "מה הפתרון של <code>T(n) = 2T(n/2) + 1</code>?",
+					s: "מה <b>לא</b> נכון על <code>countValue</code> שכתבתם?",
 					o: [
-						"<code>1</code>",
-						"<code>log n</code>",
-						"<code>n</code>",
-						"<code>n log n</code>"
+						"הנוסחה שלה היא <code>T(n) = 3T(n/3) + 1</code>",
+						"הפתרון הוא <code>n</code>",
+						"יש בה לולאה על כל הטווח",
+						"חלק ריק מחזיר 0"
 					],
 					a: 2,
-					w: "<code>n^(log₂ 2) = n</code> גדול מ-<code>1</code>: העלים שולטים."
+					w: "אין בה לולאה: כל קריאה עושה עבודה קבועה."
 				},
 				{
-					s: "מה הפתרון של <code>T(n) = 3T(n/3) + n</code>?",
+					s: "איזו נוסחה משפט האב <b>לא</b> פותר?",
 					o: [
-						"<code>n</code>",
-						"<code>n log n</code>",
-						"<code>n²</code>",
-						"<code>log n</code>"
+						"<code>T(n) = 4T(n/2) + n</code>",
+						"<code>T(n) = 2T(n - 1) + 1</code>",
+						"<code>T(n) = T(n/2) + n</code>",
+						"<code>T(n) = 9T(n/3) + n²</code>"
 					],
 					a: 1,
-					w: "<code>n^(log₃ 3) = n = f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+					w: "הקריאות בה על <code>n - 1</code>: אין <code>b</code>, ופותחים את הנוסחה."
 				},
 				{
 					s: "מה הפתרון של <code>T(n) = T(n/4) + n²</code>?",
@@ -24981,6 +27414,16 @@ Check.eq("{1, 2, 1, 2, 1, 2, 1} gives 3", Main.countValue(new int[]{1, 2, 1, 2, 
 		"ds-cost",
 		"ds-cost",
 		"ds-cost",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
 		"ds-recur",
 		"ds-recur",
 		"ds-recur",
@@ -42962,17 +45405,29 @@ function taskStatusLook(boxId) {
 		color: ""
 	};
 }
+function engineTryNote() {
+	const engine = typeof window === "undefined" ? void 0 : window.LabEngine;
+	const note = engine && engine.strings && engine.strings.tryNote;
+	return typeof note === "string" ? note : "";
+}
 function TaskCard(props) {
 	const box = props.box;
 	if (!box.task && box.try === false) return null;
-	if (!box.task) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "try",
-		children: [
-			"הקוד ליד: הריצו אותו, שנו אותו, ולחצו ",
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "⏯ שורה אחר שורה" }),
-			" כדי לראות את הזיכרון."
-		]
-	});
+	if (!box.task) {
+		const note = engineTryNote();
+		if (note) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "try",
+			dangerouslySetInnerHTML: { __html: note }
+		});
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "try",
+			children: [
+				"הקוד ליד: הריצו אותו, שנו אותו, ולחצו ",
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "⏯ שורה אחר שורה" }),
+				" כדי לראות את הזיכרון."
+			]
+		});
+	}
 	const look = taskStatusLook(box.id);
 	const style = look.color ? { color: look.color } : void 0;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -48205,7 +50660,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 95940c7a מ-2026-11-16 12:52"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 95940c7a</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 38d70b00 מ-2026-11-16 14:12"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 38d70b00</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
