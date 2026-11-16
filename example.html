@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-vC9S5L9k99Cj/YT/NQSBkWVNUQ5Rc8iU1ljVHMKqKoM=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-8ctzx9WDOzOuHdjrCxx1V5SlBdWZzSeOT2D0m/0NaBk=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -3847,6 +3847,370 @@ body.debugging .tour-roomy .wb-grid {
   background: var(--accent);
   color: var(--accent-ink);
 }
+/* "Put it in order" questions (src/shared/order; the approved mock-up,
+   design/mockups/order-questions.html): token colours only, both themes. */
+
+/* ---- the question ---- */
+.oq {
+  position: relative;
+  margin: 14px 0 6px;
+  max-width: 680px;
+}
+
+.oq-prompt {
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.oq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---- a piece ---- */
+.oq-pc {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  margin: 0;
+  padding: 6px 12px 6px 10px;
+  background: var(--raised);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition:
+    border-color 0.12s,
+    background-color 0.12s;
+}
+
+.oq-pc:hover {
+  border-color: var(--accent);
+}
+
+.oq-pc:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.oq-pc .hd {
+  flex: none;
+  width: 22px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.oq-pc .hd:hover {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+.oq-pc .no {
+  flex: none;
+  min-width: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.oq-pc .tx {
+  flex: 1;
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+.oq-pc .mk {
+  flex: none;
+  min-width: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.oq-pc .mk .note {
+  margin-inline-start: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* ---- code: left to right, monospace, wraps only when the line cannot fit ---- */
+.oq.code .oq-pc {
+  direction: ltr;
+  min-height: 36px;
+  padding-block: 3px;
+}
+
+.oq.code .oq-pc .tx {
+  direction: ltr;
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 14.5px;
+  line-height: 25px;
+  font-variant-ligatures: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--syn-plain);
+}
+
+/* ---- states ---- */
+.oq-pc.picked {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--raised));
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.oq.carrying .oq-pc:not(.picked),
+.oq.carrying .oq-out {
+  cursor: copy;
+}
+
+.oq.carrying .oq-pc:not(.picked):hover {
+  border-style: dashed;
+}
+
+.oq-pc.ghost {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+.oq-float {
+  position: fixed;
+  z-index: 50;
+  margin: 0;
+  pointer-events: none;
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px var(--shadow);
+  transform: rotate(-0.6deg);
+  opacity: 0.96;
+}
+
+.oq-pc.good {
+  border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+}
+
+.oq-pc.good .mk {
+  color: var(--ok);
+}
+
+.oq-pc.bad {
+  border-color: var(--err);
+  background: color-mix(in srgb, var(--err) 12%, var(--raised));
+}
+
+.oq-pc.bad .mk {
+  color: var(--err);
+}
+
+.oq.solved .oq-pc,
+.oq.shown .oq-pc {
+  cursor: default;
+}
+
+.oq.solved .oq-pc .hd,
+.oq.shown .oq-pc .hd {
+  visibility: hidden;
+}
+
+.oq.solved .oq-list .oq-pc {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 12%, var(--raised));
+}
+
+.oq.solved .oq-out .oq-pc,
+.oq.shown .oq-out .oq-pc {
+  border-color: var(--line);
+  background: var(--raised);
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
+
+/* ---- inside one line: the parts side by side, wrapping, on a dotted line ---- */
+.oq.inline .oq-list {
+  position: relative;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  min-height: 62px;
+  padding: 10px 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.oq.inline .oq-list::after {
+  content: '';
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 6px;
+  border-bottom: 2px dotted var(--line);
+}
+
+.oq.inline .oq-pc {
+  min-height: 40px;
+  padding: 4px 12px;
+  gap: 6px;
+  touch-action: none;
+}
+
+.oq.inline .oq-pc .tx {
+  flex: none;
+  max-width: 100%;
+}
+
+/* ---- the pieces that do not belong ---- */
+.oq-out {
+  margin-top: 10px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+}
+
+.oq-out .lbl {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.oq-out.over,
+.oq.carrying .oq-out:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.oq.inline .oq-out .oq-list {
+  min-height: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.oq.inline .oq-out .oq-list::after {
+  display: none;
+}
+
+/* ---- the bar under the pieces ---- */
+.oq-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 10px;
+}
+
+.oq-check {
+  height: 32px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--orange);
+  background: transparent;
+  border: 1.5px solid var(--orange);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.oq-check:hover {
+  background: color-mix(in srgb, var(--orange) 12%, transparent);
+}
+
+.oq-check[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.oq-res {
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+
+.oq-res.ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.oq-res.no {
+  color: var(--err);
+}
+
+.oq-tries {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.oq-show {
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--link);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.oq-why {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  background: var(--panel-2);
+  border-radius: 7px;
+  text-wrap: pretty;
+}
+
+.oq-problems {
+  display: block;
+  color: var(--err);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* ---- in a quiz: the question's stem is above, its explanation the quiz's ---- */
+.q .oq {
+  margin-top: 0;
+}
+
+/* ---- solved: the answer's pieces give one small pop (only while the lab animates) ---- */
+@keyframes oq-pop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.025);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+:root[data-motion='on'] .oq.solved .oq-list .oq-pc {
+  animation: oq-pop calc(0.32s / var(--motion-speed, 1)) ease-out both;
+}
+
+:root[data-motion='on'] .oq-out .oq-pc {
+  animation: none;
+}
 /* Content that can come from outside the page stays in its own box (docs/changes/
    2026-11-10-safe-html.md): a formula (its MathML, stored or rendered from a LaTeX source
    someone else wrote), a figure (its drawing) and the course title in the sidebar. Each box has
@@ -4536,6 +4900,7 @@ installCourseDiagrams({});
 		expr: e,
 		expect
 	});
+	const orderQ = (question) => "<div class=\"order-q\" data-order=\"" + JSON.stringify(question).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\$/g, "&#36;") + "\"></div>";
 	const U = [];
 	U.push({
 		id: "loops",
@@ -4557,7 +4922,19 @@ print("done");`,
 				tests: [io("prints 0, 1, 2 and done", "", "i = 0\ni = 1\ni = 2\ndone")]
 			},
 			R`<div class="callout"><b>לשים לב</b><p>אחרי הלולאה <code>i</code> כבר לא קיים: <code>let</code> מגדיר אותו רק בתוך הלולאה.</p></div>
-<div class="callout warn"><b>טעות נפוצה</b><p>תנאי שתמיד נכון, כמו <code>i &gt;= 0</code> עם <code>i++</code>, הוא לולאה אינסופית.</p></div>`
+<div class="callout warn"><b>טעות נפוצה</b><p>תנאי שתמיד נכון, כמו <code>i &gt;= 0</code> עם <code>i++</code>, הוא לולאה אינסופית.</p></div>`,
+			orderQ({
+				code: true,
+				prompt: "סדרו את השורות: סכום המספרים 1 עד 3.",
+				pieces: [
+					"let sum = 0;",
+					"for (let i = 1; i <= 3; i++) {",
+					"    sum += i;",
+					"}",
+					"print(sum);"
+				],
+				why: "קודם מגדירים את <code>sum</code>, אחר כך הלולאה, ובסוף מדפיסים."
+			})
 		]
 	});
 	U.push({
@@ -4608,25 +4985,42 @@ print(total);`,
 	U.push({
 		id: "quiz",
 		title: "חידון",
-		quiz: [{
-			s: "כמה פעמים רץ הגוף של <code>for (let i = 0; i &lt; 5; i++)</code>?",
-			o: [
-				"4",
-				"5",
-				"6"
-			],
-			a: 1,
-			w: "i מקבל 0, 1, 2, 3, 4: חמש פעמים."
-		}, {
-			s: "מתי נבדק התנאי של לולאת <code>for</code>?",
-			o: [
-				"אחרי כל סיבוב",
-				"לפני כל סיבוב",
-				"רק בהתחלה"
-			],
-			a: 1,
-			w: "לפני כל סיבוב, גם לפני הראשון."
-		}]
+		quiz: [
+			{
+				s: "כמה פעמים רץ הגוף של <code>for (let i = 0; i &lt; 5; i++)</code>?",
+				o: [
+					"4",
+					"5",
+					"6"
+				],
+				a: 1,
+				w: "i מקבל 0, 1, 2, 3, 4: חמש פעמים."
+			},
+			{
+				s: "מתי נבדק התנאי של לולאת <code>for</code>?",
+				o: [
+					"אחרי כל סיבוב",
+					"לפני כל סיבוב",
+					"רק בהתחלה"
+				],
+				a: 1,
+				w: "לפני כל סיבוב, גם לפני הראשון."
+			},
+			{
+				s: "בנו את המשפט על לולאת <code>for</code>. חלק אחד מיותר.",
+				order: {
+					mode: "inline",
+					pieces: [
+						"התנאי נבדק",
+						"לפני כל סיבוב,",
+						"וכשהוא לא מתקיים",
+						"הלולאה נגמרת."
+					],
+					extra: ["אחרי כל סיבוב,"]
+				},
+				w: "התנאי נבדק לפני כל סיבוב, וכשהוא לא מתקיים הלולאה נגמרת."
+			}
+		]
 	});
 	U.push({
 		id: "lab1",
@@ -4727,6 +5121,172 @@ async function callRunner(apiPath, requestBody) {
 	});
 	if (!response.ok) throw new Error("HTTP " + response.status);
 	return response.json();
+}
+// src/shared/order/clean.ts
+function cleanPieces(pieces, clean) {
+	if (!Array.isArray(pieces)) return pieces;
+	return pieces.map((entry) => {
+		if (typeof entry === "string") return clean(entry);
+		return Array.isArray(entry) ? entry.map((text) => typeof text === "string" ? clean(text) : text) : entry;
+	});
+}
+function cleanOrderData(data, cleaners) {
+	if (typeof data !== "object" || data === null || Array.isArray(data)) return data;
+	const copy = { ...data };
+	if (typeof copy.prompt === "string") copy.prompt = cleaners.inline(copy.prompt);
+	if (typeof copy.why === "string") copy.why = cleaners.block(copy.why);
+	if (copy.code !== true) {
+		copy.pieces = cleanPieces(copy.pieces, cleaners.inline);
+		copy.extra = cleanPieces(copy.extra, cleaners.inline);
+	}
+	if (copy.extra === void 0) delete copy.extra;
+	return copy;
+}
+function cleanOrderJson(text, cleaners) {
+	let data;
+	try {
+		data = JSON.parse(text);
+	} catch {
+		return "";
+	}
+	if (typeof data !== "object" || data === null || Array.isArray(data)) return "";
+	return JSON.stringify(cleanOrderData(data, cleaners));
+}
+// src/shared/order/spec.ts
+var ORDER_CLASS = "order-q";
+var ORDER_ATTRIBUTE = "data-order";
+var MAX_ORDER_JSON = 2e4;
+var KEYS$1 = [
+	"mode",
+	"code",
+	"dir",
+	"prompt",
+	"why",
+	"pieces",
+	"extra"
+];
+function parseOrderSource(source) {
+	let raw;
+	if (source.length > 2e4) return { problems: ["order block: longer than 20000 characters"] };
+	try {
+		raw = JSON.parse(source);
+	} catch {
+		return { problems: ["order block: not JSON"] };
+	}
+	return parseOrder(raw);
+}
+function parseOrder(raw) {
+	if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return { problems: ["order question: not an object"] };
+	const data = raw;
+	const problems = [];
+	Object.keys(data).filter((key) => !KEYS$1.includes(key)).forEach((key) => problems.push("order question: unknown key " + key));
+	const spec = readSpec$1(data, problems);
+	return problems.length > 0 ? { problems } : { spec };
+}
+function readSpec$1(data, problems) {
+	const mode = data.mode === void 0 ? "lines" : data.mode;
+	const dir = data.dir === void 0 ? "rtl" : data.dir;
+	if (mode !== "lines" && mode !== "inline") problems.push("order question: mode must be \"lines\" or \"inline\"");
+	if (data.code !== void 0 && typeof data.code !== "boolean") problems.push("order question: code must be true or false");
+	if (dir !== "rtl" && dir !== "ltr") problems.push("order question: dir must be \"rtl\" or \"ltr\"");
+	for (const key of ["prompt", "why"]) if (data[key] !== void 0 && typeof data[key] !== "string") problems.push("order question: " + key + " must be text");
+	const groups = readGroups(data.pieces, problems);
+	const extra = readExtra(data.extra, problems);
+	checkTexts(groups, extra, problems);
+	return {
+		mode: mode === "inline" ? "inline" : "lines",
+		code: data.code === true,
+		dir: data.code === true || dir === "ltr" ? "ltr" : "rtl",
+		prompt: typeof data.prompt === "string" ? data.prompt : "",
+		why: typeof data.why === "string" ? data.why : "",
+		groups,
+		extra
+	};
+}
+function isPieceText(value) {
+	return typeof value === "string" && value.trim() !== "" && value.length <= 2e3;
+}
+function readGroups(value, problems) {
+	if (!Array.isArray(value)) {
+		problems.push("order question: pieces must be a list");
+		return [];
+	}
+	const groups = [];
+	for (const entry of value) {
+		const group = Array.isArray(entry) ? entry : [entry];
+		if (group.length === 0 || !group.every(isPieceText)) {
+			problems.push("order question: every piece must be text (1-2000 characters)");
+			return [];
+		}
+		groups.push(group);
+	}
+	const count = groups.flat().length;
+	if (count < 2 || count > 12) problems.push("order question: 2-12 pieces, not " + count);
+	if (groups.length < 2 && count >= 2) problems.push("order question: one group only, so every order would be right");
+	return groups;
+}
+function readExtra(value, problems) {
+	if (value === void 0) return [];
+	if (!Array.isArray(value) || !value.every(isPieceText)) {
+		problems.push("order question: extra must be a list of texts");
+		return [];
+	}
+	if (value.length > 3) problems.push("order question: at most 3 extra pieces");
+	return value;
+}
+function checkTexts(groups, extra, problems) {
+	const real = new Set(groups.flat());
+	if (extra.some((text) => real.has(text))) problems.push("order question: an extra piece has the text of a piece that belongs");
+}
+function piecesOf(spec) {
+	const pieces = [];
+	spec.groups.forEach((group, groupIndex) => {
+		group.forEach((text, i) => {
+			pieces.push({
+				key: "p" + groupIndex + "." + i,
+				text,
+				isExtra: false
+			});
+		});
+	});
+	spec.extra.forEach((text, i) => pieces.push({
+		key: "x" + i,
+		text,
+		isExtra: true
+	}));
+	return pieces;
+}
+// src/core/author/core-blocks.js
+var DIAGRAM_BLOCK_CLASS = "step-diagram";
+var GENERATOR_BLOCK_CLASS = "cx-generator";
+var MAX_GENERATOR_JSON = 2e4;
+var DATA_ONLY_BLOCKS = {
+	[GENERATOR_BLOCK_CLASS]: {
+		attribute: "data-generator",
+		max: MAX_GENERATOR_JSON
+	},
+	[ORDER_CLASS]: {
+		attribute: ORDER_ATTRIBUTE,
+		max: MAX_ORDER_JSON
+	}
+};
+function dataOnlyBlockOf(tag, classes) {
+	if (tag !== "div") return "";
+	return classes.find((name) => ownValue(DATA_ONLY_BLOCKS, name)) || "";
+}
+function isCoreBlock(tag, classes) {
+	return tag === "div" && classes.includes(DIAGRAM_BLOCK_CLASS) || !!dataOnlyBlockOf(tag, classes);
+}
+function copyCoreBlock(source, tag, classes, copy, cleaners) {
+	if (tag === "div" && classes.includes(DIAGRAM_BLOCK_CLASS)) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
+	const blockClass = dataOnlyBlockOf(tag, classes);
+	if (!blockClass) return;
+	const { attribute, max } = DATA_ONLY_BLOCKS[blockClass];
+	const value = source.getAttribute(attribute) || "";
+	let kept = value.length > max ? "" : value;
+	if (blockClass === "order-q" && kept) kept = cleanOrderJson(kept, cleaners);
+	copy.className = blockClass;
+	copy.setAttribute(attribute, kept);
 }
 // src/core/author/mathml-style.ts
 var MAX_EM = 4;
@@ -5239,7 +5799,8 @@ var ALLOWED_TAGS = {
 		"box",
 		"p",
 		"step-diagram",
-		"cx-generator"
+		"cx-generator",
+		"order-q"
 	] },
 	span: { classes: [
 		"lbl",
@@ -5284,8 +5845,16 @@ function engineClassesOf(tag) {
 	const classes = ownValue(lessonHtml && lessonHtml.classes, tag);
 	return Array.isArray(classes) ? classes : [];
 }
-var CORE_BLOCK_CLASSES = ["step-diagram", "cx-generator"];
-var CORE_BLOCK_ATTRIBUTES = ["data-diagram", "data-generator"];
+var CORE_BLOCK_CLASSES = [
+	"step-diagram",
+	"cx-generator",
+	"order-q"
+];
+var CORE_BLOCK_ATTRIBUTES = [
+	"data-diagram",
+	"data-generator",
+	"data-order"
+];
 function engineBlockAttribute(className) {
 	if (CORE_BLOCK_CLASSES.includes(className)) return "";
 	const engine = typeof window === "undefined" ? null : window.LabEngine;
@@ -5535,10 +6104,10 @@ function keptClassesOf(source, tag, target, isInline) {
 	if (tag === "a" && !ALLOWED_HREF_PATTERN.test(source.getAttribute("href") || "")) return null;
 	return classes;
 }
-var GENERATOR_BLOCK_CLASS = "cx-generator";
-function isGeneratorBlock(tag, classes) {
-	return tag === "div" && classes.includes(GENERATOR_BLOCK_CLASS);
-}
+var BLOCK_TEXT_CLEANERS = {
+	inline: cleanLessonInline,
+	block: cleanLessonHtml
+};
 function cleanCopyOf(source, tag, classes) {
 	const copy = document.createElement(tag);
 	if (classes.length) copy.className = classes.join(" ");
@@ -5553,14 +6122,9 @@ function cleanCopyOf(source, tag, classes) {
 	}
 	const label = source.getAttribute("aria-label");
 	if (tag === "div" && classes.includes("schem") && label) copy.setAttribute("aria-label", label);
-	if (tag === "div" && classes.includes("step-diagram")) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
-	const isCoreBlock = classes.includes("step-diagram") || isGeneratorBlock(tag, classes);
-	for (const name of tag === "div" && !isCoreBlock ? classes.map(engineBlockAttribute) : []) if (name && source.hasAttribute(name)) copy.setAttribute(name, source.getAttribute(name) || "");
-	if (isGeneratorBlock(tag, classes)) {
-		const value = source.getAttribute("data-generator") || "";
-		copy.className = GENERATOR_BLOCK_CLASS;
-		copy.setAttribute("data-generator", value.length > 2e4 ? "" : value);
-	}
+	const isCore = isCoreBlock(tag, classes);
+	for (const name of tag === "div" && !isCore ? classes.map(engineBlockAttribute) : []) if (name && source.hasAttribute(name)) copy.setAttribute(name, source.getAttribute(name) || "");
+	copyCoreBlock(source, tag, classes, copy, BLOCK_TEXT_CLEANERS);
 	copyLayoutAttributes(source, tag, copy);
 	return copy;
 }
@@ -5620,7 +6184,7 @@ function copyAllowedChildren(source, target, mode) {
 			continue;
 		}
 		const copy = cleanCopyOf(node, tag, classes);
-		if (tag !== "br" && !isGeneratorBlock(tag, classes)) copyAllowedChildren(node, copy, tag === "figcaption" ? {
+		if (tag !== "br" && !dataOnlyBlockOf(tag, classes)) copyAllowedChildren(node, copy, tag === "figcaption" ? {
 			...mode,
 			isInline: true
 		} : mode);
@@ -6540,6 +7104,10 @@ function cleanQuizEntry(question) {
 	if (typeof question === "string") return cleanLessonHtml(question);
 	if (!question || typeof question !== "object") return question;
 	for (const field of ["s", "w"]) if (typeof question[field] === "string") question[field] = cleanLessonHtml(question[field]);
+	if (question.order !== void 0) question.order = cleanOrderData(question.order, {
+		inline: cleanLessonInline,
+		block: cleanLessonHtml
+	});
 	if (Array.isArray(question.o)) question.o = question.o.map((answer) => typeof answer === "string" ? cleanLessonInline(answer) : answer);
 	return question;
 }
@@ -11139,7 +11707,7 @@ var CURSOR_CLASSES = [
 	"isl-row-resize",
 	"isl-nwse-resize"
 ];
-function followPointer$1(start, handlers, cursorClass) {
+function followPointer$2(start, handlers, cursorClass) {
 	let last = {
 		dx: 0,
 		dy: 0,
@@ -11610,7 +12178,7 @@ function dragSplitter(event, model, isStepping) {
 	if (event.button !== 0 || !grid) return;
 	event.preventDefault();
 	const leastSide = islandsMinWidth(model, model.get());
-	followPointer$1(event, {
+	followPointer$2(event, {
 		move(track) {
 			const next = shareAt(grid, isStepping, track.clientX, track.clientY, leastSide);
 			model.set(withShare(model.get(), isStepping, next), false);
@@ -12420,6 +12988,8 @@ var OPENS_BLOCK = /\{\s*$/;
 var LEADING_SPACE = /^\s*/;
 var INDENTED_EMPTY_LINE = /^\s{4,}$/;
 var LEADING_SPACES = /^ +$/;
+var BEFORE_HEADER = /^\s*#\s*include\s*$/;
+var INSIDE_HEADER = /^\s*#\s*include\s*<[^<>]*$/;
 function lineAround(text, at) {
 	const start = at === 0 ? 0 : text.lastIndexOf("\n", at - 1) + 1;
 	const end = text.indexOf("\n", at);
@@ -12452,7 +13022,10 @@ function stepsOver(text, start, end, closer) {
 function getsCloser(text, at, opener) {
 	if (!CLOSES_BEFORE.test(text.slice(at))) return false;
 	const line = lineAt(text, at);
-	if (opener === OPENERS[opener]) return !WORD_CHAR.test(text[at - 1] || "") && countQuotes(line, opener) % 2 === 0;
+	if (opener === OPENERS[opener]) {
+		const isAfterInclude = BEFORE_HEADER.test(text.slice(lineAround(text, at).start, at));
+		return !(WORD_CHAR.test(text[at - 1] || "") && !isAfterInclude) && countQuotes(line, opener) % 2 === 0;
+	}
 	return !(text[at] === OPENERS[opener] && bracketBalance(line, opener) < 0);
 }
 function planOpener(text, start, end, opener) {
@@ -12496,10 +13069,28 @@ function planCloser(text, start, end, closer) {
 	};
 	return null;
 }
+function planAngle(text, start, end, key) {
+	if (start !== end) return null;
+	const before = text.slice(lineAround(text, start).start, start);
+	if (key === "<") return BEFORE_HEADER.test(before) && CLOSES_BEFORE.test(text.slice(start)) ? {
+		edit: {
+			text: "<>",
+			start,
+			end
+		},
+		caret: start + 1
+	} : null;
+	return text[start] === ">" && INSIDE_HEADER.test(before) ? {
+		edit: null,
+		caret: start + 1
+	} : null;
+}
 function planBackspace(text, start, end, isMakefile) {
 	if (start !== end || start === 0) return null;
 	const before = text[start - 1];
-	if (before in OPENERS && OPENERS[before] === text[start]) return {
+	const lineStart = lineAround(text, start).start;
+	const isEmptyHeader = before === "<" && text[start] === ">" && BEFORE_HEADER.test(text.slice(lineStart, start - 1));
+	if (before in OPENERS && OPENERS[before] === text[start] || isEmptyHeader) return {
 		edit: {
 			text: "",
 			start: start - 1,
@@ -12507,7 +13098,6 @@ function planBackspace(text, start, end, isMakefile) {
 		},
 		caret: start - 1
 	};
-	const lineStart = lineAround(text, start).start;
 	const leading = text.slice(lineStart, start);
 	if (isMakefile || leading.length < 2 || !LEADING_SPACES.test(leading)) return null;
 	const stop = lineStart + Math.floor((leading.length - 1) / STEP) * STEP;
@@ -12628,6 +13218,7 @@ function planFor(textArea, event) {
 	if (key === "Enter") return event.shiftKey ? null : planEnter(text, start, end);
 	if (key === "Backspace") return planBackspace(text, start, end, isMakefileEditor(textArea));
 	if (key in OPENERS) return planOpener(text, start, end, key);
+	if (key === "<" || key === ">") return planAngle(text, start, end, key);
 	return key in CLOSERS ? planCloser(text, start, end, key) : null;
 }
 function carryOut(textArea, plan) {
@@ -12674,6 +13265,8 @@ function handleEditorKey(textArea, event, actions, insideCallAt = -1) {
 var CARET_MARK = "$0";
 var CARET_KEYS = /^(Arrow(Left|Right)|Home|End|PageUp|PageDown)$/;
 var ENDS_IN_WORD = /[\p{L}\p{N}_]$/u;
+var OPENS_PATH = /^(?:<>?|""?)$/;
+var FILE_HOSTS = "[data-fh=\"main\"], [data-fh^=\"u:\"]";
 function engineHook() {
 	const engine = window.LabEngine;
 	return engine && typeof engine.complete === "function" ? engine.complete.bind(engine) : void 0;
@@ -12719,17 +13312,39 @@ function placeOnScreen(textArea, colourLayer, at) {
 		bottom: top + lineHeight
 	};
 }
+function boxFiles(textArea) {
+	const column = textArea.closest(".wb-code");
+	const files = [];
+	column?.querySelectorAll(FILE_HOSTS).forEach((host) => {
+		const editor = host.querySelector("textarea");
+		const key = host.dataset.fh || "";
+		if (editor !== textArea) {
+			const label = editor?.getAttribute("aria-label") || "";
+			const name = key === "main" ? label.slice(label.lastIndexOf(": ") + 1).trim() : key.slice(2);
+			files.push({
+				name,
+				text: editor ? editor.value : ""
+			});
+		}
+	});
+	return files;
+}
 function askEngine$1(hook, textArea) {
 	const { value, selectionStart, selectionEnd } = textArea;
 	if (selectionStart !== selectionEnd) return null;
 	try {
-		const result = hook(value, selectionStart);
-		return result && result.items.length && result.from <= selectionStart ? result : null;
+		const result = hook(value, selectionStart, boxFiles(textArea));
+		if (!result || !result.items.length || result.from > selectionStart) return null;
+		const to = result.to ?? selectionStart;
+		return to >= selectionStart && to <= value.length ? result : {
+			...result,
+			to: void 0
+		};
 	} catch {
 		return null;
 	}
 }
-function isInside$1(anchor, element) {
+function isInside$2(anchor, element) {
 	if (!element) return true;
 	const box = element.getBoundingClientRect();
 	return anchor.left >= box.left && anchor.left <= box.right && anchor.top >= box.top - 1 && anchor.bottom <= box.bottom + 1;
@@ -12773,7 +13388,7 @@ var EditorCompletion = class {
 	follow = () => {
 		if (!this.view) return;
 		const anchor = placeOnScreen(this.textArea, this.colourLayer, this.view.from);
-		const isSeen = isInside$1(anchor, this.textArea.closest(".ed"));
+		const isSeen = isInside$2(anchor, this.textArea.closest(".ed"));
 		this.show(isSeen ? {
 			...this.view,
 			anchor
@@ -12781,10 +13396,16 @@ var EditorCompletion = class {
 	};
 	afterInput(event) {
 		const input = event;
-		const isTyped = input.inputType === "insertText" && ENDS_IN_WORD.test(input.data || "");
+		const data = input.data || "";
+		const isText = input.inputType === "insertText" && !this.isAccepting;
+		const isTyped = isText && ENDS_IN_WORD.test(data);
 		const isErased = input.inputType === "deleteContentBackward" && this.view !== null;
-		if (!this.isAccepting && !this.textArea.readOnly && (isTyped || isErased)) this.refresh();
-		else this.close();
+		if (!this.isAccepting && !this.textArea.readOnly && (isTyped || isErased)) {
+			this.refresh();
+			return;
+		}
+		this.close();
+		if (isText && !this.textArea.readOnly && OPENS_PATH.test(data)) queueMicrotask(() => this.refresh());
 	}
 	handleKey(event) {
 		if (CARET_KEYS.test(event.key)) this.close();
@@ -12800,14 +13421,16 @@ var EditorCompletion = class {
 		const item = this.view && this.view.items[index];
 		if (!this.view || !item) return;
 		const { from } = this.view;
+		const to = Math.max(this.view.to ?? 0, this.textArea.selectionStart);
 		const caretAt = item.insert.indexOf(CARET_MARK);
 		this.close();
 		this.isAccepting = true;
-		replaceText(this.textArea, item.insert.replace(CARET_MARK, ""), from, this.textArea.selectionStart);
+		replaceText(this.textArea, item.insert.replace(CARET_MARK, ""), from, to);
 		this.isAccepting = false;
 		if (caretAt >= 0) {
 			this.textArea.setSelectionRange(from + caretAt, from + caretAt);
 			this.insideCallAt = item.insert[caretAt - 1] === "(" ? from + caretAt : -1;
+			this.refresh();
 		}
 	}
 	move(step) {
@@ -13514,7 +14137,7 @@ function measureSlots(press) {
 	}
 	return slots;
 }
-function followPointer(press, clientX) {
+function followPointer$1(press, clientX) {
 	const { strip, slots } = press;
 	const own = slots.get(press.name);
 	if (!own) return;
@@ -13543,7 +14166,7 @@ function reorderWhileDragging(press, order) {
 	const sliding = order.filter((name) => name !== press.name);
 	setTabOrder(press.context, order, sliding, false, () => {
 		press.slots = measureSlots(press);
-		followPointer(press, press.lastX);
+		followPointer$1(press, press.lastX);
 	});
 	try {
 		press.tab.setPointerCapture(press.pointerId);
@@ -13577,7 +14200,7 @@ function swallowNextClick(tab) {
 	window.addEventListener("click", onClick, true);
 	setTimeout(() => window.removeEventListener("click", onClick, true), CLICK_AFTER_DROP_MS);
 }
-function endDrag(press, isCancelled) {
+function endDrag$1(press, isCancelled) {
 	const { context, tab, name } = press;
 	if (isCancelled) reorderWhileDragging(press, press.startOrder);
 	const key = cueTabSlides(context, [name], "drop");
@@ -13617,7 +14240,7 @@ function onPointerMove$1(event) {
 	event.preventDefault();
 	if (Math.abs(event.clientX - press.startX) > MOVE_TOLERANCE_PX) press.hasTravelled = true;
 	scrollNearEdge(press, event.clientX);
-	followPointer(press, event.clientX);
+	followPointer$1(press, event.clientX);
 	const order = wantedOrder(press);
 	if (order.join("\n") !== press.context.view.get().userFileNames.join("\n")) reorderWhileDragging(press, order);
 }
@@ -13625,7 +14248,7 @@ function onPointerUp$1(event) {
 	const press = current;
 	if (!press || event.pointerId !== press.pointerId) return;
 	releasePress();
-	if (press.isDragging) endDrag(press, false);
+	if (press.isDragging) endDrag$1(press, false);
 }
 function onPointerCancel(event) {
 	onPointerUp$1(event);
@@ -13636,7 +14259,7 @@ function onKeyDown(event) {
 	event.preventDefault();
 	event.stopPropagation();
 	releasePress();
-	endDrag(press, true);
+	endDrag$1(press, true);
 }
 function onTouchMove(event) {
 	if (current && current.isDragging && event.cancelable) event.preventDefault();
@@ -14438,7 +15061,7 @@ function dragDocked(deps, event, island) {
 	const title = titles.get(island);
 	let isDragging = false;
 	let target = null;
-	followPointer$1(event, {
+	followPointer$2(event, {
 		move(track) {
 			if (!isDragging && Math.hypot(track.dx, track.dy) >= 6) {
 				isDragging = true;
@@ -14472,7 +15095,7 @@ function dragFloat(deps, event, isResize) {
 	event.preventDefault();
 	const { width, height } = scene.size;
 	const least = floatMin(base, model.measures);
-	followPointer$1(event, {
+	followPointer$2(event, {
 		move(track) {
 			startCursor(isResize ? "isl-nwse-resize" : "isl-grabbing");
 			const moved = isResize ? {
@@ -14506,7 +15129,7 @@ function startSplitter(deps, event, line) {
 	const measure = scene.arrangement.splits.get(line.path.join("."));
 	if (!line.isActive || !measure || event.button !== 0) return;
 	event.preventDefault();
-	followPointer$1(event, {
+	followPointer$2(event, {
 		move(track) {
 			const delta = line.axis === "row" ? track.dx : track.dy;
 			const root = resizeSplit(layout.root, line.path, line.before, line.after, delta, measure);
@@ -24826,7 +25449,7 @@ var CODE_MIN_ROWS = 3;
 var CODE_MAX_ROWS = 18;
 var TAB_SPACES = "    ";
 var ESCAPE_TAB_MS = 1500;
-function isInside(element) {
+function isInside$1(element) {
 	return (item) => element.contains(item.target);
 }
 function always$1(answer) {
@@ -24854,8 +25477,8 @@ function tableView(view, getPos) {
 	return {
 		dom: buildElement("div", { class: "au-tablewrap" }, table, tools),
 		contentDOM: table,
-		stopEvent: isInside(tools),
-		ignoreMutation: isInside(tools)
+		stopEvent: isInside$1(tools),
+		ignoreMutation: isInside$1(tools)
 	};
 }
 function chipsView(view, getPos) {
@@ -24874,8 +25497,8 @@ function chipsView(view, getPos) {
 	return {
 		dom: buildElement("div", { class: "chips" }, chipsIn, addButton),
 		contentDOM: chipsIn,
-		stopEvent: isInside(addButton),
-		ignoreMutation: isInside(addButton)
+		stopEvent: isInside$1(addButton),
+		ignoreMutation: isInside$1(addButton)
 	};
 }
 function onCodeKey(event, textarea) {
@@ -25769,7 +26392,794 @@ function followLessonWidth(lessonColumn) {
 	}).observe(lessonColumn);
 	if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", fitPageOnScreen);
 }
+// src/shared/order/drag.ts
+var DRAG_START_PX = 5;
+var LIST_MARGIN_PX = 30;
+var CLICK_AFTER_DRAG_MS = 300;
+function pieceOf(root, key) {
+	return root.querySelector(".oq-pc[data-key=\"" + key + "\"]");
+}
+function landingIndex(root, host, key, point) {
+	const box = root.querySelector(".oq-answer")?.getBoundingClientRect();
+	const { clientX: x, clientY: y } = point;
+	if (!(box !== void 0 && y > box.top - LIST_MARGIN_PX && y < box.bottom + LIST_MARGIN_PX && x > box.left - LIST_MARGIN_PX && x < box.right + LIST_MARGIN_PX)) return null;
+	const others = host.answer.filter((other) => other !== key);
+	for (let i = 0; i < others.length; i++) {
+		const element = pieceOf(root, others[i]);
+		if (element && comesBefore(host, element.getBoundingClientRect(), x, y)) return i;
+	}
+	return others.length;
+}
+function comesBefore(host, box, x, y) {
+	const middleX = box.left + box.width / 2;
+	if (!host.isInline) return y < box.top + box.height / 2;
+	if (y < box.top) return true;
+	return y < box.bottom && (host.isLtr ? x < middleX : x > middleX);
+}
+function isInside(element, point) {
+	const box = element?.getBoundingClientRect();
+	return box !== void 0 && point.clientX > box.left && point.clientX < box.right && point.clientY > box.top && point.clientY < box.bottom;
+}
+function makeCopy(root, piece) {
+	const copy = piece.cloneNode(true);
+	copy.classList.add("oq-float");
+	copy.removeAttribute("tabindex");
+	copy.setAttribute("aria-hidden", "true");
+	copy.style.width = piece.getBoundingClientRect().width + "px";
+	root.appendChild(copy);
+	return copy;
+}
+function startPress(host, event) {
+	const target = event.target;
+	const piece = target.closest(".oq-pc");
+	const byHandle = Boolean(target.closest(".hd"));
+	if (!piece || !host.isOpen || event.button > 0 || piece.closest(".oq-float")) return null;
+	if (!host.isInline && event.pointerType !== "mouse" && !byHandle) return null;
+	const box = piece.getBoundingClientRect();
+	return {
+		key: piece.dataset.key || "",
+		pointerId: event.pointerId,
+		startX: event.clientX,
+		startY: event.clientY,
+		offsetX: event.clientX - box.left,
+		offsetY: event.clientY - box.top,
+		copy: null
+	};
+}
+function followPointer(root, drag, host, event) {
+	if (!drag.copy) {
+		const moved = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+		const piece = pieceOf(root, drag.key);
+		if (moved < DRAG_START_PX || !piece) return;
+		drag.copy = makeCopy(root, piece);
+		host.onDragging(drag.key);
+	}
+	event.preventDefault();
+	drag.copy.style.left = event.clientX - drag.offsetX + "px";
+	drag.copy.style.top = event.clientY - drag.offsetY + "px";
+	const out = root.querySelector(".oq-out");
+	const isOverOut = isInside(out, event);
+	out?.classList.toggle("over", isOverOut);
+	const index = isOverOut ? null : landingIndex(root, host, drag.key, event);
+	if (isOverOut) host.move(drag.key, "out", Number.MAX_SAFE_INTEGER);
+	else if (index !== null) host.move(drag.key, "answer", index);
+}
+function endDrag(root, drag, host) {
+	if (!drag.copy) return false;
+	drag.copy.remove();
+	root.querySelector(".oq-out")?.classList.remove("over");
+	host.onDragging(null);
+	host.onDropped(drag.key);
+	return true;
+}
+function useOrderDrag(rootRef, host) {
+	const hostRef = (0, import_react.useRef)(host);
+	const endedAtRef = (0, import_react.useRef)(0);
+	(0, import_react.useLayoutEffect)(() => {
+		hostRef.current = host;
+	});
+	(0, import_react.useEffect)(() => {
+		const root = rootRef.current;
+		if (!root) return;
+		return listenForDrags(root, hostRef, endedAtRef);
+	}, [rootRef]);
+	return () => Date.now() - endedAtRef.current < CLICK_AFTER_DRAG_MS;
+}
+function listenForDrags(root, hostRef, endedAtRef) {
+	let drag = null;
+	const listeners = {
+		pointermove: (event) => {
+			if (drag && drag.pointerId === event.pointerId) followPointer(root, drag, hostRef.current, event);
+		},
+		pointerup: (event) => {
+			if (drag && drag.pointerId === event.pointerId) {
+				endedAtRef.current = endDrag(root, drag, hostRef.current) ? Date.now() : 0;
+				drag = null;
+			}
+		}
+	};
+	listeners.pointercancel = listeners.pointerup;
+	const onDown = (event) => {
+		drag = startPress(hostRef.current, event);
+	};
+	root.addEventListener("pointerdown", onDown);
+	for (const [name, listener] of Object.entries(listeners)) window.addEventListener(name, listener, { passive: false });
+	return () => {
+		root.removeEventListener("pointerdown", onDown);
+		for (const [name, listener] of Object.entries(listeners)) window.removeEventListener(name, listener);
+		drag?.copy?.remove();
+	};
+}
+var GLIDE_EASING = "cubic-bezier(.2,.7,.3,1)";
+function measure(root) {
+	const boxes = /* @__PURE__ */ new Map();
+	const origin = root.getBoundingClientRect();
+	root.querySelectorAll(".oq-pc[data-key]").forEach((piece) => {
+		const box = piece.getBoundingClientRect();
+		boxes.set(piece.dataset.key || "", {
+			left: box.left - origin.left,
+			top: box.top - origin.top
+		});
+	});
+	return boxes;
+}
+function useGlide(rootRef, orderText) {
+	const beforeRef = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		const root = rootRef.current;
+		const before = beforeRef.current;
+		beforeRef.current = null;
+		if (!root || !before || reducesMotion() || typeof root.animate !== "function") return;
+		const after = measure(root);
+		const duration = scaledMs(160, motionSpeed());
+		root.querySelectorAll(".oq-pc[data-key]").forEach((piece) => {
+			const from = before.get(piece.dataset.key || "");
+			const to = after.get(piece.dataset.key || "");
+			const dx = from && to ? from.left - to.left : 0;
+			const dy = from && to ? from.top - to.top : 0;
+			if (dx !== 0 || dy !== 0) {
+				const start = "translate(" + dx + "px," + dy + "px)";
+				piece.animate([{ transform: start }, { transform: "none" }], {
+					duration,
+					easing: GLIDE_EASING
+				});
+			}
+		});
+	}, [rootRef, orderText]);
+	return () => {
+		const root = rootRef.current;
+		const isShown = root !== null && root.getClientRects().length > 0;
+		beforeRef.current = isShown ? measure(root) : null;
+	};
+}
+// src/shared/order/check.ts
+function firstMistake(spec, answer) {
+	const textOf = new Map(piecesOf(spec).map((piece) => [piece.key, piece]));
+	let groupIndex = 0;
+	let left = spec.groups[0] ? spec.groups[0].slice() : [];
+	for (let at = 0; at < answer.length; at++) {
+		const piece = textOf.get(answer[at]);
+		const place = piece ? left.indexOf(piece.text) : -1;
+		if (!piece || piece.isExtra || place < 0) return {
+			at,
+			why: piece && piece.isExtra ? "extra" : "place",
+			key: answer[at]
+		};
+		left.splice(place, 1);
+		if (left.length === 0) {
+			groupIndex++;
+			left = spec.groups[groupIndex] ? spec.groups[groupIndex].slice() : [];
+		}
+	}
+	if (groupIndex < spec.groups.length) return {
+		at: answer.length,
+		why: "missing",
+		key: missingKey(spec, answer, left[0])
+	};
+	return null;
+}
+function missingKey(spec, answer, text) {
+	const outside = piecesOf(spec).filter((piece) => !answer.includes(piece.key));
+	return (outside.find((piece) => !piece.isExtra && piece.text === text) || outside.find((piece) => !piece.isExtra) || { key: "" }).key;
+}
+function rightOrder(spec) {
+	return piecesOf(spec).filter((piece) => !piece.isExtra).map((piece) => piece.key);
+}
+function seededRandom(seedText) {
+	let state = 0;
+	for (let i = 0; i < seedText.length; i++) state = Math.imul(state, 31) + seedText.charCodeAt(i) | 0;
+	return () => {
+		state = state + 1831565813 | 0;
+		let mixed = Math.imul(state ^ state >>> 15, 1 | state);
+		mixed = mixed + Math.imul(mixed ^ mixed >>> 7, 61 | mixed) ^ mixed;
+		return ((mixed ^ mixed >>> 14) >>> 0) / 4294967296;
+	};
+}
+var SHUFFLE_TRIES = 40;
+function isAlreadyRight(spec, keys) {
+	return firstMistake(spec, keys.filter((key) => key.startsWith("p"))) === null;
+}
+function shuffledKeys(spec) {
+	const pieces = piecesOf(spec);
+	const keys = pieces.map((piece) => piece.key);
+	const random = seededRandom(pieces.map((piece) => piece.text).join("\0"));
+	for (let attempt = 0; attempt < SHUFFLE_TRIES; attempt++) {
+		for (let i = keys.length - 1; i > 0; i--) {
+			const j = Math.floor(random() * (i + 1));
+			[keys[i], keys[j]] = [keys[j], keys[i]];
+		}
+		if (!isAlreadyRight(spec, keys)) return keys;
+	}
+	return rightOrder(spec).reverse().concat(pieces.filter((piece) => piece.isExtra).map((piece) => piece.key));
+}
+function startState(spec) {
+	return {
+		answer: shuffledKeys(spec),
+		out: [],
+		picked: null,
+		pickedFrom: null,
+		mistake: null,
+		tries: 0,
+		status: "open"
+	};
+}
+function areaOf(state, key) {
+	return state.answer.includes(key) ? "answer" : "out";
+}
+function indexOf(state, key) {
+	return (areaOf(state, key) === "answer" ? state.answer : state.out).indexOf(key);
+}
+function moveTo(state, key, area, index) {
+	if (state.status !== "open") return state;
+	const answer = state.answer.filter((other) => other !== key);
+	const out = state.out.filter((other) => other !== key);
+	const target = area === "answer" ? answer : out;
+	target.splice(Math.max(0, Math.min(index, target.length)), 0, key);
+	return answer.join() === state.answer.join() && out.join() === state.out.join() ? state : {
+		...state,
+		answer,
+		out,
+		mistake: null
+	};
+}
+function stepBy(state, key, delta, hasOut) {
+	const index = indexOf(state, key) + delta;
+	if (areaOf(state, key) === "answer") {
+		if (index >= state.answer.length) return hasOut ? moveTo(state, key, "out", 0) : state;
+		return index < 0 ? state : moveTo(state, key, "answer", index);
+	}
+	if (index < 0) return moveTo(state, key, "answer", state.answer.length);
+	return moveTo(state, key, "out", index);
+}
+function pick(state, key) {
+	if (state.status !== "open") return state;
+	const pickedFrom = {
+		area: areaOf(state, key),
+		index: indexOf(state, key)
+	};
+	return {
+		...state,
+		picked: key,
+		pickedFrom
+	};
+}
+function drop(state) {
+	return state.picked === null ? state : {
+		...state,
+		picked: null,
+		pickedFrom: null
+	};
+}
+function cancelPick(state) {
+	if (state.picked === null || state.pickedFrom === null) return drop(state);
+	return drop(moveTo(state, state.picked, state.pickedFrom.area, state.pickedFrom.index));
+}
+function placeAt(state, targetKey) {
+	if (state.picked === null || state.picked === targetKey) return drop(state);
+	return drop(moveTo(state, state.picked, areaOf(state, targetKey), indexOf(state, targetKey)));
+}
+function checkAnswer(spec, state) {
+	if (state.status !== "open") return state;
+	const mistake = firstMistake(spec, state.answer);
+	const tries = state.tries + 1;
+	const base = {
+		...state,
+		picked: null,
+		pickedFrom: null,
+		tries
+	};
+	return mistake === null ? {
+		...base,
+		status: "solved",
+		mistake
+	} : {
+		...base,
+		mistake
+	};
+}
+function showOrder(spec, state) {
+	if (state.status !== "open") return state;
+	const out = piecesOf(spec).filter((piece) => piece.isExtra).map((piece) => piece.key);
+	const answer = rightOrder(spec);
+	return {
+		...state,
+		answer,
+		out,
+		picked: null,
+		pickedFrom: null,
+		mistake: null,
+		status: "shown"
+	};
+}
+function canShow(state) {
+	return state.status === "open" && state.tries >= 3;
+}
+// src/shared/order/texts.ts
+var MARK_NOTES = {
+	place: "לא במקום",
+	extra: "לא שייך",
+	missing: "חסר"
+};
+function mistakeText(mistake, isInline) {
+	const place = mistake.at + 1;
+	const lines = {
+		place: "שורה " + place + " לא במקומה.",
+		extra: "השורה " + place + " לא שייכת.",
+		missing: "חסרה שורה בתשובה."
+	};
+	const parts = {
+		place: "חלק " + place + " לא במקומו.",
+		extra: "החלק " + place + " לא שייך.",
+		missing: "חסר חלק בתשובה."
+	};
+	return "✗ " + (isInline ? parts : lines)[mistake.why] + " נסו שוב.";
+}
+function doneText(state) {
+	if (state.status === "solved") return "✓ נכון" + (state.tries > 1 ? " (בניסיון " + state.tries + ")" : "");
+	return state.status === "shown" ? "זה הסדר הנכון." : "";
+}
+function outLabel(extraCount) {
+	return extraCount === 1 ? "חלק אחד לא שייך: העבירו אותו לכאן" : extraCount + " חלקים לא שייכים: העבירו אותם לכאן";
+}
+function pieceLabel(state, key, text, isInline, mark) {
+	const index = state.answer.indexOf(key);
+	const place = index >= 0 ? (isInline ? "חלק " : "שורה ") + (index + 1) + " מתוך " + state.answer.length : "לא בשימוש";
+	const markText = mark === "good" ? ", במקום" : mark ? ", " + mark : "";
+	return place + ": " + text + markText + (state.picked === key ? ", מורם" : "");
+}
+function placeText(state, key) {
+	const index = state.answer.indexOf(key);
+	return index >= 0 ? "במקום " + (index + 1) + " מתוך " + state.answer.length : "הועבר לחלקים שלא בשימוש";
+}
+var PICKED_TEXT = "הורם. חצים להזזה, רווח להנחה, Escape לביטול";
+var PIECE_ROLE = "חלק שאפשר להזיז";
+// src/shared/order/keys.ts
+function arrowStep(key, layout) {
+	const steps = {
+		ArrowUp: -1,
+		ArrowDown: 1
+	};
+	if (layout.isInline) {
+		steps.ArrowLeft = layout.isLtr ? -1 : 1;
+		steps.ArrowRight = layout.isLtr ? 1 : -1;
+	}
+	return steps[key] || 0;
+}
+function walkOrder(state) {
+	return state.answer.concat(state.out);
+}
+function pressPiece(state, key) {
+	if (state.picked === key) return {
+		state: drop(state),
+		focusKey: key,
+		say: placeText(state, key)
+	};
+	if (state.picked !== null) {
+		const picked = state.picked;
+		const placed = placeAt(state, key);
+		return {
+			state: placed,
+			focusKey: picked,
+			say: placeText(placed, picked)
+		};
+	}
+	return {
+		state: pick(state, key),
+		focusKey: key,
+		say: PICKED_TEXT
+	};
+}
+function keyOnPiece(state, key, event, layout) {
+	if (state.status !== "open") return null;
+	const step = arrowStep(event.key, layout);
+	if (event.key === " " || event.key === "Enter") return pressPiece(state, key);
+	if (event.key === "Escape" && state.picked !== null) {
+		const picked = state.picked;
+		return {
+			state: cancelPick(state),
+			focusKey: picked,
+			say: "בוטל"
+		};
+	}
+	if (step !== 0 && (state.picked === key || event.altKey && event.shiftKey)) {
+		const moved = stepBy(state, key, step, layout.hasOut);
+		return {
+			state: moved,
+			focusKey: key,
+			say: placeText(moved, key)
+		};
+	}
+	if (step !== 0 && !event.altKey) {
+		const all = walkOrder(state);
+		const next = all[all.indexOf(key) + step];
+		return next ? {
+			state,
+			focusKey: next,
+			say: ""
+		} : {
+			state,
+			focusKey: key,
+			say: ""
+		};
+	}
+	if (event.key === "Home" || event.key === "End") {
+		const all = walkOrder(state);
+		return {
+			state,
+			focusKey: event.key === "Home" ? all[0] : all[all.length - 1],
+			say: ""
+		};
+	}
+	return null;
+}
+function clickPiece(state, key) {
+	if (state.status !== "open") return {
+		state,
+		say: ""
+	};
+	if (state.picked === null) return {
+		state: pick(state, key),
+		say: ""
+	};
+	const picked = state.picked;
+	const placed = placeAt(state, key);
+	return {
+		state: placed,
+		say: placeText(placed, picked)
+	};
+}
+function clickArea(state, area) {
+	if (state.status !== "open" || state.picked === null) return {
+		state,
+		say: ""
+	};
+	const picked = state.picked;
+	const moved = drop(moveTo(state, picked, area, Number.MAX_SAFE_INTEGER));
+	return {
+		state: moved,
+		say: placeText(moved, picked)
+	};
+}
+// src/shared/order/OrderPiece.tsx
+function pieceMark(state, key) {
+	const mistake = state.mistake;
+	if (!mistake) return "";
+	if (mistake.key === key) return MARK_NOTES[mistake.why];
+	return state.answer.slice(0, mistake.at).includes(key) ? "good" : "";
+}
+function plainText$1(html) {
+	const entities = {
+		"&lt;": "<",
+		"&gt;": ">",
+		"&amp;": "&",
+		"&quot;": "\"",
+		"&#39;": "'",
+		"&nbsp;": " "
+	};
+	return html.replace(/<annotation[\s\S]*?<\/annotation>/gi, "").replace(/<[^>]*>/g, "").replace(/&(lt|gt|amp|quot|#39|nbsp);/g, (entity) => entities[entity]).replace(/\s+/g, " ").trim();
+}
+function pieceClass(props) {
+	const classes = ["oq-pc"];
+	if (props.state.picked === props.piece.key) classes.push("picked");
+	if (props.isGhost) classes.push("ghost");
+	if (props.mark) classes.push(props.mark === "good" ? "good" : "bad");
+	return classes.join(" ");
+}
+function OrderPieceItem(props) {
+	const { piece, state, spec, mark } = props;
+	const isInline = spec.mode === "inline";
+	const place = state.answer.indexOf(piece.key);
+	const text = spec.code ? piece.text : plainText$1(piece.text);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+		className: pieceClass(props),
+		"data-key": piece.key,
+		tabIndex: props.isTabStop ? 0 : -1,
+		"aria-roledescription": PIECE_ROLE,
+		"aria-label": pieceLabel(state, piece.key, text, isInline, mark),
+		"aria-disabled": state.status === "open" ? void 0 : "true",
+		children: [
+			isInline ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "hd",
+				"aria-hidden": "true",
+				title: "גררו",
+				children: "⠿"
+			}),
+			isInline ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "no",
+				"aria-hidden": "true",
+				children: place >= 0 ? place + 1 : ""
+			}),
+			spec.code ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "tx",
+				children: piece.text
+			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "tx",
+				dangerouslySetInnerHTML: { __html: piece.text }
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "mk",
+				"aria-hidden": "true",
+				children: [mark === "good" ? "✓" : mark ? "!" : "", mark && mark !== "good" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "note",
+					children: mark
+				}) : null]
+			})
+		]
+	});
+}
+// src/shared/order/OrderQuestion.tsx
+function useViewState(spec, rootRef) {
+	const [view, setView] = (0, import_react.useState)(() => ({
+		order: startState(spec),
+		say: "",
+		focus: null
+	}));
+	const capture = useGlide(rootRef, view.order.answer.join() + "|" + view.order.out.join());
+	const act = (action) => {
+		capture();
+		setView((previous) => {
+			const result = action(previous.order);
+			return {
+				order: result.state,
+				say: result.say || previous.say,
+				focus: result.focusKey ? { key: result.focusKey } : previous.focus
+			};
+		});
+	};
+	return {
+		view,
+		act
+	};
+}
+function OrderQuestion(props) {
+	const { spec } = props;
+	const rootRef = (0, import_react.useRef)(null);
+	const { view, act } = useViewState(spec, rootRef);
+	const [dragging, setDragging] = (0, import_react.useState)(null);
+	const [focused, setFocused] = (0, import_react.useState)("");
+	const [pieces] = (0, import_react.useState)(() => new Map(piecesOf(spec).map((piece) => [piece.key, piece])));
+	const layout = {
+		isInline: spec.mode === "inline",
+		isLtr: spec.dir === "ltr",
+		hasOut: spec.extra.length > 0
+	};
+	const order = view.order;
+	useFocusRequest(rootRef, view.focus);
+	useDoneReport(order.status, props.onDone);
+	const endedDrag = useDragOf(rootRef, order, layout, act, setDragging);
+	const parts = {
+		spec,
+		order,
+		pieces,
+		layout,
+		dragging,
+		focused,
+		act
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		ref: rootRef,
+		className: rootClass(spec, order, dragging),
+		onKeyDown: (event) => onKey(event, parts),
+		onClick: (event) => endedDrag() ? void 0 : onClickIn(event, parts),
+		onFocus: (event) => setFocused(event.target.dataset.key || focused),
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(QuestionBody, {
+			parts,
+			showTexts: props.showTexts !== false,
+			say: view.say
+		})
+	});
+}
+function useDragOf(rootRef, order, layout, act, setDragging) {
+	return useOrderDrag(rootRef, {
+		isInline: layout.isInline,
+		isLtr: layout.isLtr,
+		isOpen: order.status === "open",
+		answer: order.answer,
+		move: (key, area, index) => {
+			act((s) => ({
+				state: moveTo(drop(s), key, area, index),
+				say: ""
+			}));
+		},
+		onDragging: setDragging,
+		onDropped: (key) => {
+			act((s) => ({
+				state: s,
+				say: placeText(s, key),
+				focusKey: key
+			}));
+		}
+	});
+}
+function QuestionBody(props) {
+	const { spec, order, layout } = props.parts;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		props.showTexts && spec.prompt ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			className: "oq-prompt",
+			dangerouslySetInnerHTML: { __html: spec.prompt }
+		}) : null,
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PieceList, {
+			parts: props.parts,
+			area: "answer"
+		}),
+		layout.hasOut ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "oq-out",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "lbl",
+				children: outLabel(spec.extra.length)
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PieceList, {
+				parts: props.parts,
+				area: "out"
+			})]
+		}) : null,
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResultBar, { parts: props.parts }),
+		props.showTexts && spec.why && order.status !== "open" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "oq-why",
+			dangerouslySetInnerHTML: { __html: spec.why }
+		}) : null,
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "sr",
+			role: "status",
+			"aria-live": "polite",
+			children: props.say
+		})
+	] });
+}
+function rootClass(spec, order, dragging) {
+	return [
+		"oq",
+		spec.mode === "inline" ? "inline" : "lines",
+		spec.code ? "code" : "",
+		order.status === "open" ? "" : order.status,
+		order.picked !== null || dragging !== null ? "carrying" : ""
+	].filter(Boolean).join(" ");
+}
+function useFocusRequest(rootRef, request) {
+	(0, import_react.useLayoutEffect)(() => {
+		if (request) rootRef.current?.querySelector("[data-key=\"" + request.key + "\"]")?.focus();
+	}, [rootRef, request]);
+}
+function useDoneReport(status, onDone) {
+	const onDoneRef = (0, import_react.useRef)(onDone);
+	(0, import_react.useLayoutEffect)(() => {
+		onDoneRef.current = onDone;
+	});
+	(0, import_react.useEffect)(() => {
+		if (status !== "open") onDoneRef.current?.(status);
+	}, [status]);
+}
+function onKey(event, parts) {
+	const key = event.target.closest(".oq-pc")?.dataset.key;
+	const keyEvent = {
+		key: event.key,
+		altKey: event.altKey,
+		shiftKey: event.shiftKey
+	};
+	if (!key || keyOnPiece(parts.order, key, keyEvent, parts.layout) === null) return;
+	event.preventDefault();
+	event.stopPropagation();
+	parts.act((s) => keyOnPiece(s, key, keyEvent, parts.layout) || {
+		state: s,
+		say: ""
+	});
+}
+function onClickIn(event, parts) {
+	const target = event.target;
+	const key = target.closest(".oq-pc")?.dataset.key;
+	if (target.closest(".oq-bar")) return;
+	if (key) {
+		parts.act((s) => clickPiece(s, key));
+		return;
+	}
+	const area = target.closest(".oq-out") ? "out" : target.closest(".oq-list") ? "answer" : null;
+	if (area) parts.act((s) => clickArea(s, area));
+}
+function PieceList(props) {
+	const { parts, area } = props;
+	const { order } = parts;
+	const keys = area === "answer" ? order.answer : order.out;
+	const all = order.answer.concat(order.out);
+	const tabStop = order.picked ?? (all.includes(parts.focused) ? parts.focused : all[0]);
+	const label = parts.layout.isInline ? "החלקים של השורה, לפי הסדר" : "השורות, לפי הסדר";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+		className: area === "answer" ? "oq-list oq-answer" : "oq-list",
+		dir: parts.spec.dir,
+		"aria-label": area === "answer" ? label : "לא בשימוש",
+		children: keys.map((key) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderPieceItem, {
+			piece: parts.pieces.get(key),
+			state: order,
+			spec: parts.spec,
+			isTabStop: key === tabStop,
+			isGhost: parts.dragging === key,
+			mark: pieceMark(order, key)
+		}, key))
+	});
+}
+function ResultBar(props) {
+	const { spec, order, layout, act } = props.parts;
+	const isOpen = order.status === "open";
+	const result = order.mistake ? mistakeText(order.mistake, layout.isInline) : doneText(order);
+	const resultClass = order.mistake ? " no" : order.status === "solved" ? " ok" : "";
+	const onCheck = () => {
+		act((s) => {
+			const checked = checkAnswer(spec, s);
+			return {
+				state: checked,
+				say: checked.mistake ? mistakeText(checked.mistake, layout.isInline) : "נכון."
+			};
+		});
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "oq-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "oq-check",
+				"aria-disabled": isOpen ? void 0 : "true",
+				onClick: isOpen ? onCheck : void 0,
+				children: "✓ בדיקה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "oq-res" + resultClass,
+				children: result
+			}),
+			isOpen && order.tries > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "oq-tries",
+				children: "ניסיון " + order.tries
+			}) : null,
+			canShow(order) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "oq-show",
+				onClick: () => act((s) => ({
+					state: showOrder(spec, s),
+					say: "זה הסדר הנכון."
+				})),
+				children: "הצגת הסדר הנכון"
+			}) : null
+		]
+	});
+}
+// src/shared/order/OrderBlock.tsx
+function OrderBlock({ source }) {
+	const parsed = parseOrderSource(source);
+	if ("problems" in parsed) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderProblems, { problems: parsed.problems });
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderQuestion, { spec: parsed.spec });
+}
+function OrderProblems(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "oq-problems",
+		dir: "ltr",
+		children: props.problems.join("\n")
+	});
+}
 // src/core/lesson/Quiz.tsx
+function isOrderQuestion(question) {
+	return question.order !== void 0;
+}
+function isRightAnswer(question, answer) {
+	if (!question || answer === void 0) return false;
+	return isOrderQuestion(question) ? answer === "solved" : answer === question.a;
+}
 function useQuizPass(passKey, rightCount, total) {
 	(0, import_react.useEffect)(() => {
 		if (!passKey || total === 0 || rightCount < total) return;
@@ -25857,16 +27267,11 @@ function QuestionNotice(props) {
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { dangerouslySetInnerHTML: { __html: notice } })]
 	});
 }
-function Question(props) {
-	const { question, questionIndex, chosenIndex } = props;
+function ChoiceQuestion(props) {
+	const { question, questionIndex } = props;
+	const chosenIndex = typeof props.chosenIndex === "number" ? props.chosenIndex : void 0;
 	const isDone = chosenIndex !== void 0;
-	const whyRef = (0, import_react.useRef)(null);
-	(0, import_react.useLayoutEffect)(() => {
-		if (isDone && whyRef.current) {
-			joinPrefixHyphens(whyRef.current);
-			fitInlineCode(whyRef.current);
-		}
-	}, [isDone]);
+	const whyRef = useFittedWhy(isDone);
 	const answers = question.o.map((answerHtml, answerIndex) => {
 		const { extraClass, mark } = answerState(answerIndex, question.a, chosenIndex);
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
@@ -25910,6 +27315,47 @@ function Question(props) {
 		]
 	});
 }
+function useFittedWhy(isDone) {
+	const whyRef = (0, import_react.useRef)(null);
+	(0, import_react.useLayoutEffect)(() => {
+		if (isDone && whyRef.current) {
+			joinPrefixHyphens(whyRef.current);
+			fitInlineCode(whyRef.current);
+		}
+	}, [isDone]);
+	return whyRef;
+}
+function Question(props) {
+	return isOrderQuestion(props.question) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderQuizQuestion, { ...props }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChoiceQuestion, { ...props });
+}
+function OrderQuizQuestion(props) {
+	const { question, questionIndex, chosenIndex, onAnswer } = props;
+	const isDone = chosenIndex !== void 0;
+	const parsed = (0, import_react.useMemo)(() => parseOrder(question.order), [question.order]);
+	const whyRef = useFittedWhy(isDone);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "q q-order",
+		"data-i": questionIndex,
+		"data-done": isDone ? 1 : void 0,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "stem",
+				dangerouslySetInnerHTML: stemHtml(props)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QuestionNotice, { question }),
+			"problems" in parsed ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderProblems, { problems: parsed.problems }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OrderQuestion, {
+				spec: parsed.spec,
+				showTexts: false,
+				onDone: (status) => onAnswer(questionIndex, status)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				ref: whyRef,
+				className: "why" + (isDone ? " show" : ""),
+				dangerouslySetInnerHTML: whyHtml(props)
+			})
+		]
+	});
+}
 function stemHtml(props) {
 	return { __html: props.questionIndex + 1 + ". " + props.question.s };
 }
@@ -25918,6 +27364,7 @@ function whyHtml(props) {
 }
 function useQuizAnswers(questions) {
 	const [chosen, setChosen] = (0, import_react.useState)([]);
+	const [round, setRound] = (0, import_react.useState)(0);
 	const [liveText, setLiveText] = (0, import_react.useState)("");
 	const rootRef = (0, import_react.useRef)(null);
 	const answer = (questionIndex, answerIndex) => {
@@ -25925,15 +27372,17 @@ function useQuizAnswers(questions) {
 		const nextChosen = chosen.slice();
 		nextChosen[questionIndex] = answerIndex;
 		setChosen(nextChosen);
-		setLiveText(verdictText(questions[questionIndex], answerIndex));
+		if (typeof answerIndex === "number") setLiveText(verdictText(questions[questionIndex], answerIndex));
 	};
 	const retry = () => {
 		setChosen([]);
+		setRound((count) => count + 1);
 		setLiveText("החידון אופס");
-		rootRef.current?.querySelector(".opt")?.focus();
+		rootRef.current?.querySelector(".opt, .oq-pc[tabindex=\"0\"]")?.focus();
 	};
 	return {
 		chosen,
+		round,
 		liveText,
 		rootRef,
 		answer,
@@ -25942,8 +27391,8 @@ function useQuizAnswers(questions) {
 }
 function Quiz(props) {
 	const { questions } = props;
-	const { chosen, liveText, rootRef, answer, retry } = useQuizAnswers(questions);
-	const rightCount = chosen.filter((choice, index) => choice === questions[index]?.a).length;
+	const { chosen, round, liveText, rootRef, answer, retry } = useQuizAnswers(questions);
+	const rightCount = chosen.filter((choice, index) => isRightAnswer(questions[index], choice)).length;
 	useQuizPass(props.passKey || "", rightCount, questions.length);
 	const isAnyAnswered = chosen.some((choice) => choice !== void 0);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -25955,7 +27404,7 @@ function Quiz(props) {
 				questionIndex,
 				chosenIndex: chosen[questionIndex],
 				onAnswer: answer
-			}, questionIndex)),
+			}, round + ":" + questionIndex)),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QuizFooter, {
 				right: rightCount,
 				total: questions.length,
@@ -26126,7 +27575,10 @@ function QuestionFieldset(props) {
 					isMultiline: true
 				})]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnswerList, { ...props }),
+			isOrderQuestion(question) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "au-lbl",
+				children: "שאלת סידור: החלקים שלה נכתבים בקובץ הקורס."
+			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnswerList, { ...props }),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "au-lbl",
 				children: ["הסבר", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InlineEditable, {
@@ -28046,6 +29498,10 @@ var CORE_BLOCKS = {
 	[GENERATOR_CLASS]: {
 		attribute: "data-generator",
 		render: GeneratorBlock
+	},
+	[ORDER_CLASS]: {
+		attribute: ORDER_ATTRIBUTE,
+		render: OrderBlock
 	}
 };
 function engineBlocks() {
@@ -30195,7 +31651,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 38d70b00 מ-2026-11-16 14:12"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 38d70b00</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 5959d68e מ-2026-11-16 16:44"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 5959d68e</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
