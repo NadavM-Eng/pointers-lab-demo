@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-REGqmpH35RFZc/67c5/029wB4+wn9yKIUFlsDzvcuH0=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ZBIlE2pY1yyMmH9rj7IxwVIAtJRzXh7fp+8zyWc1i8I=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -665,8 +665,9 @@ body.dragging{cursor:col-resize;user-select:none}
 /* ── code pane: the current code box fills it ── */
 .code-pane{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--bg)}
 .wb{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg);color:var(--ink)}
-/* title row; the badge has its own place next to the title and a fixed height, so nothing moves when it appears */
-.wb-head{display:flex;align-items:center;gap:10px;min-height:34px;padding:10px 14px 4px;flex-wrap:wrap}
+/* title row; the badge has its own place next to the title and a fixed height, so nothing moves when it appears.
+   The title row and both bars are slim (owner, 2026-11-16): their height goes to the code; buttons stay 30 px */
+.wb-head{display:flex;align-items:center;gap:10px;min-height:28px;padding:4px 14px 0;line-height:1.4;flex-wrap:wrap}
 .wb-title{display:flex;gap:10px;align-items:center}
 .wb-kind{font-size:12px;color:var(--muted)}
 .wb-title h4{margin:0;font-weight:600;font-size:15px}
@@ -686,7 +687,7 @@ body.dragging{cursor:col-resize;user-select:none}
 .wb-task{margin:4px 14px;padding:8px 12px;border:1px solid var(--orange);border-radius:6px;font-size:14.5px}
 /* the bar reads left to right, like the code: run / step / tests on the left, full screen and reset on the right; it stays on one line,
    and below ~700 px the full-screen button keeps only its icon (the label stays for screen readers) */
-.wb-bar,.wb-dbgbar{display:flex;gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line-2)}
+.wb-bar,.wb-dbgbar{display:flex;gap:8px;align-items:center;padding:4px 14px;border-bottom:1px solid var(--line-2)}
 /* the bar may wrap only when one line cannot hold it (see the 450 px query below); row-gap 4 px
    matters only then */
 .wb-bar {
@@ -695,7 +696,7 @@ body.dragging{cursor:col-resize;user-select:none}
   flex-wrap: wrap;
   row-gap: 4px;
 }
-.wb-bar .b{unicode-bidi:plaintext}
+.wb-bar .b{unicode-bidi:plaintext;padding:3px 12px;line-height:22px}
 .wb-bar .sp{flex:1}
 .wb-bar.asking [data-a=reset],.wb-bar.asking [data-a=max],.wb-bar.undoing [data-a=reset]{display:none}
 @container (max-width:700px){
@@ -724,8 +725,8 @@ body.wide .when-narrow{display:none}
 .wb-ask{display:inline-flex;gap:8px;align-items:center;font-size:13.5px;color:var(--ink);white-space:nowrap;unicode-bidi:plaintext}
 .wb-undo .wb-ask-t{color:var(--muted)}
 /* step bar: buttons that cannot act are dimmed; the ⤽ ⤴ ⇤ glyphs share one size and baseline */
-.wb-dbgbar{background:var(--panel);flex-wrap:wrap}
-.wb-dbgbar .b{display:inline-flex;align-items:center;gap:6px}
+.wb-dbgbar{background:var(--panel);flex-wrap:wrap;row-gap:4px}
+.wb-dbgbar .b{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;line-height:22px}
 .wb-dbgbar .b:disabled{opacity:.4;cursor:default;pointer-events:none}
 .wb-dbgbar .gl{flex:none;width:16px;height:16px}
 .dbg-range{flex:1;min-width:120px;accent-color:var(--accent);-webkit-appearance:none;appearance:none;background:transparent;height:20px;margin:0;--p:0%}
@@ -3126,6 +3127,157 @@ body.debugging .tour-roomy .wb-grid {
 .tour-roomy .wb-split {
   display: none;
 }
+
+/* ── the island picker (IslandPicker.tsx; ⊞ איים, last in the step bar), over the page ── */
+.ip {
+  position: fixed;
+  z-index: 300;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 240px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 16px 40px var(--shadow);
+  color: var(--ink);
+  font: 13.5px/1.4 var(--f-body);
+}
+
+.ip-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* the switch is the whole row's name: its track, then the title (English / עברית) */
+.ip-sw {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ip-sw:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.ip-sw:focus-visible,
+.ip-reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.ip-sw:disabled {
+  cursor: default;
+}
+
+.ip-track {
+  flex: none;
+  position: relative;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--gutter);
+}
+
+.ip-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--knob);
+  transition: right 0.15s;
+}
+
+.ip-sw[aria-checked='true'] .ip-track {
+  background: var(--accent);
+}
+
+.ip-sw[aria-checked='true'] .ip-track::after {
+  right: 14px;
+}
+
+.ip-sw:disabled .ip-track {
+  opacity: 0.45;
+}
+
+.ip-name {
+  flex: 1;
+  min-width: 0;
+  direction: ltr;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ip-name i {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.isl-btn.ip-back:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: transparent;
+}
+
+.ip-foot {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+.ip-reset {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ip-reset:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.ip-reset:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.wb-dbgbar .dbg-isl[aria-expanded='true'] {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+@media print {
+  .ip {
+    display: none;
+  }
+}
 /* The feedback panel (src/shared/feedback/feedback-panel.ts; design/mock/feedback.html, approved
    2026-11-14): the line at the end of a lesson page, the form that opens in place under it,
    and the sidebar's "✎ משוב" link. Only var(--token) colours (design/tokens.css), the page's
@@ -3414,6 +3566,271 @@ body.debugging .tour-roomy .wb-grid {
   .side-fb {
     display: none;
   }
+}
+/* ═══ The Complexity Generator (src/shared/complexity/) ═══
+   The step bar, the Master card, the fold of the tree and the tree by levels. Colours only as
+   tokens (design/tokens.css). A lit part (pointed at, or the step's) has the accent outline and
+   background; the same class lights it in the card, the tree and (the host's) code lines. */
+
+/* ── The Generator ── */
+.cx-gen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.cx-nofit {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ── The step bar ── */
+.cx-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cx-btn {
+  min-width: 32px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.cx-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.cx-btn:focus-visible,
+.cx-piece:focus-visible,
+.cx-fold:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cx-count {
+  min-width: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.cx-caption {
+  flex: 1 1 160px;
+  font-weight: 600;
+}
+
+/* ── The Master card ── */
+.cx-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-family: var(--f-mono);
+}
+
+.cx-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.cx-piece {
+  padding: 1px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  cursor: default;
+}
+
+.cx-sep {
+  color: var(--muted);
+}
+
+/* ── A lit part ── */
+.cx-piece.is-lit,
+.cx-cell.is-lit {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ── The fold of the tree ── */
+.cx-fold {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ── The tree by levels ── */
+.cx-tree {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.cx-tree th {
+  padding: 2px 6px;
+  color: var(--muted);
+  font-weight: 400;
+  text-align: start;
+}
+
+.cx-tree td {
+  padding: 3px 6px;
+  border-top: 1px solid var(--line-2);
+}
+
+.cx-cell {
+  border: 1px solid transparent;
+}
+
+.cx-depth {
+  color: var(--muted);
+}
+
+.cx-squares {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+.cx-sq {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent-text);
+}
+
+.cx-sq.is-leaf {
+  background: var(--ok);
+}
+
+.cx-more {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cx-total td {
+  font-weight: 600;
+}
+
+/* ── The lesson block: the code on the start side (right in Hebrew), the pictures beside ── */
+.cx-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 18px 0 22px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+
+.cx-side {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.cx-side .cx-gen {
+  padding: 0;
+}
+
+.cx-problems {
+  display: block;
+  color: var(--err);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.cx-code {
+  flex: 1 1 320px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cx-codeline {
+  display: block;
+  padding: 0 10px 0 0;
+  border-inline-start: 3px solid transparent;
+  white-space: pre;
+}
+
+.cx-codeline.has-part {
+  cursor: default;
+}
+
+.cx-codeline.is-lit {
+  border-inline-start-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.cx-ln {
+  display: inline-block;
+  width: 3ch;
+  margin-inline-end: 10px;
+  color: var(--muted);
+  font-style: normal;
+  text-align: end;
+  user-select: none;
+}
+
+.cx-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--f-mono);
+}
+
+.cx-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cx-sym {
+  color: var(--muted);
+}
+
+.cx-btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 /* Java engine styles (only var(--token) colours). Appended after src/core/style.css.
    The islands of line by line (view/JavaIslands.tsx): the call stack (the core's call-stack
@@ -5564,7 +5981,7 @@ function tokenAt$1(text, start) {
 		end: start + (long ? long.length : 1)
 	};
 }
-function tokenize(text) {
+function tokenize$1(text) {
 	const cursor = {
 		text,
 		at: 0,
@@ -6570,7 +6987,7 @@ function instrumentFile(program, file, tokens, classes) {
 }
 function instrumentProgram(files) {
 	const parsed = files.map((file) => {
-		const tokens = tokenize(file.text);
+		const tokens = tokenize$1(file.text);
 		return {
 			file,
 			tokens,
@@ -10321,7 +10738,7 @@ function writeEvents(trace, roles, node) {
 	return fill.events.sort((a, b) => a.step - b.step);
 }
 // src/engines/java/view/tree-setting.ts
-var KEYS = ["show"];
+var KEYS$1 = ["show"];
 var SLICE = /^\s*([A-Za-z_$][\w$]*)\s*\[\s*([A-Za-z_$][\w$]*)\s*\.\.\s*([A-Za-z_$][\w$]*)\s*([\])])\s*$/;
 var INT_TYPES = /* @__PURE__ */ new Set([
 	"int",
@@ -10336,7 +10753,7 @@ var NO_SETTING = {
 function readTreeSetting(value) {
 	if (value === void 0 || value === null) return NO_SETTING;
 	if (typeof value !== "object" || Array.isArray(value)) return wrong("tree: expected an object such as { show: 'a[lo..hi]' }");
-	const unknown = Object.keys(value).find((key) => !KEYS.includes(key));
+	const unknown = Object.keys(value).find((key) => !KEYS$1.includes(key));
 	if (unknown !== void 0) return wrong("tree: unknown key " + JSON.stringify(unknown) + " (the only key is show)");
 	const show = value.show;
 	if (show === void 0) return NO_SETTING;
@@ -12321,7 +12738,7 @@ function resultView(trace, node, index, isDone) {
 		isShown: cells.some((cell) => cell !== null)
 	};
 }
-function stateOf(plan, trace, meta, node, index) {
+function stateOf$1(plan, trace, meta, node, index) {
 	const stack = stackAt(trace, index);
 	const running = stack.length ? stack[stack.length - 1] : -1;
 	if (running >= 0 && plan.rep[running] === node.index) {
@@ -12353,7 +12770,7 @@ function unwindView(plan, trace, meta, index, from) {
 		const { state, helper } = isLeaving ? {
 			state: "leaving",
 			helper: ""
-		} : stateOf(plan, trace, meta, node, index);
+		} : stateOf$1(plan, trace, meta, node, index);
 		const isDone = isLeaving || node.kind === "call" && hasReturned(trace, node.call, index);
 		const isMerging = state === "busy" || state === "running" && node.events.some((e) => e.step < index);
 		const call = node.kind === "call" ? trace.calls[node.call] : null;
@@ -12563,7 +12980,7 @@ function SpokenUnwind(props) {
 var MARGIN = 8;
 var TOP_MARGIN = 18;
 var CELL_BASELINE = 13;
-function Cell$1(props) {
+function Cell$2(props) {
 	const isEmpty = props.text === null;
 	const classes = "jv-ucell" + (isEmpty ? " empty" : "") + (props.extra ? " " + props.extra : "");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", {
@@ -12594,7 +13011,7 @@ function CellRow(props) {
 			y: y + CELL_BASELINE,
 			children: "="
 		}) : null,
-		shown.map((text, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell$1, {
+		shown.map((text, k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell$2, {
 			x: x + k * cellW,
 			y,
 			width: cellW,
@@ -13520,7 +13937,7 @@ function MapTable(props) {
 	});
 }
 // src/engines/java/view/HeapCards.tsx
-function Cell(props) {
+function Cell$1(props) {
 	const view = valueView(props.token, props.heap);
 	const id = refId(props.token);
 	const isRef = id !== null && id > 0;
@@ -13562,7 +13979,7 @@ function Cells(props) {
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "arow",
 			role: "presentation",
-			children: [props.tokens.map((token, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			children: [props.tokens.map((token, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell$1, {
 				token,
 				index: i,
 				heap: props.heap,
@@ -14185,6 +14602,17 @@ var JAVA_ISLANDS = {
 				width: 280,
 				height: 140
 			}
+		},
+		{
+			id: "generator",
+			title: {
+				english: "complexity",
+				hebrew: "מחולל סיבוכיות"
+			},
+			min: {
+				width: 280,
+				height: 120
+			}
 		}
 	],
 	layout: { column: [
@@ -14205,6 +14633,10 @@ var JAVA_ISLANDS = {
 		{
 			island: "counts",
 			folded: true
+		},
+		{
+			island: "generator",
+			closed: true
 		},
 		{
 			island: "terminal",
@@ -14283,6 +14715,916 @@ function javaIslands(props) {
 			view: counts,
 			summary: summaries.counts
 		}
+	};
+}
+// src/shared/complexity/java-parse.ts
+var LONG_SYMBOLS = [
+	">>>=",
+	"<<=",
+	">>=",
+	">>>",
+	"==",
+	"!=",
+	"<=",
+	">=",
+	"&&",
+	"||",
+	"++",
+	"--",
+	"+=",
+	"-=",
+	"*=",
+	"/=",
+	"%=",
+	"<<",
+	">>",
+	"->",
+	"::"
+];
+function tokenize(source) {
+	const tokens = [];
+	let line = 1;
+	let index = 0;
+	while (index < source.length) {
+		const next = readToken(source, index);
+		if (next.text !== "") tokens.push({
+			text: next.text,
+			line
+		});
+		line += countNewlines(source.slice(index, next.end));
+		index = next.end;
+	}
+	return tokens;
+}
+function countNewlines(text) {
+	return text.split("\n").length - 1;
+}
+function readToken(source, start) {
+	const rest = source.slice(start);
+	const space = /^\s+/.exec(rest);
+	const comment = /^(\/\/[^\n]*|\/\*[\s\S]*?(\*\/|$))/.exec(rest);
+	const literal = /^("(\\.|[^"\\\n])*"|'(\\.|[^'\\\n])*')/.exec(rest);
+	const word = /^[A-Za-z_$][A-Za-z0-9_$]*|^\d[\d_]*(\.\d+)?[lLfFdD]?/.exec(rest);
+	const symbol = LONG_SYMBOLS.find((candidate) => rest.startsWith(candidate)) ?? rest[0];
+	if (space !== null) return {
+		text: "",
+		end: start + space[0].length
+	};
+	if (comment !== null) return {
+		text: "",
+		end: start + comment[0].length
+	};
+	const match = literal ?? word;
+	if (match !== null) return {
+		text: match[0],
+		end: start + match[0].length
+	};
+	return {
+		text: symbol,
+		end: start + symbol.length
+	};
+}
+function closingIndex(tokens, open) {
+	const pairs = {
+		"(": ")",
+		"{": "}",
+		"[": "]"
+	};
+	const opener = tokens[open].text;
+	let depth = 0;
+	for (let index = open; index < tokens.length; index++) if (tokens[index].text === opener) depth++;
+	else if (tokens[index].text === pairs[opener]) {
+		depth--;
+		if (depth === 0) return index;
+	}
+	return tokens.length - 1;
+}
+var NOT_METHODS = /* @__PURE__ */ new Set([
+	"if",
+	"for",
+	"while",
+	"switch",
+	"catch",
+	"synchronized",
+	"return",
+	"new",
+	"else",
+	"do",
+	"try"
+]);
+function findMethods(tokens) {
+	const methods = [];
+	for (let index = 1; index + 1 < tokens.length; index++) {
+		const name = tokens[index].text;
+		const isName = /^[A-Za-z_$]/.test(name) && tokens[index + 1].text === "(";
+		const before = tokens[index - 1].text;
+		if (!isName || NOT_METHODS.has(name) || before === "new" || before === ".") continue;
+		const close = closingIndex(tokens, index + 1);
+		const brace = tokens[close + 1]?.text === "{" ? close + 1 : -1;
+		if (brace < 0 || !/^[A-Za-z_$>\]]/.test(before)) continue;
+		const end = closingIndex(tokens, brace);
+		methods.push({
+			name,
+			params: parameterNames(tokens.slice(index + 2, close)),
+			line: tokens[index].line,
+			end: tokens[end].line,
+			body: parseBlock(tokens, brace, end)
+		});
+		index = end;
+	}
+	return methods;
+}
+function parameterNames(tokens) {
+	const names = [];
+	let depth = 0;
+	let last = "";
+	for (const token of tokens) if (token.text === "<") depth++;
+	else if (token.text === ">") depth--;
+	else if (token.text === "," && depth === 0) names.push(last);
+	else if (/^[A-Za-z_$]/.test(token.text)) last = token.text;
+	if (last !== "") names.push(last);
+	return names;
+}
+function parseBlock(tokens, open, close) {
+	const children = [];
+	let index = open + 1;
+	while (index < close) {
+		const parsed = parseStatement(tokens, index, close);
+		children.push(parsed.statement);
+		index = parsed.next;
+	}
+	return {
+		kind: "block",
+		from: tokens[open].line,
+		to: tokens[close].line,
+		tokens: [],
+		children
+	};
+}
+function parseStatement(tokens, start, limit) {
+	const word = tokens[start].text;
+	if (word === "{") {
+		const close = closingIndex(tokens, start);
+		return {
+			statement: parseBlock(tokens, start, close),
+			next: close + 1
+		};
+	}
+	if (word === "if") return parseIf(tokens, start, limit);
+	if (word === "for" || word === "while") return parseLoop(tokens, start, limit);
+	if (word === "do") return parseDo(tokens, start, limit);
+	return parseSimple(tokens, start, limit);
+}
+function parseIf(tokens, start, limit) {
+	const close = closingIndex(tokens, start + 1);
+	const then = parseStatement(tokens, close + 1, limit);
+	const children = [then.statement];
+	let next = then.next;
+	if (next < limit && tokens[next].text === "else") {
+		const otherwise = parseStatement(tokens, next + 1, limit);
+		children.push(otherwise.statement);
+		next = otherwise.next;
+	}
+	return {
+		statement: {
+			kind: "if",
+			from: tokens[start].line,
+			to: tokens[next - 1].line,
+			tokens: tokens.slice(start + 2, close),
+			children
+		},
+		next
+	};
+}
+function parseLoop(tokens, start, limit) {
+	const close = closingIndex(tokens, start + 1);
+	const body = parseStatement(tokens, close + 1, limit);
+	return {
+		statement: {
+			kind: "loop",
+			keyword: tokens[start].text,
+			from: tokens[start].line,
+			to: tokens[body.next - 1].line,
+			tokens: tokens.slice(start + 2, close),
+			children: [body.statement]
+		},
+		next: body.next
+	};
+}
+function parseDo(tokens, start, limit) {
+	const body = parseStatement(tokens, start + 1, limit);
+	const whileIndex = body.next;
+	const close = tokens[whileIndex + 1]?.text === "(" ? closingIndex(tokens, whileIndex + 1) : whileIndex;
+	const next = Math.min(limit, close + 2);
+	return {
+		statement: {
+			kind: "loop",
+			keyword: "do",
+			from: tokens[start].line,
+			to: tokens[next - 1].line,
+			tokens: tokens.slice(whileIndex + 2, close),
+			children: [body.statement]
+		},
+		next
+	};
+}
+function parseSimple(tokens, start, limit) {
+	let index = start;
+	while (index < limit && tokens[index].text !== ";") index = [
+		"(",
+		"{",
+		"["
+	].includes(tokens[index].text) ? closingIndex(tokens, index) + 1 : index + 1;
+	const end = Math.min(index, limit - 1);
+	return {
+		statement: {
+			kind: "simple",
+			from: tokens[start].line,
+			to: tokens[Math.max(start, end)].line,
+			tokens: tokens.slice(start, index),
+			children: []
+		},
+		next: index < limit ? index + 1 : limit
+	};
+}
+function allTokens(statement) {
+	return [...statement.tokens, ...statement.children.flatMap(allTokens)];
+}
+// src/shared/complexity/loops.ts
+function loopCount(loop) {
+	const header = loop.tokens.map((token) => token.text);
+	const text = header.join(" ");
+	const parts = loop.keyword === "for" ? splitFor(header) : {
+		condition: header,
+		update: []
+	};
+	const counter = parts.condition.find((word) => /^[A-Za-z_$]/.test(word)) ?? "";
+	const update = [...parts.update, ...bodyUpdates(loop, counter)].join(" ");
+	const bound = parts.condition.filter((word) => /^[A-Za-z_$]/.test(word) && word !== counter);
+	if (/(\*=|\/=|>>=|<<=)\s*\S/.test(update) || /=\s*\S+\s*[*/]\s*\d/.test(update)) return "log";
+	if (bound.length === 0 && !/\.\s*length|size/.test(text)) return "constant";
+	return "n";
+}
+function splitFor(header) {
+	const first = header.indexOf(";");
+	const second = header.indexOf(";", first + 1);
+	if (first < 0 || second < 0) return {
+		condition: header,
+		update: []
+	};
+	return {
+		condition: header.slice(first + 1, second),
+		update: header.slice(second + 1)
+	};
+}
+function bodyUpdates(loop, counter) {
+	const words = allTokens(loop.children[0]).map((token) => token.text);
+	const updates = [];
+	words.forEach((word, index) => {
+		if (word === counter && /^(=|\*=|\/=|>>=|<<=)$/.test(words[index + 1] ?? "")) updates.push(...words.slice(index + 1, index + 5));
+	});
+	return updates;
+}
+// src/shared/complexity/analyze.ts
+var NO_WORK = {
+	k: 0,
+	j: 0
+};
+var HELPER_DEPTH = 4;
+function analyze(source, methodName) {
+	const methods = findMethods(tokenize(source));
+	const method = methods.find((candidate) => methodName === void 0 ? callsItself(candidate) : candidate.name === methodName);
+	const parts = {
+		a: [],
+		b: [],
+		f: [],
+		base: []
+	};
+	if (method === void 0) return {
+		method: methodName ?? "",
+		recurrence: null,
+		reason: "no-method",
+		parts
+	};
+	const cost = costOf(method.body, method, methods, parts, HELPER_DEPTH, false);
+	markBase(method.body, method.name, parts);
+	const divide = divisorOf(method, parts);
+	const reason = reasonOf(cost, divide);
+	sortParts(parts);
+	if (reason !== null || typeof divide !== "number") return {
+		method: method.name,
+		recurrence: null,
+		reason,
+		parts
+	};
+	return {
+		method: method.name,
+		recurrence: {
+			a: cost.calls,
+			b: divide,
+			f: cost.work
+		},
+		reason: null,
+		parts
+	};
+}
+function reasonOf(cost, divide) {
+	if (cost.calls === 0) return "no-recursion";
+	if (cost.callInLoop) return "call-in-loop";
+	return typeof divide === "number" ? null : divide;
+}
+function callsItself(method) {
+	return callLines(method.body, method.name).length > 0;
+}
+function callIndexes(tokens, name) {
+	const found = [];
+	tokens.forEach((token, index) => {
+		if (token.text === name && tokens[index + 1]?.text === "(" && tokens[index - 1]?.text !== ".") found.push(index);
+	});
+	return found;
+}
+function callLines(statement, name) {
+	const tokens = allTokens(statement);
+	return callIndexes(tokens, name).map((index) => tokens[index].line);
+}
+function costOf(statement, method, methods, parts, depth, inLoop) {
+	const child = (inner, loop) => costOf(inner, method, methods, parts, depth, loop);
+	if (statement.kind === "block") return blockCost(statement.children, (inner) => child(inner, inLoop));
+	if (statement.kind === "if") return sequence([simpleCost(statement.tokens, method, methods, parts, depth, inLoop), larger(statement.children.map((inner) => child(inner, inLoop)))]);
+	if (statement.kind === "loop") return loopCost(statement, child(statement.children[0], true), parts);
+	return simpleCost(statement.tokens, method, methods, parts, depth, inLoop);
+}
+function blockCost(children, costOfOne) {
+	const costs = [];
+	for (let index = 0; index < children.length; index++) {
+		const statement = children[index];
+		if (statement.kind === "if" && statement.children.length === 1 && allTokens(statement.children[0]).some((token) => token.text === "return")) {
+			const header = {
+				...statement,
+				children: [],
+				kind: "simple"
+			};
+			const rest = blockCost(children.slice(index + 1), costOfOne);
+			costs.push(costOfOne(header), larger([costOfOne(statement.children[0]), rest]));
+			return sequence(costs);
+		}
+		costs.push(costOfOne(statement));
+	}
+	return sequence(costs);
+}
+function loopCost(loop, body, parts) {
+	const count = loopCount(loop);
+	const work = {
+		k: body.work.k + (count === "n" ? 1 : 0),
+		j: body.work.j + (count === "log" ? 1 : 0)
+	};
+	if (count !== "constant") parts.f.push(loop.from);
+	return {
+		calls: body.calls,
+		work,
+		callInLoop: body.callInLoop || body.calls > 0
+	};
+}
+function simpleCost(tokens, method, methods, parts, depth, inLoop) {
+	const calls = callIndexes(tokens, method.name);
+	const helpers = methods.filter((other) => other.name !== method.name && callIndexes(tokens, other.name).length > 0);
+	const works = helpers.map((helper) => helperWork(helper, methods, depth));
+	calls.forEach((index) => parts.a.push(tokens[index].line));
+	helpers.forEach((helper, index) => {
+		if (works[index].k + works[index].j > 0) parts.f.push(tokens[callIndexes(tokens, helper.name)[0]].line);
+	});
+	return {
+		calls: calls.length,
+		work: largest(works),
+		callInLoop: inLoop && calls.length > 0
+	};
+}
+function helperWork(helper, methods, depth) {
+	const scratch = {
+		a: [],
+		b: [],
+		f: [],
+		base: []
+	};
+	if (depth <= 0) return NO_WORK;
+	return costOf(helper.body, helper, methods, scratch, depth - 1, false).work;
+}
+function sequence(costs) {
+	return {
+		calls: costs.reduce((total, cost) => total + cost.calls, 0),
+		work: largest(costs.map((cost) => cost.work)),
+		callInLoop: costs.some((cost) => cost.callInLoop)
+	};
+}
+function larger(arms) {
+	return {
+		calls: Math.max(0, ...arms.map((arm) => arm.calls)),
+		work: largest(arms.map((arm) => arm.work)),
+		callInLoop: arms.some((arm) => arm.callInLoop)
+	};
+}
+function largest(works) {
+	return works.reduce((best, work) => work.k > best.k || work.k === best.k && work.j > best.j ? work : best, NO_WORK);
+}
+function markBase(body, name, parts) {
+	for (const statement of body.children) {
+		if (statement.kind !== "if") continue;
+		const then = statement.children[0];
+		if (allTokens(then).some((token) => token.text === "return") && callLines(then, name).length === 0) parts.base.push(statement.from, ...linesOf$1(then));
+	}
+}
+function linesOf$1(statement) {
+	const lines = [];
+	for (let line = statement.from; line <= statement.to; line++) lines.push(line);
+	return lines;
+}
+function divisorOf(method, parts) {
+	const tokens = allTokens(method.body);
+	const locals = localDivisors(tokens);
+	const found = /* @__PURE__ */ new Set();
+	let subtracts = false;
+	for (const index of callIndexes(tokens, method.name)) {
+		const args = tokens.slice(index + 2, closeOf(tokens, index + 1));
+		const direct = divisorIn(args);
+		const local = args.map((token) => locals.get(token.text)).find((entry) => entry);
+		const divisor = direct ?? local?.divisor;
+		if (divisor !== void 0) {
+			found.add(divisor);
+			parts.b.push(direct === void 0 ? local?.line ?? args[0].line : args[0].line);
+		} else if (subtractsOne(args, method.params)) subtracts = true;
+	}
+	if (found.size === 1) return [...found][0];
+	return found.size > 1 ? "mixed-divide" : subtracts ? "subtract" : "no-divide";
+}
+function closeOf(tokens, open) {
+	let depth = 0;
+	for (let index = open; index < tokens.length; index++) {
+		depth += tokens[index].text === "(" ? 1 : tokens[index].text === ")" ? -1 : 0;
+		if (depth === 0) return index;
+	}
+	return tokens.length;
+}
+function divisorIn(tokens) {
+	for (let index = 0; index + 1 < tokens.length; index++) {
+		const value = Number(tokens[index + 1].text);
+		if (tokens[index].text === "/" && value > 1) return value;
+		if (tokens[index].text === ">>" && value >= 1) return Math.pow(2, value);
+	}
+}
+function localDivisors(tokens) {
+	const locals = /* @__PURE__ */ new Map();
+	tokens.forEach((token, index) => {
+		if (tokens[index + 1]?.text !== "=" || !/^[A-Za-z_$]/.test(token.text)) return;
+		const end = tokens.findIndex((other, at) => at > index && other.text === ";");
+		const divisor = divisorIn(tokens.slice(index + 2, end < 0 ? tokens.length : end));
+		if (divisor !== void 0) locals.set(token.text, {
+			divisor,
+			line: token.line
+		});
+	});
+	return locals;
+}
+function subtractsOne(args, params) {
+	return args.some((token, index) => params.includes(token.text) && ["-", "+"].includes(args[index + 1]?.text ?? "") && /^\d/.test(args[index + 2]?.text ?? ""));
+}
+function sortParts(parts) {
+	for (const key of [
+		"a",
+		"b",
+		"f",
+		"base"
+	]) parts[key] = [...new Set(parts[key])].sort((left, right) => left - right);
+}
+// src/shared/complexity/master.ts
+var EXPONENT_EPSILON = 1e-9;
+function powerText(exponent) {
+	const rounded = Math.round(exponent * 100) / 100;
+	if (Math.abs(exponent) < EXPONENT_EPSILON) return "1";
+	if (Math.abs(rounded - 1) < EXPONENT_EPSILON) return "n";
+	return "n^" + String(rounded);
+}
+function workText(work) {
+	const power = powerText(work.k);
+	const logs = work.j === 0 ? "" : work.j === 1 ? "log n" : "log^" + String(work.j) + " n";
+	if (logs === "") return power;
+	return power === "1" ? logs : power + " " + logs;
+}
+function fitsMaster(recurrence) {
+	const { a, b, f } = recurrence;
+	return [
+		a,
+		b,
+		f.k,
+		f.j
+	].every((value) => Number.isFinite(value)) && a >= 1 && b > 1 && f.k >= 0 && f.j >= 0 && Number.isInteger(f.j);
+}
+function solveMaster(recurrence) {
+	const critical = Math.log(recurrence.a) / Math.log(recurrence.b);
+	const { k, j } = recurrence.f;
+	if (!fitsMaster(recurrence)) throw new Error("not of the form a·T(n/b) + f(n)");
+	if (Math.abs(k - critical) < EXPONENT_EPSILON) return {
+		case: 2,
+		critical,
+		answer: workText({
+			k,
+			j: j + 1
+		}),
+		trend: "same"
+	};
+	if (k < critical) return {
+		case: 1,
+		critical,
+		answer: powerText(critical),
+		trend: "grows"
+	};
+	return {
+		case: 3,
+		critical,
+		answer: workText({
+			k,
+			j
+		}),
+		trend: "shrinks"
+	};
+}
+function treeLevels(recurrence, n, maxDepth = 12) {
+	const levels = [];
+	let calls = 1;
+	let size = n;
+	for (let depth = 0; depth < maxDepth && size >= 1; depth++) {
+		const each = workAt(recurrence.f, size);
+		levels.push({
+			depth,
+			calls,
+			size,
+			each,
+			total: calls * each
+		});
+		calls *= recurrence.a;
+		size /= recurrence.b;
+	}
+	return levels;
+}
+function workAt(work, n) {
+	const log = Math.max(1, Math.log2(n));
+	return Math.pow(n, work.k) * Math.pow(log, work.j);
+}
+// src/shared/complexity/LevelTree.tsx
+var MAX_SQUARES = 8;
+var MAX_LEVELS = 7;
+function short(value) {
+	return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+}
+function Cell({ part, tree, children }) {
+	const isLit = tree.point === part;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+		className: "cx-cell" + (isLit ? " is-lit" : ""),
+		"data-part": part,
+		onMouseEnter: () => tree.onPoint(part),
+		onMouseLeave: () => tree.onPoint(null),
+		children: tree.shown.has(part) ? children : "·"
+	});
+}
+function Squares({ level, isLeaf }) {
+	const drawn = Math.min(level.calls, MAX_SQUARES);
+	const more = level.calls - drawn;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "cx-squares",
+		children: [Array.from({ length: drawn }, (_, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "cx-sq" + (isLeaf ? " is-leaf" : "") }, index)), more > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "cx-more",
+			children: ["+", more]
+		}) : null]
+	});
+}
+function LevelRow({ level, isLeaf, tree }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "cx-depth",
+			children: level.depth
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: isLeaf ? "base" : "a",
+			tree,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Squares, {
+				level,
+				isLeaf
+			})
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "b",
+			tree,
+			children: short(level.size)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "f",
+			tree,
+			children: short(level.each)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "sum",
+			tree,
+			children: short(level.total)
+		})
+	] });
+}
+function LevelTree(props) {
+	const levels = treeLevels(props.recurrence, props.n, MAX_LEVELS);
+	const total = levels.reduce((sum, level) => sum + level.total, 0);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", {
+		className: "cx-tree",
+		dir: "ltr",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+				lang: "he",
+				children: "רמה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+				lang: "he",
+				children: "קריאות"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "n" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "f" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "Σ" })
+		] }) }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tbody", { children: [levels.map((level, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LevelRow, {
+			level,
+			isLeaf: index === levels.length - 1,
+			tree: props
+		}, level.depth)), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", {
+			className: "cx-total",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+				colSpan: 4,
+				children: "Σ"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+				part: "case",
+				tree: props,
+				children: short(total)
+			})]
+		})] })]
+	});
+}
+// src/shared/complexity/MasterCard.tsx
+var PART_NAMES = {
+	a: "a: מספר הקריאות",
+	b: "b: פי כמה n קטן",
+	f: "f(n): העבודה בקריאה",
+	base: "תנאי עצירה",
+	sum: "סכום רמה",
+	case: "המקרה"
+};
+function Piece({ part, text, card }) {
+	const isShown = card.shown.has(part);
+	const className = "cx-piece" + (card.point === part ? " is-lit" : "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+		type: "button",
+		className,
+		"data-part": part,
+		"aria-label": PART_NAMES[part] + (isShown ? " " + text : ""),
+		onMouseEnter: () => card.onPoint(part),
+		onMouseLeave: () => card.onPoint(null),
+		onFocus: () => card.onPoint(part),
+		onBlur: () => card.onPoint(null),
+		children: isShown ? text : "?"
+	});
+}
+function MasterCard(props) {
+	const { a, b, f } = props.recurrence;
+	const solved = solveMaster(props.recurrence);
+	const sign = solved.case === 1 ? "<" : solved.case === 2 ? "=" : ">";
+	const compare = workText(f) + " " + sign + " " + powerText(solved.critical);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-card",
+		dir: "ltr",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-line",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "T(n) =" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "a",
+					text: String(a),
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "·T(n/" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "b",
+					text: String(b),
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: ") +" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "f",
+					text: workText(f),
+					card: props
+				})
+			]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-line",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: compare,
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "cx-sep",
+					children: "·"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: "מקרה " + solved.case,
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "cx-sep",
+					children: "·"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: "Θ(" + solved.answer + ")",
+					card: props
+				})
+			]
+		})]
+	});
+}
+// src/shared/complexity/steps.ts
+var STEP_PARTS = [
+	"a",
+	"b",
+	"f",
+	"sum",
+	"case"
+];
+var TREND_TEXT = {
+	grows: "גדלה",
+	same: "שווה",
+	shrinks: "קטנה"
+};
+var WINNER_TEXT = {
+	1: "העלים",
+	2: "תיקו",
+	3: "השורש"
+};
+function generatorSteps(recurrence) {
+	const solved = solveMaster(recurrence);
+	const { a, b, f } = recurrence;
+	const calls = a === 1 ? "קריאה אחת" : a + " קריאות";
+	const leaves = powerText(solved.critical);
+	return [
+		{
+			part: "a",
+			caption: "a = " + a + ": " + calls
+		},
+		{
+			part: "b",
+			caption: "b = " + b + ": n/" + b + " בכל קריאה"
+		},
+		{
+			part: "f",
+			caption: "f(n) = " + workText(f)
+		},
+		{
+			part: "sum",
+			caption: "העבודה ברמה " + TREND_TEXT[solved.trend] + " למטה"
+		},
+		{
+			part: "case",
+			caption: "מקרה " + solved.case + " · " + WINNER_TEXT[solved.case] + " · Θ(" + solved.answer + ")" + (solved.case === 2 ? "" : " · " + leaves + " מול " + workText(f))
+		}
+	];
+}
+function shownParts(step) {
+	const upTo = step < 0 ? STEP_PARTS.length : step + 1;
+	return /* @__PURE__ */ new Set([...STEP_PARTS.slice(0, upTo), "base"]);
+}
+// src/shared/complexity/Generator.tsx
+var LAST_STEP = 4;
+var DEFAULT_N$1 = 16;
+var NO_FIT_TEXT = {
+	"no-method": "אין כאן שיטה רקורסיבית",
+	"no-recursion": "השיטה לא קוראת לעצמה",
+	"call-in-loop": "קריאה בתוך לולאה: לא a·T(n/b)",
+	subtract: "T(n−1): n לא מתחלק",
+	"no-divide": "n לא מתחלק בקריאות",
+	"mixed-divide": "n מתחלק פעם כך ופעם אחרת"
+};
+function linesOf(parts, part) {
+	if (!parts || part === null || part === "sum" || part === "case") return null;
+	return parts[part].length > 0 ? parts[part] : null;
+}
+function Generator(props) {
+	const [step, setStep] = (0, import_react.useState)(props.startAtEnd ? LAST_STEP : 0);
+	const [hover, setHover] = (0, import_react.useState)(null);
+	const [treeOpen, setTreeOpen] = (0, import_react.useState)(props.treeOpen ?? false);
+	const steps = props.recurrence ? generatorSteps(props.recurrence) : [];
+	const point = hover ?? props.pointFromCode ?? steps[step]?.part ?? null;
+	const { onLines, parts } = props;
+	(0, import_react.useEffect)(() => {
+		onLines?.(linesOf(parts, point));
+	}, [
+		onLines,
+		parts,
+		point
+	]);
+	if (props.recurrence === null) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "cx-gen",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			className: "cx-nofit",
+			children: NO_FIT_TEXT[props.reason ?? "no-method"]
+		})
+	});
+	const shown = shownParts(step);
+	const view = {
+		recurrence: props.recurrence,
+		point,
+		shown,
+		onPoint: setHover
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-gen",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$2, {
+				step,
+				count: steps.length,
+				caption: steps[step].caption,
+				onStep: setStep
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MasterCard, { ...view }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "cx-fold",
+				"aria-expanded": treeOpen,
+				onClick: () => setTreeOpen(!treeOpen),
+				children: [treeOpen ? "▾" : "▸", " עץ"]
+			}),
+			treeOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LevelTree, {
+				...view,
+				n: props.n ?? DEFAULT_N$1
+			}) : null
+		]
+	});
+}
+function StepBar$2({ step, count, caption, onStep }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "cx-btn",
+				"aria-label": "צעד קודם",
+				disabled: step === 0,
+				onClick: () => onStep(step - 1),
+				children: "▶"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "cx-count",
+				dir: "ltr",
+				children: [
+					step + 1,
+					" / ",
+					count
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "cx-btn",
+				"aria-label": "צעד הבא",
+				disabled: step === count - 1,
+				onClick: () => onStep(step + 1),
+				children: "◀"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "cx-caption",
+				"aria-live": "polite",
+				children: caption
+			})
+		]
+	});
+}
+// src/shared/complexity/island.ts
+function readFiles(files) {
+	for (const file of files) {
+		const reading = analyze(file.text);
+		if (reading.reason !== "no-method") return {
+			reading,
+			file: file.name
+		};
+	}
+	return null;
+}
+function generatorIsland(files) {
+	const found = readFiles(files);
+	if (found === null) return null;
+	const { reading } = found;
+	const recurrence = reading.recurrence;
+	const formula = recurrence ? "T(n) = " + (recurrence.a === 1 ? "" : recurrence.a) + "T(n/" + recurrence.b + ") + " + workText(recurrence.f) : "no a·T(n/b) + f(n)";
+	return {
+		view: (0, import_react.createElement)(Generator, {
+			key: "generator:" + found.file + ":" + reading.method,
+			recurrence,
+			reason: reading.reason,
+			parts: reading.parts
+		}),
+		summary: reading.method + " · " + formula
 	};
 }
 // src/engines/java/box/step-draw.ts
@@ -14391,7 +15733,10 @@ function drawStep(context, onMeasure, move) {
 		onMeasure
 	});
 	ui.showStepLine(step.file, step.line);
-	ui.showIslands(whereText(context, step), islands);
+	ui.showIslands(whereText(context, step), {
+		...islands,
+		generator: generatorIsland(filesOf(context))
+	});
 	ui.setTerm(terminalHtml$1(context, isLast), "end");
 	ui.showStepPosition(trace.steps.length, state.idx, stepMoves(context));
 	showInputRow(context, isLast && trace.end === "input");
@@ -15236,6 +16581,7 @@ installCourseDiagrams({});
 		}
 		return unit;
 	};
+	const generator = (spec) => "<div class=\"cx-generator\" data-generator=\"" + JSON.stringify(spec).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\$/g, "&#36;") + "\"></div>";
 	const U = [];
 	const MAIN_HELLO = R`public class Main {
     public static void main(String[] args) {
@@ -16009,6 +17355,7 @@ System.out.println(grade + " " + top);`),
 ` + PAIRS_MAIN;
 	U.push(withOutputs({
 		id: "java-loops",
+		islands: { closed: ["stack"] },
 		title: "לולאות",
 		body: [
 			R`<p>שלוש לולאות, כמו ב-<bdi dir="ltr">C</bdi>. התנאי הוא <code>boolean</code>, ונבדק לפני כל סיבוב, חוץ מב-<code>do</code>, שבודקת אחרי.</p>
@@ -16556,6 +17903,7 @@ public class Main {
 ` + ROWS_MAIN;
 	U.push(withOutputs({
 		id: "java-arrays",
+		islands: { closed: ["stack"] },
 		title: "מערכים",
 		body: [
 			R`<p>מערך הוא אובייקט באורך קבוע. <code>new int[4]</code> יוצר ארבעה תאים, ממוספרים 0 עד 3, וכולם מקבלים ערך ברירת מחדל. <code>.length</code> הוא שדה, בלי סוגריים, והתא האחרון הוא <code>a[a.length - 1]</code>. גישה מחוץ לגבולות זורקת <code>ArrayIndexOutOfBoundsException</code>.</p>
@@ -20531,15 +21879,14 @@ System.out.println(total);`),
 		id: "cost-steps",
 		title: "מה סופרים כשמודדים קוד",
 		body: [
-			R`<p>כמה זמן לוקחת שיטה? שעון עונה תשובה אחרת בכל מחשב, ואפילו באותו מחשב בין ריצה לריצה. לכן
-סופרים <b>צעדים</b>: פקודה שרצה היא צעד אחד, וכל בדיקה של תנאי לולאה היא צעד אחד. מספר הצעדים
-תלוי רק בקוד ובגודל הקלט <code>n</code>, לא במחשב.</p>
+			R`<p>שעון נותן תשובה אחרת בכל מחשב. לכן סופרים <b>צעדים</b>: פקודה שרצה היא צעד, וכל בדיקה
+של תנאי לולאה היא צעד. המספר תלוי רק בקוד ובקלט <code>n</code>.</p>
 <table class="tbl"><tr><th>נספר כצעד</th><th>לא נספר בנפרד</th></tr>
 <tr><td>פקודה: <code>int s = 0;</code>, <code>s += 180;</code>, <code>return s;</code></td>
 <td>ה-<code>i++</code> שבכותרת: הוא חלק מהסיבוב</td></tr>
 <tr><td>כניסה ללולאה (האתחול <code>int i = 1</code>), וכל בדיקה של <code>i &lt;= n</code></td>
 <td>הזמן שלוקח כל צעד: מניחים שכל הצעדים שווים</td></tr></table>
-<p>הריצו את הקוד ליד ב-<b>⏯</b>, קפצו לסוף, ופתחו את האי <b>ספירות</b>.</p>`,
+<p>הריצו עד הסוף ופתחו את האי <b>ספירות</b>.</p>`,
 			{
 				id: "cost-steps-total",
 				title: "אורך רשימת השמעה",
@@ -20548,19 +21895,17 @@ System.out.println(total);`),
 			},
 			R`<p>באי <b>ספירות</b>, תחת <bdi dir="ltr">steps, whole run</bdi>, כתוב <code>25</code>: צעד אחד של
 <code>main</code> (שורת ה-<code>println</code>) ו-24 של <code>total(10)</code>. בטבלה
-<bdi dir="ltr">lines run most</bdi> שורה 6 רצה 12 פעמים ושורה 7 רצה 10. הנה מאיפה באים ה-24:</p>
+<bdi dir="ltr">lines run most</bdi> שורה 6 רצה 12 פעמים ושורה 7 רצה 10. ה-24:</p>
 <table class="tbl"><tr><th>שורה</th><th>כמה פעמים</th><th>למה</th></tr>
 <tr><td class="mono">int s = 0;</td><td>1</td><td>פעם אחת לפני הלולאה</td></tr>
-<tr><td class="mono">for (...; i &lt;= n; ...)</td><td>1 + 11</td><td>כניסה אחת, ובדיקה לפני כל אחד מ-10 הסיבובים ועוד בדיקה אחרונה שנכשלת</td></tr>
+<tr><td class="mono">for (...; i &lt;= n; ...)</td><td>1 + 11</td><td>כניסה, 10 בדיקות שעוברות ואחת שנכשלת</td></tr>
 <tr><td class="mono">s += 180;</td><td>10</td><td>פעם בכל סיבוב</td></tr>
 <tr><td class="mono">return s;</td><td>1</td><td>פעם אחת בסוף</td></tr></table>
-<p>יחד <code>1 + 12 + 10 + 1 = 24</code>. ב-<code>n</code> כללי: <code>1 + (n + 2) + n + 1</code>.
-שנו את <code>10</code> ל-<code>20</code> והריצו שוב: הלולאה מוסיפה 2 צעדים על כל שיר.</p>`,
+<p>יחד <code>1 + 12 + 10 + 1 = 24</code>. ב-<code>n</code> כללי: <code>1 + (n + 2) + n + 1</code>.</p>`,
 			{
 				id: "cost-steps-formula",
 				title: "steps",
-				task: R`השלימו את <code>steps(n)</code> <b>בשורה אחת</b>: נוסחה ב-<code>n</code> שמחזירה כמה צעדים עושה
-<code>total(n)</code>.`,
+				task: R`השלימו את <code>steps(n)</code> <b>בשורה אחת</b>: נוסחה ב-<code>n</code> לצעדים של <code>total(n)</code>.`,
 				code: STEPS_FORMULA_START,
 				solution: STEPS_FORMULA_SOLVED,
 				example: { output: "steps(10) -> 24\nsteps(20) -> 44" },
@@ -20596,7 +21941,7 @@ System.out.println(total);`),
 					"<code>16</code>"
 				],
 				a: 1,
-				w: "<code>int c = 0</code> פעם אחת, הכניסה ללולאה, 6 בדיקות (5 שעוברות ואחת שנכשלת), 5 פעמים <code>c++</code> ו-<code>return</code>: 1 + 1 + 6 + 5 + 1 = 14, כלומר 2n + 4."
+				w: "1 + 1 + 6 + 5 + 1 = 14, כלומר 2n + 4."
 			},
 			{
 				s: "כמה פעמים נבדק התנאי <code>k &gt; 0</code> עבור <code>k = 4</code>?" + codeBlock(R`while (k > 0) {
@@ -20610,7 +21955,7 @@ System.out.println(total);`),
 					"<code>8</code>"
 				],
 				a: 2,
-				w: "הוא עובר עבור 4, 3, 2 ו-1, ונכשל פעם אחת עבור 0: חמש בדיקות לארבעה סיבובים. תמיד בדיקה אחת יותר מסיבובים."
+				w: "ארבע בדיקות שעוברות ואחת שנכשלת: תמיד אחת יותר מהסיבובים."
 			},
 			{
 				s: "קוד רץ 2 שניות במחשב אחד ו-0.5 שניות במחשב מהיר יותר. מה אפשר לומר על מספר הצעדים שלו, לאותו קלט?",
@@ -20621,7 +21966,7 @@ System.out.println(total);`),
 					"הוא תלוי בכמה תוכניות אחרות רצות"
 				],
 				a: 1,
-				w: "מספר הצעדים נקבע רק לפי הקוד והקלט. המחשב משנה כמה זמן לוקח כל צעד, לא כמה צעדים יש."
+				w: "הצעדים נקבעים לפי הקוד והקלט, לא לפי המחשב."
 			},
 			{
 				s: "לשיטה יש לולאה של <code>n</code> סיבובים, ובגוף שלה <b>שלוש</b> פקודות. לפני הלולאה פקודה אחת ואחריה <code>return</code>. כמה צעדים היא עושה?",
@@ -20632,7 +21977,7 @@ System.out.println(total);`),
 					"<code>4n + 5</code>"
 				],
 				a: 1,
-				w: "פקודה לפני, כניסה ללולאה, n + 1 בדיקות, 3n פקודות בגוף ו-return: 1 + 1 + (n + 1) + 3n + 1 = 4n + 4."
+				w: "1 + 1 + (n + 1) + 3n + 1 = 4n + 4."
 			},
 			{
 				s: "מה הדבר <b>היחיד</b> ששינוי מ-<code>total(10)</code> ל-<code>total(20)</code> משנה בטבלת הספירה?",
@@ -20643,7 +21988,7 @@ System.out.println(total);`),
 					"כמה זמן לוקח כל צעד"
 				],
 				a: 1,
-				w: "השורות שמחוץ ללולאה רצות פעם אחת בכל מקרה. רק הכותרת והגוף רצים יותר, 2 צעדים לכל סיבוב נוסף."
+				w: "מחוץ ללולאה הכול רץ פעם אחת; רק הכותרת והגוף גדלים."
 			}
 		]
 	}));
@@ -20722,10 +22067,9 @@ System.out.println(total);`),
 		id: "cost-table",
 		title: "טבלת עלות: שורה כפול פעמים",
 		body: [
-			R`<p>כדי לדעת כמה עולה שיטה, בונים לה טבלה: לכל שורה, <b>כמה עולה</b> פעם אחת שלה <b>וכמה פעמים</b>
-היא רצה. העלות של הכול היא סכום המכפלות. שורה פשוטה עולה צעד אחד; שורה שקוראת לשיטה עולה את כל
-הצעדים של אותה שיטה, בכל פעם.</p>
-<p>הדוגמה ליד סופרת שירים קצרים מ-180 שניות. הריצו ב-<b>⏯</b> עד הסוף, והשוו את הטבלה שלמטה לטבלה
+			R`<p>בונים לכל שיטה טבלה: לכל שורה, <b>כמה עולה</b> פעם אחת <b>וכמה פעמים</b> היא רצה. העלות
+היא סכום המכפלות. שורה פשוטה היא צעד; שורה שקוראת לשיטה עולה את כל צעדיה, בכל פעם.</p>
+<p>הדוגמה סופרת שירים קצרים מ-180 שניות. הריצו, והשוו לטבלה
 <bdi dir="ltr">lines run most</bdi> באי <b>ספירות</b>.</p>`,
 			{
 				id: "cost-table-short",
@@ -20733,7 +22077,7 @@ System.out.println(total);`),
 				code: TABLE_SHORT,
 				tests: [io("prints 2", "", "2\n")]
 			},
-			R`<p>חמישה שירים, ושניים מהם (95 ו-150) קצרים מ-180:</p>
+			R`<p>חמישה שירים, שניים קצרים מ-180 (95 ו-150):</p>
 <table class="tbl"><tr><th>שורה</th><th>קוד</th><th>פעמים</th><th>למה</th></tr>
 <tr><td>4, 5</td><td class="mono">int count = 0; int i = 0;</td><td>1 + 1</td><td>לפני הלולאה</td></tr>
 <tr><td>7</td><td class="mono">while (i &lt; secs.length)</td><td>1 + 6</td><td>כניסה, 5 בדיקות שעוברות ואחת שנכשלת</td></tr>
@@ -20741,15 +22085,13 @@ System.out.println(total);`),
 <tr><td>9</td><td class="mono">count++;</td><td>2</td><td>רק כשהשיר קצר</td></tr>
 <tr><td>11</td><td class="mono">i++;</td><td>5</td><td>בכל סיבוב</td></tr>
 <tr><td>13</td><td class="mono">return count;</td><td>1</td><td>בסוף</td></tr></table>
-<p>יחד 22 צעדים, ועוד צעד של <code>main</code>: באי כתוב 23. בשורה 7 רואים את הכלל: התנאי נבדק
-<b>פעם אחת יותר</b> מהגוף, כי הבדיקה האחרונה היא זו שעוצרת. שורה 9 מראה דבר חדש: כמה פעמים היא רצה
-תלוי בנתונים, לא רק ב-<code>n</code>.</p>`,
+<p>יחד 22 צעדים, ועוד צעד של <code>main</code>: באי כתוב 23. התנאי נבדק <b>פעם אחת יותר</b>
+מהגוף. שורה 9 תלויה בנתונים, לא רק ב-<code>n</code>.</p>`,
 			{
 				id: "cost-table-intro",
 				title: "tests, bodyRuns, steps",
-				task: R`השלימו את שלוש השיטות של הטבלה של <code>introSeconds(n)</code>: כמה פעמים נבדק
-<code>song &lt; n</code>, כמה פעמים רצה כל שורה בגוף, ו-<code>steps(n)</code>: <b>סכום כל הטבלה</b>,
-כשהכניסה ל-<code>for</code> היא צעד משלה.`,
+				task: R`השלימו את שלוש השיטות של <code>introSeconds(n)</code>: בדיקות <code>song &lt; n</code>, ריצות הגוף,
+ו-<code>steps(n)</code>: <b>סכום הטבלה</b>, כשהכניסה ל-<code>for</code> היא צעד משלה.`,
 				code: TABLE_INTRO_START,
 				solution: TABLE_INTRO_SOLVED,
 				example: { output: "header tests 6, body runs 5, steps 20" },
@@ -20783,7 +22125,7 @@ for (int i = 0; i < n; i += 2) {
 					"<code>3</code>"
 				],
 				a: 1,
-				w: "<code>i</code> עובר על 0, 2, 4 ו-6; עבור 8 התנאי נכשל. הגוף רץ 4 פעמים, והתנאי נבדק 5."
+				w: "<code>i</code> הוא 0, 2, 4 ו-6: הגוף רץ 4 פעמים, והתנאי נבדק 5."
 			},
 			{
 				s: "כמה פעמים נבדק התנאי של הלולאה עבור <code>n = 8</code>, באותו קוד?",
@@ -20794,7 +22136,7 @@ for (int i = 0; i < n; i += 2) {
 					"<code>5</code>"
 				],
 				a: 3,
-				w: "ארבע בדיקות שעוברות (0, 2, 4, 6) ובדיקה אחת שנכשלת (8): חמש, אחת יותר מהגוף."
+				w: "ארבע שעוברות ואחת שנכשלת: חמש."
 			},
 			{
 				s: "בלולאה של <code>n</code> סיבובים, הגוף קורא בכל סיבוב ל-<code>total(m)</code>, שעולה <code>2m + 4</code> צעדים. כמה עולה שורת הקריאה בסך הכול?",
@@ -20805,7 +22147,7 @@ for (int i = 0; i < n; i += 2) {
 					"<code>n</code>"
 				],
 				a: 0,
-				w: "שורה כפול פעמים: היא רצה n פעמים, וכל פעם עולה את כל הצעדים של <code>total(m)</code>."
+				w: "n פעמים, וכל פעם כל הצעדים של <code>total(m)</code>."
 			},
 			{
 				s: "כמה פעמים רצה <code>hits++</code>?" + codeBlock(R`int[] secs = {120, 300, 45, 300, 210};
@@ -20823,7 +22165,7 @@ for (int i = 0; i < secs.length; i++) {
 					"<code>6</code>"
 				],
 				a: 1,
-				w: "ה-<code>if</code> רץ 5 פעמים, אבל <code>hits++</code> רק כשהתנאי נכון: בתא 1 ובתא 3."
+				w: "<code>hits++</code> רץ רק כשהתנאי נכון: בתא 1 ובתא 3."
 			},
 			{
 				s: "באי <b>ספירות</b>, כמה פעמים תופיע שורת הכותרת של <code>for (int i = 0; i &lt; 3; i++)</code>?",
@@ -20833,7 +22175,7 @@ for (int i = 0; i < secs.length; i++) {
 					"<code>5</code>"
 				],
 				a: 2,
-				w: "פעם אחת הכניסה ללולאה (עם האתחול) ועוד 4 בדיקות של התנאי: 5. הגוף רץ 3 פעמים."
+				w: "כניסה אחת ועוד 4 בדיקות: 5."
 			}
 		]
 	}));
@@ -20885,12 +22227,10 @@ for (int i = 0; i < secs.length; i++) {
 		id: "cost-single",
 		title: "לולאה אחת",
 		body: [
-			R`<p>לולאה של <code>n</code> סיבובים, שבכל סיבוב עבודה קבועה, היא כמו שורה של <code>n</code> קופסאות
-באותו גודל:</p>
+			R`<p>לולאה של <code>n</code> סיבובים עם עבודה קבועה היא שורה של <code>n</code> קופסאות:</p>
 <pre class="code-static"><span>n = 4:  [s += secs[0]] [s += secs[1]] [s += secs[2]] [s += secs[3]]</span><span>n = 8:  [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]   twice as many boxes</span></pre>
-<p>כל קופסה היא 2 צעדים: בדיקת התנאי והגוף. מחוץ ללולאה יש עוד 4 צעדים קבועים. לכן
-<code>totalSeconds</code> עושה <code>2n + 4</code> צעדים. לקופסה ליד יש בדיקת <code>ops</code>:
-הריצו ב-<b>⏯</b>, ובאי <b>ספירות</b> לחצו <b>מדידת גדילה</b>.</p>`,
+<p>כל קופסה היא 2 צעדים (תנאי וגוף), ועוד 4 קבועים: <code>totalSeconds</code> עושה
+<code>2n + 4</code>. הריצו, ובאי <b>ספירות</b> לחצו <b>מדידת גדילה</b>.</p>`,
 			{
 				id: "cost-single-total",
 				title: "אורך רשימה, לגדלים שונים",
@@ -20905,15 +22245,14 @@ for (int i = 0; i < secs.length; i++) {
 					setup: "int[] a = Check.range(n);"
 				})]
 			},
-			R`<p>המדידה מריצה את השיטה על רשימות באורך 10, 20, 40 ו-80, וסופרת:</p>
+			R`<p>המדידה על רשימות באורך 10, 20, 40 ו-80:</p>
 <table class="tbl"><tr><th><code>n</code></th><th>צעדים</th><th>פי כמה מהשורה הקודמת</th></tr>
 <tr><td>10</td><td>24</td><td></td></tr>
 <tr><td>20</td><td>44</td><td>1.83</td></tr>
 <tr><td>40</td><td>84</td><td>1.91</td></tr>
 <tr><td>80</td><td>164</td><td>1.95</td></tr></table>
-<p>הנקודות יושבות על קו ישר. פי 2 בקלט נותן כמעט פי 2 בצעדים, וככל ש-<code>n</code> גדל ה-4 הקבועים
-חשובים פחות. כזו שיטה נקראת <b>לינארית</b>: היא גדלה כמו <code>n</code>. גם <code>5n + 30</code>
-לינארית: המספרים שליד <code>n</code> לא משנים את צורת הקו, רק את השיפוע.</p>`,
+<p>קו ישר: פי 2 בקלט נותן כמעט פי 2 בצעדים. שיטה כזו <b>לינארית</b>: גדלה כמו <code>n</code>.
+גם <code>5n + 30</code> לינארית: המספרים רק משנים את השיפוע.</p>`,
 			{
 				id: "cost-single-sum",
 				title: "sumTo",
@@ -20955,7 +22294,7 @@ for (int i = 0; i < n; i += 3) {
 					"<code>5</code>"
 				],
 				a: 2,
-				w: "<code>i</code> עובר על 0, 3, 6 ו-9; עבור 12 התנאי נכשל. ארבעה סיבובים, בערך n/3: עדיין לינארי."
+				w: "<code>i</code> הוא 0, 3, 6 ו-9: ארבעה סיבובים, n/3, לינארי."
 			},
 			{
 				s: "שיטה לינארית עשתה 1,000 צעדים עבור <code>n = 500</code>. בערך כמה צעדים היא תעשה עבור <code>n = 1500</code>?",
@@ -20966,7 +22305,7 @@ for (int i = 0; i < n; i += 3) {
 					"<code>2,000</code>"
 				],
 				a: 1,
-				w: "פי 3 בקלט, בערך פי 3 בצעדים, כשהחלק הקבוע קטן לעומת n."
+				w: "פי 3 בקלט, בערך פי 3 בצעדים."
 			},
 			{
 				s: "איזו מהלולאות <b>אינה</b> לינארית ב-<code>n</code>?",
@@ -20977,7 +22316,7 @@ for (int i = 0; i < n; i += 3) {
 					"<code>for (int i = 0; i &lt; n / 4; i++)</code>"
 				],
 				a: 2,
-				w: "הלולאה עד 100 עושה 100 סיבובים לכל n: מספר קבוע. השאר עושות n/2, 3n ו-n/4 סיבובים, כולן גדלות כמו n."
+				w: "הלולאה עד 100 עושה 100 סיבובים לכל n: קבוע."
 			},
 			{
 				s: "מה מחזירה <code>f(6)</code>, וכמה סיבובים עשתה הלולאה?" + codeBlock(R`static int f(int n) {
@@ -21008,7 +22347,7 @@ for (int i = 0; i < n; i += 3) {
 					"הוא קבוע"
 				],
 				a: 1,
-				w: "הן לא מתכפלות: קודם n סיבובים ואז עוד n. יחד 2n, וזה עדיין קו ישר."
+				w: "n ועוד n הם 2n: עדיין קו ישר."
 			}
 		]
 	}));
@@ -21060,26 +22399,23 @@ for (int i = 0; i < n; i += 3) {
 		id: "cost-nested",
 		title: "לולאה בתוך לולאה",
 		body: [
-			R`<p>כשלולאה יושבת בתוך לולאה, הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. הריצו את
-הקוד ליד: כל שורה של הפלט היא סיבוב אחד של <code>d</code>, וכל <code>#</code> היא סיבוב אחד של
-<code>s</code>.</p>`,
+			R`<p>הפנימית רצה <b>מההתחלה ועד הסוף</b> בכל סיבוב של החיצונית. שורה בפלט היא סיבוב של
+<code>d</code>, וכל <code>#</code> היא סיבוב של <code>s</code>.</p>`,
 			{
 				id: "cost-nested-grid",
 				title: "טבלה של ימים ושירים",
 				code: NESTED_GRID,
 				tests: [io("prints 3 rows of 5", "", "# # # # # \n# # # # # \n# # # # # \n")]
 			},
-			R`<p>אותו דבר כטבלה: סיבובי החיצונית הם השורות, וסיבובי הפנימית בכל שורה הם העמודות.</p>
+			R`<p>החיצונית היא השורות, הפנימית העמודות:</p>
 <pre class="code-static"><span>          s = 0  1  2  3  4</span><span>d = 0:        #  #  #  #  #     5 rounds of s</span><span>d = 1:        #  #  #  #  #     5 rounds of s</span><span>d = 2:        #  #  #  #  #     5 rounds of s</span><span>                                 3 × 5 = 15</span></pre>
-<p>הגוף הפנימי רץ <code>days · songs</code> פעמים: שטח של מלבן. בלי לולאה בפנים היה רץ רק
-<code>days</code> פעמים. כשהצלעות שוות, <code>n · n</code>: השיטה גדלה כמו <code>n²</code>,
-<b>ריבועית</b>. פי 2 בקלט נותן פי 4 בצעדים, כי המלבן גדל גם לרוחב וגם לגובה.</p>
-<p>באי <b>ספירות</b> רואים את זה: שורה 6 רצה 15 פעמים, ושורה 8, שבחיצונית בלבד, רק 3.</p>`,
+<p>הגוף הפנימי רץ <code>days · songs</code> פעמים: שטח מלבן. כשהצלעות שוות זה
+<code>n · n</code>: <b>ריבועית</b>. פי 2 בקלט נותן פי 4 בצעדים.</p>
+<p>באי <b>ספירות</b>: שורה 6 רצה 15 פעמים, ושורה 8, בחיצונית בלבד, רק 3.</p>`,
 			{
 				id: "cost-nested-count",
 				title: "countGrid",
-				task: R`השלימו את <code>countGrid(rows, cols)</code>: <b>בשתי לולאות, אחת בתוך השנייה</b>, הוסיפו 1 ל-<code>count</code>
-על כל תא.`,
+				task: R`השלימו את <code>countGrid(rows, cols)</code>: <b>שתי לולאות, אחת בתוך השנייה</b>, והוסיפו 1 על כל תא.`,
 				code: NESTED_COUNT_START,
 				solution: NESTED_COUNT_SOLVED,
 				example: { output: "countGrid(3, 4) -> 12" },
@@ -21117,7 +22453,7 @@ Check.eq("countGrid(5, 0) is 0", Main.countGrid(5, 0), 0);`),
 					"<code>36</code>"
 				],
 				a: 2,
-				w: "8 סיבובים בחוץ, ו-4 בפנים בכל אחד: 8 · 4 = 32. כאן הפנימית קבועה, ולכן הכול גדל רק כמו n."
+				w: "8 סיבובים בחוץ, 4 בפנים: 32. הפנימית קבועה, אז זה גדל כמו n."
 			},
 			{
 				s: "מה מודפס?" + codeBlock(R`int c = 0;
@@ -21136,7 +22472,7 @@ System.out.println(c);`),
 					"<code>8</code>"
 				],
 				a: 1,
-				w: "15 מהפנימית (3 · 5), ועוד ה-<code>c++</code> השני שרץ פעם בכל סיבוב חיצוני: 3. יחד 18."
+				w: "15 מהפנימית (3 · 5) ועוד 3 מה-<code>c++</code> החיצוני: 18."
 			},
 			{
 				s: "שיטה ריבועית עשתה 400 צעדים עבור <code>n = 10</code>. בערך כמה צעדים היא תעשה עבור <code>n = 20</code>?",
@@ -21162,7 +22498,7 @@ System.out.println(c);`),
 					"<code>21</code>"
 				],
 				a: 0,
-				w: "בחוץ <code>i</code> הוא 0, 2 ו-4: שלוש שורות. בכל שורה 6 סיבובים. 3 · 6 = 18, כלומר n²/2: עדיין ריבועי."
+				w: "<code>i</code> הוא 0, 2 ו-4: שלוש שורות של 6. 3 · 6 = 18, עדיין ריבועי."
 			},
 			{
 				s: "איזה מהקטעים <b>אינו</b> גדל כמו <code>n²</code>?",
@@ -21173,7 +22509,7 @@ System.out.println(c);`),
 					"לולאה עד <code>n</code> ובתוכה לולאה עד <code>n / 3</code>"
 				],
 				a: 1,
-				w: "הפנימית עושה 10 סיבובים לכל n, אז הכול הוא 10n: לינארי. בשאר שתי הצלעות גדלות עם n."
+				w: "הפנימית קבועה (10), אז זה 10n: לינארי."
 			}
 		]
 	}));
@@ -21230,26 +22566,25 @@ System.out.println(c);`),
 		id: "cost-dependent",
 		title: "לולאה שתלויה בחיצונית",
 		body: [
-			R`<p>כאן הגבול של הלולאה הפנימית הוא <code>i</code>, המשתנה של החיצונית. לכן כל שורה ארוכה בתא
-אחד מהקודמת. הריצו ותראו את הצורה.</p>`,
+			R`<p>הגבול של הפנימית הוא <code>i</code>, אז כל שורה ארוכה בתא אחד מהקודמת. הריצו.</p>`,
 			{
 				id: "cost-dependent-triangle",
 				title: "משולש של השוואות",
 				code: DEP_TRIANGLE,
 				tests: [io("prints the triangle", "", "0: \n1: # \n2: # # \n3: # # # \n4: # # # # \n")]
 			},
-			R`<p>לא מלבן, אלא משולש: חצי מהריבוע <code>n × n</code>, בלי האלכסון.</p>
+			R`<p>משולש: חצי מהריבוע <code>n × n</code>, בלי האלכסון.</p>
 <pre class="code-static"><span>i = 0:                 0</span><span>i = 1:  #              1</span><span>i = 2:  #  #           2</span><span>i = 3:  #  #  #        3</span><span>i = 4:  #  #  #  #     4</span><span>                  0 + 1 + 2 + 3 + 4 = 10</span></pre>
-<p>את הסכום <code>0 + 1 + ... + (n − 1)</code> מחברים בזוגות: הראשון עם האחרון, השני עם הלפני
-אחרון, וכל זוג נותן <code>n − 1</code>. יש <code>n / 2</code> זוגות, אז הסכום הוא
-<code>n(n − 1) / 2</code>. עבור <code>n = 5</code> זה <code>5 · 4 / 2 = 10</code>.</p>
-<p>חצי ריבוע הוא עדיין ריבוע: פי 2 ב-<code>n</code> נותן כמעט פי 4 בצעדים. לכן גם הלולאה הזאת
-<b>גדלה כמו <code>n²</code></b>, רק עם חצי מהעבודה.</p>`,
+<p>מחברים בזוגות (ראשון עם אחרון): כל זוג נותן <code>n − 1</code>, ויש <code>n / 2</code> זוגות.
+הסכום <code>0 + 1 + ... + (n − 1)</code> הוא <code>n(n − 1) / 2</code>; עבור <code>n = 5</code>:
+<code>5 · 4 / 2 = 10</code>.</p>
+<p>חצי ריבוע הוא עדיין ריבוע: פי 2 ב-<code>n</code> נותן כמעט פי 4. הלולאה <b>גדלה כמו
+<code>n²</code></b>.</p>`,
 			{
 				id: "cost-dependent-pairs",
 				title: "countPairs",
-				task: R`השלימו את <code>countPairs(n)</code>: <b>לולאה פנימית שמתחילה ב-<code>j = i + 1</code></b>, כך שכל זוג נספר
-פעם אחת בלבד.`,
+				task: R`השלימו את <code>countPairs(n)</code> עם <b>לולאה פנימית שמתחילה ב-<code>j = i + 1</code></b>:
+כל זוג נספר פעם אחת.`,
 				code: DEP_PAIRS_START,
 				solution: DEP_PAIRS_SOLVED,
 				example: { output: "countPairs(5) -> 10" },
@@ -21345,7 +22680,7 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 					"אין הבדל: שתי הדרכים נותנות 10 עבור 5"
 				],
 				a: 1,
-				w: "מ-0 היו נספרים 25 זוגות לחמישה שירים: כל זוג פעמיים (i, j ו-j, i) ועוד כל שיר עם עצמו."
+				w: "מ-0 כל זוג נספר פעמיים, ועוד כל שיר עם עצמו: 25."
 			}
 		]
 	}));
@@ -21400,29 +22735,25 @@ Check.eq("countPairs(0) is 0", Main.countPairs(0), 0);`),
 		id: "cost-halving",
 		title: "לולאה שחוצה את n",
 		body: [
-			R`<p>עד עכשיו כל סיבוב התקדם בצעד קבוע: <code>i++</code>, <code>i += 3</code>. כאן כל סיבוב
-<b>חוצה</b> את מה שנשאר: <code>i /= 2</code>. במספרים שלמים החלוקה מעגלת למטה, 25 / 2 הוא 12.
-הריצו וקראו את ערכי <code>i</code>.</p>`,
+			R`<p>כאן כל סיבוב <b>חוצה</b> את מה שנשאר: <code>i /= 2</code>. במספרים שלמים החלוקה מעגלת
+למטה: 25 / 2 הוא 12. הריצו.</p>`,
 			{
 				id: "cost-halving-values",
 				title: "חצי, ועוד חצי",
 				code: HALF_VALUES,
 				tests: [io("prints the halves of 100 and of 200", "", "100 50 25 12 6 3 1 \n200 100 50 25 12 6 3 1 \n")]
 			},
-			R`<p>הנה הסיבובים של <code>n = 100</code> בשורה אחת:</p>
+			R`<p>הסיבובים של <code>n = 100</code>:</p>
 <pre class="code-static"><span>100 → 50 → 25 → 12 → 6 → 3 → 1 → 0   (stop)</span><span> 1     2    3    4   5   6   7         rounds</span></pre>
-<p>7 סיבובים בלבד, לא 100. עבור <code>200</code> יש רק סיבוב אחד יותר: אחרי החיתוך הראשון נשארים
-בדיוק עם 100. לכן כל הכפלה של <code>n</code> מוסיפה סיבוב אחד:</p>
+<p>7 סיבובים, לא 100. כל הכפלה של <code>n</code> מוסיפה סיבוב אחד:</p>
 <table class="tbl"><tr><th><code>n</code></th><th>100</th><th>200</th><th>400</th><th>1,000</th><th>1,000,000</th></tr>
 <tr><td>סיבובים</td><td>7</td><td>8</td><td>9</td><td>10</td><td>20</td></tr></table>
-<p>מספר הפעמים שאפשר לחצות את <code>n</code> עד שמגיעים ל-1 הוא בערך <code>log₂ n</code> (הלוגריתם
-בבסיס 2): <code>log₂ 1024 = 10</code>, כי <code>2¹⁰ = 1024</code>. לולאה כזאת <b>גדלה כמו
-<code>log n</code></b>, לוגריתמית: גם מיליון שירים הם רק 20 סיבובים.</p>`,
+<p>מספר החציות עד 1 הוא בערך <code>log₂ n</code>: <code>log₂ 1024 = 10</code>, כי
+<code>2¹⁰ = 1024</code>. הלולאה <b>גדלה כמו <code>log n</code></b>: מיליון שירים הם 20 סיבובים.</p>`,
 			{
 				id: "cost-halving-count",
 				title: "halvings",
-				task: R`השלימו את <code>halvings(n)</code>: <b>כל עוד <code>i &gt; 1</code></b>, חצו את <code>i</code> וספרו
-את הסיבוב.`,
+				task: R`השלימו את <code>halvings(n)</code>: <b>כל עוד <code>i &gt; 1</code></b>, חצו את <code>i</code> וספרו.`,
 				code: HALF_COUNT_START,
 				solution: HALF_COUNT_SOLVED,
 				example: { output: "halvings(100) -> 6" },
@@ -21468,7 +22799,7 @@ while (i > 1) {
 					"<code>10</code>"
 				],
 				a: 2,
-				w: "50, 25, 12, 6, 3, 1: שש חלוקות. 100 בין 64 ל-128, אז התשובה בין 6 ל-7, ובחלוקה שמעגלת למטה היא 6."
+				w: "50, 25, 12, 6, 3, 1: שש חלוקות."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 81</code>?" + codeBlock(R`for (int i = n; i > 0; i /= 3) {
@@ -21481,7 +22812,7 @@ while (i > 1) {
 					"<code>9</code>"
 				],
 				a: 1,
-				w: "<code>i</code> הוא 81, 27, 9, 3 ו-1, ואז 0: חמישה סיבובים. חלוקה ב-3 היא גם לוגריתמית, רק בבסיס 3."
+				w: "<code>i</code> הוא 81, 27, 9, 3 ו-1, ואז 0: חמישה סיבובים."
 			},
 			{
 				s: "איזו מהלולאות <b>אינה</b> לוגריתמית?",
@@ -21492,7 +22823,7 @@ while (i > 1) {
 					"<code>for (int i = 1; i &lt; n; i *= 2)</code>"
 				],
 				a: 2,
-				w: "<code>i -= 2</code> מוריד כמות קבועה, אז היא עושה בערך n/2 סיבובים: לינארית. בשאר כל סיבוב משנה את <code>i</code> פי מספר קבוע."
+				w: "<code>i -= 2</code> מוריד כמות קבועה: בערך n/2 סיבובים, לינארית."
 			},
 			{
 				s: "לולאה שחוצה את <code>n</code> עשתה 15 סיבובים. כמה סיבובים תעשה עבור <code>4n</code>?",
@@ -21503,7 +22834,7 @@ while (i > 1) {
 					"<code>17</code>"
 				],
 				a: 3,
-				w: "שתי חלוקות מורידות את 4n חזרה ל-n, ומשם עוד 15: יחד 17. כל הכפלה מוסיפה סיבוב אחד."
+				w: "כל הכפלה מוסיפה סיבוב, וכפל פי 4 הוא שתי הכפלות: 17."
 			}
 		]
 	}));
@@ -21567,35 +22898,31 @@ while (i > 1) {
 		id: "cost-doubling",
 		title: "לולאה שמכפילה",
 		body: [
-			R`<p>אותו רעיון מהכיוון השני: מתחילים ב-1 ו<b>מכפילים</b> את <code>i</code> בכל סיבוב, עד
-ש-<code>i</code> מגיע ל-<code>n</code>. הריצו וקראו את הערכים.</p>`,
+			R`<p>מתחילים ב-1 ו<b>מכפילים</b> את <code>i</code> בכל סיבוב, עד ש-<code>i</code> מגיע ל-<code>n</code>.</p>`,
 			{
 				id: "cost-doubling-values",
 				title: "פי 2, ועוד פי 2",
 				code: DOUBLE_VALUES,
 				tests: [io("prints the doubles below 100 and below 64", "", "1 2 4 8 16 32 64 \n1 2 4 8 16 32 \n")]
 			},
-			R`<p>אלה ערכי החלוקה של השיעור הקודם, בסדר הפוך:</p>
+			R`<p>אלה ערכי החלוקה, בסדר הפוך:</p>
 <pre class="code-static"><span>i:      1   2   4   8   16   32   64   128 (stop: not &lt; 100)</span><span>round:  1   2   3   4    5    6    7</span></pre>
-<p>אחרי <code>k</code> סיבובים <code>i</code> הוא <code>2ᵏ</code>, והלולאה נעצרת כש-<code>2ᵏ</code>
-מגיע ל-<code>n</code>. לכן היא רצה בערך <code>log₂ n</code> פעמים: 7 עבור 100, ו-6 בדיוק עבור 64.
-גם היא גדלה כמו <code>log n</code>.</p>
-<p>אבל שימו לב לערך ההתחלה. בקוד הבא <code>i</code> מתחיל ב-0.</p>`,
+<p>אחרי <code>k</code> סיבובים <code>i</code> הוא <code>2ᵏ</code>, אז הלולאה רצה בערך
+<code>log₂ n</code> פעמים: 7 עבור 100, ו-6 בדיוק עבור 64. היא גדלה כמו <code>log n</code>.</p>
+<p>ומה אם <code>i</code> מתחיל ב-0?</p>`,
 			{
 				id: "cost-doubling-zero",
 				title: "מתחילים מ-0",
 				code: DOUBLE_ZERO,
 				tests: [io("i stays 0", "", "after 10 rounds i is 0\n")]
 			},
-			R`<div class="callout warn"><b>0 כפול 2 הוא 0</b><p><code>i</code> לא זז אף פעם, והתנאי
-<code>i &lt; n</code> נשאר נכון לתמיד. בלי השומר <code>rounds &lt; 10</code> זו לולאה אינסופית, והריצה
-נעצרת רק במגבלת הזמן. לולאה שמכפילה מתחילה ב-1 (או בכל מספר חיובי).</p></div>
-<p>עכשיו ספרו בעצמכם את הסיבובים של הלולאה מהדוגמה הראשונה.</p>`,
+			R`<div class="callout warn"><b>0 כפול 2 הוא 0</b><p><code>i</code> לא זז, ו-<code>i &lt; n</code> נשאר נכון תמיד. בלי השומר
+<code>rounds &lt; 10</code> הלולאה אינסופית. לולאה שמכפילה מתחילה ב-1 או בכל מספר חיובי.</p></div>`,
 			{
 				id: "cost-doubling-count",
 				title: "doublings",
 				task: R`השלימו את <code>doublings(n)</code>: הריצו <b>בדיוק את הלולאה <code>for (i = 1; i &lt; n; i *= 2)</code></b>
-וספרו כמה סיבובים היא עושה.`,
+וספרו סיבובים.`,
 				code: DOUBLE_COUNT_START,
 				solution: DOUBLE_COUNT_SOLVED,
 				example: { output: "doublings(100) -> 7" },
@@ -21668,7 +22995,7 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 					"<code>4</code>"
 				],
 				a: 0,
-				w: "החיצונית עוברת על 1, 2, 4 ו-8: ארבעה סיבובים, ובכל אחד 3. יחד 12: עדיין כמו log n, פי 3."
+				w: "ארבעה סיבובים (1, 2, 4, 8), ובכל אחד 3: 12."
 			},
 			{
 				s: "איזה ערך התחלה של <code>i</code> עושה את <code>for (...; i &lt; 1000; i *= 2)</code> ללולאה הקצרה ביותר שעדיין נגמרת?",
@@ -21679,7 +23006,7 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 					"<code>i = 100</code>"
 				],
 				a: 2,
-				w: "מ-500 יש סיבוב אחד: אחריו <code>i</code> הוא 1000, שכבר לא קטן מ-1000. מ-100 יש ארבעה (100, 200, 400, 800), מ-1 עשרה, ומ-0 היא לא נגמרת."
+				w: "מ-500 יש סיבוב אחד; מ-100 ארבעה, מ-1 עשרה, ומ-0 היא לא נגמרת."
 			}
 		]
 	}));
@@ -21738,9 +23065,8 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 		id: "cost-traps",
 		title: "מלכודות בספירה",
 		body: [
-			R`<p>שתי לולאות מקוננות, ובכל זאת השיטה ליד <b>לא</b> ריבועית. שאלו: מה תלוי ב-<code>n</code>? כאן
-שום גבול לא תלוי בו. הריצו: <code>chartWork(10)</code> ו-<code>chartWork(5000)</code> עושות בדיוק
-אותה עבודה.</p>`,
+			R`<p>שתי לולאות מקוננות, ובכל זאת השיטה <b>לא</b> ריבועית: שום גבול לא תלוי ב-<code>n</code>.
+<code>chartWork(10)</code> ו-<code>chartWork(5000)</code> עושות אותה עבודה.</p>`,
 			{
 				id: "cost-traps-fixed",
 				title: "גבולות קבועים",
@@ -21751,20 +23077,18 @@ Check.eq("doublings(65) is 7", Main.doublings(65), 7);`),
 					1e5
 				], { c0: 24999 })]
 			},
-			R`<p>הלולאות עושות <code>100 · 100</code> סיבובים לכל <code>n</code>, ולכן השיטה <b>קבועה</b>: היא לא
-גדלה עם <code>n</code> בכלל. גם <code>1000 × 1000</code>, מיליון סיבובים, הוא מספר קבוע. בדיקת
-ה-<code>ops</code> של הקופסה מתירה <code>25,000</code> צעדים לכל <code>n</code> (השיטה עושה <code>20,304</code>), והיא עוברת.</p>
-<p>המלכודת השנייה הפוכה: לולאה חיצונית לוגריתמית, ובתוכה לולאה עד <code>len</code> שהולך וקטן.
-נדמה שזה <code>n · log n</code>, אבל ספרו את השורות:</p>
+			R`<p><code>100 · 100</code> סיבובים לכל <code>n</code>: השיטה <b>קבועה</b>. בדיקת ה-<code>ops</code>
+מתירה <code>25,000</code> צעדים לכל <code>n</code> (השיטה עושה <code>20,304</code>).</p>
+<p>מלכודת שנייה: לולאה חיצונית לוגריתמית, ובתוכה לולאה עד <code>len</code> שקטן. נדמה
+<code>n · log n</code>, אבל ספרו:</p>
 <pre class="code-static"><span>len = 16:  ################   16</span><span>len =  8:  ########            8</span><span>len =  4:  ####                4</span><span>len =  2:  ##                  2</span><span>len =  1:  #                   1</span><span>                    total     31</span></pre>
-<p>כל שורה היא חצי מהקודמת, ולכן כל השורות שאחרי הראשונה ביחד קצרות ממנה:
-<code>16 + 8 + 4 + 2 + 1 = 31 &lt; 2 · 16</code>. הסכום <code>n + n/2 + n/4 + ...</code> תמיד קטן
-מ-<code>2n</code>: לינארי.</p>`,
+<p>כל שורה חצי מהקודמת: <code>16 + 8 + 4 + 2 + 1 = 31 &lt; 2 · 16</code>. הסכום
+<code>n + n/2 + n/4 + ...</code> קטן מ-<code>2n</code>: לינארי.</p>`,
 			{
 				id: "cost-traps-shrink",
 				title: "shrinkingWork",
 				task: R`השלימו את <code>shrinkingWork(n)</code>: בתוך הלולאה של <code>len</code>, <b>לולאה של <code>len</code>
-סיבובים</b> שמוסיפה 1 ל-<code>work</code>.`,
+סיבובים</b> שמוסיפה 1.`,
 				code: TRAPS_SHRINK_START,
 				solution: TRAPS_SHRINK_SOLVED,
 				example: { output: "shrinkingWork(16) -> 31" },
@@ -21799,7 +23123,7 @@ Check.eq("shrinkingWork(0) is 0", Main.shrinkingWork(0), 0);`),
 					"כמו <code>log n</code>"
 				],
 				a: 2,
-				w: "שאלת מלכודת: <code>n</code> מופיע רק בתנאי שבגוף, לא באף גבול של לולאה. מספר הסיבובים הוא 1000 · 1000 תמיד."
+				w: "<code>n</code> לא בגבול של אף לולאה: תמיד 1000 · 1000 סיבובים."
 			},
 			{
 				s: "כמה פעמים רץ <code>work++</code> עבור <code>n = 32</code>?" + codeBlock(R`for (int len = n; len > 0; len /= 2) {
@@ -21814,7 +23138,7 @@ Check.eq("shrinkingWork(0) is 0", Main.shrinkingWork(0), 0);`),
 					"<code>64</code>"
 				],
 				a: 0,
-				w: "32 + 16 + 8 + 4 + 2 + 1 = 63, פחות מ-2 · 32. כאן 160 הוא n · log n, הטעות שהשיעור מזהיר ממנה."
+				w: "32 + 16 + 8 + 4 + 2 + 1 = 63, פחות מ-2 · 32."
 			},
 			{
 				s: "וכמה פעמים רץ <code>work++</code> עבור <code>n = 32</code> כשהפנימית היא <code>for (int j = 0; j &lt; n; j++)</code>?",
@@ -21825,7 +23149,7 @@ Check.eq("shrinkingWork(0) is 0", Main.shrinkingWork(0), 0);`),
 					"<code>32</code>"
 				],
 				a: 1,
-				w: "עכשיו כל שורה באורך n: שש שורות (32, 16, 8, 4, 2, 1 ל-<code>len</code>) כפול 32 = 192. זה באמת גדל כמו n · log n."
+				w: "שש שורות באורך 32: 192. זה באמת n · log n."
 			},
 			{
 				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 5</code>?" + codeBlock(R`for (int i = 0; i < n; i++) {
@@ -21843,7 +23167,7 @@ for (int k = 0; k < n; k++) {
 					"<code>23</code>"
 				],
 				a: 2,
-				w: "5 · 3 = 15 מהקטע הראשון ועוד 5 מהשני: 20. הפנימית קבועה, ולכן הכול גדל כמו n."
+				w: "5 · 3 = 15 ועוד 5: 20. הפנימית קבועה."
 			},
 			{
 				s: "איזה מהקטעים <b>אינו</b> לינארי ב-<code>n</code>?",
@@ -21854,7 +23178,7 @@ for (int k = 0; k < n; k++) {
 					"לולאה עד <code>n</code> ובתוכה לולאה שחוצה את <code>n</code>"
 				],
 				a: 3,
-				w: "בכל אחד מ-n הסיבובים יש log n חלוקות: n · log n. השאר הם 2n, 50n ו-2n, כולם לינאריים."
+				w: "בכל סיבוב log n חלוקות: n · log n. השאר לינאריים."
 			}
 		]
 	}));
@@ -21916,8 +23240,7 @@ for (int k = 0; k < n; k++) {
 		id: "cost-cases",
 		title: "המקרה הטוב והמקרה הגרוע",
 		body: [
-			R`<p>עד עכשיו מספר הצעדים היה תלוי רק ב-<code>n</code>. בחיפוש הוא תלוי גם <b>במקום</b> של מה שמחפשים.
-הקוד ליד מחפש פעמיים באותה רשימה של 8 שירים. הריצו ב-<b>⏯</b> וספרו כמה פעמים רצה שורת
+			R`<p>בחיפוש מספר הצעדים תלוי גם <b>במקום</b> של מה שמחפשים. הריצו וספרו כמה פעמים רצה שורת
 ה-<code>if</code> בכל חיפוש.</p>`,
 			{
 				id: "cost-cases-find",
@@ -21925,20 +23248,19 @@ for (int k = 0; k < n; k++) {
 				code: CASES_FIND,
 				tests: [io("42 is at 0, 99 is missing", "", "0\n-1\n")]
 			},
-			R`<p>אותו <code>n = 8</code>, ומספר בדיקות שונה לגמרי:</p>
+			R`<p>אותו <code>n = 8</code>, מספר בדיקות שונה:</p>
 <table class="tbl"><tr><th>מחפשים</th><th>איפה</th><th>בדיקות</th><th>המקרה</th></tr>
 <tr><td class="mono">42</td><td>תא 0</td><td>1</td><td>הטוב ביותר</td></tr>
 <tr><td class="mono">3</td><td>תא 3</td><td>4</td><td>באמצע</td></tr>
 <tr><td class="mono">64</td><td>תא 7, האחרון</td><td>8</td><td>הגרוע ביותר</td></tr>
 <tr><td class="mono">99</td><td>אין</td><td>8</td><td>הגרוע ביותר</td></tr></table>
-<p>במקרה הטוב החיפוש קבוע: בדיקה אחת לכל <code>n</code>. במקרה הגרוע הוא לינארי: <code>n</code>
-בדיקות. כשאומרים כמה קוד עולה, מתכוונים בדרך כלל ל<b>מקרה הגרוע</b>: זו הבטחה שמחזיקה לכל קלט.
-"לפעמים זה מהיר" לא עוזר למשתמש שהשיר שלו בסוף הרשימה.</p>`,
+<p>מקרה טוב: קבוע, בדיקה אחת. מקרה גרוע: לינארי, <code>n</code> בדיקות.
+כשאומרים כמה קוד עולה, מתכוונים ל<b>מקרה הגרוע</b>: זו הבטחה לכל קלט.</p>`,
 			{
 				id: "cost-cases-checks",
 				title: "checks",
-				task: R`השלימו את <code>checks(ids, id)</code>: עברו על התאים, ספרו <b>כל השוואה</b>, והחזירו את הספירה
-<b>מיד</b> כשתא שווה ל-<code>id</code>.`,
+				task: R`השלימו את <code>checks(ids, id)</code>: ספרו <b>כל השוואה</b>, והחזירו <b>מיד</b> כשתא שווה
+ל-<code>id</code>.`,
 				code: CASES_CHECKS_START,
 				solution: CASES_CHECKS_SOLVED,
 				tests: [
@@ -21984,7 +23306,7 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
 					"<code>3</code>"
 				],
 				a: 3,
-				w: "שורה 2 היא כותרת הלולאה: הכניסה, הבדיקה לפני תא 0 והבדיקה לפני תא 1. בתא 1 ה-<code>if</code> מוצא את 8, ו-<code>return</code> יוצא באמצע, בלי עוד בדיקה של התנאי."
+				w: "שורה 2 היא כותרת הלולאה: הכניסה ושתי בדיקות תנאי, ואז <code>return</code> בתא 1 יוצא."
 			},
 			{
 				s: "כמה פעמים רצה שורת ה-<code>if</code> של אותה שיטה בקריאה <code>first(new int[]{5, 8, 3, 8, 1}, 7)</code>?",
@@ -22035,7 +23357,7 @@ Check.eq("checks(ids, 99) is 8", Main.checks(ids, 99), 8);`),
 					"אין סיבה, אפשר להחליף ביניהם"
 				],
 				a: 1,
-				w: "הבדיקה מריצה את אותה שיטה על n שגדל. כשהמבוקש בתא 0 היא עוצרת אחרי השוואה אחת, וכשהוא חסר היא עוברת על כל n התאים."
+				w: "בגרוע ההשוואות גדלות עם n; בטוב, בתא 0, תמיד השוואה אחת."
 			}
 		]
 	}));
@@ -22099,14 +23421,13 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 		id: "cost-ops",
 		title: "בדיקת סיבוכיות",
 		body: [
-			R`<p>עד עכשיו ספרנו בראש. בדיקת <code>ops</code> סופרת בשבילנו: היא מריצה את השיטה על קלטים
-באורך <code>n</code> שהולך וגדל, סופרת את הצעדים, ובודקת שהם לא עוברים חסם שקבענו מראש:</p>
+			R`<p>בדיקת <code>ops</code> מריצה את השיטה על <code>n</code> שגדל, סופרת צעדים ובודקת חסם:</p>
 <table class="tbl"><tr><th>החלק</th><th>בקופסה ליד</th><th>מה הוא</th></tr>
 <tr><td>הקריאה</td><td class="mono">Main.countAboveAverage(a)</td><td>מה נספר; הכנת <code>a</code> לא נספרת</td></tr>
 <tr><td>הגדילה</td><td class="mono">n2</td><td>הצורה: <code>1</code>, <code>log</code>, <code>n</code>, <code>nlogn</code>, <code>n2</code></td></tr>
 <tr><td>המקדם</td><td class="mono">c = 3, c0 = 10</td><td>החסם הוא <code>3 · n² + 10</code></td></tr>
 <tr><td>הגדלים</td><td class="mono">10, 50, 100</td><td>כל <code>n</code> חייב לעבור</td></tr></table>
-<p>לחצו <b>✓ בדיקות</b>. מתחת לשורת הבדיקה מודפסת טבלה: <code>n</code>, הצעדים שנספרו והחסם.</p>`,
+<p>לחצו <b>✓ בדיקות</b>: תודפס טבלה של <code>n</code>, צעדים וחסם.</p>`,
 			{
 				id: "cost-ops-naive",
 				title: "מעל הממוצע, בשתי לולאות",
@@ -22117,22 +23438,17 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					100
 				], Object.assign({ c0: 10 }, OPS_PLAYS))])
 			},
-			R`<p>השיטה נכונה, אבל לכל שיר היא מחברת מחדש את כל הרשימה: <code>n</code> סיבובים, ובכל אחד
-<code>n</code> סיבובים פנימיים. בטבלה של הבדיקה רואים את זה:</p>
+			R`<p>השיטה נכונה, אבל לכל שיר מחברת מחדש את כל הרשימה: <code>n · n</code>.</p>
 <pre class="code-static"><span>n = 10       steps = 259        limit 310</span><span>n = 50       steps = 5278       limit 7510</span><span>n = 100      steps = 20551      limit 30010</span></pre>
-<p>פי 2 ב-<code>n</code> (מ-50 ל-100) נותן כמעט פי 4 בצעדים. בדיקת <code>O(n²)</code> עוברת, כי זה
-באמת מה שהיא עושה.</p>
-<p>אבל הסכום לא משתנה בין שיר לשיר. מספיק לחשב אותו <b>פעם אחת</b>, בלולאה לפני הספירה: שתי
-לולאות <b>אחת אחרי השנייה</b>, פחות מ-<code>5n + 10</code> צעדים. בתרגיל, בדיקת ה-<code>ops</code> היא
-<code>O(n)</code>: <code>8 · n + 10</code>. הקוד שמתחילים ממנו נותן תשובות נכונות ונכשל בה, ובטבלה
-של <b>✓ בדיקות</b> תראו בדיוק באיזה <code>n</code>. אחרי <b>⏯</b> הכפתור <b>מדידת גדילה</b> באי
-<b>ספירות</b> מצייר את הצעדים מול <code>n</code>, עם קווי <code>c·n</code> ו-<code>c·n²</code>
-להשוואה.</p>`,
+<p>פי 2 ב-<code>n</code> נותן כמעט פי 4 בצעדים.</p>
+<p>הסכום לא משתנה בין שיר לשיר: מחשבים אותו <b>פעם אחת</b>, בלולאה לפני הספירה. שתי לולאות
+<b>אחת אחרי השנייה</b>: פחות מ-<code>5n + 10</code> צעדים. בדיקת ה-<code>ops</code> בתרגיל היא
+<code>O(n)</code>: <code>8 · n + 10</code>. הקוד ההתחלתי נכשל בה, והטבלה מראה באיזה <code>n</code>.
+הכפתור <b>מדידת גדילה</b> באי <b>ספירות</b> מצייר צעדים מול <code>n</code>.</p>`,
 			{
 				id: "cost-ops-fast",
 				title: "countAboveAverage",
-				task: R`כתבו את <code>countAboveAverage(a)</code> מחדש <b>ב-<code>O(n)</code> צעדים</b>: חשבו את הסכום
-פעם אחת, ואז ספרו.`,
+				task: R`כתבו מחדש את <code>countAboveAverage(a)</code> <b>ב-<code>O(n)</code> צעדים</b>.`,
 				code: OPS_FAST_START,
 				solution: OPS_FAST_SOLVED,
 				example: { output: "countAboveAverage([5, 1, 9, 3]) -> 2" },
@@ -22153,7 +23469,7 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"<code>64</code>"
 				],
 				a: 1,
-				w: "החסם הוא c · n + c0 = 4 · 50 + 10 = 210. הבדיקה עוברת אם נספרו לכל היותר 210 צעדים."
+				w: "c · n + c0 = 4 · 50 + 10 = 210."
 			},
 			{
 				s: "שיטה עושה בדיוק <code>3n + 4</code> צעדים. איזו בדיקת <code>ops</code> היא <b>נכשלת</b>?",
@@ -22164,7 +23480,7 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"<code>n2</code>, <code>c = 1</code>, <code>c0 = 10</code> עם <code>n = 10, 100</code>"
 				],
 				a: 2,
-				w: "3n + 4 גדול מ-3n לכל n: 4 צעדים מעל החסם. ב-<code>c = 4</code> מספיק ש-n ≥ 4, וב-n² החסם גדול בהרבה."
+				w: "3n + 4 גדול מ-3n: 4 צעדים מעל החסם."
 			},
 			{
 				s: "כמה צעדים בערך עושה השיטה הנאיבית עבור <code>n = 1000</code>, אם עבור <code>n = 100</code> היא עשתה כ-20,000?",
@@ -22186,7 +23502,7 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"מריץ את השיטה 1000 פעמים ומחשב ממוצע"
 				],
 				a: 0,
-				w: "ה-<code>setup</code> בונה את הקלט לפני כל קריאה, ותמיד אותו קלט (אותו גרעין 3). רק הקריאה עצמה נספרת."
+				w: "ה-<code>setup</code> בונה את הקלט (אותו גרעין 3); רק הקריאה נספרת."
 			},
 			{
 				s: "איזה מהשינויים <b>לא</b> הופך את <code>countAboveAverage</code> הנאיבית ללינארית?",
@@ -22197,15 +23513,16 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
 					"שתי לולאות נפרדות: סכום ואז ספירה"
 				],
 				a: 2,
-				w: "<code>while</code> עם אותם סיבובים הוא אותו מלבן n · n. מה שמשנה את הגדילה הוא לחשב את הסכום פעם אחת."
+				w: "<code>while</code> עם אותם סיבובים הוא אותו n · n."
 			}
 		]
 	}));
-	const REVIEW_START = R`public class Main {
+	{
+		const REVIEW_START = R`public class Main {
     /* TODO: countTriples(n), and a main that prints countTriples(5) */
 }
 `;
-	const REVIEW_SOLVED = R`public class Main {
+		const REVIEW_SOLVED = R`public class Main {
     // how many ways there are to choose 3 different songs of n, counted one by one (i < j < k)
     static long countTriples(int n) {
         long count = 0;
@@ -22225,71 +23542,69 @@ Check.eq("{} gives 0", Main.countAboveAverage(new int[0]), 0);`),
     }
 }
 `;
-	U.push(withOutputs({
-		id: "cost-review",
-		title: "חזרה: כמה עולה קוד",
-		body: [R`<p>כל הפרק יחד, בלי עזרה. לרשימה של <code>n</code> שירים בונים מיקס של שלושה שירים שונים. כמה מיקסים
-אפשריים, כשהסדר לא חשוב? בקובץ כמעט ריק כתבו:</p>
+		U.push(withOutputs({
+			id: "cost-review",
+			title: "חזרה: כמה עולה קוד",
+			body: [R`<p>כמה מיקסים של שלושה שירים שונים אפשר לבנות מ-<code>n</code> שירים, כשהסדר לא חשוב?
+בקובץ כמעט ריק כתבו:</p>
 <table class="tbl"><tr><th>שיטה</th><th>מה היא עושה</th></tr>
 <tr><td class="mono">static long countTriples(int n)</td><td>סופרת אחת אחת את השלשות <code>i &lt; j &lt; k</code> מתוך
 <code>0</code> עד <code>n − 1</code>, בשלוש לולאות</td></tr>
 <tr><td class="mono">main</td><td>מדפיסה את <code>countTriples(5)</code></td></tr></table>
-<p>רמז: זה <code>countPairs</code> של השיעור על לולאה תלויה, עם עוד קומה. עבור <code>n = 5</code>, לפי
-<code>i</code>:</p>
+<p>רמז: <code>countPairs</code> עם עוד קומה. עבור <code>n = 5</code>, לפי <code>i</code>:</p>
 <pre class="code-static"><span>i = 0:  (j, k) from 1..4   6 triples</span><span>i = 1:  (j, k) from 2..4   3 triples</span><span>i = 2:  (j, k) from 3..4   1 triple</span><span>                     6 + 3 + 1 = 10</span></pre>
-<p>כל שכבה היא משולש, והמשולשים יחד בונים פירמידה: <code>n(n − 1)(n − 2) / 6</code>, שגדלה כמו
-<code>n³</code>.</p>`, {
-			id: "cost-review-triples",
-			title: "countTriples",
-			task: R`בקובץ הכמעט ריק כתבו את <code>countTriples(n)</code> <b>בשלוש לולאות מקוננות</b>, ו-<code>main</code>
-שמדפיסה את <code>countTriples(5)</code>.`,
-			code: REVIEW_START,
-			solution: REVIEW_SOLVED,
-			example: { output: "countTriples(5) -> 10" },
-			tests: [
-				unit("countTriples(5) is 10", R`Check.eq("countTriples(5) is 10", Main.countTriples(5), 10);`),
-				unit("countTriples(3) is 1 and countTriples(10) is 120", R`Check.eq("countTriples(3) is 1", Main.countTriples(3), 1);
+<p>הסכום הוא <code>n(n − 1)(n − 2) / 6</code>: גדל כמו <code>n³</code>.</p>`, {
+				id: "cost-review-triples",
+				title: "countTriples",
+				task: R`בקובץ הכמעט ריק כתבו את <code>countTriples(n)</code> <b>בשלוש לולאות מקוננות</b>, ו-<code>main</code> שמדפיסה את
+<code>countTriples(5)</code>.`,
+				code: REVIEW_START,
+				solution: REVIEW_SOLVED,
+				example: { output: "countTriples(5) -> 10" },
+				tests: [
+					unit("countTriples(5) is 10", R`Check.eq("countTriples(5) is 10", Main.countTriples(5), 10);`),
+					unit("countTriples(3) is 1 and countTriples(10) is 120", R`Check.eq("countTriples(3) is 1", Main.countTriples(3), 1);
 Check.eq("countTriples(10) is 120", Main.countTriples(10), 120);`),
-				unit("fewer than 3 songs: no triple", R`Check.eq("countTriples(2) is 0", Main.countTriples(2), 0);
+					unit("fewer than 3 songs: no triple", R`Check.eq("countTriples(2) is 0", Main.countTriples(2), 0);
 Check.eq("countTriples(0) is 0", Main.countTriples(0), 0);`),
-				unit("countTriples(100) is 161700", R`Check.eq("countTriples(100) is 161700", Main.countTriples(100), 161700);`),
-				io("main prints 10", "", "10\n"),
-				src("three loops count the triples", {
-					fn: "countTriples",
-					require: "\\b(for|while)\\b[\\s\\S]*\\b(for|while)\\b[\\s\\S]*\\b(for|while)\\b",
-					msg: "count the triples one by one, in three loops"
-				})
-			]
-		}],
-		quiz: [
-			{
-				s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 16</code>?" + codeBlock(R`for (int i = 1; i < n; i *= 2) {
+					unit("countTriples(100) is 161700", R`Check.eq("countTriples(100) is 161700", Main.countTriples(100), 161700);`),
+					io("main prints 10", "", "10\n"),
+					src("three loops count the triples", {
+						fn: "countTriples",
+						require: "\\b(for|while)\\b[\\s\\S]*\\b(for|while)\\b[\\s\\S]*\\b(for|while)\\b",
+						msg: "count the triples one by one, in three loops"
+					})
+				]
+			}],
+			quiz: [
+				{
+					s: "כמה פעמים רץ <code>c++</code> עבור <code>n = 16</code>?" + codeBlock(R`for (int i = 1; i < n; i *= 2) {
     for (int j = 0; j < i; j++) {
         c++;
     }
 }`),
-				o: [
-					"<code>64</code>",
-					"<code>15</code>",
-					"<code>16</code>",
-					"<code>30</code>"
-				],
-				a: 1,
-				w: "<code>i</code> הוא 1, 2, 4 ו-8, והפנימית רצה <code>i</code> פעמים: 1 + 2 + 4 + 8 = 15. כמו במלכודת של השורות שקטנות בחצי, זה פחות מ-2n: לינארי."
-			},
-			{
-				s: "איזה מהקטעים <b>אינו</b> גדל כמו <code>n²</code>?",
-				o: [
-					"<code>for (i &lt; n)</code> ובתוכה <code>for (j &lt; i)</code>",
-					"<code>for (i &lt; n)</code> ובתוכה <code>for (j &lt; n / 2)</code>",
-					"<code>for (i &lt; n)</code> ובתוכה <code>for (j = 1; j &lt; n; j *= 2)</code>",
-					"<code>for (i &lt; n * n)</code> לבדה"
-				],
-				a: 2,
-				w: "הפנימית מכפילה, אז יש לה log n סיבובים: הכול n · log n. משולש, חצי מלבן ולולאה של n² סיבובים כולם ריבועיים."
-			},
-			{
-				s: "מה מודפס?" + codeBlock(R`int c = 0;
+					o: [
+						"<code>64</code>",
+						"<code>15</code>",
+						"<code>16</code>",
+						"<code>30</code>"
+					],
+					a: 1,
+					w: "1 + 2 + 4 + 8 = 15: פחות מ-2n, לינארי."
+				},
+				{
+					s: "איזה מהקטעים <b>אינו</b> גדל כמו <code>n²</code>?",
+					o: [
+						"<code>for (i &lt; n)</code> ובתוכה <code>for (j &lt; i)</code>",
+						"<code>for (i &lt; n)</code> ובתוכה <code>for (j &lt; n / 2)</code>",
+						"<code>for (i &lt; n)</code> ובתוכה <code>for (j = 1; j &lt; n; j *= 2)</code>",
+						"<code>for (i &lt; n * n)</code> לבדה"
+					],
+					a: 2,
+					w: "הפנימית מכפילה: log n סיבובים, אז n · log n."
+				},
+				{
+					s: "מה מודפס?" + codeBlock(R`int c = 0;
 
 for (int i = 0; i < 4; i++) {
     for (int j = i; j < 4; j++) {
@@ -22299,75 +23614,75 @@ for (int i = 0; i < 4; i++) {
     }
 }
 System.out.println(c);`),
-				o: [
-					"<code>4</code>",
-					"<code>64</code>",
-					"<code>20</code>",
-					"<code>10</code>"
-				],
-				a: 2,
-				w: "כש-<code>i = 0</code>: 4 + 3 + 2 + 1 = 10, כש-<code>i = 1</code>: 6, אחר כך 3 ו-1. יחד 20. הלולאות מתחילות ב-<code>i</code> וב-<code>j</code>, לא אחריהם, ולכן יש יותר מ-<code>countTriples(4) = 4</code>."
-			},
-			{
-				s: "כמה פעמים רצה שורה 4 עבור <code>n = 10</code>?" + codeBlock(R`int i = n;
+					o: [
+						"<code>4</code>",
+						"<code>64</code>",
+						"<code>20</code>",
+						"<code>10</code>"
+					],
+					a: 2,
+					w: "10 + 6 + 3 + 1 = 20: הלולאות מתחילות ב-<code>i</code> וב-<code>j</code>, לא אחריהם."
+				},
+				{
+					s: "כמה פעמים רצה שורה 4 עבור <code>n = 10</code>?" + codeBlock(R`int i = n;
 
 while (i > 0) {
     i -= 3;
     c++;
 }`),
-				o: [
-					"<code>3</code>",
-					"<code>4</code>",
-					"<code>10</code>",
-					"<code>2</code>"
-				],
-				a: 1,
-				w: "<code>i</code> הוא 10, 7, 4 ו-1, ואז 2- עוצר: ארבעה סיבובים. צעד קבוע של 3 הוא n/3, לינארי."
-			},
-			{
-				s: "עבור <code>n = 1000</code>, איזה קטע עושה <b>הכי מעט</b> סיבובים?",
-				o: [
-					"<code>for (i &lt; 100)</code> ובתוכה <code>for (j &lt; 100)</code>",
-					"<code>for (i &lt; n)</code>",
-					"<code>for (i = n; i &gt; 0; i /= 2)</code>",
-					"<code>for (i &lt; n)</code> ובתוכה <code>for (j = n; j &gt; 0; j /= 2)</code>"
-				],
-				a: 2,
-				w: "החלוקה עושה 10 סיבובים (1000, 500, ... 1). הקבוע עושה 10,000, הלינארית 1,000, וה-n · log n כ-10,000."
-			},
-			{
-				s: "איך גדל מספר הצעדים של הקוד הזה כש-<code>n</code> גדל מעבר ל-5?" + codeBlock(R`for (int i = 0; i < n; i++) {
+					o: [
+						"<code>3</code>",
+						"<code>4</code>",
+						"<code>10</code>",
+						"<code>2</code>"
+					],
+					a: 1,
+					w: "<code>i</code> הוא 10, 7, 4 ו-1: ארבעה סיבובים. n/3, לינארי."
+				},
+				{
+					s: "עבור <code>n = 1000</code>, איזה קטע עושה <b>הכי מעט</b> סיבובים?",
+					o: [
+						"<code>for (i &lt; 100)</code> ובתוכה <code>for (j &lt; 100)</code>",
+						"<code>for (i &lt; n)</code>",
+						"<code>for (i = n; i &gt; 0; i /= 2)</code>",
+						"<code>for (i &lt; n)</code> ובתוכה <code>for (j = n; j &gt; 0; j /= 2)</code>"
+					],
+					a: 2,
+					w: "החלוקה עושה 10 סיבובים; האחרות 10,000, 1,000 וכ-10,000."
+				},
+				{
+					s: "איך גדל מספר הצעדים של הקוד הזה כש-<code>n</code> גדל מעבר ל-5?" + codeBlock(R`for (int i = 0; i < n; i++) {
     if (i == 5) {
         break;
     }
     c++;
 }`),
-				o: [
-					"כמו <code>n</code>",
-					"הוא קבוע",
-					"כמו <code>log n</code>",
-					"כמו <code>n / 5</code>"
-				],
-				a: 1,
-				w: "שאלת מלכודת: הגבול הוא n, אבל ה-<code>break</code> יוצא תמיד כש-<code>i</code> מגיע ל-5. לכל n גדול מ-5 יש בדיוק 6 סיבובים."
-			},
-			{
-				s: "<code>sumTo(i)</code> היא לולאה של <code>i</code> סיבובים. איך גדל הקוד הזה?" + codeBlock(R`long total = 0;
+					o: [
+						"כמו <code>n</code>",
+						"הוא קבוע",
+						"כמו <code>log n</code>",
+						"כמו <code>n / 5</code>"
+					],
+					a: 1,
+					w: "ה-<code>break</code> יוצא כש-<code>i</code> מגיע ל-5: תמיד 6 סיבובים."
+				},
+				{
+					s: "<code>sumTo(i)</code> היא לולאה של <code>i</code> סיבובים. איך גדל הקוד הזה?" + codeBlock(R`long total = 0;
 
 for (int i = 0; i < n; i++) {
     total += sumTo(i);
 }`),
-				o: [
-					"כמו <code>n</code>: יש רק לולאה אחת",
-					"כמו <code>n²</code>: משולש",
-					"כמו <code>n · log n</code>",
-					"כמו <code>n³</code>"
-				],
-				a: 1,
-				w: "שורה כפול פעמים: בסיבוב i הקריאה עולה כ-i צעדים, ו-0 + 1 + ... + (n − 1) הוא המשולש, n(n − 1)/2. הלולאה השנייה מסתתרת בתוך השיטה."
-			},
-			{
-				s: "השיטה עוצרת ב-<code>return true</code> כשהיא מוצאת שני תאים שווים. כמה פעמים נבדק <code>a[i] == a[j]</code> במערך של 6 ערכים <b>שונים</b>?" + codeBlock(R`for (int i = 0; i < a.length; i++) {
+					o: [
+						"כמו <code>n</code>: יש רק לולאה אחת",
+						"כמו <code>n²</code>: משולש",
+						"כמו <code>n · log n</code>",
+						"כמו <code>n³</code>"
+					],
+					a: 1,
+					w: "הקריאה עולה כ-i צעדים: 0 + 1 + ... + (n − 1), משולש. הלולאה השנייה בתוך השיטה."
+				},
+				{
+					s: "השיטה עוצרת ב-<code>return true</code> כשהיא מוצאת שני תאים שווים. כמה פעמים נבדק <code>a[i] == a[j]</code> במערך של 6 ערכים <b>שונים</b>?" + codeBlock(R`for (int i = 0; i < a.length; i++) {
     for (int j = i + 1; j < a.length; j++) {
         if (a[i] == a[j]) {
             return true;
@@ -22375,17 +23690,1091 @@ for (int i = 0; i < n; i++) {
     }
 }
 return false;`),
+					o: [
+						"<code>15</code>",
+						"<code>36</code>",
+						"<code>6</code>",
+						"<code>1</code>"
+					],
+					a: 0,
+					w: "המקרה הגרוע: כל 6 · 5 / 2 = 15 הזוגות. במקרה הטוב יש בדיקה אחת."
+				}
+			]
+		}));
+	}
+	const WRITE_EXAMPLE = R`static int rangeSums(int[] plays, int lo, int hi) {
+    int mid = (lo + hi) / 2;
+    int sum = 0;
+
+    if (hi - lo == 1) {
+        return plays[lo];
+    }
+    for (int i = lo; i < hi; i++) {
+        sum += plays[i];
+    }
+    return sum + rangeSums(plays, lo, mid) + rangeSums(plays, mid, hi);
+}`;
+	const WRITE_START = R`public class Main {
+    static int work(int n) {
+        // TODO: W(1) = 1, and otherwise W(n) = 2 * W(n / 2) + n
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(work(16));
+    }
+}
+`;
+	const WRITE_SOLVED = R`public class Main {
+    static int work(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        return 2 * work(n / 2) + n;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(work(16));
+    }
+}
+`;
+	U.push(withOutputs({
+		id: "recur-write",
+		title: "מקוד לנוסחת נסיגה",
+		body: [R`<p>נוסחת נסיגה מתארת קריאה אחת: <code>a</code> קריאות על קלט קטן פי <code>b</code>, ועוד העבודה
+<code>f(n)</code> שהשיטה עושה בעצמה.</p>` + generator({ code: WRITE_EXAMPLE }) + R`<p>לחצו על שורה בקוד: החלק שלה בנוסחה נדלק.</p>`, {
+			id: "recur-write-work",
+			title: "work",
+			task: R`כתבו את <code>work(n)</code>, שמחזירה את <code>W(n)</code>:
+<b><code>W(1) = 1</code> ו-<code>W(n) = 2 · W(n/2) + n</code></b>.`,
+			code: WRITE_START,
+			solution: WRITE_SOLVED,
+			example: { output: "work(16) -> 80" },
+			tests: [
+				unit("work(1) is 1", R`Check.eq("work(1) is 1", Main.work(1), 1);`),
+				unit("work(2) is 4 and work(16) is 80", R`Check.eq("work(2) is 4", Main.work(2), 4);
+Check.eq("work(16) is 80", Main.work(16), 80);`),
+				unit("work(3) is 5: 3 / 2 rounds down to 1", R`Check.eq("work(3) is 5", Main.work(3), 5);`),
+				unit("work(100) is 652 and work(1024) is 11264", R`Check.eq("work(100) is 652", Main.work(100), 652);
+Check.eq("work(1024) is 11264", Main.work(1024), 11264);`),
+				io("main prints 80", "", "80\n"),
+				src("work calls itself", {
+					fn: "work",
+					require: "\\bwork\\s*\\(",
+					msg: "work צריכה לקרוא לעצמה."
+				})
+			]
+		}],
+		quiz: [
+			{
+				s: "מה הנוסחה של השיטה?" + codeBlock(R`static int play(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += play(n / 3);
+    work += play(n / 3);
+    work += play(n / 3);
+    return work;
+}`),
 				o: [
-					"<code>15</code>",
-					"<code>36</code>",
-					"<code>6</code>",
-					"<code>1</code>"
+					"<code>T(n) = T(n/3) + 3n</code>",
+					"<code>T(n) = 3T(n) + n/3</code>",
+					"<code>T(n) = 3T(n/3) + n</code>",
+					"<code>T(n) = 3T(n/3) + n²</code>"
+				],
+				a: 2,
+				w: "שלוש קריאות על <code>n / 3</code>, ולולאה של <code>n</code> סיבובים."
+			},
+			{
+				s: "ומה הנוסחה של זו?" + codeBlock(R`static int pairs(int n) {
+    int count = 0;
+
+    if (n <= 1) {
+        return 0;
+    }
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            count++;
+        }
+    }
+    count += pairs(n / 2);
+    count += pairs(n / 2);
+    return count;
+}`),
+				o: [
+					"<code>T(n) = 2T(n/2) + n²</code>",
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/4) + n²</code>"
 				],
 				a: 0,
-				w: "כשאין שני ערכים שווים היא לא עוצרת מוקדם: זה המקרה הגרוע, כל 6 · 5 / 2 = 15 הזוגות. במקרה הטוב (שני התאים הראשונים שווים) יש בדיקה אחת."
+				w: "שתי קריאות על <code>n / 2</code>, ושתי לולאות מקוננות: <code>f(n) = n²</code>."
+			},
+			{
+				s: "בעץ הקריאות של <code>T(n) = 3T(n/3) + n</code> השורש הוא רמה 0. כמה קריאות יש ברמה 3?",
+				o: [
+					"<code>9</code>",
+					"<code>81</code>",
+					"<code>12</code>",
+					"<code>27</code>"
+				],
+				a: 3,
+				w: "ברמה k יש <code>3<sup>k</sup></code> קריאות: <code>3³ = 27</code>."
+			},
+			{
+				s: "ב-<code>W(n) = 2W(n/2) + n</code> עם <code>n = 16</code>: כמה עבודה עושה <b>בעצמה</b> כל קריאה ברמה 2?",
+				o: [
+					"<code>16</code>",
+					"<code>8</code>",
+					"<code>4</code>",
+					"<code>2</code>"
+				],
+				a: 2,
+				w: "ברמה 2 הקלט הוא <code>16 / 4 = 4</code>, וכל קריאה עושה <code>f(4) = 4</code>."
 			}
 		]
 	}));
+	U.push({
+		id: "recur-cost-tree",
+		title: "עץ עלויות",
+		body: [R`<p>כל קריאה היא צומת בעץ, ובו כתוב מה היא עושה <b>בעצמה</b>: <code>f(n)</code>. מסכמים רמה אחרי רמה.</p>` + generator({
+			recurrence: {
+				a: 2,
+				b: 2,
+				f: "n"
+			},
+			tree: true,
+			n: 16
+		}) + R`<p>בכל רמה <code>n</code>, ויש <code>log n + 1</code> רמות: בערך <code>n log n</code>.</p>`]
+	});
+	U.push({
+		id: "recur-tree-quiz",
+		title: "שאלות: עץ עלויות",
+		quiz: [
+			{
+				s: "בעץ של <code>T(n) = 2T(n/2) + n</code> עם <code>n = 32</code>: כמה רמות יש, כולל השורש והעלים?",
+				o: [
+					"<code>5</code>",
+					"<code>6</code>",
+					"<code>16</code>",
+					"<code>32</code>"
+				],
+				a: 1,
+				w: "32, 16, 8, 4, 2, 1: <code>log₂ 32 + 1 = 6</code> רמות."
+			},
+			{
+				s: "ב-<code>T(n) = 3T(n/3) + n</code> עם <code>n = 27</code>: כמה עולה רמה אחת?",
+				o: [
+					"<code>3</code>",
+					"<code>9</code>",
+					"<code>27</code>",
+					"<code>81</code>"
+				],
+				a: 2,
+				w: "ברמה k יש <code>3<sup>k</sup></code> קריאות על <code>27 / 3<sup>k</sup></code>: תמיד 27."
+			},
+			{
+				s: "ב-<code>T(n) = 2T(n/2) + n²</code> עם <code>n = 16</code>: כמה עולה רמה 2 (השורש הוא רמה 0)?",
+				o: [
+					"<code>16</code>",
+					"<code>32</code>",
+					"<code>256</code>",
+					"<code>64</code>"
+				],
+				a: 3,
+				w: "ברמה 2 יש 4 קריאות על קלט 4, וכל אחת עושה <code>4² = 16</code>: <code>4 · 16 = 64</code>."
+			},
+			{
+				s: "ב-<code>T(n) = 2T(n/2) + n²</code>: איזו רמה עולה הכי הרבה?",
+				o: [
+					"כל הרמות שוות",
+					"העליונה, השורש",
+					"התחתונה, העלים",
+					"האמצעית"
+				],
+				a: 1,
+				w: "ברמה k העבודה היא <code>n² / 2<sup>k</sup></code>: קטנה פי 2 בכל רמה."
+			},
+			{
+				s: "<code>W(n) = 2W(n/2) + n</code> ו-<code>W(1) = 1</code>. כמה בסך הכול עבור <code>n = 16</code>?",
+				o: [
+					"<code>16</code>",
+					"<code>64</code>",
+					"<code>80</code>",
+					"<code>256</code>"
+				],
+				a: 2,
+				w: "5 רמות, ובכל אחת 16: <code>5 · 16 = 80</code>."
+			}
+		]
+	});
+	U.push({
+		id: "recur-master-idea",
+		title: "שלושה מצבים",
+		body: [R`<p>בכל נוסחה <code>a · T(n/b) + f(n)</code> מתחרים שני כוחות: <b>העלים</b>, שמספרם
+<code>n^(log_b a)</code>, ו<b>השורש</b>, שעולה <code>f(n)</code>. לחצו על <code>a</code> ועל <code>f</code>
+וראו מי מנצח.</p>` + generator({
+			recurrence: {
+				a: 2,
+				b: 2,
+				f: "n"
+			},
+			choose: {
+				a: [
+					1,
+					2,
+					4
+				],
+				f: [
+					"1",
+					"n",
+					"n^2"
+				]
+			}
+		}) + R`<table class="tbl"><tr><th>מי שולט</th><th>דוגמה</th><th>הפתרון</th></tr>
+<tr><td>העלים</td><td class="mono">4T(n/2) + n</td><td><code>n²</code></td></tr>
+<tr><td>תיקו</td><td class="mono">2T(n/2) + n</td><td><code>n log n</code></td></tr>
+<tr><td>השורש</td><td class="mono">T(n/2) + n</td><td><code>n</code></td></tr></table>`]
+	});
+	U.push({
+		id: "recur-cases-quiz",
+		title: "שאלות: שלושה מצבים",
+		quiz: [
+			{
+				s: "מה הפתרון של <code>T(n) = 4T(n/2) + n²</code>?",
+				o: [
+					"<code>n²</code>",
+					"<code>n² log n</code>",
+					"<code>n³</code>",
+					"<code>n log n</code>"
+				],
+				a: 1,
+				w: "<code>n^(log₂ 4) = n²</code> שווה ל-<code>f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+			},
+			{
+				s: "מי שולט ב-<code>T(n) = 8T(n/2) + n²</code>?",
+				o: [
+					"השורש",
+					"תיקו",
+					"העלים",
+					"אי אפשר לדעת"
+				],
+				a: 2,
+				w: "<code>n^(log₂ 8) = n³</code> גדול מ-<code>n²</code>: העלים, והפתרון <code>n³</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 2T(n/2) + n²</code>?",
+				o: [
+					"<code>n² log n</code>",
+					"<code>n</code>",
+					"<code>n log n</code>",
+					"<code>n²</code>"
+				],
+				a: 3,
+				w: "העלים הם <code>n</code>, קטן מ-<code>n²</code>: השורש שולט, והפתרון <code>f(n) = n²</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 9T(n/3) + n</code>?",
+				o: [
+					"<code>n²</code>",
+					"<code>n log n</code>",
+					"<code>n</code>",
+					"<code>n³</code>"
+				],
+				a: 0,
+				w: "<code>n^(log₃ 9) = n²</code> גדול מ-<code>n</code>: העלים שולטים."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>1</code>",
+					"<code>log n</code>",
+					"<code>n log n</code>"
+				],
+				a: 2,
+				w: "<code>n^(log₂ 1) = n⁰ = 1</code> שווה ל-<code>f(n) = 1</code>: תיקו, <code>1 · log n</code>."
+			},
+			{
+				s: "באיזו נוסחה השורש שולט?",
+				o: [
+					"<code>T(n) = T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 3T(n/3) + n</code>"
+				],
+				a: 0,
+				w: "בשאר <code>n^(log_b a)</code> שווה ל-<code>n</code> או גדול ממנו."
+			}
+		]
+	});
+	const LEAVES_EXAMPLE = R`static int quadTour(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    work += quadTour(n / 2);
+    return work;
+}`;
+	const LEAVES_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(tour(16));
+    }
+}
+`;
+	const LEAVES_START = R`public class Main {
+    // W(1) = 1, and W(n) = 4 * W(n / 2) + n
+    static int tour(int n) {
+        int work = 0;
+
+        // TODO: return 1 when n is 1; then a loop of n rounds
+        // adding 1 to work, then four calls tour(n / 2)
+        return work;
+    }
+` + LEAVES_MAIN;
+	const LEAVES_SOLVED = R`public class Main {
+    // W(1) = 1, and W(n) = 4 * W(n / 2) + n
+    static int tour(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        work += tour(n / 2);
+        work += tour(n / 2);
+        work += tour(n / 2);
+        work += tour(n / 2);
+        return work;
+    }
+` + LEAVES_MAIN;
+	U.push(withOutputs({
+		id: "recur-leaves",
+		title: "כשהעלים שולטים",
+		body: [R`<p>כש-<code>a</code> גדול, מספר הקריאות גדל מהר יותר ממה שהעבודה בכל קריאה קטנה. כמעט כל המחיר בעלים.</p>` + generator({ code: LEAVES_EXAMPLE }) + R`<p>יש <code>n²</code> עלים, ולכן הפתרון <code>n²</code>.</p>`, {
+			id: "recur-leaves-tour",
+			title: "tour",
+			task: R`כתבו את <code>tour(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
+<b>ארבע קריאות</b> <code>tour(n / 2)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
+<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
+			code: LEAVES_START,
+			solution: LEAVES_SOLVED,
+			example: { output: "tour(16) -> 496" },
+			tests: [
+				unit("tour(1) is 1 and tour(2) is 6", R`Check.eq("tour(1) is 1", Main.tour(1), 1);
+Check.eq("tour(2) is 6", Main.tour(2), 6);`),
+				unit("tour(4) is 28 and tour(16) is 496", R`Check.eq("tour(4) is 28", Main.tour(4), 28);
+Check.eq("tour(16) is 496", Main.tour(16), 496);`),
+				unit("tour(10) is 126: 10 / 2 = 5, and 5 / 2 = 2", R`Check.eq("tour(10) is 126", Main.tour(10), 126);`),
+				io("main prints 496", "", "496\n"),
+				src("four calls to tour", {
+					fn: "tour",
+					require: "(\\btour\\s*\\([\\s\\S]*){4}",
+					msg: "tour צריכה לקרוא לעצמה ארבע פעמים"
+				}),
+				ops("tour takes O(n²) steps", "Main.tour(n)", "n2", 16, [
+					16,
+					64,
+					256
+				], { c0: 20 })
+			]
+		}],
+		quiz: [
+			{
+				s: "ב-<code>T(n) = 4T(n/2) + n</code> עם <code>n = 8</code>: כמה קריאות יש ברמה התחתונה, ברמת העלים?",
+				o: [
+					"<code>8</code>",
+					"<code>16</code>",
+					"<code>32</code>",
+					"<code>64</code>"
+				],
+				a: 3,
+				w: "ברמה k יש <code>4<sup>k</sup></code> קריאות, והעלים ברמה 3: <code>4³ = 64 = n²</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 3T(n/2) + n</code>?",
+				o: [
+					"<code>n log n</code>",
+					"<code>n^(log₂ 3)</code>",
+					"<code>n²</code>",
+					"<code>n</code>"
+				],
+				a: 1,
+				w: "<code>3 &gt; 2</code>: העלים, <code>n^(log₂ 3)</code>, גדולים מ-<code>n</code>. בערך <code>n<sup>1.58</sup></code>."
+			},
+			{
+				s: "מה מחזירה <code>reach(8)</code>?" + codeBlock(R`static int reach(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return reach(n / 2) + reach(n / 2) + reach(n / 2);
+}`),
+				o: [
+					"<code>8</code>",
+					"<code>24</code>",
+					"<code>27</code>",
+					"<code>9</code>"
+				],
+				a: 2,
+				w: "3 קריאות בכל רמה, ו-3 רמות של חלוקה: <code>3³ = 27</code> עלים, שכל אחד מחזיר 1."
+			},
+			{
+				s: "ב-<code>T(n) = 4T(n/2) + n</code>: מה קורה לעבודת <b>רמה שלמה</b> מרמה לרמה למטה?",
+				o: [
+					"קטנה פי 2",
+					"גדלה פי 2",
+					"גדלה פי 4",
+					"לא משתנה"
+				],
+				a: 1,
+				w: "פי 4 קריאות, וכל אחת עושה חצי: <code>4 · n/2 = 2n</code>."
+			},
+			{
+				s: "<code>W(1) = 1</code> ו-<code>W(n) = 4W(n/2) + n</code>. כמה <code>W(8)</code>?",
+				o: [
+					"<code>32</code>",
+					"<code>64</code>",
+					"<code>120</code>",
+					"<code>112</code>"
+				],
+				a: 2,
+				w: "<code>W(2) = 6</code>, <code>W(4) = 28</code>, <code>W(8) = 4 · 28 + 8 = 120</code>."
+			}
+		]
+	}));
+	const TIE_EXAMPLE = R`static int pairUp(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += pairUp(n / 2);
+    work += pairUp(n / 2);
+    return work;
+}`;
+	const TIE_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(spread(27));
+    }
+}
+`;
+	const TIE_START = R`public class Main {
+    // W(1) = 1, and W(n) = 3 * W(n / 3) + n
+    static int spread(int n) {
+        int work = 0;
+
+        // TODO: return 1 when n is 1; then a loop of n rounds
+        // adding 1 to work, then three calls spread(n / 3)
+        return work;
+    }
+` + TIE_MAIN;
+	const TIE_SOLVED = R`public class Main {
+    // W(1) = 1, and W(n) = 3 * W(n / 3) + n
+    static int spread(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        work += spread(n / 3);
+        work += spread(n / 3);
+        work += spread(n / 3);
+        return work;
+    }
+` + TIE_MAIN;
+	U.push(withOutputs({
+		id: "recur-tie",
+		title: "תיקו",
+		body: [R`<p>כש-<code>n^(log_b a)</code> שווה ל-<code>f(n)</code>, כל רמה עולה אותו דבר, ויש <code>log n</code> רמות.</p>` + generator({
+			code: TIE_EXAMPLE,
+			tree: true
+		}) + R`<p>רמה אחת עולה <code>n</code>, ולכן <code>n log n</code>.</p>`, {
+			id: "recur-tie-spread",
+			title: "spread",
+			task: R`כתבו את <code>spread(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
+<b>שלוש קריאות</b> <code>spread(n / 3)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
+<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
+			code: TIE_START,
+			solution: TIE_SOLVED,
+			example: { output: "spread(27) -> 108" },
+			tests: [
+				unit("spread(1) is 1 and spread(3) is 6", R`Check.eq("spread(1) is 1", Main.spread(1), 1);
+Check.eq("spread(3) is 6", Main.spread(3), 6);`),
+				unit("spread(9) is 27 and spread(27) is 108", R`Check.eq("spread(9) is 27", Main.spread(9), 27);
+Check.eq("spread(27) is 108", Main.spread(27), 108);`),
+				unit("spread(10) is 28: 10 / 3 = 3", R`Check.eq("spread(10) is 28", Main.spread(10), 28);`),
+				io("main prints 108", "", "108\n"),
+				src("three calls to spread", {
+					fn: "spread",
+					require: "(\\bspread\\s*\\([\\s\\S]*){3}",
+					msg: "spread צריכה לקרוא לעצמה שלוש פעמים"
+				}),
+				ops("spread takes O(n log n) steps", "Main.spread(n)", "nlogn", 6, [
+					27,
+					243,
+					2187
+				], { c0: 20 })
+			]
+		}],
+		quiz: [
+			{
+				s: "איזו נוסחה היא <b>תיקו</b>?",
+				o: [
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 4T(n/2) + n²</code>",
+					"<code>T(n) = 2T(n/2) + n²</code>",
+					"<code>T(n) = T(n/2) + n</code>"
+				],
+				a: 1,
+				w: "<code>n^(log₂ 4) = n²</code> שווה ל-<code>f(n) = n²</code>. בשאר העלים או השורש גדולים."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 4T(n/2) + n²</code>?",
+				o: [
+					"<code>n²</code>",
+					"<code>n³</code>",
+					"<code>n² log n</code>",
+					"<code>n log n</code>"
+				],
+				a: 2,
+				w: "תיקו: <code>f(n) · log n = n² log n</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n/2) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>log n</code>",
+					"<code>1</code>",
+					"<code>n log n</code>"
+				],
+				a: 1,
+				w: "<code>n^(log₂ 1) = 1 = f(n)</code>: תיקו. <code>log n</code> רמות, ובכל אחת <code>1</code>."
+			},
+			{
+				s: "מה מחזירה <code>split(9)</code>?" + codeBlock(R`static int split(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += split(n / 3);
+    work += split(n / 3);
+    work += split(n / 3);
+    return work;
+}`),
+				o: [
+					"<code>18</code>",
+					"<code>36</code>",
+					"<code>27</code>",
+					"<code>9</code>"
+				],
+				a: 2,
+				w: "<code>split(1) = 1</code>, <code>split(3) = 3 + 3 = 6</code>, <code>split(9) = 9 + 3 · 6 = 27</code>: שתי רמות של 9 ועוד עלים."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 8T(n/2) + n³</code>?",
+				o: [
+					"<code>n³ log n</code>",
+					"<code>n³</code>",
+					"<code>n⁴</code>",
+					"<code>n² log n</code>"
+				],
+				a: 0,
+				w: "<code>n^(log₂ 8) = n³ = f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+			}
+		]
+	}));
+	const ROOT_EXAMPLE = R`static int skipHalf(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += skipHalf(n / 2);
+    return work;
+}`;
+	const ROOT_MAIN = R`
+    public static void main(String[] args) {
+        System.out.println(skip(27));
+    }
+}
+`;
+	const ROOT_START = R`public class Main {
+    // W(1) = 1, and W(n) = W(n / 3) + n
+    static int skip(int n) {
+        int work = 0;
+
+        // TODO: return 1 when n is 1; then a loop of n rounds
+        // adding 1 to work, then one call skip(n / 3)
+        return work;
+    }
+` + ROOT_MAIN;
+	const ROOT_SOLVED = R`public class Main {
+    // W(1) = 1, and W(n) = W(n / 3) + n
+    static int skip(int n) {
+        int work = 0;
+
+        if (n == 1) {
+            return 1;
+        }
+        for (int i = 0; i < n; i++) {
+            work++;
+        }
+        work += skip(n / 3);
+        return work;
+    }
+` + ROOT_MAIN;
+	U.push(withOutputs({
+		id: "recur-root",
+		title: "כשהשורש שולט",
+		body: [R`<p>כש-<code>f(n)</code> גדולה מ-<code>n^(log_b a)</code>, כל רמה קטנה בהרבה מזו שמעליה.
+כמעט כל המחיר בשורש.</p>` + generator({
+			code: ROOT_EXAMPLE,
+			tree: true
+		}) + R`<p><code>n + n/2 + n/4 + ... &lt; 2n</code>, ולכן הפתרון <code>n</code>.</p>`, {
+			id: "recur-root-skip",
+			title: "skip",
+			task: R`כתבו את <code>skip(n)</code>: <b>לולאה של <code>n</code> סיבובים</b> ואחריה
+<b>קריאה אחת</b> <code>skip(n / 3)</code>. היא מחזירה את <code>W(n)</code>, כמה פעמים
+<code>work++</code> רץ בסך הכול (<code>W(1) = 1</code>).`,
+			code: ROOT_START,
+			solution: ROOT_SOLVED,
+			example: { output: "skip(27) -> 40" },
+			tests: [
+				unit("skip(1) is 1 and skip(3) is 4", R`Check.eq("skip(1) is 1", Main.skip(1), 1);
+Check.eq("skip(3) is 4", Main.skip(3), 4);`),
+				unit("skip(9) is 13 and skip(27) is 40", R`Check.eq("skip(9) is 13", Main.skip(9), 13);
+Check.eq("skip(27) is 40", Main.skip(27), 40);`),
+				unit("skip(10) is 14: 10 / 3 = 3", R`Check.eq("skip(10) is 14", Main.skip(10), 14);`),
+				unit("skip(100) is 148", R`Check.eq("skip(100) is 148", Main.skip(100), 148);`),
+				io("main prints 40", "", "40\n"),
+				src("a loop and a call to skip", {
+					fn: "skip",
+					require: "\\b(for|while)\\b[\\s\\S]*\\bskip\\s*\\(",
+					msg: "skip צריכה לולאה, ואחריה קריאה לעצמה"
+				}),
+				ops("skip takes O(n) steps", "Main.skip(n)", "n", 8, [
+					27,
+					2187,
+					59049
+				], { c0: 20 })
+			]
+		}],
+		quiz: [
+			{
+				s: "מה הפתרון של <code>T(n) = 2T(n/2) + n²</code>?",
+				o: [
+					"<code>n² log n</code>",
+					"<code>n²</code>",
+					"<code>n log n</code>",
+					"<code>n³</code>"
+				],
+				a: 1,
+				w: "העלים הם <code>n</code>, קטן מ-<code>n²</code>: השורש שולט."
+			},
+			{
+				s: "מה הסכום <code>64 + 32 + 16 + 8 + 4 + 2 + 1</code>?",
+				o: [
+					"<code>64</code>",
+					"<code>126</code>",
+					"<code>127</code>",
+					"<code>192</code>"
+				],
+				a: 2,
+				w: "<code>127 &lt; 2 · 64</code>: סכום שמתחלק בחצי בכל צעד נשאר פחות מפעמיים האיבר הראשון."
+			},
+			{
+				s: "מה מחזירה <code>shrink(20)</code>?" + codeBlock(R`static int shrink(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += shrink(n / 2);
+    return work;
+}`),
+				o: [
+					"<code>40</code>",
+					"<code>78</code>",
+					"<code>20</code>",
+					"<code>38</code>"
+				],
+				a: 3,
+				w: "<code>20 + 10 + 5 + 2 + 1 = 38</code>: פחות מ-<code>2 · 20</code>."
+			},
+			{
+				s: "איזו נוסחה היא <b>השורש שולט</b>?",
+				o: [
+					"<code>T(n) = T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = 4T(n/2) + n</code>",
+					"<code>T(n) = 2T(n/2) + 1</code>"
+				],
+				a: 0,
+				w: "<code>n^(log₂ 1) = 1</code> קטן מ-<code>n</code>. בשאר העלים שווים ל-<code>n</code> או גדולים ממנו."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = 3T(n/4) + n</code>?",
+				o: [
+					"<code>n log n</code>",
+					"<code>n^(log₄ 3)</code>",
+					"<code>n</code>",
+					"<code>n²</code>"
+				],
+				a: 2,
+				w: "<code>log₄ 3</code> קטן מ-1, אז העלים קטנים מ-<code>n</code>: השורש שולט."
+			}
+		]
+	}));
+	const OUTSIDE_EXAMPLE = R`static int countDown(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    work += countDown(n - 1);
+    return work;
+}`;
+	const OUTSIDE_START = R`public class Main {
+    // T(1) = 1, and T(n) = T(n - 1) + n
+    static int chain(int n) {
+        // TODO: return 1 when n is 1; otherwise chain(n - 1) + n
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(chain(10));
+    }
+}
+`;
+	const OUTSIDE_SOLVED = R`public class Main {
+    // T(1) = 1, and T(n) = T(n - 1) + n
+    static int chain(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        return chain(n - 1) + n;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(chain(10));
+    }
+}
+`;
+	U.push(withOutputs({
+		id: "recur-outside",
+		title: "כשהנוסחה לא מתאימה",
+		body: [R`<p>משפט האב צריך קלט שמתחלק: <code>n / b</code>. כשהקריאה היא על <code>n - 1</code>, אין <code>b</code>.</p>` + generator({ code: OUTSIDE_EXAMPLE }) + R`<p>במקרה כזה פותחים את הנוסחה: <code>n + (n-1) + (n-2) + ... + 1</code>.</p>`, {
+			id: "recur-outside-chain",
+			title: "chain",
+			task: R`כתבו את <code>chain(n)</code> שמחזירה את <code>T(n)</code>:
+<b><code>T(1) = 1</code> ו-<code>T(n) = T(n - 1) + n</code></b>.`,
+			code: OUTSIDE_START,
+			solution: OUTSIDE_SOLVED,
+			example: { output: "chain(10) -> 55" },
+			tests: [
+				unit("chain(1) is 1 and chain(2) is 3", R`Check.eq("chain(1) is 1", Main.chain(1), 1);
+Check.eq("chain(2) is 3", Main.chain(2), 3);`),
+				unit("chain(10) is 55", R`Check.eq("chain(10) is 55", Main.chain(10), 55);`),
+				unit("chain(100) is 5050", R`Check.eq("chain(100) is 5050", Main.chain(100), 5050);`),
+				io("main prints 55", "", "55\n"),
+				src("chain calls itself", {
+					fn: "chain",
+					require: "\\bchain\\s*\\(",
+					msg: "chain צריכה לקרוא לעצמה."
+				})
+			]
+		}],
+		quiz: [
+			{
+				s: "איזו נוסחה <b>מתאימה</b> למשפט האב?",
+				o: [
+					"<code>T(n) = T(n-1) + 1</code>",
+					"<code>T(n) = 2T(n-1) + 1</code>",
+					"<code>T(n) = 2T(n/2) + n</code>",
+					"<code>T(n) = T(n-2) + n</code>"
+				],
+				a: 2,
+				w: "רק בה הקריאות הן על <code>n / b</code>. בשאר מחסרים, ואין <code>b</code>."
+			},
+			{
+				s: "מה מחזירה <code>down(4)</code>?" + codeBlock(R`static int down(int n) {
+    int work = 0;
+
+    if (n <= 0) {
+        return 0;
+    }
+    for (int i = 0; i < n; i++) {
+        work++;
+    }
+    return work + down(n - 1);
+}`),
+				o: [
+					"<code>4</code>",
+					"<code>16</code>",
+					"<code>24</code>",
+					"<code>10</code>"
+				],
+				a: 3,
+				w: "<code>4 + 3 + 2 + 1 = 10</code>."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n-1) + n</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>n log n</code>",
+					"<code>n²</code>",
+					"<code>2<sup>n</sup></code>"
+				],
+				a: 2,
+				w: "<code>n + (n-1) + ... + 1 = n(n+1)/2</code>: ריבועי."
+			},
+			{
+				s: "מה הפתרון של <code>T(n) = T(n-1) + 1</code>?",
+				o: [
+					"<code>n</code>",
+					"<code>1</code>",
+					"<code>n²</code>",
+					"<code>log n</code>"
+				],
+				a: 0,
+				w: "<code>n</code> קריאות, וכל אחת עושה צעד אחד."
+			},
+			{
+				s: "מה מחזירה <code>twice(5)</code>?" + codeBlock(R`static int twice(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return twice(n - 1) + twice(n - 1);
+}`),
+				o: [
+					"<code>5</code>",
+					"<code>10</code>",
+					"<code>16</code>",
+					"<code>32</code>"
+				],
+				a: 2,
+				w: "כל רמה מכפילה את הקריאות: <code>2<sup>n-1</sup> = 2⁴ = 16</code> עלים."
+			}
+		]
+	}));
+	{
+		const REVIEW_START = R`public class Main {
+    /* TODO: countValue(a, x), by a recursive split of the range in three */
+}
+`;
+		const REVIEW_SOLVED = R`public class Main {
+    // how many times the play count x appears in a, the range split in three parts
+    static int countValue(int[] a, int x) {
+        return countRange(a, x, 0, a.length);
+    }
+
+    static int countRange(int[] a, int x, int lo, int hi) {
+        int len = hi - lo;
+        int cut1 = lo + len / 3;
+        int cut2 = lo + 2 * len / 3;
+
+        if (len == 0) {
+            return 0;
+        }
+        if (len == 1) {
+            return a[lo] == x ? 1 : 0;
+        }
+        return countRange(a, x, lo, cut1) + countRange(a, x, cut1, cut2) + countRange(a, x, cut2, hi);
+    }
+
+    public static void main(String[] args) {
+        int[] plays = {4, 7, 4, 4, 9};
+
+        System.out.println(countValue(plays, 4));
+    }
+}
+`;
+		U.push(withOutputs({
+			id: "recur-review",
+			title: "חזרה: נוסחאות נסיגה",
+			body: [R`<p>כמה שירים הושמעו בדיוק <code>x</code> פעמים? בקובץ כמעט ריק כתבו שיטה שמחלקת את הטווח
+<b>לשלושה חלקים</b>, בלי לולאה. מהי הנוסחה שלה, ומי שולט בה?</p>`, {
+				id: "recur-review-count",
+				title: "countValue",
+				task: R`בקובץ הכמעט ריק כתבו את <code>countValue(a, x)</code>: כמה פעמים <code>x</code> מופיע ב-<code>a</code>,
+<b>בלי לולאה</b>: שיטת עזר רקורסיבית על הטווח <code>lo..hi</code>, שמפצלת אותו לשלושה חלקים כמעט שווים.`,
+				code: REVIEW_START,
+				solution: REVIEW_SOLVED,
+				example: { output: "countValue({4, 7, 4, 4, 9}, 4) -> 3" },
+				tests: [
+					unit("{4, 7, 4, 4, 9} has three 4s", R`Check.eq("{4, 7, 4, 4, 9}, 4 gives 3", Main.countValue(new int[]{4, 7, 4, 4, 9}, 4), 3);`),
+					unit("a value that is not there: 0", R`Check.eq("{1, 2, 3}, 5 gives 0", Main.countValue(new int[]{1, 2, 3}, 5), 0);`),
+					unit("one song, and none", R`Check.eq("{6}, 6 gives 1", Main.countValue(new int[]{6}, 6), 1);
+Check.eq("{6}, 7 gives 0", Main.countValue(new int[]{6}, 7), 0);
+Check.eq("{}, 6 gives 0", Main.countValue(new int[0], 6), 0);`),
+					unit("sizes that do not divide by 3", R`Check.eq("{2, 2} gives 2", Main.countValue(new int[]{2, 2}, 2), 2);
+Check.eq("{2, 2, 2, 2} gives 4", Main.countValue(new int[]{2, 2, 2, 2}, 2), 4);
+Check.eq("{1, 2, 1, 2, 1, 2, 1} gives 3", Main.countValue(new int[]{1, 2, 1, 2, 1, 2, 1}, 2), 3);`),
+					src("no loop", {
+						forbid: "\\b(for|while)\\b",
+						msg: "בלי לולאה: רק רקורסיה"
+					}),
+					ops("countValue takes O(n) steps", "Main.countValue(a, 7)", "n", 24, [
+						100,
+						1e3,
+						1e4
+					], {
+						c0: 20,
+						setup: "int[] a = Check.random(n, 10, 3);"
+					})
+				]
+			}],
+			quiz: [
+				{
+					s: "מה הפתרון של <code>T(n) = 2T(n/2) + 1</code>?",
+					o: [
+						"<code>1</code>",
+						"<code>log n</code>",
+						"<code>n</code>",
+						"<code>n log n</code>"
+					],
+					a: 2,
+					w: "<code>n^(log₂ 2) = n</code> גדול מ-<code>1</code>: העלים שולטים."
+				},
+				{
+					s: "מה הפתרון של <code>T(n) = 3T(n/3) + n</code>?",
+					o: [
+						"<code>n</code>",
+						"<code>n log n</code>",
+						"<code>n²</code>",
+						"<code>log n</code>"
+					],
+					a: 1,
+					w: "<code>n^(log₃ 3) = n = f(n)</code>: תיקו, ומוסיפים <code>log n</code>."
+				},
+				{
+					s: "מה הפתרון של <code>T(n) = T(n/4) + n²</code>?",
+					o: [
+						"<code>n² log n</code>",
+						"<code>n</code>",
+						"<code>log n</code>",
+						"<code>n²</code>"
+					],
+					a: 3,
+					w: "<code>n^(log₄ 1) = 1</code> קטן מ-<code>n²</code>: השורש שולט."
+				},
+				{
+					s: "מה הפתרון של <code>T(n) = 16T(n/4) + n</code>?",
+					o: [
+						"<code>n²</code>",
+						"<code>n log n</code>",
+						"<code>n</code>",
+						"<code>n⁴</code>"
+					],
+					a: 0,
+					w: "<code>n^(log₄ 16) = n²</code> גדול מ-<code>n</code>: העלים שולטים."
+				},
+				{
+					s: "מה הפתרון של <code>T(n) = T(n-3) + n</code>?",
+					o: [
+						"<code>n</code>",
+						"<code>n log n</code>",
+						"משפט האב לא חל: פותחים את הנוסחה, וזה <code>n²</code>",
+						"<code>log n</code>"
+					],
+					a: 2,
+					w: "הקריאה על <code>n - 3</code> לא מחלקת את הקלט. <code>n + (n-3) + (n-6) + ...</code> הוא ריבועי."
+				},
+				{
+					s: "איך גדל מספר הצעדים של השיטה?" + codeBlock(R`static int tally(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            work++;
+        }
+    }
+    work += tally(n / 2);
+    work += tally(n / 2);
+    return work;
+}`),
+					o: [
+						"<code>n log n</code>",
+						"<code>n²</code>",
+						"<code>n² log n</code>",
+						"<code>n³</code>"
+					],
+					a: 1,
+					w: "<code>T(n) = 2T(n/2) + n²</code>: העלים <code>n</code> קטנים מ-<code>n²</code>, השורש שולט."
+				},
+				{
+					s: "ומה הפתרון של <code>probe</code>, שהלולאה בה חצי את <code>i</code> בכל סיבוב?" + codeBlock(R`static int probe(int n) {
+    int work = 0;
+
+    if (n <= 1) {
+        return 1;
+    }
+    for (int i = n; i > 1; i /= 2) {
+        work++;
+    }
+    work += probe(n / 2);
+    work += probe(n / 2);
+    return work;
+}`),
+					o: [
+						"<code>n log n</code>",
+						"<code>log n</code>",
+						"<code>n²</code>",
+						"<code>n</code>"
+					],
+					a: 3,
+					w: "<code>T(n) = 2T(n/2) + log n</code>: העלים <code>n</code> גדולים מ-<code>log n</code>."
+				},
+				{
+					s: "<code>W(1) = 1</code> ו-<code>W(n) = 2W(n/2) + n</code>. כמה <code>W(8)</code>?",
+					o: [
+						"<code>24</code>",
+						"<code>40</code>",
+						"<code>32</code>",
+						"<code>64</code>"
+					],
+					a: 2,
+					w: "<code>W(2) = 4</code>, <code>W(4) = 12</code>, <code>W(8) = 2 · 12 + 8 = 32</code>: 4 רמות של 8."
+				}
+			]
+		}));
+	}
 	[
 		"ds-java",
 		"ds-java",
@@ -22417,7 +24806,17 @@ return false;`),
 		"ds-cost",
 		"ds-cost",
 		"ds-cost",
-		"ds-cost"
+		"ds-cost",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur",
+		"ds-recur"
 	].forEach((subject, index) => {
 		U[index].subject = subject;
 	});
@@ -22450,7 +24849,19 @@ window.LabCourse = {
 			id: "ds-cost",
 			title: "3. כמה עולה קוד",
 			en: "What code costs",
-			public: true
+			public: true,
+			islands: { open: ["counts", "generator"] }
+		},
+		{
+			id: "ds-recur",
+			title: "4. נוסחאות נסיגה ומשפט האב",
+			en: "Recurrences and the Master theorem",
+			public: true,
+			islands: { open: [
+				"tree",
+				"counts",
+				"generator"
+			] }
 		}
 	],
 	units: window.PContent,
@@ -23028,7 +25439,8 @@ var ALLOWED_TAGS = {
 		"row",
 		"box",
 		"p",
-		"step-diagram"
+		"step-diagram",
+		"cx-generator"
 	] },
 	span: { classes: [
 		"lbl",
@@ -23315,6 +25727,10 @@ function keptClassesOf(source, tag, target, isInline) {
 	if (tag === "a" && !ALLOWED_HREF_PATTERN.test(source.getAttribute("href") || "")) return null;
 	return classes;
 }
+var GENERATOR_BLOCK_CLASS = "cx-generator";
+function isGeneratorBlock(tag, classes) {
+	return tag === "div" && classes.includes(GENERATOR_BLOCK_CLASS);
+}
 function cleanCopyOf(source, tag, classes) {
 	const copy = document.createElement(tag);
 	if (classes.length) copy.className = classes.join(" ");
@@ -23330,6 +25746,11 @@ function cleanCopyOf(source, tag, classes) {
 	const label = source.getAttribute("aria-label");
 	if (tag === "div" && classes.includes("schem") && label) copy.setAttribute("aria-label", label);
 	if (tag === "div" && classes.includes("step-diagram")) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
+	if (isGeneratorBlock(tag, classes)) {
+		const value = source.getAttribute("data-generator") || "";
+		copy.className = GENERATOR_BLOCK_CLASS;
+		copy.setAttribute("data-generator", value.length > 2e4 ? "" : value);
+	}
 	copyLayoutAttributes(source, tag, copy);
 	return copy;
 }
@@ -23389,7 +25810,7 @@ function copyAllowedChildren(source, target, mode) {
 			continue;
 		}
 		const copy = cleanCopyOf(node, tag, classes);
-		if (tag !== "br") copyAllowedChildren(node, copy, tag === "figcaption" ? {
+		if (tag !== "br" && !isGeneratorBlock(tag, classes)) copyAllowedChildren(node, copy, tag === "figcaption" ? {
 			...mode,
 			isInline: true
 		} : mode);
@@ -27060,7 +29481,22 @@ function setClosed(layout, id, isClosing) {
 function canClose(shown, id) {
 	return shown.length > 1 && shown.includes(id);
 }
+function isPinned(layout, id) {
+	return (layout.pinned ?? []).includes(id);
+}
+function setPinned(layout, id, isOn) {
+	if (isPinned(layout, id) === isOn) return layout;
+	const others = (layout.pinned ?? []).filter((each) => each !== id);
+	const pinned = isOn ? others.concat(id) : others;
+	const next = {
+		...layout,
+		pinned
+	};
+	if (!pinned.length) delete next.pinned;
+	return next;
+}
 // src/core/islands/dock-places.ts
+var SAME_SIZE_TOLERANCE = .01;
 function homeOf(root, id) {
 	const path = pathOf(root, id);
 	if (!path || !path.length) return null;
@@ -27131,12 +29567,48 @@ function dockFloat(layout) {
 		root: addAtBottom(rest.root, leaf)
 	};
 }
+function firstIsland(node) {
+	return leavesOf(node)[0].island;
+}
+function withDefaultSizes(root, id, defaults) {
+	const path = pathOf(root, id);
+	const homePath = pathOf(defaults, id);
+	if (!path || !homePath || !path.length || !homePath.length) return null;
+	const split = nodeAt(root, path.slice(0, -1));
+	const home = nodeAt(defaults, homePath.slice(0, -1));
+	if (!(split.axis === home.axis && split.parts.length === home.parts.length && split.parts.every((part, index) => firstIsland(part) === firstIsland(home.parts[index])))) return null;
+	const resized = {
+		...split,
+		parts: split.parts.map((part, index) => ({
+			...part,
+			size: home.parts[index].size
+		}))
+	};
+	return replaceAt(root, path.slice(0, -1), resized);
+}
+function replaceAt(node, path, next) {
+	if (!path.length || isLeaf(node)) return path.length ? node : next;
+	const [index, ...rest] = path;
+	const parts = node.parts.map((part, at) => at === index ? replaceAt(part, rest, next) : part);
+	return {
+		...node,
+		parts
+	};
+}
 function resetIsland(layout, id, defaults) {
 	const home = homeOf(defaults.root, id);
 	const wasFolded = isFolded(defaults, id);
 	const isFloating = layout.float?.island === id;
 	const now = isFloating ? null : homeOf(layout.root, id);
-	if (!isFloating && JSON.stringify(now) === JSON.stringify(home) && isFolded(layout, id) === wasFolded) return layout;
+	const isHome = !isFloating && JSON.stringify(now) === JSON.stringify(home);
+	const sizeChange = ratioOf(layout.root, id) / ratioOf(defaults.root, id);
+	const isSameSize = Math.abs(sizeChange - 1) < SAME_SIZE_TOLERANCE;
+	if (isHome && isSameSize && isFolded(layout, id) === wasFolded) return layout;
+	const sized = isHome ? withDefaultSizes(layout.root, id, defaults.root) : null;
+	if (sized) return setFolded({
+		...layout,
+		root: sized
+	}, id, wasFolded);
 	const { layout: rest, leaf } = detach(layout, id);
 	if (!leaf) return layout;
 	const back = {
@@ -27189,7 +29661,8 @@ function roundedCopy(layout) {
 			!!place.closed
 		] : null,
 		code: round(layout.codeShare),
-		editing: [round(layout.editing.share), layout.editing.folded]
+		editing: [round(layout.editing.share), layout.editing.folded],
+		pinned: [...layout.pinned ?? []].sort()
 	};
 }
 var SIDE_WORDS = {
@@ -27505,6 +29978,85 @@ function dropTargetAt(point, view, arrangement, dragged, titles) {
 		label: SIDE_WORDS[side].beside + name
 	};
 }
+// src/core/islands/dock-fit.ts
+function defaultLeaf(defaults, id) {
+	const found = leavesOf(defaults.root).find((leaf) => leaf.island === id);
+	const leaf = {
+		island: id,
+		size: 1,
+		folded: isFolded(defaults, id)
+	};
+	return found && found.closed ? {
+		...leaf,
+		closed: true
+	} : leaf;
+}
+function addAtHome(root, id, defaults) {
+	const leaf = defaultLeaf(defaults, id);
+	const home = homeOf(defaults.root, id);
+	const path = home ? pathOf(root, home.next) : null;
+	if (home && path) return placeBeside(root, path, leaf, home.side, ratioOf(defaults.root, id));
+	return addAtBottom(root, leaf);
+}
+function fitLayout(layout, declared, defaults) {
+	if (!layout) return null;
+	const float = layout.float && declared.includes(layout.float.island) ? layout.float : null;
+	let root = layout.root;
+	for (const leaf of leavesOf(layout.root)) if (root && !declared.includes(leaf.island)) root = takeOut(root, leaf.island).root;
+	if (!root) return null;
+	const fitted = {
+		...layout,
+		root,
+		float
+	};
+	const pinned = (layout.pinned ?? []).filter((id) => declared.includes(id));
+	if (pinned.length) fitted.pinned = pinned;
+	else delete fitted.pinned;
+	const present = islandIds(fitted);
+	return declared.filter((id) => !present.includes(id)).reduce((sofar, id) => ({
+		...sofar,
+		root: addAtHome(sofar.root, id, defaults)
+	}), fitted);
+}
+// src/core/islands/island-defaults.ts
+function idsIn(list, declared) {
+	return Array.isArray(list) ? list.filter((id) => typeof id === "string" && declared.includes(id)) : null;
+}
+function closedInSpec(spec) {
+	if (!spec || typeof spec !== "object") return [];
+	if ("island" in spec) return spec.closed === true ? [spec.island] : [];
+	const parts = "row" in spec ? spec.row : "column" in spec ? spec.column : [];
+	return (Array.isArray(parts) ? parts : []).flatMap(closedInSpec);
+}
+function shownByDefault(declared, engineClosed, levels) {
+	let shown = declared.filter((id) => !engineClosed.includes(id));
+	for (const level of levels) {
+		if (!level || typeof level !== "object") continue;
+		const open = idsIn(level.open, declared);
+		const closed = idsIn(level.closed, declared) ?? [];
+		shown = (open ?? shown).filter((id) => !closed.includes(id));
+	}
+	return /* @__PURE__ */ new Set([...shown, TERMINAL_ID]);
+}
+var LEVELS = /* @__PURE__ */ new WeakMap();
+function isTheBox(item, box) {
+	return item === box || typeof item === "object" && item !== null && item.id === box.id;
+}
+function boxLevels(box) {
+	const known = LEVELS.get(box);
+	if (known) return known;
+	const course = window.LabCourse;
+	const unit = (course?.units ?? []).find((each) => (each.body ?? []).some((item) => isTheBox(item, box)));
+	const subject = unit?.subject ? (course?.subjects ?? []).find((each) => each.id === unit.subject) : void 0;
+	const levels = [
+		course?.islands,
+		subject?.islands,
+		unit?.islands,
+		box.islands
+	];
+	LEVELS.set(box, levels);
+	return levels;
+}
 var MAX_PARTS = 24;
 var SIDES = [
 	"left",
@@ -27518,7 +30070,8 @@ function saveLayout(layout) {
 		root: normalize(layout.root),
 		float: layout.float,
 		codeShare: layout.codeShare,
-		editing: layout.editing
+		editing: layout.editing,
+		...layout.pinned && layout.pinned.length ? { pinned: layout.pinned } : {}
 	};
 }
 function isRecord(value) {
@@ -27589,7 +30142,7 @@ function readFloat(value, ids) {
 		closed: true
 	} : place;
 }
-function readLayout(saved, declared) {
+function readLayout(saved, declared, isLoose = false) {
 	if (!isRecord(saved) || saved.v !== 1) return null;
 	const ids = [];
 	const root = readNode(saved.root, 0, ids);
@@ -27600,7 +30153,8 @@ function readLayout(saved, declared) {
 	if (!isNumberIn(saved.codeShare, .05, .95)) return null;
 	const isExact = ids.length === declared.length && declared.every((id) => ids.includes(id));
 	const tree = normalize(root);
-	if (!isExact || !tree) return null;
+	if (!isExact && !isLoose || !tree) return null;
+	const pinned = Array.isArray(saved.pinned) ? saved.pinned.filter((id) => typeof id === "string") : [];
 	return {
 		root: tree,
 		float,
@@ -27608,7 +30162,8 @@ function readLayout(saved, declared) {
 		editing: {
 			share: editing.share,
 			folded: editing.folded
-		}
+		},
+		...pinned.length ? { pinned } : {}
 	};
 }
 // src/core/islands/layout-store.ts
@@ -27661,9 +30216,9 @@ function minOfSpec(spec) {
 		height: Number.isFinite(min.height) ? Math.max(24, min.height) : DEFAULT_MIN.height
 	};
 }
-function savedLayout(key, ids) {
+function savedLayout(key, ids, defaults) {
 	try {
-		return readLayout(store.get(key, null), ids);
+		return fitLayout(readLayout(store.get(key, null), ids, true), ids, defaults);
 	} catch {
 		return null;
 	}
@@ -27672,6 +30227,7 @@ var LayoutModel = class {
 	specs;
 	ids;
 	firstId;
+	engineClosed;
 	defaults;
 	measures;
 	key;
@@ -27686,13 +30242,14 @@ var LayoutModel = class {
 		this.specs = specs;
 		this.ids = [...specs.keys()];
 		this.firstId = declared.list.length ? declared.list[0].id : MEMORY_ID;
+		this.engineClosed = closedInSpec(declared.layout);
 		this.defaults = defaultLayout(declared, this.ids);
 		this.measures = {
 			...MEASURES,
 			minOf: minOfIn.bind(null, specs)
 		};
 		this.key = "islands:" + (engine.id || "engine");
-		this.layout = savedLayout(this.key, this.ids) ?? this.defaults;
+		this.layout = savedLayout(this.key, this.ids, this.defaults) ?? this.defaults;
 	}
 	get = () => this.layout;
 	version = () => this.count;
@@ -27850,6 +30407,236 @@ function layoutMotion(before, after) {
 		}));
 	});
 	return motions.length ? together(motions) : null;
+}
+// src/core/islands/island-icons.tsx
+var ICON = {
+	width: 16,
+	height: 16,
+	viewBox: "0 0 16 16",
+	"aria-hidden": true,
+	focusable: false,
+	className: "isl-ico"
+};
+function GripIcon$1() {
+	const dots = [
+		4,
+		8,
+		12
+	].flatMap((y) => [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		cx: 6,
+		cy: y,
+		r: 1.15
+	}, "a" + y), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		cx: 10,
+		cy: y,
+		r: 1.15
+	}, "b" + y)]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		className: "isl-ico isl-grip",
+		fill: "currentColor",
+		children: dots
+	});
+}
+function ChevronIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		className: "isl-ico isl-chev",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4 6l4 4 4-4",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})
+	});
+}
+function DotsIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "currentColor",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 3.5,
+				cy: 8,
+				r: 1.3
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 8,
+				cy: 8,
+				r: 1.3
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 12.5,
+				cy: 8,
+				r: 1.3
+			})
+		]
+	});
+}
+function CloseIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4.5 4.5l7 7M11.5 4.5l-7 7",
+			strokeLinecap: "round"
+		})
+	});
+}
+function ShowIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M8 3.5v9M3.5 8h9",
+			strokeLinecap: "round"
+		})
+	});
+}
+function DockIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.4,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: 2.5,
+			y: 2.5,
+			width: 11,
+			height: 11,
+			rx: 2
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M6 6l4 4M10 6.5V10H6.5",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})]
+	});
+}
+function ResetIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.5,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M3.5 8a4.5 4.5 0 1 0 1.4-3.3",
+			strokeLinecap: "round"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M3 2.8v2.6h2.6",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})]
+	});
+}
+function IslandsIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.4,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "2.5",
+				y: "2.5",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "9",
+				y: "2.5",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "2.5",
+				y: "9",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "9",
+				y: "9",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			})
+		]
+	});
+}
+var ARROW_TURNS = {
+	right: 0,
+	bottom: 90,
+	left: 180,
+	top: 270
+};
+function ArrowIcon({ side }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.7,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+			transform: "rotate(" + (ARROW_TURNS[side] ?? 0) + " 8 8)",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M3 8h9.5M9 4.5 12.5 8 9 11.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round"
+			})
+		})
+	});
+}
+// src/core/islands/picker-store.ts
+var STATES = /* @__PURE__ */ new WeakMap();
+function stateOf(box) {
+	let state = STATES.get(box);
+	if (!state) {
+		state = {
+			trigger: null,
+			seen: /* @__PURE__ */ new Set(),
+			listeners: /* @__PURE__ */ new Set()
+		};
+		STATES.set(box, state);
+	}
+	return state;
+}
+function togglePicker(box, trigger) {
+	const state = stateOf(box);
+	state.trigger = state.trigger ? null : trigger;
+	state.listeners.forEach((listener) => listener());
+}
+function closePicker(box) {
+	const state = stateOf(box);
+	if (state.trigger) {
+		state.trigger = null;
+		state.listeners.forEach((listener) => listener());
+	}
+}
+function usePickerTrigger(box) {
+	const state = stateOf(box);
+	return (0, import_react.useSyncExternalStore)((listener) => {
+		state.listeners.add(listener);
+		return () => {
+			state.listeners.delete(listener);
+		};
+	}, () => state.trigger);
+}
+function noteFilled(box, filled, isDebugging) {
+	const state = stateOf(box);
+	if (!isDebugging) {
+		state.seen.clear();
+		return state.seen;
+	}
+	for (const id of filled) state.seen.add(id);
+	return state.seen;
 }
 // src/core/code-box/BoxBars.tsx
 var FULL_PERCENT = 100;
@@ -28140,8 +30927,22 @@ function StepBar$1({ context }) {
 				kind: "stop",
 				className: "b stop",
 				children: "■ עצור ועריכה"
-			})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandsButton, { context })
 		]
+	});
+}
+function IslandsButton({ context }) {
+	const isOpen = usePickerTrigger(context) !== null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+		type: "button",
+		className: "b ghost dbg-isl",
+		"data-d": "islands",
+		"aria-haspopup": "dialog",
+		"aria-expanded": isOpen,
+		title: "בחירת איים",
+		onClick: (event) => togglePicker(context, event.currentTarget),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandsIcon, {}), "איים"]
 	});
 }
 function StaleNotice({ context }) {
@@ -29657,6 +32458,9 @@ var CLOSED_PLACE = {
 	isFirst: false,
 	isClosed: true
 };
+function isWanted(input, layout, island) {
+	return !input.wanted || input.wanted.has(island) || isPinned(layout, island);
+}
 function isTerminalFolded(layout, mode) {
 	return mode === "editing" ? layout.editing.folded : isFolded(layout, TERMINAL_ID);
 }
@@ -29726,7 +32530,7 @@ function editingPlaces(model, isFolded, size) {
 	return /* @__PURE__ */ new Map([[TERMINAL_ID, place]]);
 }
 function presenceOf(mode, input, drawn) {
-	const hasContent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island);
+	const hasContent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island) && isWanted(input, drawn, island);
 	const closed = mode === "editing" ? [] : closedIslands(drawn);
 	const isPresent = (island) => hasContent(island) && !closed.includes(island);
 	return {
@@ -29835,7 +32639,7 @@ function focusAfterClose(shown, island) {
 function closeIsland(deps, island) {
 	if (!mayClose(deps, island)) return;
 	deps.focusLater(focusAfterClose(deps.scene.shown, island));
-	applyLayout(deps, setClosed(deps.layout, island, true));
+	applyLayout(deps, setPinned(setClosed(deps.layout, island, true), island, false));
 	deps.say(nameOf$1(deps, island) + " נסגר. אפשר להחזיר אותו מהשורה מוסתרים.");
 }
 function showIsland(deps, island) {
@@ -30131,154 +32935,6 @@ function useSay() {
 	};
 	return [said, say];
 }
-// src/core/islands/island-icons.tsx
-var ICON = {
-	width: 16,
-	height: 16,
-	viewBox: "0 0 16 16",
-	"aria-hidden": true,
-	focusable: false,
-	className: "isl-ico"
-};
-function GripIcon$1() {
-	const dots = [
-		4,
-		8,
-		12
-	].flatMap((y) => [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-		cx: 6,
-		cy: y,
-		r: 1.15
-	}, "a" + y), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-		cx: 10,
-		cy: y,
-		r: 1.15
-	}, "b" + y)]);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		className: "isl-ico isl-grip",
-		fill: "currentColor",
-		children: dots
-	});
-}
-function ChevronIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		className: "isl-ico isl-chev",
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M4 6l4 4 4-4",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})
-	});
-}
-function DotsIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "currentColor",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 3.5,
-				cy: 8,
-				r: 1.3
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 8,
-				cy: 8,
-				r: 1.3
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 12.5,
-				cy: 8,
-				r: 1.3
-			})
-		]
-	});
-}
-function CloseIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M4.5 4.5l7 7M11.5 4.5l-7 7",
-			strokeLinecap: "round"
-		})
-	});
-}
-function ShowIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M8 3.5v9M3.5 8h9",
-			strokeLinecap: "round"
-		})
-	});
-}
-function DockIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.4,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-			x: 2.5,
-			y: 2.5,
-			width: 11,
-			height: 11,
-			rx: 2
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M6 6l4 4M10 6.5V10H6.5",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})]
-	});
-}
-function ResetIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.5,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M3.5 8a4.5 4.5 0 1 0 1.4-3.3",
-			strokeLinecap: "round"
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M3 2.8v2.6h2.6",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})]
-	});
-}
-var ARROW_TURNS = {
-	right: 0,
-	bottom: 90,
-	left: 180,
-	top: 270
-};
-function ArrowIcon({ side }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.7,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-			transform: "rotate(" + (ARROW_TURNS[side] ?? 0) + " 8 8)",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-				d: "M3 8h9.5M9 4.5 12.5 8 9 11.5",
-				strokeLinecap: "round",
-				strokeLinejoin: "round"
-			})
-		})
-	});
-}
 // src/core/islands/IslandFrame.tsx
 function Title(props) {
 	const { english, hebrew } = props.spec.title;
@@ -30492,7 +33148,7 @@ function Entry(props) {
 		children: isArrow && "side" in item.command ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowIcon, { side: item.command.side }) : item.label
 	});
 }
-function rowsOf(items) {
+function rowsOf$1(items) {
 	const rows = [];
 	let group = null;
 	for (const item of items) {
@@ -30597,7 +33253,7 @@ function MenuRow(props) {
 }
 function IslandMenu(props) {
 	const ref = useMenuPlace(props);
-	const rows = rowsOf(props.items);
+	const rows = rowsOf$1(props.items);
 	const onKey = (event) => {
 		if (event.key === "Escape" || event.key === "Tab") {
 			event.preventDefault();
@@ -30733,6 +33389,182 @@ function HiddenLine(props) {
 		}, spec.id))]
 	});
 }
+// src/core/islands/island-picker.ts
+function pickerRows(input) {
+	const { layout, defaults } = input;
+	return input.ids.filter((id) => id === "terminal" || input.seen.has(id)).map((id) => {
+		const isOn = (!input.wanted || input.wanted.has(id) || isPinned(layout, id)) && !isClosed(layout, id);
+		const isAlone = input.staying.length <= 1 && input.staying.includes(id);
+		return {
+			id,
+			title: input.titles.get(id) ?? {
+				english: id,
+				hebrew: ""
+			},
+			isOn,
+			isDefault: !input.wanted || input.wanted.has(id),
+			canSwitch: !isOn || !isAlone && !input.isNeeded(id),
+			canPutBack: !sameLayout(resetIsland(layout, id, defaults), layout)
+		};
+	});
+}
+function canResetAll(layout, defaults) {
+	return !sameLayout(layout, defaults);
+}
+// src/core/islands/IslandPicker.tsx
+function hebrewOf(title) {
+	return title.hebrew || title.english;
+}
+function flip(deps, row) {
+	if (!row.canSwitch) return;
+	applyLayout(deps, setPinned(setClosed(deps.layout, row.id, row.isOn), row.id, !row.isOn && !row.isDefault));
+	deps.say("האי " + hebrewOf(row.title) + (row.isOn ? " נסגר." : " הוחזר למקומו."));
+}
+function keepFocusIn(pressed, selector) {
+	const row = pressed.closest(".ip-row");
+	const picker = pressed.closest(".ip");
+	(row?.querySelector(selector) ?? picker?.querySelector(selector))?.focus();
+}
+function putBack(deps, row) {
+	applyLayout(deps, resetIsland(deps.layout, row.id, deps.model.defaults));
+	deps.say("האי " + hebrewOf(row.title) + " חזר למקומו.");
+}
+function resetAll(deps) {
+	applyLayout(deps, deps.model.defaults);
+	deps.say("כל האיים חזרו למקומם.");
+}
+function usePickerPlace(props) {
+	const ref = (0, import_react.useRef)(null);
+	const { trigger } = props;
+	const box = props.deps.context;
+	const close = (0, import_react.useEffectEvent)(() => closePicker(box));
+	(0, import_react.useLayoutEffect)(() => {
+		const picker = ref.current;
+		if (!picker) return;
+		placeMenu$1(picker, trigger);
+		picker.querySelector("button:not(:disabled)")?.focus();
+		const onOutside = (event) => {
+			const target = event.target;
+			if (!picker.contains(target) && !trigger.contains(target)) close();
+		};
+		const onEscape = (event) => {
+			if (event.key === "Escape" && !picker.contains(event.target)) {
+				close();
+				trigger.focus();
+			}
+		};
+		document.addEventListener("pointerdown", onOutside, true);
+		document.addEventListener("keydown", onEscape);
+		return () => {
+			document.removeEventListener("pointerdown", onOutside, true);
+			document.removeEventListener("keydown", onEscape);
+		};
+	}, [trigger]);
+	return ref;
+}
+function Row({ row, deps }) {
+	const { title } = row;
+	const name = hebrewOf(title);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "ip-row",
+		"data-picker-island": row.id,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+			type: "button",
+			role: "switch",
+			className: "ip-sw",
+			"aria-checked": row.isOn,
+			disabled: !row.canSwitch,
+			title: row.canSwitch ? void 0 : "האי הזה נשאר על המסך עכשיו",
+			onClick: () => flip(deps, row),
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "ip-track",
+				"aria-hidden": "true"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "ip-name",
+				lang: "en",
+				children: [title.english, title.hebrew ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+					lang: "he",
+					children: " / " + title.hebrew
+				}) : null]
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "isl-btn ip-back",
+			"aria-label": "החזרה למקום: " + name,
+			title: "החזרה למקום: " + name,
+			disabled: !row.canPutBack,
+			onClick: (event) => {
+				keepFocusIn(event.currentTarget, ".ip-sw");
+				putBack(deps, row);
+			},
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {})
+		})]
+	});
+}
+function rowsOf(props) {
+	const { deps } = props;
+	const titles = /* @__PURE__ */ new Map();
+	deps.model.specs.forEach((spec, id) => titles.set(id, spec.title));
+	return pickerRows({
+		layout: deps.layout,
+		defaults: deps.model.defaults,
+		ids: deps.model.ids,
+		titles,
+		seen: props.seen,
+		staying: deps.scene.staying,
+		isNeeded: isNeeded.bind(null, deps),
+		wanted: deps.input.wanted
+	});
+}
+function onPickerKey(props, picker, event) {
+	if (event.key === "Escape") {
+		event.preventDefault();
+		event.stopPropagation();
+		closePicker(props.deps.context);
+		props.trigger.focus();
+		return;
+	}
+	const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+	if (!step || !picker) return;
+	event.preventDefault();
+	event.stopPropagation();
+	const buttons = [...picker.querySelectorAll("button:not(:disabled)")];
+	buttons[(buttons.indexOf(document.activeElement) + step + buttons.length) % buttons.length]?.focus();
+}
+function onPickerBlur(props, picker, event) {
+	const next = event.relatedTarget;
+	if (next && !picker?.contains(next) && !props.trigger.contains(next)) closePicker(props.deps.context);
+}
+function IslandPicker(props) {
+	const { deps } = props;
+	const ref = usePickerPlace(props);
+	return (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "ip",
+		role: "dialog",
+		"aria-label": "איים",
+		dir: "rtl",
+		lang: "he",
+		ref,
+		onKeyDown: (event) => onPickerKey(props, ref.current, event),
+		onBlur: (event) => onPickerBlur(props, ref.current, event),
+		children: [rowsOf(props).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Row, {
+			row,
+			deps
+		}, row.id)), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "ip-foot",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "ip-reset",
+				disabled: !canResetAll(deps.layout, deps.model.defaults),
+				onClick: (event) => {
+					keepFocusIn(event.currentTarget, ".ip-sw");
+					resetAll(deps);
+				},
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {}), "איפוס הכול"]
+			})
+		})]
+	}), document.body);
+}
 // src/core/islands/IslandArea.tsx
 function useAreaView(context) {
 	return {
@@ -30828,6 +33660,10 @@ function engineExtras(scene, island, view) {
 function canvasStyle(scene, area) {
 	return scene.mode === "docked" ? canvasOverflow(scene.size, area) : {};
 }
+function wantedOf(model, context) {
+	const levels = boxLevels(context.box);
+	return shownByDefault(model.ids, model.engineClosed, levels);
+}
 function useAreaState(context) {
 	const model = islandsModelOf(context.engine);
 	const { layout } = useLayout(model);
@@ -30845,6 +33681,7 @@ function useAreaState(context) {
 		isDebugging,
 		isPhone,
 		filled,
+		wanted: wantedOf(model, context),
 		isInputShown,
 		size
 	};
@@ -30867,37 +33704,61 @@ function useAreaState(context) {
 		said
 	};
 }
-function IslandArea({ context }) {
-	const { deps, view, drag, said } = useAreaState(context);
-	const { scene, model, menu, areaRef } = deps;
+function AreaPicker({ deps, filled }) {
+	const { context } = deps;
+	const { isDebugging } = deps.input;
+	const trigger = usePickerTrigger(context);
+	const seen = noteFilled(context, filled, isDebugging);
+	(0, import_react.useEffect)(() => {
+		if (!isDebugging) closePicker(context);
+	}, [isDebugging, context]);
+	return trigger && isDebugging ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandPicker, {
+		deps,
+		trigger,
+		seen
+	}) : null;
+}
+function useTerminalExtras(context, scene) {
 	const terminal = useFoldedTerminal(context, !!scene.places.get(TERMINAL_ID)?.isFolded);
-	const terminalExtras = {
+	return {
 		info: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TerminalStatus, { context }),
 		summary: terminal.summary,
 		badge: terminal.badge,
 		body: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TerminalBody, { context })
 	};
+}
+function IslandArea({ context }) {
+	const { deps, view, drag, said } = useAreaState(context);
+	const { scene, model, menu, areaRef } = deps;
+	const terminalExtras = useTerminalExtras(context, scene);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "isl-area mode-" + scene.mode,
 			ref: areaRef,
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "isl-canvas",
-				style: canvasStyle(scene, deps.input.size),
-				children: [
-					model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
-						deps,
-						island,
-						drag,
-						extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
-					}, island)),
-					scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
-				]
-			}), menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
-				deps,
-				menu
-			}) : null]
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "isl-canvas",
+					style: canvasStyle(scene, deps.input.size),
+					children: [
+						model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
+							deps,
+							island,
+							drag,
+							extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
+						}, island)),
+						scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
+					]
+				}),
+				menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
+					deps,
+					menu
+				}) : null,
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaPicker, {
+					deps,
+					filled: Object.keys(view.contents)
+				})
+			]
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HiddenLine, {
 			hidden: scene.hidden,
@@ -42291,23 +45152,274 @@ function FeedbackEnd(props) {
 		ref: hostRef
 	}) : null;
 }
+// src/shared/complexity/spec.ts
+var GENERATOR_CLASS = "cx-generator";
+var KEYS = [
+	"recurrence",
+	"code",
+	"method",
+	"choose",
+	"n",
+	"tree"
+];
+var MAX_CHOICES = 8;
+var MAX_POWER = 10;
+var MAX_LOGS = 4;
+var DEFAULT_N = 16;
+var MAX_FACTOR = 64;
+function isWhole(value, low, high) {
+	return typeof value === "number" && Number.isInteger(value) && value >= low && value <= high;
+}
+var MAX_N = 1 << 20;
+function parseWork(text) {
+	const match = /^\s*(1|n(?:\^(\d+(?:\.\d+)?))?)?\s*(?:log(?:\^(\d+))?\s*n)?\s*$/.exec(text);
+	if (match === null || text.trim() === "") return null;
+	const k = match[1] !== void 0 && match[1] !== "1" ? Number(match[2] ?? 1) : 0;
+	const j = /log/.test(text) ? Number(match[3] ?? 1) : 0;
+	return k <= MAX_POWER && j <= MAX_LOGS ? {
+		k,
+		j
+	} : null;
+}
+function parseSpec(source) {
+	let raw;
+	if (source.length > 2e4) return { problems: ["generator block: longer than 20000 characters"] };
+	try {
+		raw = JSON.parse(source);
+	} catch {
+		return { problems: ["generator block: not JSON"] };
+	}
+	if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return { problems: ["generator block: not an object"] };
+	const problems = [];
+	const data = raw;
+	Object.keys(data).filter((key) => !KEYS.includes(key)).forEach((key) => problems.push("generator block: unknown key " + key));
+	const spec = readSpec(data, problems);
+	return problems.length > 0 ? { problems } : { spec };
+}
+function readSpec(data, problems) {
+	const recurrence = data.recurrence === void 0 ? null : readRecurrence(data.recurrence);
+	const code = typeof data.code === "string" ? data.code : null;
+	const n = data.n === void 0 ? DEFAULT_N : data.n;
+	const isName = typeof data.method === "string" && /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(data.method);
+	if (data.recurrence !== void 0 && recurrence === null) problems.push("generator block: recurrence must be {a ≥ 1, b > 1, f: \"n log n\"...}");
+	if (recurrence === null === (code === null) || data.code !== void 0 && code === null) problems.push("generator block: give a recurrence or code (one of them)");
+	if (data.method !== void 0 && !isName) problems.push("generator block: method must be a name");
+	if (!isWhole(n, 1, MAX_N)) problems.push("generator block: n must be a whole number from 1 to " + MAX_N);
+	if (data.tree !== void 0 && typeof data.tree !== "boolean") problems.push("generator block: tree must be true or false");
+	return {
+		recurrence,
+		code,
+		method: isName ? data.method : null,
+		choose: readChoose(data.choose, problems),
+		n,
+		tree: data.tree === true
+	};
+}
+function readRecurrence(value) {
+	const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+	const data = isObject ? value : {};
+	const f = typeof data.f === "string" ? parseWork(data.f) : null;
+	const isListed = Object.keys(data).every((key) => [
+		"a",
+		"b",
+		"f"
+	].includes(key));
+	if (!isObject || !isListed || f === null) return null;
+	if (!isWhole(data.a, 1, MAX_FACTOR) || !isWhole(data.b, 2, MAX_FACTOR)) return null;
+	return {
+		a: data.a,
+		b: data.b,
+		f
+	};
+}
+function readChoose(value, problems) {
+	const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+	const data = isObject ? value : {};
+	const list = (key) => Array.isArray(data[key]) ? data[key] : [];
+	const a = list("a").filter((x) => isWhole(x, 1, MAX_FACTOR));
+	const b = list("b").filter((x) => isWhole(x, 2, MAX_FACTOR));
+	const f = list("f").map((x) => typeof x === "string" ? parseWork(x) : null);
+	const isListed = Object.keys(data).every((key) => [
+		"a",
+		"b",
+		"f"
+	].includes(key));
+	const isShort = [
+		"a",
+		"b",
+		"f"
+	].every((key) => list(key).length <= MAX_CHOICES);
+	if (value !== void 0 && !isObject || !isListed || !isShort) problems.push("generator block: choose is {a: [...], b: [...], f: [...]}, 8 each at most");
+	if (a.length !== list("a").length || b.length !== list("b").length || f.includes(null)) problems.push("generator block: choose must list a ≥ 1, b > 1 and f texts");
+	return {
+		a,
+		b,
+		f: f.filter((work) => work !== null)
+	};
+}
+// src/shared/complexity/GeneratorBlock.tsx
+function GeneratorBlock({ source }) {
+	const parsed = parseSpec(source);
+	if ("problems" in parsed) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "cx-block cx-problems",
+		dir: "ltr",
+		children: parsed.problems.join("\n")
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CheckedBlock, { spec: parsed.spec });
+}
+function safeReading(code, method) {
+	try {
+		return analyze(code, method ?? void 0);
+	} catch {
+		return {
+			method: method ?? "",
+			recurrence: null,
+			reason: "no-method",
+			parts: {
+				a: [],
+				b: [],
+				f: [],
+				base: []
+			}
+		};
+	}
+}
+function CheckedBlock({ spec }) {
+	const reading = spec.code === null ? null : safeReading(spec.code, spec.method);
+	const start = spec.recurrence ?? reading?.recurrence ?? null;
+	const [recurrence, setRecurrence] = (0, import_react.useState)(start);
+	const [litLines, setLitLines] = (0, import_react.useState)(null);
+	const [pointFromCode, setPointFromCode] = (0, import_react.useState)(null);
+	const onLines = (0, import_react.useCallback)((lines) => setLitLines(lines), []);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-block",
+		children: [spec.code !== null && reading !== null ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CodePanel, {
+			code: spec.code,
+			parts: reading.parts,
+			lit: litLines,
+			onPoint: setPointFromCode
+		}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-side",
+			children: [recurrence ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Choices, {
+				spec,
+				value: recurrence,
+				onChange: setRecurrence
+			}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Generator, {
+				recurrence,
+				reason: reading?.reason ?? null,
+				parts: reading?.parts ?? null,
+				n: spec.n,
+				treeOpen: spec.tree,
+				startAtEnd: spec.choose.a.length + spec.choose.b.length + spec.choose.f.length > 0,
+				pointFromCode,
+				onLines
+			})]
+		})]
+	});
+}
+function partOfLine(parts, line) {
+	return [
+		"a",
+		"b",
+		"f",
+		"base"
+	].find((part) => parts[part].includes(line)) ?? null;
+}
+function CodePanel({ code, parts, lit, onPoint }) {
+	const lines = code.replace(/\n$/, "").split("\n");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
+		className: "cx-code",
+		dir: "ltr",
+		children: lines.map((text, index) => {
+			const line = index + 1;
+			const part = partOfLine(parts, line);
+			const isLit = lit !== null && lit.includes(line);
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "cx-codeline" + (isLit ? " is-lit" : "") + (part ? " has-part" : ""),
+				"data-part": part ?? void 0,
+				onMouseEnter: part ? () => onPoint(part) : void 0,
+				onMouseLeave: part ? () => onPoint(null) : void 0,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+					className: "cx-ln",
+					children: line
+				}), text + "\n"]
+			}, line);
+		})
+	});
+}
+function Choices({ spec, value, onChange }) {
+	const { a, b, f } = spec.choose;
+	if (a.length + b.length + f.length === 0) return null;
+	const same = (left, right) => left.k === right.k && left.j === right.j;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-choices",
+		dir: "ltr",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "a",
+				items: a.map(String),
+				isOn: (i) => a[i] === value.a,
+				onPick: (i) => onChange({
+					...value,
+					a: a[i]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "b",
+				items: b.map(String),
+				isOn: (i) => b[i] === value.b,
+				onPick: (i) => onChange({
+					...value,
+					b: b[i]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "f(n)",
+				items: f.map(workText),
+				isOn: (i) => same(f[i], value.f),
+				onPick: (i) => onChange({
+					...value,
+					f: f[i]
+				})
+			})
+		]
+	});
+}
+function Group({ label, items, isOn, onPick }) {
+	if (items.length === 0) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "cx-group",
+		role: "group",
+		"aria-label": label,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "cx-sym",
+			children: label
+		}), items.map((text, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "cx-btn",
+			"aria-pressed": isOn(index),
+			onClick: () => onPick(index),
+			children: text
+		}, text))]
+	});
+}
 // src/core/lesson/LessonHtml.tsx
 function HtmlWithDiagrams(props) {
 	const hostRef = (0, import_react.useRef)(null);
 	const [slots, setSlots] = (0, import_react.useState)([]);
 	(0, import_react.useLayoutEffect)(() => {
 		const host = hostRef.current;
-		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS)) : [];
+		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS + ", div." + GENERATOR_CLASS)) : [];
 		setSlots(found);
 	}, [props.html]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		ref: hostRef,
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
-	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
+	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(slot.classList.contains("cx-generator") ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GeneratorBlock, { source: slot.getAttribute("data-generator") || "" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
 }
 function LessonHtml(props) {
-	if (!props.html.includes("step-diagram")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	if (!props.html.includes("step-diagram") && !props.html.includes("cx-generator")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
 	});
@@ -42880,15 +45992,19 @@ function isUnitDone(pages, readMark) {
 	const keys = pages.map(stepMarkKey).filter(Boolean);
 	return keys.length > 0 && keys.every(readMark);
 }
+function sectionProgress(units, readMark) {
+	const doable = units.filter((pages) => pages.some((page) => stepMarkKey(page) !== ""));
+	return {
+		done: doable.filter((pages) => isUnitDone(pages, readMark)).length,
+		total: doable.length
+	};
+}
 // src/core/sidebar/SidebarLinks.tsx
 function readMark(key) {
 	return Boolean(codeBox.store.get(key, false));
 }
 function hasPassed(box) {
 	return readMark("pass:" + box.id);
-}
-function isExercisePage(page) {
-	return Boolean(page.box && page.box.task);
 }
 function CheckMark(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
@@ -43017,10 +46133,10 @@ function subjectOfUnit(groups, unit) {
 	return group ? group.id : "";
 }
 function subjectProgress(units) {
-	const exercises = units.flatMap((unit) => (unit.pages || []).filter(isExercisePage));
+	const { done, total } = sectionProgress(units.map((unit) => unit.pages || []), readMark);
 	return {
-		passed: exercises.filter((page) => hasPassed(page.box)).length,
-		total: exercises.length
+		passed: done,
+		total
 	};
 }
 function SubjectBlock(props) {
@@ -43035,7 +46151,7 @@ function SubjectBlock(props) {
 	const title = stripTags(group.title);
 	const listId = "nav-subj-" + group.id;
 	const count = total ? passed + "/" + total : "";
-	const countLabel = total ? ", " + passed + " מתוך " + total + " תרגילים עברו" : "";
+	const countLabel = total ? ", " + passed + " מתוך " + total + " שיעורים הושלמו" : "";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: classes.filter(Boolean).join(" "),
 		"data-s": group.id,
@@ -43576,8 +46692,8 @@ function startEngine(engine, allBoxes) {
 	});
 }
 // src/core/page/sidebar-fold.js
-var AUTO_FOLD_MAX_WIDTH_PX = 1440;
 var isAutoFolded = false;
+var wasDebugging = false;
 function paintFoldButton() {
 	const foldButton = document.getElementById("fold");
 	const isClosed = document.body.classList.contains("side-closed");
@@ -43603,8 +46719,9 @@ function toggleMenu() {
 function followStepping() {
 	const isDebugging = document.body.classList.contains("debugging");
 	const isClosed = document.body.classList.contains("side-closed");
-	const isNarrow = window.innerWidth < AUTO_FOLD_MAX_WIDTH_PX;
-	if (isDebugging && !isAutoFolded && !isClosed && isNarrow) {
+	const isStart = isDebugging && !wasDebugging;
+	wasDebugging = isDebugging;
+	if (isStart && !isClosed) {
 		isAutoFolded = true;
 		document.body.classList.add("side-closed");
 		paintFoldButton();
@@ -44408,7 +47525,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 5492897 מ-2026-11-15 22:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 5492897</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#data-structures">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a6660d73 מ-2026-11-16 05:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a6660d73</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>

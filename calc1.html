@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-CgahnVIxiyOqMhKMxF/hmnbaC34lLfBjhtQfQXkMxjc=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-PUcAH3zWSY5Be1GrbAs40t+nQen2WOJe2xuJM3T0Ouk=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -665,8 +665,9 @@ body.dragging{cursor:col-resize;user-select:none}
 /* ── code pane: the current code box fills it ── */
 .code-pane{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--bg)}
 .wb{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg);color:var(--ink)}
-/* title row; the badge has its own place next to the title and a fixed height, so nothing moves when it appears */
-.wb-head{display:flex;align-items:center;gap:10px;min-height:34px;padding:10px 14px 4px;flex-wrap:wrap}
+/* title row; the badge has its own place next to the title and a fixed height, so nothing moves when it appears.
+   The title row and both bars are slim (owner, 2026-11-16): their height goes to the code; buttons stay 30 px */
+.wb-head{display:flex;align-items:center;gap:10px;min-height:28px;padding:4px 14px 0;line-height:1.4;flex-wrap:wrap}
 .wb-title{display:flex;gap:10px;align-items:center}
 .wb-kind{font-size:12px;color:var(--muted)}
 .wb-title h4{margin:0;font-weight:600;font-size:15px}
@@ -686,7 +687,7 @@ body.dragging{cursor:col-resize;user-select:none}
 .wb-task{margin:4px 14px;padding:8px 12px;border:1px solid var(--orange);border-radius:6px;font-size:14.5px}
 /* the bar reads left to right, like the code: run / step / tests on the left, full screen and reset on the right; it stays on one line,
    and below ~700 px the full-screen button keeps only its icon (the label stays for screen readers) */
-.wb-bar,.wb-dbgbar{display:flex;gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line-2)}
+.wb-bar,.wb-dbgbar{display:flex;gap:8px;align-items:center;padding:4px 14px;border-bottom:1px solid var(--line-2)}
 /* the bar may wrap only when one line cannot hold it (see the 450 px query below); row-gap 4 px
    matters only then */
 .wb-bar {
@@ -695,7 +696,7 @@ body.dragging{cursor:col-resize;user-select:none}
   flex-wrap: wrap;
   row-gap: 4px;
 }
-.wb-bar .b{unicode-bidi:plaintext}
+.wb-bar .b{unicode-bidi:plaintext;padding:3px 12px;line-height:22px}
 .wb-bar .sp{flex:1}
 .wb-bar.asking [data-a=reset],.wb-bar.asking [data-a=max],.wb-bar.undoing [data-a=reset]{display:none}
 @container (max-width:700px){
@@ -724,8 +725,8 @@ body.wide .when-narrow{display:none}
 .wb-ask{display:inline-flex;gap:8px;align-items:center;font-size:13.5px;color:var(--ink);white-space:nowrap;unicode-bidi:plaintext}
 .wb-undo .wb-ask-t{color:var(--muted)}
 /* step bar: buttons that cannot act are dimmed; the ⤽ ⤴ ⇤ glyphs share one size and baseline */
-.wb-dbgbar{background:var(--panel);flex-wrap:wrap}
-.wb-dbgbar .b{display:inline-flex;align-items:center;gap:6px}
+.wb-dbgbar{background:var(--panel);flex-wrap:wrap;row-gap:4px}
+.wb-dbgbar .b{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;line-height:22px}
 .wb-dbgbar .b:disabled{opacity:.4;cursor:default;pointer-events:none}
 .wb-dbgbar .gl{flex:none;width:16px;height:16px}
 .dbg-range{flex:1;min-width:120px;accent-color:var(--accent);-webkit-appearance:none;appearance:none;background:transparent;height:20px;margin:0;--p:0%}
@@ -3126,6 +3127,157 @@ body.debugging .tour-roomy .wb-grid {
 .tour-roomy .wb-split {
   display: none;
 }
+
+/* ── the island picker (IslandPicker.tsx; ⊞ איים, last in the step bar), over the page ── */
+.ip {
+  position: fixed;
+  z-index: 300;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 240px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 16px 40px var(--shadow);
+  color: var(--ink);
+  font: 13.5px/1.4 var(--f-body);
+}
+
+.ip-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* the switch is the whole row's name: its track, then the title (English / עברית) */
+.ip-sw {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ip-sw:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.ip-sw:focus-visible,
+.ip-reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.ip-sw:disabled {
+  cursor: default;
+}
+
+.ip-track {
+  flex: none;
+  position: relative;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--gutter);
+}
+
+.ip-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--knob);
+  transition: right 0.15s;
+}
+
+.ip-sw[aria-checked='true'] .ip-track {
+  background: var(--accent);
+}
+
+.ip-sw[aria-checked='true'] .ip-track::after {
+  right: 14px;
+}
+
+.ip-sw:disabled .ip-track {
+  opacity: 0.45;
+}
+
+.ip-name {
+  flex: 1;
+  min-width: 0;
+  direction: ltr;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ip-name i {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.isl-btn.ip-back:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: transparent;
+}
+
+.ip-foot {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+.ip-reset {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ip-reset:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.ip-reset:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.wb-dbgbar .dbg-isl[aria-expanded='true'] {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+@media print {
+  .ip {
+    display: none;
+  }
+}
 /* The feedback panel (src/shared/feedback/feedback-panel.ts; design/mock/feedback.html, approved
    2026-11-14): the line at the end of a lesson page, the form that opens in place under it,
    and the sidebar's "✎ משוב" link. Only var(--token) colours (design/tokens.css), the page's
@@ -3414,6 +3566,271 @@ body.debugging .tour-roomy .wb-grid {
   .side-fb {
     display: none;
   }
+}
+/* ═══ The Complexity Generator (src/shared/complexity/) ═══
+   The step bar, the Master card, the fold of the tree and the tree by levels. Colours only as
+   tokens (design/tokens.css). A lit part (pointed at, or the step's) has the accent outline and
+   background; the same class lights it in the card, the tree and (the host's) code lines. */
+
+/* ── The Generator ── */
+.cx-gen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.cx-nofit {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ── The step bar ── */
+.cx-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cx-btn {
+  min-width: 32px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.cx-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.cx-btn:focus-visible,
+.cx-piece:focus-visible,
+.cx-fold:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cx-count {
+  min-width: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.cx-caption {
+  flex: 1 1 160px;
+  font-weight: 600;
+}
+
+/* ── The Master card ── */
+.cx-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-family: var(--f-mono);
+}
+
+.cx-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.cx-piece {
+  padding: 1px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  cursor: default;
+}
+
+.cx-sep {
+  color: var(--muted);
+}
+
+/* ── A lit part ── */
+.cx-piece.is-lit,
+.cx-cell.is-lit {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ── The fold of the tree ── */
+.cx-fold {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ── The tree by levels ── */
+.cx-tree {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.cx-tree th {
+  padding: 2px 6px;
+  color: var(--muted);
+  font-weight: 400;
+  text-align: start;
+}
+
+.cx-tree td {
+  padding: 3px 6px;
+  border-top: 1px solid var(--line-2);
+}
+
+.cx-cell {
+  border: 1px solid transparent;
+}
+
+.cx-depth {
+  color: var(--muted);
+}
+
+.cx-squares {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+.cx-sq {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent-text);
+}
+
+.cx-sq.is-leaf {
+  background: var(--ok);
+}
+
+.cx-more {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cx-total td {
+  font-weight: 600;
+}
+
+/* ── The lesson block: the code on the start side (right in Hebrew), the pictures beside ── */
+.cx-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 18px 0 22px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+
+.cx-side {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.cx-side .cx-gen {
+  padding: 0;
+}
+
+.cx-problems {
+  display: block;
+  color: var(--err);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.cx-code {
+  flex: 1 1 320px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cx-codeline {
+  display: block;
+  padding: 0 10px 0 0;
+  border-inline-start: 3px solid transparent;
+  white-space: pre;
+}
+
+.cx-codeline.has-part {
+  cursor: default;
+}
+
+.cx-codeline.is-lit {
+  border-inline-start-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.cx-ln {
+  display: inline-block;
+  width: 3ch;
+  margin-inline-end: 10px;
+  color: var(--muted);
+  font-style: normal;
+  text-align: end;
+  user-select: none;
+}
+
+.cx-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--f-mono);
+}
+
+.cx-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cx-sym {
+  color: var(--muted);
+}
+
+.cx-btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 /* Proof engine styles (only var(--token) colours). Appended after src/core/style.css.
    Formulas are native MathML: every <math> is a left-to-right island inside the Hebrew text
@@ -4800,7 +5217,7 @@ function readSign(text, pos) {
 	};
 	throw new NotationError("unexpected character '" + char + "'", pos);
 }
-function readToken(text, pos) {
+function readToken$1(text, pos) {
 	const number = /^[0-9]+(\.[0-9]+)?/.exec(text.slice(pos));
 	if (number) return {
 		token: {
@@ -4814,7 +5231,7 @@ function readToken(text, pos) {
 	if (text[pos] === "\\") return readCommand(text, pos);
 	return readSign(text, pos);
 }
-function tokenize(text) {
+function tokenize$1(text) {
 	const tokens = [];
 	let pos = 0;
 	while (pos < text.length) {
@@ -4822,7 +5239,7 @@ function tokenize(text) {
 			pos++;
 			continue;
 		}
-		const read = readToken(text, pos);
+		const read = readToken$1(text, pos);
 		if (read.token) tokens.push(read.token);
 		pos = read.end;
 	}
@@ -5674,7 +6091,7 @@ var Parser = class Parser {
 	}
 	subFormula(text, pos) {
 		try {
-			return new Parser(tokenize(text)).parseAll();
+			return new Parser(tokenize$1(text)).parseAll();
 		} catch (error) {
 			if (error instanceof NotationError) throw new NotationError(error.message, pos);
 			throw error;
@@ -5968,7 +6385,7 @@ var MAX_FORMULA_LENGTH = 2e3;
 var CACHE_SIZE$2 = 5e3;
 function parseFresh(text) {
 	if (text.length > 2e3) throw new NotationError("the formula is too long (more than 2000 characters)", MAX_FORMULA_LENGTH);
-	const tokens = tokenize(text);
+	const tokens = tokenize$1(text);
 	const readings = barReadings(tokens);
 	if (readings.length === 1) return new Parser(readings[0]).parseAll();
 	const trees = [];
@@ -10922,7 +11339,8 @@ var ALLOWED_TAGS = {
 		"row",
 		"box",
 		"p",
-		"step-diagram"
+		"step-diagram",
+		"cx-generator"
 	] },
 	span: { classes: [
 		"lbl",
@@ -11209,6 +11627,10 @@ function keptClassesOf(source, tag, target, isInline) {
 	if (tag === "a" && !ALLOWED_HREF_PATTERN.test(source.getAttribute("href") || "")) return null;
 	return classes;
 }
+var GENERATOR_BLOCK_CLASS = "cx-generator";
+function isGeneratorBlock(tag, classes) {
+	return tag === "div" && classes.includes(GENERATOR_BLOCK_CLASS);
+}
 function cleanCopyOf(source, tag, classes) {
 	const copy = document.createElement(tag);
 	if (classes.length) copy.className = classes.join(" ");
@@ -11224,6 +11646,11 @@ function cleanCopyOf(source, tag, classes) {
 	const label = source.getAttribute("aria-label");
 	if (tag === "div" && classes.includes("schem") && label) copy.setAttribute("aria-label", label);
 	if (tag === "div" && classes.includes("step-diagram")) copy.setAttribute("data-diagram", source.getAttribute("data-diagram") || "");
+	if (isGeneratorBlock(tag, classes)) {
+		const value = source.getAttribute("data-generator") || "";
+		copy.className = GENERATOR_BLOCK_CLASS;
+		copy.setAttribute("data-generator", value.length > 2e4 ? "" : value);
+	}
 	copyLayoutAttributes(source, tag, copy);
 	return copy;
 }
@@ -11283,7 +11710,7 @@ function copyAllowedChildren(source, target, mode) {
 			continue;
 		}
 		const copy = cleanCopyOf(node, tag, classes);
-		if (tag !== "br") copyAllowedChildren(node, copy, tag === "figcaption" ? {
+		if (tag !== "br" && !isGeneratorBlock(tag, classes)) copyAllowedChildren(node, copy, tag === "figcaption" ? {
 			...mode,
 			isInline: true
 		} : mode);
@@ -16438,7 +16865,22 @@ function setClosed(layout, id, isClosing) {
 function canClose(shown, id) {
 	return shown.length > 1 && shown.includes(id);
 }
+function isPinned(layout, id) {
+	return (layout.pinned ?? []).includes(id);
+}
+function setPinned(layout, id, isOn) {
+	if (isPinned(layout, id) === isOn) return layout;
+	const others = (layout.pinned ?? []).filter((each) => each !== id);
+	const pinned = isOn ? others.concat(id) : others;
+	const next = {
+		...layout,
+		pinned
+	};
+	if (!pinned.length) delete next.pinned;
+	return next;
+}
 // src/core/islands/dock-places.ts
+var SAME_SIZE_TOLERANCE = .01;
 function homeOf(root, id) {
 	const path = pathOf(root, id);
 	if (!path || !path.length) return null;
@@ -16509,12 +16951,48 @@ function dockFloat(layout) {
 		root: addAtBottom(rest.root, leaf)
 	};
 }
+function firstIsland(node) {
+	return leavesOf(node)[0].island;
+}
+function withDefaultSizes(root, id, defaults) {
+	const path = pathOf(root, id);
+	const homePath = pathOf(defaults, id);
+	if (!path || !homePath || !path.length || !homePath.length) return null;
+	const split = nodeAt(root, path.slice(0, -1));
+	const home = nodeAt(defaults, homePath.slice(0, -1));
+	if (!(split.axis === home.axis && split.parts.length === home.parts.length && split.parts.every((part, index) => firstIsland(part) === firstIsland(home.parts[index])))) return null;
+	const resized = {
+		...split,
+		parts: split.parts.map((part, index) => ({
+			...part,
+			size: home.parts[index].size
+		}))
+	};
+	return replaceAt(root, path.slice(0, -1), resized);
+}
+function replaceAt(node, path, next) {
+	if (!path.length || isLeaf(node)) return path.length ? node : next;
+	const [index, ...rest] = path;
+	const parts = node.parts.map((part, at) => at === index ? replaceAt(part, rest, next) : part);
+	return {
+		...node,
+		parts
+	};
+}
 function resetIsland(layout, id, defaults) {
 	const home = homeOf(defaults.root, id);
 	const wasFolded = isFolded(defaults, id);
 	const isFloating = layout.float?.island === id;
 	const now = isFloating ? null : homeOf(layout.root, id);
-	if (!isFloating && JSON.stringify(now) === JSON.stringify(home) && isFolded(layout, id) === wasFolded) return layout;
+	const isHome = !isFloating && JSON.stringify(now) === JSON.stringify(home);
+	const sizeChange = ratioOf(layout.root, id) / ratioOf(defaults.root, id);
+	const isSameSize = Math.abs(sizeChange - 1) < SAME_SIZE_TOLERANCE;
+	if (isHome && isSameSize && isFolded(layout, id) === wasFolded) return layout;
+	const sized = isHome ? withDefaultSizes(layout.root, id, defaults.root) : null;
+	if (sized) return setFolded({
+		...layout,
+		root: sized
+	}, id, wasFolded);
 	const { layout: rest, leaf } = detach(layout, id);
 	if (!leaf) return layout;
 	const back = {
@@ -16567,7 +17045,8 @@ function roundedCopy(layout) {
 			!!place.closed
 		] : null,
 		code: round(layout.codeShare),
-		editing: [round(layout.editing.share), layout.editing.folded]
+		editing: [round(layout.editing.share), layout.editing.folded],
+		pinned: [...layout.pinned ?? []].sort()
 	};
 }
 var SIDE_WORDS = {
@@ -16883,6 +17362,85 @@ function dropTargetAt(point, view, arrangement, dragged, titles) {
 		label: SIDE_WORDS[side].beside + name
 	};
 }
+// src/core/islands/dock-fit.ts
+function defaultLeaf(defaults, id) {
+	const found = leavesOf(defaults.root).find((leaf) => leaf.island === id);
+	const leaf = {
+		island: id,
+		size: 1,
+		folded: isFolded(defaults, id)
+	};
+	return found && found.closed ? {
+		...leaf,
+		closed: true
+	} : leaf;
+}
+function addAtHome(root, id, defaults) {
+	const leaf = defaultLeaf(defaults, id);
+	const home = homeOf(defaults.root, id);
+	const path = home ? pathOf(root, home.next) : null;
+	if (home && path) return placeBeside(root, path, leaf, home.side, ratioOf(defaults.root, id));
+	return addAtBottom(root, leaf);
+}
+function fitLayout(layout, declared, defaults) {
+	if (!layout) return null;
+	const float = layout.float && declared.includes(layout.float.island) ? layout.float : null;
+	let root = layout.root;
+	for (const leaf of leavesOf(layout.root)) if (root && !declared.includes(leaf.island)) root = takeOut(root, leaf.island).root;
+	if (!root) return null;
+	const fitted = {
+		...layout,
+		root,
+		float
+	};
+	const pinned = (layout.pinned ?? []).filter((id) => declared.includes(id));
+	if (pinned.length) fitted.pinned = pinned;
+	else delete fitted.pinned;
+	const present = islandIds(fitted);
+	return declared.filter((id) => !present.includes(id)).reduce((sofar, id) => ({
+		...sofar,
+		root: addAtHome(sofar.root, id, defaults)
+	}), fitted);
+}
+// src/core/islands/island-defaults.ts
+function idsIn(list, declared) {
+	return Array.isArray(list) ? list.filter((id) => typeof id === "string" && declared.includes(id)) : null;
+}
+function closedInSpec(spec) {
+	if (!spec || typeof spec !== "object") return [];
+	if ("island" in spec) return spec.closed === true ? [spec.island] : [];
+	const parts = "row" in spec ? spec.row : "column" in spec ? spec.column : [];
+	return (Array.isArray(parts) ? parts : []).flatMap(closedInSpec);
+}
+function shownByDefault(declared, engineClosed, levels) {
+	let shown = declared.filter((id) => !engineClosed.includes(id));
+	for (const level of levels) {
+		if (!level || typeof level !== "object") continue;
+		const open = idsIn(level.open, declared);
+		const closed = idsIn(level.closed, declared) ?? [];
+		shown = (open ?? shown).filter((id) => !closed.includes(id));
+	}
+	return /* @__PURE__ */ new Set([...shown, TERMINAL_ID]);
+}
+var LEVELS = /* @__PURE__ */ new WeakMap();
+function isTheBox(item, box) {
+	return item === box || typeof item === "object" && item !== null && item.id === box.id;
+}
+function boxLevels(box) {
+	const known = LEVELS.get(box);
+	if (known) return known;
+	const course = window.LabCourse;
+	const unit = (course?.units ?? []).find((each) => (each.body ?? []).some((item) => isTheBox(item, box)));
+	const subject = unit?.subject ? (course?.subjects ?? []).find((each) => each.id === unit.subject) : void 0;
+	const levels = [
+		course?.islands,
+		subject?.islands,
+		unit?.islands,
+		box.islands
+	];
+	LEVELS.set(box, levels);
+	return levels;
+}
 var MAX_PARTS = 24;
 var SIDES = [
 	"left",
@@ -16896,7 +17454,8 @@ function saveLayout(layout) {
 		root: normalize(layout.root),
 		float: layout.float,
 		codeShare: layout.codeShare,
-		editing: layout.editing
+		editing: layout.editing,
+		...layout.pinned && layout.pinned.length ? { pinned: layout.pinned } : {}
 	};
 }
 function isRecord(value) {
@@ -16967,7 +17526,7 @@ function readFloat(value, ids) {
 		closed: true
 	} : place;
 }
-function readLayout(saved, declared) {
+function readLayout(saved, declared, isLoose = false) {
 	if (!isRecord(saved) || saved.v !== 1) return null;
 	const ids = [];
 	const root = readNode(saved.root, 0, ids);
@@ -16978,7 +17537,8 @@ function readLayout(saved, declared) {
 	if (!isNumberIn(saved.codeShare, .05, .95)) return null;
 	const isExact = ids.length === declared.length && declared.every((id) => ids.includes(id));
 	const tree = normalize(root);
-	if (!isExact || !tree) return null;
+	if (!isExact && !isLoose || !tree) return null;
+	const pinned = Array.isArray(saved.pinned) ? saved.pinned.filter((id) => typeof id === "string") : [];
 	return {
 		root: tree,
 		float,
@@ -16986,7 +17546,8 @@ function readLayout(saved, declared) {
 		editing: {
 			share: editing.share,
 			folded: editing.folded
-		}
+		},
+		...pinned.length ? { pinned } : {}
 	};
 }
 // src/core/islands/layout-store.ts
@@ -17039,9 +17600,9 @@ function minOfSpec(spec) {
 		height: Number.isFinite(min.height) ? Math.max(24, min.height) : DEFAULT_MIN.height
 	};
 }
-function savedLayout(key, ids) {
+function savedLayout(key, ids, defaults) {
 	try {
-		return readLayout(store.get(key, null), ids);
+		return fitLayout(readLayout(store.get(key, null), ids, true), ids, defaults);
 	} catch {
 		return null;
 	}
@@ -17050,6 +17611,7 @@ var LayoutModel = class {
 	specs;
 	ids;
 	firstId;
+	engineClosed;
 	defaults;
 	measures;
 	key;
@@ -17064,13 +17626,14 @@ var LayoutModel = class {
 		this.specs = specs;
 		this.ids = [...specs.keys()];
 		this.firstId = declared.list.length ? declared.list[0].id : MEMORY_ID;
+		this.engineClosed = closedInSpec(declared.layout);
 		this.defaults = defaultLayout(declared, this.ids);
 		this.measures = {
 			...MEASURES,
 			minOf: minOfIn.bind(null, specs)
 		};
 		this.key = "islands:" + (engine.id || "engine");
-		this.layout = savedLayout(this.key, this.ids) ?? this.defaults;
+		this.layout = savedLayout(this.key, this.ids, this.defaults) ?? this.defaults;
 	}
 	get = () => this.layout;
 	version = () => this.count;
@@ -17228,6 +17791,236 @@ function layoutMotion(before, after) {
 		}));
 	});
 	return motions.length ? together(motions) : null;
+}
+// src/core/islands/island-icons.tsx
+var ICON = {
+	width: 16,
+	height: 16,
+	viewBox: "0 0 16 16",
+	"aria-hidden": true,
+	focusable: false,
+	className: "isl-ico"
+};
+function GripIcon$1() {
+	const dots = [
+		4,
+		8,
+		12
+	].flatMap((y) => [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		cx: 6,
+		cy: y,
+		r: 1.15
+	}, "a" + y), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		cx: 10,
+		cy: y,
+		r: 1.15
+	}, "b" + y)]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		className: "isl-ico isl-grip",
+		fill: "currentColor",
+		children: dots
+	});
+}
+function ChevronIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		className: "isl-ico isl-chev",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4 6l4 4 4-4",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})
+	});
+}
+function DotsIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "currentColor",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 3.5,
+				cy: 8,
+				r: 1.3
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 8,
+				cy: 8,
+				r: 1.3
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+				cx: 12.5,
+				cy: 8,
+				r: 1.3
+			})
+		]
+	});
+}
+function CloseIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4.5 4.5l7 7M11.5 4.5l-7 7",
+			strokeLinecap: "round"
+		})
+	});
+}
+function ShowIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.6,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M8 3.5v9M3.5 8h9",
+			strokeLinecap: "round"
+		})
+	});
+}
+function DockIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.4,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			x: 2.5,
+			y: 2.5,
+			width: 11,
+			height: 11,
+			rx: 2
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M6 6l4 4M10 6.5V10H6.5",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})]
+	});
+}
+function ResetIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.5,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M3.5 8a4.5 4.5 0 1 0 1.4-3.3",
+			strokeLinecap: "round"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M3 2.8v2.6h2.6",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		})]
+	});
+}
+function IslandsIcon() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.4,
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "2.5",
+				y: "2.5",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "9",
+				y: "2.5",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "2.5",
+				y: "9",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+				x: "9",
+				y: "9",
+				width: "4.5",
+				height: "4.5",
+				rx: "1"
+			})
+		]
+	});
+}
+var ARROW_TURNS = {
+	right: 0,
+	bottom: 90,
+	left: 180,
+	top: 270
+};
+function ArrowIcon({ side }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		...ICON,
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 1.7,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
+			transform: "rotate(" + (ARROW_TURNS[side] ?? 0) + " 8 8)",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+				d: "M3 8h9.5M9 4.5 12.5 8 9 11.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round"
+			})
+		})
+	});
+}
+// src/core/islands/picker-store.ts
+var STATES = /* @__PURE__ */ new WeakMap();
+function stateOf(box) {
+	let state = STATES.get(box);
+	if (!state) {
+		state = {
+			trigger: null,
+			seen: /* @__PURE__ */ new Set(),
+			listeners: /* @__PURE__ */ new Set()
+		};
+		STATES.set(box, state);
+	}
+	return state;
+}
+function togglePicker(box, trigger) {
+	const state = stateOf(box);
+	state.trigger = state.trigger ? null : trigger;
+	state.listeners.forEach((listener) => listener());
+}
+function closePicker(box) {
+	const state = stateOf(box);
+	if (state.trigger) {
+		state.trigger = null;
+		state.listeners.forEach((listener) => listener());
+	}
+}
+function usePickerTrigger(box) {
+	const state = stateOf(box);
+	return (0, import_react.useSyncExternalStore)((listener) => {
+		state.listeners.add(listener);
+		return () => {
+			state.listeners.delete(listener);
+		};
+	}, () => state.trigger);
+}
+function noteFilled(box, filled, isDebugging) {
+	const state = stateOf(box);
+	if (!isDebugging) {
+		state.seen.clear();
+		return state.seen;
+	}
+	for (const id of filled) state.seen.add(id);
+	return state.seen;
 }
 // src/core/code-box/BoxBars.tsx
 var FULL_PERCENT = 100;
@@ -17476,7 +18269,7 @@ function StepPosition({ context }) {
 		children: position
 	})] });
 }
-function StepBar$1({ context }) {
+function StepBar$2({ context }) {
 	const isDebugging = useBoxView(context.view, (view) => view.isDebugging);
 	const firstLabel = "חזרה לצעד הראשון";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -17518,8 +18311,22 @@ function StepBar$1({ context }) {
 				kind: "stop",
 				className: "b stop",
 				children: "■ עצור ועריכה"
-			})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandsButton, { context })
 		]
+	});
+}
+function IslandsButton({ context }) {
+	const isOpen = usePickerTrigger(context) !== null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+		type: "button",
+		className: "b ghost dbg-isl",
+		"data-d": "islands",
+		"aria-haspopup": "dialog",
+		"aria-expanded": isOpen,
+		title: "בחירת איים",
+		onClick: (event) => togglePicker(context, event.currentTarget),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandsIcon, {}), "איים"]
 	});
 }
 function StaleNotice({ context }) {
@@ -19035,6 +19842,9 @@ var CLOSED_PLACE = {
 	isFirst: false,
 	isClosed: true
 };
+function isWanted(input, layout, island) {
+	return !input.wanted || input.wanted.has(island) || isPinned(layout, island);
+}
 function isTerminalFolded(layout, mode) {
 	return mode === "editing" ? layout.editing.folded : isFolded(layout, TERMINAL_ID);
 }
@@ -19104,7 +19914,7 @@ function editingPlaces(model, isFolded, size) {
 	return /* @__PURE__ */ new Map([[TERMINAL_ID, place]]);
 }
 function presenceOf(mode, input, drawn) {
-	const hasContent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island);
+	const hasContent = (island) => island === "terminal" || mode !== "editing" && input.filled.has(island) && isWanted(input, drawn, island);
 	const closed = mode === "editing" ? [] : closedIslands(drawn);
 	const isPresent = (island) => hasContent(island) && !closed.includes(island);
 	return {
@@ -19213,7 +20023,7 @@ function focusAfterClose(shown, island) {
 function closeIsland(deps, island) {
 	if (!mayClose(deps, island)) return;
 	deps.focusLater(focusAfterClose(deps.scene.shown, island));
-	applyLayout(deps, setClosed(deps.layout, island, true));
+	applyLayout(deps, setPinned(setClosed(deps.layout, island, true), island, false));
 	deps.say(nameOf$1(deps, island) + " נסגר. אפשר להחזיר אותו מהשורה מוסתרים.");
 }
 function showIsland(deps, island) {
@@ -19509,154 +20319,6 @@ function useSay() {
 	};
 	return [said, say];
 }
-// src/core/islands/island-icons.tsx
-var ICON = {
-	width: 16,
-	height: 16,
-	viewBox: "0 0 16 16",
-	"aria-hidden": true,
-	focusable: false,
-	className: "isl-ico"
-};
-function GripIcon$1() {
-	const dots = [
-		4,
-		8,
-		12
-	].flatMap((y) => [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-		cx: 6,
-		cy: y,
-		r: 1.15
-	}, "a" + y), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-		cx: 10,
-		cy: y,
-		r: 1.15
-	}, "b" + y)]);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		className: "isl-ico isl-grip",
-		fill: "currentColor",
-		children: dots
-	});
-}
-function ChevronIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		className: "isl-ico isl-chev",
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M4 6l4 4 4-4",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})
-	});
-}
-function DotsIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "currentColor",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 3.5,
-				cy: 8,
-				r: 1.3
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 8,
-				cy: 8,
-				r: 1.3
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: 12.5,
-				cy: 8,
-				r: 1.3
-			})
-		]
-	});
-}
-function CloseIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M4.5 4.5l7 7M11.5 4.5l-7 7",
-			strokeLinecap: "round"
-		})
-	});
-}
-function ShowIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.6,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M8 3.5v9M3.5 8h9",
-			strokeLinecap: "round"
-		})
-	});
-}
-function DockIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.4,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-			x: 2.5,
-			y: 2.5,
-			width: 11,
-			height: 11,
-			rx: 2
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M6 6l4 4M10 6.5V10H6.5",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})]
-	});
-}
-function ResetIcon() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.5,
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M3.5 8a4.5 4.5 0 1 0 1.4-3.3",
-			strokeLinecap: "round"
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			d: "M3 2.8v2.6h2.6",
-			strokeLinecap: "round",
-			strokeLinejoin: "round"
-		})]
-	});
-}
-var ARROW_TURNS = {
-	right: 0,
-	bottom: 90,
-	left: 180,
-	top: 270
-};
-function ArrowIcon({ side }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-		...ICON,
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: 1.7,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("g", {
-			transform: "rotate(" + (ARROW_TURNS[side] ?? 0) + " 8 8)",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-				d: "M3 8h9.5M9 4.5 12.5 8 9 11.5",
-				strokeLinecap: "round",
-				strokeLinejoin: "round"
-			})
-		})
-	});
-}
 // src/core/islands/IslandFrame.tsx
 function Title(props) {
 	const { english, hebrew } = props.spec.title;
@@ -19870,7 +20532,7 @@ function Entry(props) {
 		children: isArrow && "side" in item.command ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowIcon, { side: item.command.side }) : item.label
 	});
 }
-function rowsOf(items) {
+function rowsOf$1(items) {
 	const rows = [];
 	let group = null;
 	for (const item of items) {
@@ -19975,7 +20637,7 @@ function MenuRow(props) {
 }
 function IslandMenu(props) {
 	const ref = useMenuPlace(props);
-	const rows = rowsOf(props.items);
+	const rows = rowsOf$1(props.items);
 	const onKey = (event) => {
 		if (event.key === "Escape" || event.key === "Tab") {
 			event.preventDefault();
@@ -20111,6 +20773,182 @@ function HiddenLine(props) {
 		}, spec.id))]
 	});
 }
+// src/core/islands/island-picker.ts
+function pickerRows(input) {
+	const { layout, defaults } = input;
+	return input.ids.filter((id) => id === "terminal" || input.seen.has(id)).map((id) => {
+		const isOn = (!input.wanted || input.wanted.has(id) || isPinned(layout, id)) && !isClosed(layout, id);
+		const isAlone = input.staying.length <= 1 && input.staying.includes(id);
+		return {
+			id,
+			title: input.titles.get(id) ?? {
+				english: id,
+				hebrew: ""
+			},
+			isOn,
+			isDefault: !input.wanted || input.wanted.has(id),
+			canSwitch: !isOn || !isAlone && !input.isNeeded(id),
+			canPutBack: !sameLayout(resetIsland(layout, id, defaults), layout)
+		};
+	});
+}
+function canResetAll(layout, defaults) {
+	return !sameLayout(layout, defaults);
+}
+// src/core/islands/IslandPicker.tsx
+function hebrewOf(title) {
+	return title.hebrew || title.english;
+}
+function flip(deps, row) {
+	if (!row.canSwitch) return;
+	applyLayout(deps, setPinned(setClosed(deps.layout, row.id, row.isOn), row.id, !row.isOn && !row.isDefault));
+	deps.say("האי " + hebrewOf(row.title) + (row.isOn ? " נסגר." : " הוחזר למקומו."));
+}
+function keepFocusIn(pressed, selector) {
+	const row = pressed.closest(".ip-row");
+	const picker = pressed.closest(".ip");
+	(row?.querySelector(selector) ?? picker?.querySelector(selector))?.focus();
+}
+function putBack(deps, row) {
+	applyLayout(deps, resetIsland(deps.layout, row.id, deps.model.defaults));
+	deps.say("האי " + hebrewOf(row.title) + " חזר למקומו.");
+}
+function resetAll(deps) {
+	applyLayout(deps, deps.model.defaults);
+	deps.say("כל האיים חזרו למקומם.");
+}
+function usePickerPlace(props) {
+	const ref = (0, import_react.useRef)(null);
+	const { trigger } = props;
+	const box = props.deps.context;
+	const close = (0, import_react.useEffectEvent)(() => closePicker(box));
+	(0, import_react.useLayoutEffect)(() => {
+		const picker = ref.current;
+		if (!picker) return;
+		placeMenu$1(picker, trigger);
+		picker.querySelector("button:not(:disabled)")?.focus();
+		const onOutside = (event) => {
+			const target = event.target;
+			if (!picker.contains(target) && !trigger.contains(target)) close();
+		};
+		const onEscape = (event) => {
+			if (event.key === "Escape" && !picker.contains(event.target)) {
+				close();
+				trigger.focus();
+			}
+		};
+		document.addEventListener("pointerdown", onOutside, true);
+		document.addEventListener("keydown", onEscape);
+		return () => {
+			document.removeEventListener("pointerdown", onOutside, true);
+			document.removeEventListener("keydown", onEscape);
+		};
+	}, [trigger]);
+	return ref;
+}
+function Row({ row, deps }) {
+	const { title } = row;
+	const name = hebrewOf(title);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "ip-row",
+		"data-picker-island": row.id,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+			type: "button",
+			role: "switch",
+			className: "ip-sw",
+			"aria-checked": row.isOn,
+			disabled: !row.canSwitch,
+			title: row.canSwitch ? void 0 : "האי הזה נשאר על המסך עכשיו",
+			onClick: () => flip(deps, row),
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "ip-track",
+				"aria-hidden": "true"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "ip-name",
+				lang: "en",
+				children: [title.english, title.hebrew ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+					lang: "he",
+					children: " / " + title.hebrew
+				}) : null]
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "isl-btn ip-back",
+			"aria-label": "החזרה למקום: " + name,
+			title: "החזרה למקום: " + name,
+			disabled: !row.canPutBack,
+			onClick: (event) => {
+				keepFocusIn(event.currentTarget, ".ip-sw");
+				putBack(deps, row);
+			},
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {})
+		})]
+	});
+}
+function rowsOf(props) {
+	const { deps } = props;
+	const titles = /* @__PURE__ */ new Map();
+	deps.model.specs.forEach((spec, id) => titles.set(id, spec.title));
+	return pickerRows({
+		layout: deps.layout,
+		defaults: deps.model.defaults,
+		ids: deps.model.ids,
+		titles,
+		seen: props.seen,
+		staying: deps.scene.staying,
+		isNeeded: isNeeded.bind(null, deps),
+		wanted: deps.input.wanted
+	});
+}
+function onPickerKey(props, picker, event) {
+	if (event.key === "Escape") {
+		event.preventDefault();
+		event.stopPropagation();
+		closePicker(props.deps.context);
+		props.trigger.focus();
+		return;
+	}
+	const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+	if (!step || !picker) return;
+	event.preventDefault();
+	event.stopPropagation();
+	const buttons = [...picker.querySelectorAll("button:not(:disabled)")];
+	buttons[(buttons.indexOf(document.activeElement) + step + buttons.length) % buttons.length]?.focus();
+}
+function onPickerBlur(props, picker, event) {
+	const next = event.relatedTarget;
+	if (next && !picker?.contains(next) && !props.trigger.contains(next)) closePicker(props.deps.context);
+}
+function IslandPicker(props) {
+	const { deps } = props;
+	const ref = usePickerPlace(props);
+	return (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "ip",
+		role: "dialog",
+		"aria-label": "איים",
+		dir: "rtl",
+		lang: "he",
+		ref,
+		onKeyDown: (event) => onPickerKey(props, ref.current, event),
+		onBlur: (event) => onPickerBlur(props, ref.current, event),
+		children: [rowsOf(props).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Row, {
+			row,
+			deps
+		}, row.id)), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "ip-foot",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "ip-reset",
+				disabled: !canResetAll(deps.layout, deps.model.defaults),
+				onClick: (event) => {
+					keepFocusIn(event.currentTarget, ".ip-sw");
+					resetAll(deps);
+				},
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {}), "איפוס הכול"]
+			})
+		})]
+	}), document.body);
+}
 // src/core/islands/IslandArea.tsx
 function useAreaView(context) {
 	return {
@@ -20206,6 +21044,10 @@ function engineExtras(scene, island, view) {
 function canvasStyle(scene, area) {
 	return scene.mode === "docked" ? canvasOverflow(scene.size, area) : {};
 }
+function wantedOf(model, context) {
+	const levels = boxLevels(context.box);
+	return shownByDefault(model.ids, model.engineClosed, levels);
+}
 function useAreaState(context) {
 	const model = islandsModelOf(context.engine);
 	const { layout } = useLayout(model);
@@ -20223,6 +21065,7 @@ function useAreaState(context) {
 		isDebugging,
 		isPhone,
 		filled,
+		wanted: wantedOf(model, context),
 		isInputShown,
 		size
 	};
@@ -20245,37 +21088,61 @@ function useAreaState(context) {
 		said
 	};
 }
-function IslandArea({ context }) {
-	const { deps, view, drag, said } = useAreaState(context);
-	const { scene, model, menu, areaRef } = deps;
+function AreaPicker({ deps, filled }) {
+	const { context } = deps;
+	const { isDebugging } = deps.input;
+	const trigger = usePickerTrigger(context);
+	const seen = noteFilled(context, filled, isDebugging);
+	(0, import_react.useEffect)(() => {
+		if (!isDebugging) closePicker(context);
+	}, [isDebugging, context]);
+	return trigger && isDebugging ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IslandPicker, {
+		deps,
+		trigger,
+		seen
+	}) : null;
+}
+function useTerminalExtras(context, scene) {
 	const terminal = useFoldedTerminal(context, !!scene.places.get(TERMINAL_ID)?.isFolded);
-	const terminalExtras = {
+	return {
 		info: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TerminalStatus, { context }),
 		summary: terminal.summary,
 		badge: terminal.badge,
 		body: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TerminalBody, { context })
 	};
+}
+function IslandArea({ context }) {
+	const { deps, view, drag, said } = useAreaState(context);
+	const { scene, model, menu, areaRef } = deps;
+	const terminalExtras = useTerminalExtras(context, scene);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "isl-area mode-" + scene.mode,
 			ref: areaRef,
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "isl-canvas",
-				style: canvasStyle(scene, deps.input.size),
-				children: [
-					model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
-						deps,
-						island,
-						drag,
-						extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
-					}, island)),
-					scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
-				]
-			}), menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
-				deps,
-				menu
-			}) : null]
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "isl-canvas",
+					style: canvasStyle(scene, deps.input.size),
+					children: [
+						model.ids.map((island) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frame, {
+							deps,
+							island,
+							drag,
+							extras: island === "terminal" ? terminalExtras : engineExtras(scene, island, view)
+						}, island)),
+						scene.mode === "docked" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Splitters, { deps }) : null,
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DragOverlays, { drag })
+					]
+				}),
+				menu ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaMenu, {
+					deps,
+					menu
+				}) : null,
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaPicker, {
+					deps,
+					filled: Object.keys(view.contents)
+				})
+			]
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HiddenLine, {
 			hidden: scene.hidden,
@@ -20410,7 +21277,7 @@ function CodeBoxView({ context }) {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ActionBar, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(OutsideNotice, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(UpdatedNotice, { context }),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$1, { context }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$2, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StaleNotice, { context }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BoxGrid, { context })
 	] });
@@ -24475,7 +25342,7 @@ function problemLine(problem, file = "diagram.json", kind = "error") {
 	return place + ": " + kind + ": " + path + problem.message;
 }
 // src/core/step-diagram/player-parts.tsx
-function StepBar(props) {
+function StepBar$1(props) {
 	const { index, count, move } = props;
 	const isFirst = index === 0;
 	const isLast = index === count - 1;
@@ -24952,7 +25819,7 @@ function DiagramPlayer(props) {
 				scene,
 				count: scenes.length
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar$1, {
 				index,
 				count: scenes.length,
 				move
@@ -31669,23 +32536,1157 @@ function FeedbackEnd(props) {
 		ref: hostRef
 	}) : null;
 }
+// src/shared/complexity/java-parse.ts
+var LONG_SYMBOLS = [
+	">>>=",
+	"<<=",
+	">>=",
+	">>>",
+	"==",
+	"!=",
+	"<=",
+	">=",
+	"&&",
+	"||",
+	"++",
+	"--",
+	"+=",
+	"-=",
+	"*=",
+	"/=",
+	"%=",
+	"<<",
+	">>",
+	"->",
+	"::"
+];
+function tokenize(source) {
+	const tokens = [];
+	let line = 1;
+	let index = 0;
+	while (index < source.length) {
+		const next = readToken(source, index);
+		if (next.text !== "") tokens.push({
+			text: next.text,
+			line
+		});
+		line += countNewlines(source.slice(index, next.end));
+		index = next.end;
+	}
+	return tokens;
+}
+function countNewlines(text) {
+	return text.split("\n").length - 1;
+}
+function readToken(source, start) {
+	const rest = source.slice(start);
+	const space = /^\s+/.exec(rest);
+	const comment = /^(\/\/[^\n]*|\/\*[\s\S]*?(\*\/|$))/.exec(rest);
+	const literal = /^("(\\.|[^"\\\n])*"|'(\\.|[^'\\\n])*')/.exec(rest);
+	const word = /^[A-Za-z_$][A-Za-z0-9_$]*|^\d[\d_]*(\.\d+)?[lLfFdD]?/.exec(rest);
+	const symbol = LONG_SYMBOLS.find((candidate) => rest.startsWith(candidate)) ?? rest[0];
+	if (space !== null) return {
+		text: "",
+		end: start + space[0].length
+	};
+	if (comment !== null) return {
+		text: "",
+		end: start + comment[0].length
+	};
+	const match = literal ?? word;
+	if (match !== null) return {
+		text: match[0],
+		end: start + match[0].length
+	};
+	return {
+		text: symbol,
+		end: start + symbol.length
+	};
+}
+function closingIndex(tokens, open) {
+	const pairs = {
+		"(": ")",
+		"{": "}",
+		"[": "]"
+	};
+	const opener = tokens[open].text;
+	let depth = 0;
+	for (let index = open; index < tokens.length; index++) if (tokens[index].text === opener) depth++;
+	else if (tokens[index].text === pairs[opener]) {
+		depth--;
+		if (depth === 0) return index;
+	}
+	return tokens.length - 1;
+}
+var NOT_METHODS = /* @__PURE__ */ new Set([
+	"if",
+	"for",
+	"while",
+	"switch",
+	"catch",
+	"synchronized",
+	"return",
+	"new",
+	"else",
+	"do",
+	"try"
+]);
+function findMethods(tokens) {
+	const methods = [];
+	for (let index = 1; index + 1 < tokens.length; index++) {
+		const name = tokens[index].text;
+		const isName = /^[A-Za-z_$]/.test(name) && tokens[index + 1].text === "(";
+		const before = tokens[index - 1].text;
+		if (!isName || NOT_METHODS.has(name) || before === "new" || before === ".") continue;
+		const close = closingIndex(tokens, index + 1);
+		const brace = tokens[close + 1]?.text === "{" ? close + 1 : -1;
+		if (brace < 0 || !/^[A-Za-z_$>\]]/.test(before)) continue;
+		const end = closingIndex(tokens, brace);
+		methods.push({
+			name,
+			params: parameterNames(tokens.slice(index + 2, close)),
+			line: tokens[index].line,
+			end: tokens[end].line,
+			body: parseBlock(tokens, brace, end)
+		});
+		index = end;
+	}
+	return methods;
+}
+function parameterNames(tokens) {
+	const names = [];
+	let depth = 0;
+	let last = "";
+	for (const token of tokens) if (token.text === "<") depth++;
+	else if (token.text === ">") depth--;
+	else if (token.text === "," && depth === 0) names.push(last);
+	else if (/^[A-Za-z_$]/.test(token.text)) last = token.text;
+	if (last !== "") names.push(last);
+	return names;
+}
+function parseBlock(tokens, open, close) {
+	const children = [];
+	let index = open + 1;
+	while (index < close) {
+		const parsed = parseStatement(tokens, index, close);
+		children.push(parsed.statement);
+		index = parsed.next;
+	}
+	return {
+		kind: "block",
+		from: tokens[open].line,
+		to: tokens[close].line,
+		tokens: [],
+		children
+	};
+}
+function parseStatement(tokens, start, limit) {
+	const word = tokens[start].text;
+	if (word === "{") {
+		const close = closingIndex(tokens, start);
+		return {
+			statement: parseBlock(tokens, start, close),
+			next: close + 1
+		};
+	}
+	if (word === "if") return parseIf(tokens, start, limit);
+	if (word === "for" || word === "while") return parseLoop(tokens, start, limit);
+	if (word === "do") return parseDo(tokens, start, limit);
+	return parseSimple(tokens, start, limit);
+}
+function parseIf(tokens, start, limit) {
+	const close = closingIndex(tokens, start + 1);
+	const then = parseStatement(tokens, close + 1, limit);
+	const children = [then.statement];
+	let next = then.next;
+	if (next < limit && tokens[next].text === "else") {
+		const otherwise = parseStatement(tokens, next + 1, limit);
+		children.push(otherwise.statement);
+		next = otherwise.next;
+	}
+	return {
+		statement: {
+			kind: "if",
+			from: tokens[start].line,
+			to: tokens[next - 1].line,
+			tokens: tokens.slice(start + 2, close),
+			children
+		},
+		next
+	};
+}
+function parseLoop(tokens, start, limit) {
+	const close = closingIndex(tokens, start + 1);
+	const body = parseStatement(tokens, close + 1, limit);
+	return {
+		statement: {
+			kind: "loop",
+			keyword: tokens[start].text,
+			from: tokens[start].line,
+			to: tokens[body.next - 1].line,
+			tokens: tokens.slice(start + 2, close),
+			children: [body.statement]
+		},
+		next: body.next
+	};
+}
+function parseDo(tokens, start, limit) {
+	const body = parseStatement(tokens, start + 1, limit);
+	const whileIndex = body.next;
+	const close = tokens[whileIndex + 1]?.text === "(" ? closingIndex(tokens, whileIndex + 1) : whileIndex;
+	const next = Math.min(limit, close + 2);
+	return {
+		statement: {
+			kind: "loop",
+			keyword: "do",
+			from: tokens[start].line,
+			to: tokens[next - 1].line,
+			tokens: tokens.slice(whileIndex + 2, close),
+			children: [body.statement]
+		},
+		next
+	};
+}
+function parseSimple(tokens, start, limit) {
+	let index = start;
+	while (index < limit && tokens[index].text !== ";") index = [
+		"(",
+		"{",
+		"["
+	].includes(tokens[index].text) ? closingIndex(tokens, index) + 1 : index + 1;
+	const end = Math.min(index, limit - 1);
+	return {
+		statement: {
+			kind: "simple",
+			from: tokens[start].line,
+			to: tokens[Math.max(start, end)].line,
+			tokens: tokens.slice(start, index),
+			children: []
+		},
+		next: index < limit ? index + 1 : limit
+	};
+}
+function allTokens(statement) {
+	return [...statement.tokens, ...statement.children.flatMap(allTokens)];
+}
+// src/shared/complexity/loops.ts
+function loopCount(loop) {
+	const header = loop.tokens.map((token) => token.text);
+	const text = header.join(" ");
+	const parts = loop.keyword === "for" ? splitFor(header) : {
+		condition: header,
+		update: []
+	};
+	const counter = parts.condition.find((word) => /^[A-Za-z_$]/.test(word)) ?? "";
+	const update = [...parts.update, ...bodyUpdates(loop, counter)].join(" ");
+	const bound = parts.condition.filter((word) => /^[A-Za-z_$]/.test(word) && word !== counter);
+	if (/(\*=|\/=|>>=|<<=)\s*\S/.test(update) || /=\s*\S+\s*[*/]\s*\d/.test(update)) return "log";
+	if (bound.length === 0 && !/\.\s*length|size/.test(text)) return "constant";
+	return "n";
+}
+function splitFor(header) {
+	const first = header.indexOf(";");
+	const second = header.indexOf(";", first + 1);
+	if (first < 0 || second < 0) return {
+		condition: header,
+		update: []
+	};
+	return {
+		condition: header.slice(first + 1, second),
+		update: header.slice(second + 1)
+	};
+}
+function bodyUpdates(loop, counter) {
+	const words = allTokens(loop.children[0]).map((token) => token.text);
+	const updates = [];
+	words.forEach((word, index) => {
+		if (word === counter && /^(=|\*=|\/=|>>=|<<=)$/.test(words[index + 1] ?? "")) updates.push(...words.slice(index + 1, index + 5));
+	});
+	return updates;
+}
+// src/shared/complexity/analyze.ts
+var NO_WORK = {
+	k: 0,
+	j: 0
+};
+var HELPER_DEPTH = 4;
+function analyze(source, methodName) {
+	const methods = findMethods(tokenize(source));
+	const method = methods.find((candidate) => methodName === void 0 ? callsItself(candidate) : candidate.name === methodName);
+	const parts = {
+		a: [],
+		b: [],
+		f: [],
+		base: []
+	};
+	if (method === void 0) return {
+		method: methodName ?? "",
+		recurrence: null,
+		reason: "no-method",
+		parts
+	};
+	const cost = costOf(method.body, method, methods, parts, HELPER_DEPTH, false);
+	markBase(method.body, method.name, parts);
+	const divide = divisorOf(method, parts);
+	const reason = reasonOf(cost, divide);
+	sortParts(parts);
+	if (reason !== null || typeof divide !== "number") return {
+		method: method.name,
+		recurrence: null,
+		reason,
+		parts
+	};
+	return {
+		method: method.name,
+		recurrence: {
+			a: cost.calls,
+			b: divide,
+			f: cost.work
+		},
+		reason: null,
+		parts
+	};
+}
+function reasonOf(cost, divide) {
+	if (cost.calls === 0) return "no-recursion";
+	if (cost.callInLoop) return "call-in-loop";
+	return typeof divide === "number" ? null : divide;
+}
+function callsItself(method) {
+	return callLines(method.body, method.name).length > 0;
+}
+function callIndexes(tokens, name) {
+	const found = [];
+	tokens.forEach((token, index) => {
+		if (token.text === name && tokens[index + 1]?.text === "(" && tokens[index - 1]?.text !== ".") found.push(index);
+	});
+	return found;
+}
+function callLines(statement, name) {
+	const tokens = allTokens(statement);
+	return callIndexes(tokens, name).map((index) => tokens[index].line);
+}
+function costOf(statement, method, methods, parts, depth, inLoop) {
+	const child = (inner, loop) => costOf(inner, method, methods, parts, depth, loop);
+	if (statement.kind === "block") return blockCost(statement.children, (inner) => child(inner, inLoop));
+	if (statement.kind === "if") return sequence([simpleCost(statement.tokens, method, methods, parts, depth, inLoop), larger(statement.children.map((inner) => child(inner, inLoop)))]);
+	if (statement.kind === "loop") return loopCost(statement, child(statement.children[0], true), parts);
+	return simpleCost(statement.tokens, method, methods, parts, depth, inLoop);
+}
+function blockCost(children, costOfOne) {
+	const costs = [];
+	for (let index = 0; index < children.length; index++) {
+		const statement = children[index];
+		if (statement.kind === "if" && statement.children.length === 1 && allTokens(statement.children[0]).some((token) => token.text === "return")) {
+			const header = {
+				...statement,
+				children: [],
+				kind: "simple"
+			};
+			const rest = blockCost(children.slice(index + 1), costOfOne);
+			costs.push(costOfOne(header), larger([costOfOne(statement.children[0]), rest]));
+			return sequence(costs);
+		}
+		costs.push(costOfOne(statement));
+	}
+	return sequence(costs);
+}
+function loopCost(loop, body, parts) {
+	const count = loopCount(loop);
+	const work = {
+		k: body.work.k + (count === "n" ? 1 : 0),
+		j: body.work.j + (count === "log" ? 1 : 0)
+	};
+	if (count !== "constant") parts.f.push(loop.from);
+	return {
+		calls: body.calls,
+		work,
+		callInLoop: body.callInLoop || body.calls > 0
+	};
+}
+function simpleCost(tokens, method, methods, parts, depth, inLoop) {
+	const calls = callIndexes(tokens, method.name);
+	const helpers = methods.filter((other) => other.name !== method.name && callIndexes(tokens, other.name).length > 0);
+	const works = helpers.map((helper) => helperWork(helper, methods, depth));
+	calls.forEach((index) => parts.a.push(tokens[index].line));
+	helpers.forEach((helper, index) => {
+		if (works[index].k + works[index].j > 0) parts.f.push(tokens[callIndexes(tokens, helper.name)[0]].line);
+	});
+	return {
+		calls: calls.length,
+		work: largest(works),
+		callInLoop: inLoop && calls.length > 0
+	};
+}
+function helperWork(helper, methods, depth) {
+	const scratch = {
+		a: [],
+		b: [],
+		f: [],
+		base: []
+	};
+	if (depth <= 0) return NO_WORK;
+	return costOf(helper.body, helper, methods, scratch, depth - 1, false).work;
+}
+function sequence(costs) {
+	return {
+		calls: costs.reduce((total, cost) => total + cost.calls, 0),
+		work: largest(costs.map((cost) => cost.work)),
+		callInLoop: costs.some((cost) => cost.callInLoop)
+	};
+}
+function larger(arms) {
+	return {
+		calls: Math.max(0, ...arms.map((arm) => arm.calls)),
+		work: largest(arms.map((arm) => arm.work)),
+		callInLoop: arms.some((arm) => arm.callInLoop)
+	};
+}
+function largest(works) {
+	return works.reduce((best, work) => work.k > best.k || work.k === best.k && work.j > best.j ? work : best, NO_WORK);
+}
+function markBase(body, name, parts) {
+	for (const statement of body.children) {
+		if (statement.kind !== "if") continue;
+		const then = statement.children[0];
+		if (allTokens(then).some((token) => token.text === "return") && callLines(then, name).length === 0) parts.base.push(statement.from, ...linesOf$1(then));
+	}
+}
+function linesOf$1(statement) {
+	const lines = [];
+	for (let line = statement.from; line <= statement.to; line++) lines.push(line);
+	return lines;
+}
+function divisorOf(method, parts) {
+	const tokens = allTokens(method.body);
+	const locals = localDivisors(tokens);
+	const found = /* @__PURE__ */ new Set();
+	let subtracts = false;
+	for (const index of callIndexes(tokens, method.name)) {
+		const args = tokens.slice(index + 2, closeOf(tokens, index + 1));
+		const direct = divisorIn(args);
+		const local = args.map((token) => locals.get(token.text)).find((entry) => entry);
+		const divisor = direct ?? local?.divisor;
+		if (divisor !== void 0) {
+			found.add(divisor);
+			parts.b.push(direct === void 0 ? local?.line ?? args[0].line : args[0].line);
+		} else if (subtractsOne(args, method.params)) subtracts = true;
+	}
+	if (found.size === 1) return [...found][0];
+	return found.size > 1 ? "mixed-divide" : subtracts ? "subtract" : "no-divide";
+}
+function closeOf(tokens, open) {
+	let depth = 0;
+	for (let index = open; index < tokens.length; index++) {
+		depth += tokens[index].text === "(" ? 1 : tokens[index].text === ")" ? -1 : 0;
+		if (depth === 0) return index;
+	}
+	return tokens.length;
+}
+function divisorIn(tokens) {
+	for (let index = 0; index + 1 < tokens.length; index++) {
+		const value = Number(tokens[index + 1].text);
+		if (tokens[index].text === "/" && value > 1) return value;
+		if (tokens[index].text === ">>" && value >= 1) return Math.pow(2, value);
+	}
+}
+function localDivisors(tokens) {
+	const locals = /* @__PURE__ */ new Map();
+	tokens.forEach((token, index) => {
+		if (tokens[index + 1]?.text !== "=" || !/^[A-Za-z_$]/.test(token.text)) return;
+		const end = tokens.findIndex((other, at) => at > index && other.text === ";");
+		const divisor = divisorIn(tokens.slice(index + 2, end < 0 ? tokens.length : end));
+		if (divisor !== void 0) locals.set(token.text, {
+			divisor,
+			line: token.line
+		});
+	});
+	return locals;
+}
+function subtractsOne(args, params) {
+	return args.some((token, index) => params.includes(token.text) && ["-", "+"].includes(args[index + 1]?.text ?? "") && /^\d/.test(args[index + 2]?.text ?? ""));
+}
+function sortParts(parts) {
+	for (const key of [
+		"a",
+		"b",
+		"f",
+		"base"
+	]) parts[key] = [...new Set(parts[key])].sort((left, right) => left - right);
+}
+// src/shared/complexity/master.ts
+var EXPONENT_EPSILON = 1e-9;
+function powerText(exponent) {
+	const rounded = Math.round(exponent * 100) / 100;
+	if (Math.abs(exponent) < EXPONENT_EPSILON) return "1";
+	if (Math.abs(rounded - 1) < EXPONENT_EPSILON) return "n";
+	return "n^" + String(rounded);
+}
+function workText(work) {
+	const power = powerText(work.k);
+	const logs = work.j === 0 ? "" : work.j === 1 ? "log n" : "log^" + String(work.j) + " n";
+	if (logs === "") return power;
+	return power === "1" ? logs : power + " " + logs;
+}
+function fitsMaster(recurrence) {
+	const { a, b, f } = recurrence;
+	return [
+		a,
+		b,
+		f.k,
+		f.j
+	].every((value) => Number.isFinite(value)) && a >= 1 && b > 1 && f.k >= 0 && f.j >= 0 && Number.isInteger(f.j);
+}
+function solveMaster(recurrence) {
+	const critical = Math.log(recurrence.a) / Math.log(recurrence.b);
+	const { k, j } = recurrence.f;
+	if (!fitsMaster(recurrence)) throw new Error("not of the form a·T(n/b) + f(n)");
+	if (Math.abs(k - critical) < EXPONENT_EPSILON) return {
+		case: 2,
+		critical,
+		answer: workText({
+			k,
+			j: j + 1
+		}),
+		trend: "same"
+	};
+	if (k < critical) return {
+		case: 1,
+		critical,
+		answer: powerText(critical),
+		trend: "grows"
+	};
+	return {
+		case: 3,
+		critical,
+		answer: workText({
+			k,
+			j
+		}),
+		trend: "shrinks"
+	};
+}
+function treeLevels(recurrence, n, maxDepth = 12) {
+	const levels = [];
+	let calls = 1;
+	let size = n;
+	for (let depth = 0; depth < maxDepth && size >= 1; depth++) {
+		const each = workAt(recurrence.f, size);
+		levels.push({
+			depth,
+			calls,
+			size,
+			each,
+			total: calls * each
+		});
+		calls *= recurrence.a;
+		size /= recurrence.b;
+	}
+	return levels;
+}
+function workAt(work, n) {
+	const log = Math.max(1, Math.log2(n));
+	return Math.pow(n, work.k) * Math.pow(log, work.j);
+}
+// src/shared/complexity/LevelTree.tsx
+var MAX_SQUARES = 8;
+var MAX_LEVELS = 7;
+function short(value) {
+	return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+}
+function Cell({ part, tree, children }) {
+	const isLit = tree.point === part;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+		className: "cx-cell" + (isLit ? " is-lit" : ""),
+		"data-part": part,
+		onMouseEnter: () => tree.onPoint(part),
+		onMouseLeave: () => tree.onPoint(null),
+		children: tree.shown.has(part) ? children : "·"
+	});
+}
+function Squares({ level, isLeaf }) {
+	const drawn = Math.min(level.calls, MAX_SQUARES);
+	const more = level.calls - drawn;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "cx-squares",
+		children: [Array.from({ length: drawn }, (_, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", { className: "cx-sq" + (isLeaf ? " is-leaf" : "") }, index)), more > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+			className: "cx-more",
+			children: ["+", more]
+		}) : null]
+	});
+}
+function LevelRow({ level, isLeaf, tree }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+			className: "cx-depth",
+			children: level.depth
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: isLeaf ? "base" : "a",
+			tree,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Squares, {
+				level,
+				isLeaf
+			})
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "b",
+			tree,
+			children: short(level.size)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "f",
+			tree,
+			children: short(level.each)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+			part: "sum",
+			tree,
+			children: short(level.total)
+		})
+	] });
+}
+function LevelTree(props) {
+	const levels = treeLevels(props.recurrence, props.n, MAX_LEVELS);
+	const total = levels.reduce((sum, level) => sum + level.total, 0);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", {
+		className: "cx-tree",
+		dir: "ltr",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+				lang: "he",
+				children: "רמה"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+				lang: "he",
+				children: "קריאות"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "n" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "f" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { children: "Σ" })
+		] }) }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tbody", { children: [levels.map((level, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LevelRow, {
+			level,
+			isLeaf: index === levels.length - 1,
+			tree: props
+		}, level.depth)), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", {
+			className: "cx-total",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+				colSpan: 4,
+				children: "Σ"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Cell, {
+				part: "case",
+				tree: props,
+				children: short(total)
+			})]
+		})] })]
+	});
+}
+// src/shared/complexity/MasterCard.tsx
+var PART_NAMES = {
+	a: "a: מספר הקריאות",
+	b: "b: פי כמה n קטן",
+	f: "f(n): העבודה בקריאה",
+	base: "תנאי עצירה",
+	sum: "סכום רמה",
+	case: "המקרה"
+};
+function Piece({ part, text, card }) {
+	const isShown = card.shown.has(part);
+	const className = "cx-piece" + (card.point === part ? " is-lit" : "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+		type: "button",
+		className,
+		"data-part": part,
+		"aria-label": PART_NAMES[part] + (isShown ? " " + text : ""),
+		onMouseEnter: () => card.onPoint(part),
+		onMouseLeave: () => card.onPoint(null),
+		onFocus: () => card.onPoint(part),
+		onBlur: () => card.onPoint(null),
+		children: isShown ? text : "?"
+	});
+}
+function MasterCard(props) {
+	const { a, b, f } = props.recurrence;
+	const solved = solveMaster(props.recurrence);
+	const sign = solved.case === 1 ? "<" : solved.case === 2 ? "=" : ">";
+	const compare = workText(f) + " " + sign + " " + powerText(solved.critical);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-card",
+		dir: "ltr",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-line",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "T(n) =" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "a",
+					text: String(a),
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "·T(n/" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "b",
+					text: String(b),
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: ") +" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "f",
+					text: workText(f),
+					card: props
+				})
+			]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-line",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: compare,
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "cx-sep",
+					children: "·"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: "מקרה " + solved.case,
+					card: props
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "cx-sep",
+					children: "·"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Piece, {
+					part: "case",
+					text: "Θ(" + solved.answer + ")",
+					card: props
+				})
+			]
+		})]
+	});
+}
+// src/shared/complexity/steps.ts
+var STEP_PARTS = [
+	"a",
+	"b",
+	"f",
+	"sum",
+	"case"
+];
+var TREND_TEXT = {
+	grows: "גדלה",
+	same: "שווה",
+	shrinks: "קטנה"
+};
+var WINNER_TEXT = {
+	1: "העלים",
+	2: "תיקו",
+	3: "השורש"
+};
+function generatorSteps(recurrence) {
+	const solved = solveMaster(recurrence);
+	const { a, b, f } = recurrence;
+	const calls = a === 1 ? "קריאה אחת" : a + " קריאות";
+	const leaves = powerText(solved.critical);
+	return [
+		{
+			part: "a",
+			caption: "a = " + a + ": " + calls
+		},
+		{
+			part: "b",
+			caption: "b = " + b + ": n/" + b + " בכל קריאה"
+		},
+		{
+			part: "f",
+			caption: "f(n) = " + workText(f)
+		},
+		{
+			part: "sum",
+			caption: "העבודה ברמה " + TREND_TEXT[solved.trend] + " למטה"
+		},
+		{
+			part: "case",
+			caption: "מקרה " + solved.case + " · " + WINNER_TEXT[solved.case] + " · Θ(" + solved.answer + ")" + (solved.case === 2 ? "" : " · " + leaves + " מול " + workText(f))
+		}
+	];
+}
+function shownParts(step) {
+	const upTo = step < 0 ? STEP_PARTS.length : step + 1;
+	return /* @__PURE__ */ new Set([...STEP_PARTS.slice(0, upTo), "base"]);
+}
+// src/shared/complexity/Generator.tsx
+var LAST_STEP = 4;
+var DEFAULT_N$1 = 16;
+var NO_FIT_TEXT = {
+	"no-method": "אין כאן שיטה רקורסיבית",
+	"no-recursion": "השיטה לא קוראת לעצמה",
+	"call-in-loop": "קריאה בתוך לולאה: לא a·T(n/b)",
+	subtract: "T(n−1): n לא מתחלק",
+	"no-divide": "n לא מתחלק בקריאות",
+	"mixed-divide": "n מתחלק פעם כך ופעם אחרת"
+};
+function linesOf(parts, part) {
+	if (!parts || part === null || part === "sum" || part === "case") return null;
+	return parts[part].length > 0 ? parts[part] : null;
+}
+function Generator(props) {
+	const [step, setStep] = (0, import_react.useState)(props.startAtEnd ? LAST_STEP : 0);
+	const [hover, setHover] = (0, import_react.useState)(null);
+	const [treeOpen, setTreeOpen] = (0, import_react.useState)(props.treeOpen ?? false);
+	const steps = props.recurrence ? generatorSteps(props.recurrence) : [];
+	const point = hover ?? props.pointFromCode ?? steps[step]?.part ?? null;
+	const { onLines, parts } = props;
+	(0, import_react.useEffect)(() => {
+		onLines?.(linesOf(parts, point));
+	}, [
+		onLines,
+		parts,
+		point
+	]);
+	if (props.recurrence === null) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "cx-gen",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			className: "cx-nofit",
+			children: NO_FIT_TEXT[props.reason ?? "no-method"]
+		})
+	});
+	const shown = shownParts(step);
+	const view = {
+		recurrence: props.recurrence,
+		point,
+		shown,
+		onPoint: setHover
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-gen",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar, {
+				step,
+				count: steps.length,
+				caption: steps[step].caption,
+				onStep: setStep
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MasterCard, { ...view }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "cx-fold",
+				"aria-expanded": treeOpen,
+				onClick: () => setTreeOpen(!treeOpen),
+				children: [treeOpen ? "▾" : "▸", " עץ"]
+			}),
+			treeOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LevelTree, {
+				...view,
+				n: props.n ?? DEFAULT_N$1
+			}) : null
+		]
+	});
+}
+function StepBar({ step, count, caption, onStep }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-bar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "cx-btn",
+				"aria-label": "צעד קודם",
+				disabled: step === 0,
+				onClick: () => onStep(step - 1),
+				children: "▶"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "cx-count",
+				dir: "ltr",
+				children: [
+					step + 1,
+					" / ",
+					count
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "cx-btn",
+				"aria-label": "צעד הבא",
+				disabled: step === count - 1,
+				onClick: () => onStep(step + 1),
+				children: "◀"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "cx-caption",
+				"aria-live": "polite",
+				children: caption
+			})
+		]
+	});
+}
+// src/shared/complexity/spec.ts
+var GENERATOR_CLASS = "cx-generator";
+var KEYS = [
+	"recurrence",
+	"code",
+	"method",
+	"choose",
+	"n",
+	"tree"
+];
+var MAX_CHOICES = 8;
+var MAX_POWER = 10;
+var MAX_LOGS = 4;
+var DEFAULT_N = 16;
+var MAX_FACTOR = 64;
+function isWhole(value, low, high) {
+	return typeof value === "number" && Number.isInteger(value) && value >= low && value <= high;
+}
+var MAX_N = 1 << 20;
+function parseWork(text) {
+	const match = /^\s*(1|n(?:\^(\d+(?:\.\d+)?))?)?\s*(?:log(?:\^(\d+))?\s*n)?\s*$/.exec(text);
+	if (match === null || text.trim() === "") return null;
+	const k = match[1] !== void 0 && match[1] !== "1" ? Number(match[2] ?? 1) : 0;
+	const j = /log/.test(text) ? Number(match[3] ?? 1) : 0;
+	return k <= MAX_POWER && j <= MAX_LOGS ? {
+		k,
+		j
+	} : null;
+}
+function parseSpec(source) {
+	let raw;
+	if (source.length > 2e4) return { problems: ["generator block: longer than 20000 characters"] };
+	try {
+		raw = JSON.parse(source);
+	} catch {
+		return { problems: ["generator block: not JSON"] };
+	}
+	if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return { problems: ["generator block: not an object"] };
+	const problems = [];
+	const data = raw;
+	Object.keys(data).filter((key) => !KEYS.includes(key)).forEach((key) => problems.push("generator block: unknown key " + key));
+	const spec = readSpec(data, problems);
+	return problems.length > 0 ? { problems } : { spec };
+}
+function readSpec(data, problems) {
+	const recurrence = data.recurrence === void 0 ? null : readRecurrence(data.recurrence);
+	const code = typeof data.code === "string" ? data.code : null;
+	const n = data.n === void 0 ? DEFAULT_N : data.n;
+	const isName = typeof data.method === "string" && /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(data.method);
+	if (data.recurrence !== void 0 && recurrence === null) problems.push("generator block: recurrence must be {a ≥ 1, b > 1, f: \"n log n\"...}");
+	if (recurrence === null === (code === null) || data.code !== void 0 && code === null) problems.push("generator block: give a recurrence or code (one of them)");
+	if (data.method !== void 0 && !isName) problems.push("generator block: method must be a name");
+	if (!isWhole(n, 1, MAX_N)) problems.push("generator block: n must be a whole number from 1 to " + MAX_N);
+	if (data.tree !== void 0 && typeof data.tree !== "boolean") problems.push("generator block: tree must be true or false");
+	return {
+		recurrence,
+		code,
+		method: isName ? data.method : null,
+		choose: readChoose(data.choose, problems),
+		n,
+		tree: data.tree === true
+	};
+}
+function readRecurrence(value) {
+	const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+	const data = isObject ? value : {};
+	const f = typeof data.f === "string" ? parseWork(data.f) : null;
+	const isListed = Object.keys(data).every((key) => [
+		"a",
+		"b",
+		"f"
+	].includes(key));
+	if (!isObject || !isListed || f === null) return null;
+	if (!isWhole(data.a, 1, MAX_FACTOR) || !isWhole(data.b, 2, MAX_FACTOR)) return null;
+	return {
+		a: data.a,
+		b: data.b,
+		f
+	};
+}
+function readChoose(value, problems) {
+	const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+	const data = isObject ? value : {};
+	const list = (key) => Array.isArray(data[key]) ? data[key] : [];
+	const a = list("a").filter((x) => isWhole(x, 1, MAX_FACTOR));
+	const b = list("b").filter((x) => isWhole(x, 2, MAX_FACTOR));
+	const f = list("f").map((x) => typeof x === "string" ? parseWork(x) : null);
+	const isListed = Object.keys(data).every((key) => [
+		"a",
+		"b",
+		"f"
+	].includes(key));
+	const isShort = [
+		"a",
+		"b",
+		"f"
+	].every((key) => list(key).length <= MAX_CHOICES);
+	if (value !== void 0 && !isObject || !isListed || !isShort) problems.push("generator block: choose is {a: [...], b: [...], f: [...]}, 8 each at most");
+	if (a.length !== list("a").length || b.length !== list("b").length || f.includes(null)) problems.push("generator block: choose must list a ≥ 1, b > 1 and f texts");
+	return {
+		a,
+		b,
+		f: f.filter((work) => work !== null)
+	};
+}
+// src/shared/complexity/GeneratorBlock.tsx
+function GeneratorBlock({ source }) {
+	const parsed = parseSpec(source);
+	if ("problems" in parsed) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "cx-block cx-problems",
+		dir: "ltr",
+		children: parsed.problems.join("\n")
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CheckedBlock, { spec: parsed.spec });
+}
+function safeReading(code, method) {
+	try {
+		return analyze(code, method ?? void 0);
+	} catch {
+		return {
+			method: method ?? "",
+			recurrence: null,
+			reason: "no-method",
+			parts: {
+				a: [],
+				b: [],
+				f: [],
+				base: []
+			}
+		};
+	}
+}
+function CheckedBlock({ spec }) {
+	const reading = spec.code === null ? null : safeReading(spec.code, spec.method);
+	const start = spec.recurrence ?? reading?.recurrence ?? null;
+	const [recurrence, setRecurrence] = (0, import_react.useState)(start);
+	const [litLines, setLitLines] = (0, import_react.useState)(null);
+	const [pointFromCode, setPointFromCode] = (0, import_react.useState)(null);
+	const onLines = (0, import_react.useCallback)((lines) => setLitLines(lines), []);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-block",
+		children: [spec.code !== null && reading !== null ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CodePanel, {
+			code: spec.code,
+			parts: reading.parts,
+			lit: litLines,
+			onPoint: setPointFromCode
+		}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "cx-side",
+			children: [recurrence ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Choices, {
+				spec,
+				value: recurrence,
+				onChange: setRecurrence
+			}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Generator, {
+				recurrence,
+				reason: reading?.reason ?? null,
+				parts: reading?.parts ?? null,
+				n: spec.n,
+				treeOpen: spec.tree,
+				startAtEnd: spec.choose.a.length + spec.choose.b.length + spec.choose.f.length > 0,
+				pointFromCode,
+				onLines
+			})]
+		})]
+	});
+}
+function partOfLine(parts, line) {
+	return [
+		"a",
+		"b",
+		"f",
+		"base"
+	].find((part) => parts[part].includes(line)) ?? null;
+}
+function CodePanel({ code, parts, lit, onPoint }) {
+	const lines = code.replace(/\n$/, "").split("\n");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
+		className: "cx-code",
+		dir: "ltr",
+		children: lines.map((text, index) => {
+			const line = index + 1;
+			const part = partOfLine(parts, line);
+			const isLit = lit !== null && lit.includes(line);
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "cx-codeline" + (isLit ? " is-lit" : "") + (part ? " has-part" : ""),
+				"data-part": part ?? void 0,
+				onMouseEnter: part ? () => onPoint(part) : void 0,
+				onMouseLeave: part ? () => onPoint(null) : void 0,
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
+					className: "cx-ln",
+					children: line
+				}), text + "\n"]
+			}, line);
+		})
+	});
+}
+function Choices({ spec, value, onChange }) {
+	const { a, b, f } = spec.choose;
+	if (a.length + b.length + f.length === 0) return null;
+	const same = (left, right) => left.k === right.k && left.j === right.j;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "cx-choices",
+		dir: "ltr",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "a",
+				items: a.map(String),
+				isOn: (i) => a[i] === value.a,
+				onPick: (i) => onChange({
+					...value,
+					a: a[i]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "b",
+				items: b.map(String),
+				isOn: (i) => b[i] === value.b,
+				onPick: (i) => onChange({
+					...value,
+					b: b[i]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Group, {
+				label: "f(n)",
+				items: f.map(workText),
+				isOn: (i) => same(f[i], value.f),
+				onPick: (i) => onChange({
+					...value,
+					f: f[i]
+				})
+			})
+		]
+	});
+}
+function Group({ label, items, isOn, onPick }) {
+	if (items.length === 0) return null;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+		className: "cx-group",
+		role: "group",
+		"aria-label": label,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "cx-sym",
+			children: label
+		}), items.map((text, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			type: "button",
+			className: "cx-btn",
+			"aria-pressed": isOn(index),
+			onClick: () => onPick(index),
+			children: text
+		}, text))]
+	});
+}
 // src/core/lesson/LessonHtml.tsx
 function HtmlWithDiagrams(props) {
 	const hostRef = (0, import_react.useRef)(null);
 	const [slots, setSlots] = (0, import_react.useState)([]);
 	(0, import_react.useLayoutEffect)(() => {
 		const host = hostRef.current;
-		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS)) : [];
+		const found = host ? Array.from(host.querySelectorAll("div." + DIAGRAM_CLASS + ", div." + GENERATOR_CLASS)) : [];
 		setSlots(found);
 	}, [props.html]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		ref: hostRef,
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
-	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
+	}), slots.map((slot, index) => (0, import_react_dom.createPortal)(slot.classList.contains("cx-generator") ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GeneratorBlock, { source: slot.getAttribute("data-generator") || "" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepDiagramBlock, { source: slot.getAttribute("data-diagram") || "" }), slot, String(index)))] });
 }
 function LessonHtml(props) {
-	if (!props.html.includes("step-diagram")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	if (!props.html.includes("step-diagram") && !props.html.includes("cx-generator")) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: props.className,
 		dangerouslySetInnerHTML: { __html: props.html }
 	});
@@ -32258,15 +34259,19 @@ function isUnitDone(pages, readMark) {
 	const keys = pages.map(stepMarkKey).filter(Boolean);
 	return keys.length > 0 && keys.every(readMark);
 }
+function sectionProgress(units, readMark) {
+	const doable = units.filter((pages) => pages.some((page) => stepMarkKey(page) !== ""));
+	return {
+		done: doable.filter((pages) => isUnitDone(pages, readMark)).length,
+		total: doable.length
+	};
+}
 // src/core/sidebar/SidebarLinks.tsx
 function readMark(key) {
 	return Boolean(codeBox.store.get(key, false));
 }
 function hasPassed(box) {
 	return readMark("pass:" + box.id);
-}
-function isExercisePage(page) {
-	return Boolean(page.box && page.box.task);
 }
 function CheckMark(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
@@ -32395,10 +34400,10 @@ function subjectOfUnit(groups, unit) {
 	return group ? group.id : "";
 }
 function subjectProgress(units) {
-	const exercises = units.flatMap((unit) => (unit.pages || []).filter(isExercisePage));
+	const { done, total } = sectionProgress(units.map((unit) => unit.pages || []), readMark);
 	return {
-		passed: exercises.filter((page) => hasPassed(page.box)).length,
-		total: exercises.length
+		passed: done,
+		total
 	};
 }
 function SubjectBlock(props) {
@@ -32413,7 +34418,7 @@ function SubjectBlock(props) {
 	const title = stripTags(group.title);
 	const listId = "nav-subj-" + group.id;
 	const count = total ? passed + "/" + total : "";
-	const countLabel = total ? ", " + passed + " מתוך " + total + " תרגילים עברו" : "";
+	const countLabel = total ? ", " + passed + " מתוך " + total + " שיעורים הושלמו" : "";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: classes.filter(Boolean).join(" "),
 		"data-s": group.id,
@@ -32954,8 +34959,8 @@ function startEngine(engine, allBoxes) {
 	});
 }
 // src/core/page/sidebar-fold.js
-var AUTO_FOLD_MAX_WIDTH_PX = 1440;
 var isAutoFolded = false;
+var wasDebugging = false;
 function paintFoldButton() {
 	const foldButton = document.getElementById("fold");
 	const isClosed = document.body.classList.contains("side-closed");
@@ -32981,8 +34986,9 @@ function toggleMenu() {
 function followStepping() {
 	const isDebugging = document.body.classList.contains("debugging");
 	const isClosed = document.body.classList.contains("side-closed");
-	const isNarrow = window.innerWidth < AUTO_FOLD_MAX_WIDTH_PX;
-	if (isDebugging && !isAutoFolded && !isClosed && isNarrow) {
+	const isStart = isDebugging && !wasDebugging;
+	wasDebugging = isDebugging;
+	if (isStart && !isClosed) {
 		isAutoFolded = true;
 		document.body.classList.add("side-closed");
 		paintFoldButton();
@@ -33786,7 +35792,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 5492897 מ-2026-11-15 22:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 5492897</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit a6660d73 מ-2026-11-16 05:24"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · a6660d73</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
