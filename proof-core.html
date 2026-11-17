@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-Z/GulqyxgCoz/wQ9h/hMl+L2EJUT+VTLGbTt68PEaXI=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-+IdgS6I43r/URux0MFXY22UnKF/mweDk4NA/+BtcXSk=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -881,7 +881,7 @@ body:not(.admin) .admin-tab{display:none}
 .ed-ta{height:calc(var(--n) * var(--ed-lh));position:absolute;top:8px;left:0;color:transparent;caret-color:var(--ink);background:transparent;resize:none;outline:none;overflow:hidden}
 .ed-ta::selection{background:color-mix(in srgb,var(--accent) 35%,transparent);color:transparent}
 /* the completion list (completion.ts, CompletionList.tsx): fixed under the typed word, on body */
-.ed-cmp{position:fixed;z-index:90;min-width:260px;max-width:min(440px,calc(100vw - 16px));max-height:244px;overflow:auto;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px var(--shadow);font:13.5px/26px var(--f-mono);text-align:left;font-variant-ligatures:none}
+.ed-cmp{position:fixed;z-index:90;min-width:260px;max-width:min(440px,calc(100vw - 16px));max-height:244px;overflow:auto;padding:4px;scroll-padding-bottom:31px;background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px var(--shadow);font:13.5px/26px var(--f-mono);text-align:left;font-variant-ligatures:none}
 .ed-cmp-i{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;border-radius:4px;color:var(--ink);white-space:nowrap;cursor:pointer}
 .ed-cmp-i.on{background:var(--sel)}
 .ed-cmp-k{flex:0 0 16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 var(--f-body);color:var(--bg)}
@@ -38642,7 +38642,7 @@ function createEditorModel(options) {
 	return Object.assign(model, listenerMembers(state), markMembers(state, parts));
 }
 // src/core/code-box/ltr-code.js
-var TAG_PATTERN = String.raw`(<[^>]*>)`;
+var TAG_PATTERN = String.raw`(<[^>]*>|⁦[^⁩]*⁩)`;
 var ENTITY_PATTERN = String.raw`(&#?\w+;)`;
 var POINTER_TYPE_PATTERN = String.raw`((?:const\s+)?(?:unsigned\s+)?` + String.raw`(?:int|char|double|float|long|short|void|size_t)\s?\*+)`;
 var ENGLISH_PHRASE_PATTERN = String.raw`([A-Za-z][\w']*(?: [A-Za-z][\w']*)+)`;
@@ -38650,17 +38650,22 @@ var EXPRESSION_PREFIX = String.raw`(?:[*&(]|\+\+|--)*`;
 var EXPRESSION_SUFFIX = String.raw`(?:\[[^\]\s]*\]|\(\)|\+\+|--|\)|[+\-]\w+|->\w+|\.\w+)*`;
 var NAME_PATTERN = String.raw`[A-Za-z_]\w*`;
 var EXPRESSION_PATTERN = "(" + EXPRESSION_PREFIX + NAME_PATTERN + EXPRESSION_SUFFIX + ")";
-var LONE_OPERATOR_PATTERN = String.raw`(?<![\w*&])([&*]+)(?![\w*&(])`;
+var CHAR_LITERAL = String.raw`'(?:\\[^'\s]{1,3}|[^'\\\s])'`;
+var CHAR_EXPRESSION_PATTERN = "(" + CHAR_LITERAL + String.raw`(?:\s*[-+*/%]\s*(?:` + CHAR_LITERAL + String.raw`|\d+))*)`;
+var CALL_PATTERN = "(" + EXPRESSION_PREFIX + NAME_PATTERN + String.raw`\((?:[^()<>\n]|\([^()<>\n]*\))+\))`;
+var LONE_OPERATOR_PATTERN = String.raw`(?<![\w*&|=!-])(->|==|!=|&&|\|\||[&*]+)(?![\w*&(|=>])`;
 var LTR_PATTERN = new RegExp([
 	TAG_PATTERN,
 	ENTITY_PATTERN,
 	POINTER_TYPE_PATTERN,
 	ENGLISH_PHRASE_PATTERN,
+	CHAR_EXPRESSION_PATTERN,
+	CALL_PATTERN,
 	EXPRESSION_PATTERN,
 	LONE_OPERATOR_PATTERN
 ].join("|"), "g");
 var BARE_NAME = /^[A-Za-z_]\w*$/;
-function isolateMatch(match, tag, entity, pointerType, phrase, expression) {
+function isolateMatch(match, tag, entity, pointerType, phrase, charExpression, call, expression) {
 	if (tag || entity) return match;
 	if (expression && BARE_NAME.test(expression)) return match;
 	return String(html`<bdi dir="ltr">${rawHtml(match)}</bdi>`);
@@ -42331,8 +42336,8 @@ var EditorCompletion = class {
 	close = () => {
 		this.show(null);
 	};
-	follow = () => {
-		if (!this.view) return;
+	follow = (event) => {
+		if (!this.view || event && event.target?.id === this.listId) return;
 		const anchor = placeOnScreen(this.textArea, this.colourLayer, this.view.from);
 		const isSeen = isInside$2(anchor, this.textArea.closest(".ed"));
 		this.show(isSeen ? {
@@ -60604,7 +60609,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 4c92c697 מ-2026-11-17 09:00"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 4c92c697</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 8e573437 מ-2026-11-17 09:41"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 8e573437</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
