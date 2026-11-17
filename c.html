@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-+iU36hRn1i5vu4qpZ5+clB5DJKUOpQIZmvYld69ZWXs=' 'sha256-OQy1MpTFMzQkJygsVjfhte0EHzNwgWXmdodp7/Ietro=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-QC4dgICahcrvenU1jv/gT95m8quoqiy6cxK7bP3QanQ=' 'sha256-OQy1MpTFMzQkJygsVjfhte0EHzNwgWXmdodp7/Ietro=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -17967,6 +17967,17 @@ int isIncreasing(int arr[], int size)
 		M_TRANSPOSE
 	], { defines: MATRIX_DEFINES });
 	const C_SAFE = {
+		p: "/* returns *p, or fallback when p is NULL */\nint safeValue(int *p, int fallback);",
+		b: R`int safeValue(int *p, int fallback)
+{
+    if (p == NULL)
+    {
+        return fallback;
+    }
+    return *p;
+}`
+	};
+	const C_SAFE_CONST = {
 		p: "/* returns *p, or fallback when p is NULL */\nint safeValue(const int *p, int fallback);",
 		b: R`int safeValue(const int *p, int fallback)
 {
@@ -20485,7 +20496,7 @@ int main(void)
 					name: "points itself gets 10 more",
 					require: "(^|[;{}]) points (=|\\+=) ",
 					forbid: "\\b25\\b",
-					msg: "Change points itself, for example points = points + 10; (or points += 10;), instead of writing 25."
+					msg: "Change points itself, for example points = points + 10;, instead of writing 25."
 				}]
 			}
 		],
@@ -25159,13 +25170,10 @@ if (1 < x < 10)
 {
     printf("in\n");
 }
-else
-{
-    printf("out\n");
-}`),
+printf("done\n");`),
 				o: [
-					"<code>out</code>",
-					"<code>in</code>",
+					"<code>done</code> בלבד",
+					"<code>in</code> ואחריו <code>done</code>",
 					"כלום: זו שגיאת הידור"
 				],
 				a: 1,
@@ -30916,25 +30924,16 @@ int main(void)
 		const guarded = (name, body) => "#ifndef " + name + "\n#define " + name + "\n\n" + body + "\n#endif\n";
 		const BOARD_BODY = R`#define BOARD_SIZE 8
 
-/* a type (section 13): it may be defined only once */
-struct Cell
+/* a function body: it may be defined only once */
+int square(int x)
 {
-    int row;
-    int col;
-};
+    return x * x;
+}
 `;
 		const MOVES_H = guarded("MOVES_H", R`#include "board.h"
 
-/* returns 1 when (row, col) is on the board, else 0 */
-int isOnBoard(int row, int col);
+#define LAST_INDEX (BOARD_SIZE - 1)
 `);
-		const MOVES_C = R`#include "moves.h"
-
-int isOnBoard(int row, int col)
-{
-    return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
-}
-`;
 		const BOARD_MAIN = R`#include <stdio.h>
 #include "board.h"
 #include "moves.h"
@@ -30942,39 +30941,27 @@ int isOnBoard(int row, int col)
 int main(void)
 {
     printf("board: %d x %d\n", BOARD_SIZE, BOARD_SIZE);
-    printf("(3, 5) on the board: %d\n", isOnBoard(3, 5));
-    printf("(3, 9) on the board: %d\n", isOnBoard(3, 9));
+    printf("cells: %d\n", square(BOARD_SIZE));
+    printf("last index: %d\n", LAST_INDEX);
     return 0;
 }`;
-		const boardFiles = () => Object.assign(project({ moves: {
-			h: MOVES_H,
-			c: MOVES_C
-		} }, { makefile: plainMakefile(["moves"], {
-			main: ["board.h"],
-			moves: ["board.h"]
-		}) }), { "board.h": guarded("BOARD_H", BOARD_BODY) });
+		const boardFiles = () => Object.assign(project({}, { makefile: plainMakefile([], { main: ["board.h", "moves.h"] }) }), {
+			"board.h": guarded("BOARD_H", BOARD_BODY),
+			"moves.h": MOVES_H
+		});
 		const PIECE_BODY = R`#define PIECES 16
 
-/* a type (section 13): it may be defined only once */
-struct Piece
-{
-    int row;
-    int col;
-};
-`;
-		const PIECE_START = "/* TODO: add the guard of this header */\n\n" + PIECE_BODY;
-		const TEAM_H = guarded("TEAM_H", R`#include "piece.h"
-
-/* returns how many pieces are left after losing lost of them */
-int piecesLeft(int lost);
-`);
-		const TEAM_C = R`#include "team.h"
-
+/* a function body: it may be defined only once */
 int piecesLeft(int lost)
 {
     return PIECES - lost;
 }
 `;
+		const PIECE_START = "/* TODO: add the guard of this header */\n\n" + PIECE_BODY;
+		const TEAM_H = guarded("TEAM_H", R`#include "piece.h"
+
+#define TEAMS 2
+`);
 		const TEAM_MAIN = R`#include <stdio.h>
 #include "piece.h"
 #include "team.h"
@@ -30988,26 +30975,22 @@ int main(void)
     printf("%d of %d left\n", piecesLeft(lost), PIECES);
     return 0;
 }`;
-		const teamFiles = (piece) => Object.assign(project({ team: {
-			h: TEAM_H,
-			c: TEAM_C
-		} }, { makefile: plainMakefile(["team"], {
-			main: ["piece.h"],
-			team: ["piece.h"]
-		}) }), { "piece.h": piece });
+		const teamFiles = (piece) => Object.assign(project({}, { makefile: plainMakefile([], { main: ["piece.h", "team.h"] }) }), {
+			"piece.h": piece,
+			"team.h": TEAM_H
+		});
 		U.push(withOutputs({
 			id: "build-guards",
 			title: "שומרי כותרת",
 			body: [
 				R`<p><code>main.c</code> כולל את <code>board.h</code>, וגם את <code>moves.h</code>, שכולל בעצמו את <code>board.h</code>. כך <code>board.h</code> נכנס ל-<code>main.c</code> פעמיים.</p>
-<p>עד עכשיו זה לא הפריע: אב טיפוס מותר לכתוב כמה פעמים, כל עוד הוא זהה. אבל <b>הגדרה</b> מותרת רק פעם אחת: גוף של פונקציה, או טיפוס. ב-<code>board.h</code> מוגדר טיפוס, <code>struct Cell</code> (נלמד בפרק 13), ובלי שומר המהדר עוצר:</p>` + twoMessages("board.h:4:8: error: redefinition of 'struct Cell'", "duplicated") + R`<p>אותו דבר היה קורה עם גוף של פונקציה בקובץ כותרת שנכנס פעמיים: gcc כותב <code>redefinition of</code> ואת השם.</p>
-<p>כאן זה עובד, בזכות שלוש השורות של השומר: <code>#ifndef</code> ו-<code>#define</code> בראש <code>board.h</code>, ו-<code>#endif</code> בשורה האחרונה שלו. נסו למחוק את שלושתן ולהריץ. (מחיקה של שתי הראשונות בלבד משאירה <code>#endif</code> בלי <code>#if</code>, וזו שגיאה אחרת.)</p>`,
+<p>עד עכשיו זה לא הפריע: אב טיפוס מותר לכתוב כמה פעמים, כל עוד הוא זהה. אבל <b>הגדרה</b>, כמו גוף של פונקציה, מותרת רק פעם אחת. ב-<code>board.h</code> יש גוף של <code>square</code> (בדרך כלל כותבים גוף בקובץ <code>.c</code>; כאן הוא בכותרת כדי לראות מה קורה), ובלי שומר המהדר עוצר:</p>` + twoMessages("board.h:4:5: error: redefinition of 'square'", "`square' function already defined") + R`<p>כאן זה עובד, בזכות שלוש השורות של השומר: <code>#ifndef</code> ו-<code>#define</code> בראש <code>board.h</code>, ו-<code>#endif</code> בשורה האחרונה שלו. נסו למחוק את שלושתן ולהריץ. (מחיקה של שתי הראשונות בלבד משאירה <code>#endif</code> בלי <code>#if</code>, וזו שגיאה אחרת.)</p>`,
 				{
 					id: "build-guards-twice",
 					title: "קובץ כותרת שנכלל פעמיים",
 					code: BOARD_MAIN,
 					files: boardFiles(),
-					tests: [io("board size and two cells", "", "board: 8 x 8\n(3, 5) on the board: 1\n(3, 9) on the board: 0")]
+					tests: [io("board size, cells and last index", "", "board: 8 x 8\ncells: 64\nlast index: 7")]
 				},
 				R`<p>לכן כאן לכל קובץ כותרת יש <b>שומר</b> (<bdi dir="ltr">include guard</bdi>): שלוש שורות שנותנות לתוכן להיכנס רק בפעם הראשונה.</p>
 <table class="tbl"><tr><th>השורה</th><th>פירושה</th></tr>
@@ -31074,7 +31057,7 @@ int isOnBoard(int row, int col);
 					o: [
 						"התוכן ייכנס פעם אחת",
 						"התוכנית תתקמפל",
-						"gcc יעצור על <code>redefinition of 'struct Cell'</code>"
+						"gcc יעצור על <code>redefinition of 'square'</code>"
 					],
 					a: 2,
 					w: "השומר מדלג על הפעם השנייה, ולכן אין הגדרה כפולה."
@@ -35086,8 +35069,8 @@ int main(void)
     int age = 21;
     double height = 1.75;
 
-    printf("age = %d, at %p\n", age, (void *)&age);
-    printf("height = %.2f, at %p\n", height, (void *)&height);
+    printf("age = %d, at %p\n", age, &age);
+    printf("height = %.2f, at %p\n", height, &height);
     return 0;
 }`;
 	const TOTAL_START = R`#include <stdio.h>
@@ -35100,7 +35083,7 @@ int main(void)
     /* TODO: print the address of total, as in the example */
     return 0;
 }`;
-	const TOTAL_SOLVED = TOTAL_START.replace("    /* TODO: print the address of total, as in the example */\n", "    printf(\"&total = %p\\n\", (void *)&total);\n");
+	const TOTAL_SOLVED = TOTAL_START.replace("    /* TODO: print the address of total, as in the example */\n", "    printf(\"&total = %p\\n\", &total);\n");
 	U.push(withOutputs({
 		id: "ptr-address",
 		title: "כתובת",
@@ -35109,7 +35092,8 @@ int main(void)
 <table class="tbl"><tr><th>כתובת</th><th>משתנה</th><th>ערך</th></tr>
 <tr><td class="mono">0x7ffc10</td><td class="mono">age</td><td class="mono">21</td></tr>
 <tr><td class="mono">0x7ffc18</td><td class="mono">height</td><td class="mono">1.75</td></tr></table>
-<p><code>&amp;age</code> נותן את הכתובת של <code>age</code>. מדפיסים כתובת עם <code>%p</code>, ו-<code>(void *)</code> לפניה, כמו בקוד ליד: <code>%p</code> מצפה ל"כתובת כללית", בלי טיפוס, וההמרה אומרת שזו כזאת. בכל הרצה הכתובות יכולות להיות אחרות.</p>`,
+<p>הכתובות מודפסות בבסיס 16 (הקסדצימלי), עם <code>0x</code> בהתחלה. המספר המדויק משתנה מהרצה להרצה.</p>
+<p><code>&amp;age</code> נותן את הכתובת של <code>age</code>. <code>%p</code> מדפיס כתובת, כמו בקוד ליד.</p>`,
 			{
 				id: "ptr-address-print",
 				title: "הכתובות של שני משתנים",
@@ -35149,8 +35133,8 @@ int main(void)
 int bank = coins;
 bank = bank + 2;
 printf("%d %d\n", coins, bank);
-printf("%p\n", (void *)&coins);
-printf("%p\n", (void *)&bank);`),
+printf("%p\n", &coins);
+printf("%p\n", &bank);`),
 				o: [
 					"<code>8 10</code>, ואחריו שתי כתובות שונות",
 					"<code>10 10</code>, ואחריו אותה כתובת פעמיים",
@@ -35164,7 +35148,7 @@ printf("%p\n", (void *)&bank);`),
 int y = x * 3;
 printf("x = %d\n", x);
 printf("y = %d\n", y);
-printf("at %p\n", (void *)&y);`),
+printf("at %p\n", &y);`),
 				o: [
 					"<code>x = 4</code>",
 					"השורה שמתחילה ב-<code>at</code>",
@@ -35176,9 +35160,9 @@ printf("at %p\n", (void *)&y);`),
 			{
 				s: "כמה כתובות שונות יופיעו בפלט?" + codeBlock(R`int a = 1;
 int b = 1;
-printf("%p\n", (void *)&a);
-printf("%p\n", (void *)&b);
-printf("%p\n", (void *)&a);`),
+printf("%p\n", &a);
+printf("%p\n", &b);
+printf("%p\n", &a);`),
 				o: [
 					"1",
 					"2",
@@ -35200,10 +35184,10 @@ printf("%p\n", (void *)&a);`),
 			{
 				s: "איזו שורה מדפיסה נכון את הכתובת של <code>total</code>?",
 				o: [
-					"<code>printf(\"%p\\n\", (void *)total);</code>",
+					"<code>printf(\"%p\\n\", total);</code>",
 					"<code>printf(\"%d\\n\", &amp;total);</code>",
 					"<code>printf(\"&amp;total\\n\");</code>",
-					"<code>printf(\"%p\\n\", (void *)&amp;total);</code>"
+					"<code>printf(\"%p\\n\", &amp;total);</code>"
 				],
 				a: 3,
 				w: "צריך את <code>&amp;total</code> עם <code>%p</code>; בלי <code>&amp;</code> נשלח הערך, ובתוך המרכאות זה סתם טקסט."
@@ -35674,8 +35658,7 @@ int main(void)
 				files: project({}),
 				tests: [io("the chest and the empty one", "", "chest: 12\nempty points nowhere")]
 			},
-			R`<p>מודול חדש: <code>calc</code>. ב-<code>calc.h</code> כתוב מה <code>safeValue</code> צריכה לעשות. מעכשיו יש רק את החוזה, בלי שלבים.</p>
-<p>הפרמטר הוא <code>const int *p</code>: הפונקציה רק קוראת דרכו. בשיעור "מצביע לקריאה בלבד" נחזור לזה.</p>`,
+			R`<p>מודול חדש: <code>calc</code>. ב-<code>calc.h</code> כתוב מה <code>safeValue</code> צריכה לעשות. מעכשיו יש רק את החוזה, בלי שלבים.</p>`,
 			{
 				id: "ptr-null-safe",
 				title: "safeValue",
@@ -35686,7 +35669,7 @@ int main(void)
 				solutionFiles: { "calc.c": calcOf([C_SAFE]).c },
 				tests: [unit("safeValue", R`
 #include <stdio.h>
-int safeValue(const int *p, int fallback);
+int safeValue(int *p, int fallback);
 int main(void)
 {
     int x = 42;
@@ -36761,7 +36744,7 @@ void reset(int *p)
 					files: project({}),
 					tests: [io("gold becomes 10", "", "gold = 10")]
 				},
-				R`<p>בפרמטר, <code>const int *</code> מבטיח למי שקרא: "אני רק קורא". המהדר עוצר אם הפונקציה בכל זאת כותבת. ב-<code>safeValue</code> משיעור "מצביע ריק" הפרמטר כבר כזה.</p>
+				R`<p>בפרמטר, <code>const int *</code> מבטיח למי שקרא: "אני רק קורא". המהדר עוצר אם הפונקציה בכל זאת כותבת. את <code>safeValue</code> משיעור "מצביע ריק" כותבים מעכשיו כך, כי היא רק קוראת דרך <code>p</code>.</p>
 <p>ולמה מי שקרא יכול לשלוח <code>&amp;x</code> של <code>int</code> רגיל? כתובת של <code>int</code> הופכת ל-<code>const int *</code> בלי שום המרה: מה שמותר לכתוב, מותר גם רק לקרוא. ההפך אסור. לכן <code>const</code> בפרמטר לא מפריע לאף אחד שקורא לפונקציה.</p>`,
 				{
 					id: "ptr-const-params",
@@ -36933,12 +36916,12 @@ int main(void)
 				code: ORDER_START,
 				solution: ORDER_SOLVED,
 				files: project({ calc: calcOf([
-					C_SAFE,
+					C_SAFE_CONST,
 					C_SWAP,
 					contractOf(C_SWAP_IF, "return -1;")
 				]) }),
 				solutionFiles: { "calc.c": calcOf([
-					C_SAFE,
+					C_SAFE_CONST,
 					C_SWAP,
 					C_SWAP_IF
 				]).c },
@@ -37207,8 +37190,8 @@ int main(void)
 				task: "כתבו ב-<code>calc.c</code> את <code>countBetween</code>, ובמקום ה-TODO ב-<code>main.c</code> הדפיסו את התוצאה.",
 				code: BETWEEN_START,
 				solution: BETWEEN_SOLVED,
-				files: project({ calc: calcOf([C_SAFE, contractOf(C_BETWEEN, "return -1;")]) }),
-				solutionFiles: { "calc.c": calcOf([C_SAFE, C_BETWEEN]).c },
+				files: project({ calc: calcOf([C_SAFE_CONST, contractOf(C_BETWEEN, "return -1;")]) }),
+				solutionFiles: { "calc.c": calcOf([C_SAFE_CONST, C_BETWEEN]).c },
 				tests: [
 					unit("countBetween", R`
 int countBetween(const int *from, const int *to);
@@ -38509,7 +38492,7 @@ int main(void)
 				code: RANGE_EMPTY,
 				solution: RANGE_SOLVED,
 				files: project({ calc: calcOf([
-					C_SAFE,
+					C_SAFE_CONST,
 					C_MINMAX_R,
 					C_DIVIDE_SAFE
 				]) }),
@@ -73241,7 +73224,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 66e86d3b מ-2026-11-17 08:20"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 66e86d3b</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 4c92c697 מ-2026-11-17 09:00"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 4c92c697</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
