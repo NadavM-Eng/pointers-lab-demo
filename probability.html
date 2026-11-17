@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-uQawMUzm6rYVzyZPYOGSHmUajzn0WGVwlo35c015rgg=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-QBeksBGanlCVhGuk3OUqk+3w7HiF2qOeWoXaEWpPV5Y=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -38520,6 +38520,9 @@ var WINNER_TEXT = {
 	2: "תיקו",
 	3: "השורש"
 };
+function ltr(formula) {
+	return "⁦" + formula + "⁩";
+}
 function generatorSteps(recurrence) {
 	const solved = solveMaster(recurrence);
 	const { a, b, f } = recurrence;
@@ -38544,7 +38547,7 @@ function generatorSteps(recurrence) {
 		},
 		{
 			part: "case",
-			caption: "מקרה " + solved.case + " · " + WINNER_TEXT[solved.case] + " · Θ(" + solved.answer + ")" + (solved.case === 2 ? "" : " · " + leaves + " מול " + workText(f))
+			caption: "מקרה " + solved.case + " · " + WINNER_TEXT[solved.case] + " · " + ltr("Θ(" + solved.answer + ")") + (solved.case === 2 ? "" : " · " + ltr(leaves) + " מול " + ltr(workText(f)))
 		}
 	];
 }
@@ -38583,6 +38586,7 @@ function Generator(props) {
 	]);
 	if (props.recurrence === null) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "cx-gen",
+		dir: "rtl",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 			className: "cx-nofit",
 			children: NO_FIT_TEXT[props.reason ?? "no-method"]
@@ -38597,6 +38601,7 @@ function Generator(props) {
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "cx-gen",
+		dir: "rtl",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepBar, {
 				step,
@@ -38608,9 +38613,10 @@ function Generator(props) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 				type: "button",
 				className: "cx-fold",
+				dir: "rtl",
 				"aria-expanded": treeOpen,
 				onClick: () => setTreeOpen(!treeOpen),
-				children: [treeOpen ? "▾" : "▸", " עץ"]
+				children: [treeOpen ? "▾" : "◂", " עץ"]
 			}),
 			treeOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LevelTree, {
 				...view,
@@ -38622,10 +38628,11 @@ function Generator(props) {
 function StepBar({ step, count, caption, onStep }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "cx-bar",
+		dir: "rtl",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
-				className: "cx-btn",
+				className: "cx-btn cx-back",
 				"aria-label": "צעד קודם",
 				disabled: step === 0,
 				onClick: () => onStep(step - 1),
@@ -38642,7 +38649,7 @@ function StepBar({ step, count, caption, onStep }) {
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
-				className: "cx-btn",
+				className: "cx-btn cx-next",
 				"aria-label": "צעד הבא",
 				disabled: step === count - 1,
 				onClick: () => onStep(step + 1),
@@ -41069,7 +41076,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 3d174a64 מ-2026-11-16 18:48"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 3d174a64</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#probability">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 66e86d3b מ-2026-11-17 08:20"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 66e86d3b</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
