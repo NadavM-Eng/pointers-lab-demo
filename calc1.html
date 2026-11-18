@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-fbLT85HQSM16tpEVmT3xR9hPu/elvPUqMeGNjetVAGg=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-XDM47Escq8jH/lHP7/m0qv8wX5Tzm0bl0NaFlDRFcPs=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -539,6 +539,15 @@ pre.code-static {
   margin: 12px 0;
 }
 pre.code-static span{display:block;white-space:pre}
+/* "שבירת שורות ארוכות" on (⚙ הגדרות; src/core/lesson/wrap-long.ts; the owner, 2026-11-17): a table
+   fits the column and its code cells wrap at a space or after . ( , (the <wbr> put there); a code
+   block's long line wraps, its continuation indented 2 characters. Off (the default): as above. */
+:root.wrap-long table.tbl{display:table;max-width:100%}
+:root.wrap-long table.tbl td.mono,:root.wrap-long table.tbl td code{white-space:normal;overflow-wrap:break-word}
+:root.wrap-long pre.code-static{overflow-x:visible;background:var(--bg)}
+:root.wrap-long pre.code-static > span{white-space:pre-wrap;overflow-wrap:break-word;padding-inline-start:2ch;text-indent:-2ch}
+.wrap-row > span{display:flex;flex-direction:column;gap:2px}
+.set-sub{color:var(--muted);font-size:12px;font-weight:400}
 /* how far the fade at the left and the right edge of a code block reaches into it; registered,
    so the scroll-driven animation can move them smoothly. 0px = no fade at that edge (the ramp of
    the mask is then outside the box). */
@@ -21046,6 +21055,13 @@ function sceneOf(model, layout, input) {
 		isPresent
 	};
 }
+function allFoldedOnScreen(layout, isPresent) {
+	const docked = leavesOf(layout.root).map((leaf) => leaf.island).filter(isPresent);
+	return docked.every((island) => isFolded(layout, island)) ? docked : [];
+}
+function openWhenAllFolded(layout, isPresent) {
+	return allFoldedOnScreen(layout, isPresent).reduce((drawn, island) => setFolded(drawn, island, false), layout);
+}
 function drawnOf(layout, mode, input) {
 	const isPeeking = input.isInputShown && isTerminalHidden(layout, mode);
 	const peeked = isPeeking && mode !== "editing" ? peekTerminal(layout) : layout;
@@ -21053,16 +21069,17 @@ function drawnOf(layout, mode, input) {
 	const presence = presenceOf(mode, input, peeked);
 	if (mode === "editing" || islandIds(peeked).some(presence.isPresent)) return {
 		isPeeking,
-		drawn: peeked,
+		drawn: mode === "docked" ? openWhenAllFolded(peeked, presence.isPresent) : peeked,
 		isPeekClosed,
 		...presence
 	};
 	const opened = setClosed(peeked, TERMINAL_ID, false);
+	const presenceOpened = presenceOf(mode, input, opened);
 	return {
 		isPeeking,
-		drawn: opened,
+		drawn: mode === "docked" ? openWhenAllFolded(opened, presenceOpened.isPresent) : opened,
 		isPeekClosed: false,
-		...presenceOf(mode, input, opened)
+		...presenceOpened
 	};
 }
 function isTerminalHidden(layout, mode) {
@@ -21144,7 +21161,13 @@ function toggleFold$1(deps, island) {
 		applyLayout(deps, setClosed(setFolded(layout, TERMINAL_ID, false), TERMINAL_ID, false));
 		return;
 	}
-	applyLayout(deps, setFolded(layout, island, !isFolded(layout, island)));
+	const isDrawnFolded = scene.places.get(island)?.isFolded ?? isFolded(layout, island);
+	const next = setFolded(layout, island, !isDrawnFolded);
+	if (isDrawnFolded) {
+		applyLayout(deps, next);
+		return;
+	}
+	applyLayout(deps, allFoldedOnScreen(next, scene.isPresent).filter((id) => id !== island).reduce((layoutNow, id) => setFolded(layoutNow, id, false), next));
 }
 function areaPoint(area, clientX, clientY) {
 	const box = area.getBoundingClientRect();
@@ -32434,6 +32457,72 @@ function textOf(page, which) {
 	const [start, end] = textRangeOf(page, which);
 	return page.u.body.slice(start, end).join("\n");
 }
+// src/core/lesson/wrap-long.ts
+var WRAP_KEY = "lab:wrap-long";
+var WRAP_CLASS = "wrap-long";
+var BREAKABLE = "table.tbl td.mono, table.tbl td code, pre.code-static > span";
+var BREAK_MARK = "data-wrap-break";
+var BREAK_AFTER = /(?<=[.(,])(?=\S)/;
+function isWrapLong() {
+	try {
+		return localStorage.getItem(WRAP_KEY) === "1";
+	} catch {
+		return false;
+	}
+}
+function breakText(node) {
+	const pieces = (node.textContent ?? "").split(BREAK_AFTER);
+	if (pieces.length < 2) return;
+	const parts = document.createDocumentFragment();
+	pieces.forEach((piece, i) => {
+		if (i) {
+			const wbr = document.createElement("wbr");
+			wbr.setAttribute(BREAK_MARK, "");
+			parts.append(wbr);
+		}
+		parts.append(piece);
+	});
+	node.replaceWith(parts);
+}
+function applyWrapBreaks(root) {
+	if (!isWrapLong()) {
+		root.querySelectorAll("wbr[" + BREAK_MARK + "]").forEach((wbr) => {
+			const parent = wbr.parentNode;
+			wbr.remove();
+			parent?.normalize();
+		});
+		return;
+	}
+	for (const element of Array.from(root.querySelectorAll(BREAKABLE))) {
+		if (element.querySelector("wbr[" + BREAK_MARK + "]")) continue;
+		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+		const texts = [];
+		while (walker.nextNode()) texts.push(walker.currentNode);
+		texts.forEach(breakText);
+	}
+}
+function setWrapLong(isOn) {
+	try {
+		localStorage.setItem(WRAP_KEY, isOn ? "1" : "0");
+	} catch {
+		document.dispatchEvent(new CustomEvent("ptr-store-fail"));
+	}
+	document.documentElement.classList.toggle(WRAP_CLASS, isOn);
+	const page = document.querySelector("#lesson-in .page:not([hidden])");
+	if (page) applyWrapBreaks(page);
+}
+function setUpWrapSwitch() {
+	const isOn = isWrapLong();
+	document.documentElement.classList.toggle(WRAP_CLASS, isOn);
+	const input = document.getElementById("wrap-long");
+	if (!input) return;
+	input.checked = isOn;
+	input.setAttribute("aria-checked", String(isOn));
+	input.addEventListener("change", () => {
+		input.setAttribute("aria-checked", String(input.checked));
+		setWrapLong(input.checked);
+	});
+}
 // src/core/lesson/text-fit.ts
 var PREFIX_HYPHEN = /(^|[^א-ת])([והבכלמש]{1,3})-(?![\s⁠])/g;
 var NO_JOIN_SELECTOR = "code, pre, kbd, samp, textarea, input, script, style, .ed, .sd, [contenteditable=\"true\"]";
@@ -32490,6 +32579,7 @@ function fitInlineCode(root) {
 function fitPageOnScreen() {
 	const page = document.querySelector("#lesson-in .page:not([hidden])");
 	if (page && !page.querySelector(".ProseMirror")) {
+		applyWrapBreaks(page);
 		joinPrefixHyphens(page);
 		fitInlineCode(page);
 	}
@@ -33431,6 +33521,7 @@ function useFittedWhy(isDone) {
 	const whyRef = (0, import_react.useRef)(null);
 	(0, import_react.useLayoutEffect)(() => {
 		if (isDone && whyRef.current) {
+			applyWrapBreaks(whyRef.current);
 			joinPrefixHyphens(whyRef.current);
 			fitInlineCode(whyRef.current);
 		}
@@ -37322,6 +37413,7 @@ function setUpShell() {
 	setUpThemeSwitch();
 	setUpSettingsPanel();
 	setUpMotionSwitch();
+	setUpWrapSwitch();
 	setUpAdminSwitch(engine);
 	setUpStoreWarning();
 	setUpTours();
@@ -37770,7 +37862,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 8e573437 מ-2026-11-17 09:41"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 8e573437</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0621c2d2 מ-2026-11-18 12:19"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0621c2d2</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
@@ -37820,6 +37912,8 @@ window.__lab = {
             </p>
           </div>
         </details>
+        <!-- long lines of the lesson wrap (src/core/lesson/wrap-long.ts; off by default) -->
+        <div class="side-row wrap-row"><span id="wrap-lbl">שבירת שורות ארוכות<small class="set-sub" id="wrap-desc">קוד בטבלאות ופלט לדוגמה בהסבר</small></span><label class="admin-sw"><input type="checkbox" id="wrap-long" role="switch" aria-checked="false" aria-labelledby="wrap-lbl" aria-describedby="wrap-desc"><span class="knob"></span></label></div>
         <div class="side-row"><span>סיור מודרך</span><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button></div>
         <section class="set-group" aria-labelledby="set-teacher-h">
           <h3 class="side-h" id="set-teacher-h">למורה</h3>
