@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-Ty6V0iXE3iLxMv9Aau9M/OP63M2A7Uv/UT1V/BQ4kq8=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-2sZ+Ao+Tnz3XUILB0bH0+1coQVY/es5q/eAm/mou+Fo=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -546,7 +546,7 @@ pre.code-static span{display:block;white-space:pre}
 :root.wrap-long table.tbl td.mono,:root.wrap-long table.tbl td code{white-space:normal;overflow-wrap:break-word}
 :root.wrap-long pre.code-static{overflow-x:visible;background:var(--bg)}
 :root.wrap-long pre.code-static > span{white-space:pre-wrap;overflow-wrap:break-word;padding-inline-start:2ch;text-indent:-2ch}
-.wrap-row > span{display:flex;flex-direction:column;gap:2px}
+.wrap-row > span,.analytics-row > span{display:flex;flex-direction:column;gap:2px}
 .set-sub{color:var(--muted);font-size:12px;font-weight:400}
 /* how far the fade at the left and the right edge of a code block reaches into it; registered,
    so the scroll-driven animation can move them smoothly. 0px = no fade at that edge (the ramp of
@@ -670,6 +670,32 @@ body.admin .admin-bar{display:flex}
 .split:hover,.split.drag{background:var(--accent)}
 .split:focus-visible{background:var(--accent);outline:none}
 body.dragging{cursor:col-resize;user-select:none}
+
+/* ── the picture beside a quiz (#quiz-aside, lesson/QuizAside.tsx; the owner, 2026-11-22): on a
+   quiz page with quizAside it takes the code pane's place, with the same splitter and width;
+   folded, a 44 px strip at the left edge ── */
+.quiz-aside{display:none;min-width:0;min-height:0;flex-direction:column;background:var(--bg);color:var(--ink)}
+body.has-aside .quiz-aside{display:flex;grid-column:3}
+body.no-code.has-aside .stage{grid-template-columns:var(--lesson-w) 5px minmax(0,1fr)}
+body.no-code.has-aside .split{display:block}
+body.no-code.has-aside .lesson-in{max-width:780px}
+body.no-code.has-aside.aside-folded .stage{grid-template-columns:minmax(0,1fr) 0 44px}
+body.no-code.has-aside.aside-folded .split{display:none}
+body.no-code.has-aside.aside-folded .lesson-in{max-width:900px}
+.qa-head{display:flex;align-items:center;gap:8px;min-height:39px;padding:4px 14px;border-bottom:1px solid var(--line-2)}
+.qa-title{display:flex;gap:10px;align-items:baseline;min-width:0;flex:1}
+.qa-kind{font-size:12px;color:var(--muted);flex:none}
+.qa-title h4{margin:0;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qa-head .b{padding:3px 12px;line-height:22px;flex:none;text-decoration:none}
+.qa-body{flex:1;min-height:0;overflow:auto;padding:16px}
+/* the diagram's own title is in the title row (the pane) or the summary (the fold) */
+.qa-body .sd-title,.qa-inline-body .sd-title{display:none}
+.qa-strip{display:none}
+body.aside-folded .qa-head,body.aside-folded .qa-body{display:none}
+body.aside-folded .qa-strip{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px;height:100%;border-inline-end:1px solid var(--line-2)}
+.qa-strip-label{writing-mode:vertical-rl;font-size:13px;color:var(--ink-2);cursor:pointer;user-select:none}
+/* the fold above the questions, only on a narrow window (the @media below shows it) */
+.qa-inline{display:none}
 
 /* ── code pane: the current code box fills it ── */
 .code-pane{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--bg)}
@@ -1059,6 +1085,11 @@ table.tbl {
     padding: 70px 16px 24px;
   }
   .code-pane{height:90vh;border-top:1px solid var(--line)}
+  /* a quiz's picture: folded to one line above the questions (QuizAside.tsx) */
+  .qa-inline[data-picture='1']{display:block;margin:0 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
+  .qa-inline summary{cursor:pointer;padding:8px 12px;font-weight:600}
+  .qa-inline-kind{font-size:12px;font-weight:400;color:var(--muted)}
+  .qa-inline-body{padding:0 8px 10px;overflow-x:auto}
   body.debugging .wb-grid{grid-template-areas:"code" "side";grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
   body.debugging .wb-split{display:none}
   body.debugging .wb-code{border-bottom:1px solid var(--line-2)}
@@ -8307,6 +8338,9 @@ function markMembers(state, parts) {
 		setErr(lineNumbers) {
 			commit(state, { errors: new Set(lineNumbers) });
 		},
+		setMarks(marks) {
+			if (JSON.stringify(marks) !== JSON.stringify(state.snapshot.marks)) commit(state, { marks: marks.slice() });
+		},
 		bps: breakpoints,
 		toggleBreakpoint(lineNumber) {
 			if (breakpoints.has(lineNumber)) breakpoints.delete(lineNumber);
@@ -8367,6 +8401,7 @@ function createEditorModel(options) {
 			text: asTextAreaText(options.text),
 			current: -1,
 			errors: /* @__PURE__ */ new Set(),
+			marks: [],
 			breakpoints: /* @__PURE__ */ new Set(),
 			isReadOnly: false,
 			label: labelOf(options.fileName)
@@ -13734,6 +13769,14 @@ function highlightLine(line, startsInComment) {
 	}
 	return lineHtml;
 }
+function markedLine(line, mark) {
+	const start = Math.max(0, Math.min(mark.start, line.length));
+	const end = Math.max(start, Math.min(mark.end, line.length));
+	if (end === start) return highlightLine(line, false);
+	const part = (text) => text ? highlightLine(text, false) : "";
+	const className = mark.className.replace(/[^\w -]/g, "");
+	return part(line.slice(0, start)) + "<span class=\"" + className + "\">" + part(line.slice(start, end)) + "</span>" + part(line.slice(end));
+}
 function lineClasses(baseClasses, marks, lineNumber) {
 	const currentClass = marks.current === lineNumber ? " cur" : "";
 	const errorClass = marks.errors.has(lineNumber) ? " err" : "";
@@ -13801,7 +13844,9 @@ function ColourLayer(props) {
 		children: lines.map((line, index) => {
 			const view = preview && preview[index];
 			const classes = lineClasses("ln", marks, index + 1) + (view ? view.className : "");
-			const lineHtml = highlightLine(line, Boolean(commentStarts && commentStarts[index]));
+			const startsInComment = Boolean(commentStarts && commentStarts[index]);
+			const mark = startsInComment ? void 0 : marks.marks.find((m) => m.line === index + 1);
+			const lineHtml = mark ? markedLine(line, mark) : highlightLine(line, startsInComment);
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: classes,
 				dangerouslySetInnerHTML: { __html: view?.html || lineHtml }
@@ -15007,6 +15052,20 @@ function applyLayout(deps, next) {
 	const motion = layoutMotion(openIslands(deps.scene), openIslands(after));
 	islandPlayerOf(deps.context).cue(deps.model.version() + 1, motion, "next");
 	deps.model.set(next);
+	tellIslandChanges(deps.scene, after);
+}
+function tellIslandChanges(before, after) {
+	for (const [island, place] of after.places) {
+		const old = before.places.get(island);
+		let action = "";
+		if (!old) continue;
+		else if (!!place.isClosed !== !!old.isClosed) action = place.isClosed ? "closed" : "opened";
+		else if (place.isFolded !== old.isFolded) action = place.isFolded ? "folded" : "opened";
+		if (action) document.dispatchEvent(new CustomEvent("ptr-island", { detail: {
+			island,
+			action
+		} }));
+	}
 }
 // src/core/islands/area-close.ts
 function isNeeded(deps, island) {
@@ -15815,7 +15874,7 @@ function keepFocusIn(pressed, selector) {
 	const picker = pressed.closest(".ip");
 	(row?.querySelector(selector) ?? picker?.querySelector(selector))?.focus();
 }
-function putBack(deps, row) {
+function putBack$1(deps, row) {
 	applyLayout(deps, resetIsland(deps.layout, row.id, deps.model.defaults));
 	deps.say("האי " + hebrewOf(row.title) + " חזר למקומו.");
 }
@@ -15885,7 +15944,7 @@ function Row({ row, deps }) {
 			disabled: !row.canPutBack,
 			onClick: (event) => {
 				keepFocusIn(event.currentTarget, ".ip-sw");
-				putBack(deps, row);
+				putBack$1(deps, row);
 			},
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {})
 		})]
@@ -29612,6 +29671,9 @@ function engineBlocks() {
 	const blocks = engine && engine.lessonBlocks;
 	return blocks && typeof blocks === "object" ? blocks : {};
 }
+function pictureBlockClasses() {
+	return [DIAGRAM_CLASS, ...Object.keys(engineBlocks())].filter((name) => /^[a-z][a-z0-9-]*$/.test(name));
+}
 function mayHoldBlocks(html) {
 	return [...Object.keys(CORE_BLOCKS), ...Object.keys(engineBlocks())].some((c) => html.includes(c));
 }
@@ -29657,6 +29719,56 @@ function LessonHtml(props) {
 		className: props.className
 	}, props.html);
 }
+// src/core/lesson/quiz-aside.ts
+var ASIDE_KIND_WORD = {
+	diagram: "תרשים",
+	block: "הדגמה",
+	table: "טבלה"
+};
+function asideWanted(unit, course) {
+	if (!unit) return false;
+	const subjects = Array.isArray(course?.subjects) ? course.subjects : [];
+	const subject = unit.subject ? subjects.find((each) => each.id === unit.subject) : void 0;
+	let choice = void 0;
+	for (const level of [
+		course?.quizAside,
+		subject?.quizAside,
+		unit.quizAside
+	]) if (level !== void 0) choice = level;
+	return choice === "auto";
+}
+function pictureOnPage(pageElement) {
+	const selector = pictureBlockClasses().map((name) => "div." + name).join(", ");
+	const blocks = selector ? [...pageElement.querySelectorAll(selector)] : [];
+	const block = blocks[blocks.length - 1];
+	if (block) return {
+		element: block,
+		kind: block.classList.contains("step-diagram") ? "diagram" : "block"
+	};
+	const tables = [...pageElement.querySelectorAll("table.tbl")];
+	const table = tables[tables.length - 1];
+	return table ? {
+		element: table,
+		kind: "table"
+	} : null;
+}
+function findAsidePicture(quizPage, allPages, pageElements) {
+	const unitPages = quizPage.u?.pages ?? [];
+	const before = unitPages.slice(0, unitPages.indexOf(quizPage));
+	for (let i = before.length - 1; i >= 0; i--) {
+		const pageElement = pageElements[allPages.indexOf(before[i])];
+		const found = pageElement ? pictureOnPage(pageElement) : null;
+		if (found) {
+			const title = found.kind === "diagram" ? found.element.querySelector(".sd-title")?.textContent || "" : "";
+			return {
+				...found,
+				sourceId: before[i].id,
+				title
+			};
+		}
+	}
+	return null;
+}
 // src/core/lesson/UnitPage.tsx
 function TextParts(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: props.parts.map((part, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LessonHtml, { html: part }, index)) });
@@ -29668,13 +29780,25 @@ function PageTitles(props) {
 		dangerouslySetInnerHTML: { __html: codeBox.ltrCode(page.box.title) }
 	}) : null] });
 }
+function AsideFold() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", {
+		className: "qa-inline",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("summary", { children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "qa-inline-kind" }),
+			" ",
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "qa-inline-title" })
+		] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "qa-inline-body" })]
+	});
+}
 function UnitPage(props) {
 	const page = props.page;
 	const quiz = page.kind === "quiz" ? page.u.quiz || [] : null;
+	const course = window.LabCourse;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Crumb, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageTitles, { page }),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextParts, { parts: page.parts }),
+		quiz && asideWanted(page.u, course) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AsideFold, {}) : null,
 		quiz ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Quiz, {
 			questions: quiz,
 			passKey: page.u.id
@@ -29742,6 +29866,194 @@ function Lessons(props) {
 			editGeneration
 		}, page.key);
 	}) });
+}
+// src/core/lesson/QuizAside.tsx
+var NARROW_QUERY = "(max-width:900px)";
+function useNarrow() {
+	const [isNarrow, setNarrow] = (0, import_react.useState)(() => window.matchMedia(NARROW_QUERY).matches);
+	(0, import_react.useEffect)(() => {
+		const query = window.matchMedia(NARROW_QUERY);
+		const follow = () => {
+			setNarrow(query.matches);
+		};
+		query.addEventListener("change", follow);
+		return () => query.removeEventListener("change", follow);
+	}, []);
+	return isNarrow;
+}
+function putBack(moved) {
+	if (moved.mark.isConnected) moved.mark.replaceWith(moved.element);
+	else moved.element.remove();
+}
+function setTextIfChanged(element, text) {
+	if (element && element.textContent !== text) element.textContent = text;
+}
+function fillFold(inline, shown, isNarrow) {
+	if (!inline) return;
+	const picture = shown && isNarrow ? "1" : "0";
+	if (inline.dataset.picture !== picture) inline.dataset.picture = picture;
+	setTextIfChanged(inline.querySelector(".qa-inline-kind"), shown ? ASIDE_KIND_WORD[shown.kind] : "");
+	setTextIfChanged(inline.querySelector(".qa-inline-title"), shown?.title || "מדף ההסבר");
+}
+function placePicture(placing) {
+	const page = pageModel.byId.get(placing.pageId);
+	const isWanted = !placing.isEditing && page?.kind === "quiz" && asideWanted(page.u, placing.course);
+	const pageElements = [...document.querySelectorAll("#lesson-in > .page")];
+	const inline = (page ? pageElements[pageModel.pages.indexOf(page)] : void 0)?.querySelector(".qa-inline") ?? null;
+	const foldBody = inline?.querySelector(".qa-inline-body") ?? null;
+	const target = placing.isNarrow ? foldBody : placing.paneBody;
+	const moved = placing.moved.current;
+	const isKept = isWanted && moved?.quizPageId === placing.pageId && moved.mark.isConnected && target !== null && moved.element.parentElement === target;
+	if (moved && !isKept) {
+		putBack(moved);
+		placing.moved.current = null;
+	}
+	let shown = isKept ? placing.shown : null;
+	if (!isKept && isWanted && page && target) {
+		const found = findAsidePicture(page, pageModel.pages, pageElements);
+		if (found) {
+			const mark = document.createComment("the picture is beside the quiz (QuizAside.tsx)");
+			found.element.before(mark);
+			target.append(found.element);
+			placing.moved.current = {
+				element: found.element,
+				mark,
+				quizPageId: placing.pageId
+			};
+			shown = {
+				kind: found.kind,
+				title: found.title,
+				sourceId: found.sourceId
+			};
+		}
+	}
+	fillFold(inline, shown, placing.isNarrow);
+	return shown;
+}
+function sameShown(a, b) {
+	return a?.kind === b?.kind && a?.title === b?.title && a?.sourceId === b?.sourceId;
+}
+function useFold() {
+	const [isFolded, setFolded] = (0, import_react.useState)(() => codeBox.store.get("aside-folded", false) === true);
+	const pressed = (0, import_react.useRef)(false);
+	(0, import_react.useEffect)(() => {
+		if (pressed.current) {
+			pressed.current = false;
+			const button = isFolded ? "#quiz-aside .qa-open" : "#quiz-aside .qa-fold";
+			document.querySelector(button)?.focus();
+		}
+	}, [isFolded]);
+	const fold = (shouldFold) => {
+		pressed.current = true;
+		codeBox.store.set("aside-folded", shouldFold);
+		setFolded(shouldFold);
+	};
+	return {
+		isFolded,
+		fold
+	};
+}
+function AsideStrip(props) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "qa-strip",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+			className: "icon-b qa-open",
+			type: "button",
+			title: "פתיחה",
+			"aria-label": "פתיחת ה" + props.word,
+			"aria-expanded": "false",
+			onClick: props.onOpen,
+			children: "⇥"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "qa-strip-label",
+			"aria-hidden": "true",
+			onClick: props.onOpen,
+			children: props.word
+		})]
+	});
+}
+function AsideHead(props) {
+	const { shown } = props;
+	const word = shown ? ASIDE_KIND_WORD[shown.kind] : "";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "qa-head",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "qa-title",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "qa-kind",
+					children: word
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: shown?.title || "מדף ההסבר" })]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+				className: "b ghost qa-src",
+				href: "#" + (shown?.sourceId ?? ""),
+				children: "→ לדף ההסבר"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				className: "icon-b qa-fold",
+				type: "button",
+				title: "קיפול",
+				"aria-label": "קיפול ה" + word,
+				"aria-expanded": "true",
+				onClick: props.onFold,
+				children: "⇤"
+			})
+		]
+	});
+}
+function QuizAside(props) {
+	const version = useModelVersion();
+	const pageId = useView((view) => view.currentPageId);
+	const isEditing = useView((view) => view.editing);
+	const isNarrow = useNarrow();
+	const folding = useFold();
+	const [shown, setShown] = (0, import_react.useState)(null);
+	const shownRef = (0, import_react.useRef)(null);
+	const bodyRef = (0, import_react.useRef)(null);
+	const moved = (0, import_react.useRef)(null);
+	const { course } = props;
+	const { isFolded } = folding;
+	(0, import_react.useLayoutEffect)(() => {
+		const paneBody = bodyRef.current;
+		const next = placePicture({
+			pageId,
+			isEditing,
+			isNarrow,
+			course,
+			paneBody,
+			moved,
+			shown: shownRef.current
+		});
+		document.body.classList.toggle("has-aside", Boolean(next) && !isNarrow);
+		document.body.classList.toggle("aside-folded", Boolean(next) && !isNarrow && isFolded);
+		if (!sameShown(next, shownRef.current)) {
+			shownRef.current = next;
+			setShown(next);
+		}
+	}, [
+		version,
+		pageId,
+		isEditing,
+		isNarrow,
+		isFolded,
+		course
+	]);
+	const word = shown ? ASIDE_KIND_WORD[shown.kind] : "";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AsideHead, {
+			shown,
+			onFold: () => folding.fold(true)
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "qa-body",
+			ref: bodyRef
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AsideStrip, {
+			word,
+			onOpen: () => folding.fold(false)
+		})
+	] });
 }
 // src/core/sidebar/sidebar-forms.ts
 var UNIT_TYPES = [
@@ -30229,11 +30541,11 @@ function sectionProgress(units, readMark) {
 	};
 }
 // src/core/sidebar/SidebarLinks.tsx
-function readMark(key) {
+function readMark$1(key) {
 	return Boolean(codeBox.store.get(key, false));
 }
 function hasPassed(box) {
-	return readMark("pass:" + box.id);
+	return readMark$1("pass:" + box.id);
 }
 function CheckMark(props) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
@@ -30247,7 +30559,7 @@ function CheckMark(props) {
 }
 function UnitLink(props) {
 	const { unit, isCurrent } = props;
-	const isPassed = isUnitDone(unit.pages || [], readMark);
+	const isPassed = isUnitDone(unit.pages || [], readMark$1);
 	const className = "nav-u" + (isPassed ? " passed" : "") + (isCurrent ? " on" : "");
 	const titleHtml = codeBox.ltrCode(stripTags(unit.title));
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
@@ -30280,7 +30592,7 @@ function stepLabelHtml(page) {
 }
 function StepLink(props) {
 	const { page, isCurrent } = props;
-	const isPassed = isStepDone(page, readMark);
+	const isPassed = isStepDone(page, readMark$1);
 	const className = [
 		page.box ? "" : "text",
 		isPassed ? "passed" : "",
@@ -30362,7 +30674,7 @@ function subjectOfUnit(groups, unit) {
 	return group ? group.id : "";
 }
 function subjectProgress(units) {
-	const { done, total } = sectionProgress(units.map((unit) => unit.pages || []), readMark);
+	const { done, total } = sectionProgress(units.map((unit) => unit.pages || []), readMark$1);
 	return {
 		passed: done,
 		total
@@ -30612,6 +30924,7 @@ function LabApp(props) {
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sidebar, { course }), targets.nav),
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Lessons, { course }), targets.lessonColumn),
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CodePane, { pane: targets.codePane }), targets.codePane),
+		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(QuizAside, { course }), targets.quizAside),
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(BodyLayer, {}), document.body),
 		(0, import_react_dom.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tour, {}), document.body)
 	] });
@@ -31174,6 +31487,427 @@ function setUpMotionSwitch() {
 	onMotionChange(paintMotionPanel);
 	paintMotionPanel();
 }
+// src/shared/analytics/analytics-config.ts
+var ANALYTICS_ELEMENT_ID = "lab-analytics";
+var WEBSITE_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+var HOST_PATTERN = /^https:\/\/[a-z0-9.-]+$/;
+var DOMAIN_PATTERN = /^[a-z0-9.-]+\.[a-z]{2,}$/;
+function checkAnalyticsConfig(value) {
+	const { website, host, domain } = value || {};
+	if (typeof website !== "string" || !WEBSITE_PATTERN.test(website)) throw new Error("analytics.website must be an Umami website id (a UUID)");
+	if (typeof host !== "string" || !HOST_PATTERN.test(host)) throw new Error("analytics.host must be an https origin such as https://gateway.umami.is");
+	if (typeof domain !== "string" || !DOMAIN_PATTERN.test(domain)) throw new Error("analytics.domain must be a hostname such as nadavm-eng.github.io");
+	return {
+		website,
+		host,
+		domain
+	};
+}
+function readAnalyticsConfig(doc) {
+	const element = doc.getElementById(ANALYTICS_ELEMENT_ID);
+	if (!element) return null;
+	try {
+		return checkAnalyticsConfig(JSON.parse(element.textContent || ""));
+	} catch {
+		return null;
+	}
+}
+// src/shared/analytics/analytics-send.ts
+var SWITCH_KEY = "lab:analytics";
+var ANON_ID_KEY = "lab:anon-id";
+var SENT_KEY = "lab:analytics-sent";
+var ANON_ID_PATTERN = /^u-[0-9a-f]{12}$/;
+var pageOnlyId = "";
+function browserAnalyticsDeps(config) {
+	let storage;
+	try {
+		storage = window.localStorage;
+	} catch {
+		storage = null;
+	}
+	return {
+		config,
+		fetch: (address, init) => window.fetch(address, init),
+		storage,
+		now: () => Date.now(),
+		hostname: () => location.hostname,
+		asksNotToTrack: () => {
+			const nav = navigator;
+			const win = window;
+			return nav.globalPrivacyControl === true || nav.doNotTrack === "1" || win.doNotTrack === "1";
+		},
+		randomHex: () => {
+			const bytes = crypto.getRandomValues(/* @__PURE__ */ new Uint8Array(6));
+			return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+		}
+	};
+}
+function readText(deps, key) {
+	try {
+		return deps.storage ? deps.storage.getItem(key) : null;
+	} catch {
+		return null;
+	}
+}
+function writeText(deps, key, value) {
+	try {
+		if (!deps.storage) return false;
+		deps.storage.setItem(key, value);
+		return true;
+	} catch {
+		return false;
+	}
+}
+function isSwitchOn(deps) {
+	return readText(deps, SWITCH_KEY) !== "0";
+}
+function setSwitch(deps, isOn) {
+	writeText(deps, SWITCH_KEY, isOn ? "1" : "0");
+}
+function mayEverSend(deps) {
+	return deps.hostname() === deps.config.domain && isSwitchOn(deps) && !deps.asksNotToTrack();
+}
+function anonymousId(deps) {
+	const saved = readText(deps, ANON_ID_KEY);
+	if (saved && ANON_ID_PATTERN.test(saved)) return saved;
+	const made = "u-" + deps.randomHex().toLowerCase().replace(/[^0-9a-f]/g, "0").slice(0, 12);
+	const id = ANON_ID_PATTERN.test(made) ? made : "u-000000000000";
+	if (!writeText(deps, "lab:anon-id", id)) {
+		pageOnlyId = pageOnlyId || id;
+		return pageOnlyId;
+	}
+	return id;
+}
+function dayOf(deps) {
+	return new Date(deps.now()).toISOString().slice(0, 10);
+}
+function readFlags(deps) {
+	try {
+		const value = JSON.parse(readText(deps, "lab:analytics-sent") || "{}");
+		return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+	} catch {
+		return {};
+	}
+}
+function hasFlag(deps, flag, isDaily) {
+	const value = readFlags(deps)[flag];
+	return isDaily ? value === dayOf(deps) : value !== void 0;
+}
+function setFlag(deps, flag, isDaily, isSet = true) {
+	const today = dayOf(deps);
+	const flags = readFlags(deps);
+	for (const [key, value] of Object.entries(flags)) if (typeof value === "string" && value !== today) delete flags[key];
+	if (isSet) flags[flag] = isDaily ? today : 1;
+	else delete flags[flag];
+	writeText(deps, SENT_KEY, JSON.stringify(flags));
+}
+function umamiBody(deps, path, name = "", data) {
+	const payload = {
+		website: deps.config.website,
+		hostname: deps.config.domain,
+		url: path,
+		id: anonymousId(deps)
+	};
+	if (name) {
+		payload.name = name;
+		if (data && Object.keys(data).length) payload.data = data;
+	}
+	return {
+		type: "event",
+		payload
+	};
+}
+async function postToUmami(deps, body) {
+	try {
+		const answer = await deps.fetch(deps.config.host + "/api/send", {
+			method: "POST",
+			keepalive: true,
+			credentials: "omit",
+			cache: "no-store",
+			referrerPolicy: "no-referrer",
+			headers: { "Content-Type": "text/plain;charset=UTF-8" },
+			body: JSON.stringify(body)
+		});
+		return Boolean(answer && answer.ok);
+	} catch {
+		return false;
+	}
+}
+async function sendOnce(deps, flag, isDaily, body) {
+	if (hasFlag(deps, flag, isDaily)) return false;
+	setFlag(deps, flag, isDaily);
+	const isSent = await postToUmami(deps, body);
+	if (!isSent) setFlag(deps, flag, isDaily, false);
+	return isSent;
+}
+var MIN_READ_MS = 1e4;
+var MAX_READ_MS = 45e3;
+var MAX_TICK_MS = 5e3;
+var ISLANDS_MAX = 300;
+var TIME_STEPS = [
+	[6e5, "10m+"],
+	[3e5, "5m"],
+	[12e4, "2m"],
+	[6e4, "1m"],
+	[3e4, "30s"],
+	[0, "10s"]
+];
+function readingNeedMs(words) {
+	const thirdMs = Math.max(0, words) / 200 * 6e4 / 3;
+	return Math.round(Math.min(MAX_READ_MS, Math.max(MIN_READ_MS, thirdMs)));
+}
+function timeStep(ms) {
+	return (TIME_STEPS.find(([from]) => ms >= from) || TIME_STEPS[TIME_STEPS.length - 1])[1];
+}
+function wordCount(text) {
+	const words = text.trim().split(/\s+/);
+	return words[0] ? words.length : 0;
+}
+function cleanKind(kind) {
+	return String(kind).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+}
+var Tracker = class {
+	deps;
+	current = null;
+	constructor(deps) {
+		this.deps = deps;
+	}
+	mayCount() {
+		return mayEverSend(this.deps) && this.deps.mayCount();
+	}
+	startVisit(path, needMs) {
+		const now = this.deps.now();
+		this.current = {
+			path,
+			needMs,
+			activeMs: 0,
+			lastTick: now,
+			lastInput: now,
+			isCounted: false,
+			starts: 0,
+			islands: /* @__PURE__ */ new Set()
+		};
+	}
+	sendTime(ended) {
+		if (!ended.isCounted || !this.mayCount()) return;
+		const data = { step: timeStep(ended.activeMs) };
+		if (ended.starts > 0) data.starts = ended.starts;
+		if (ended.islands.size) data.islands = [...ended.islands].sort().join(",").slice(0, ISLANDS_MAX);
+		postToUmami(this.deps, umamiBody(this.deps, ended.path, "time", data));
+	}
+	countWhenRead() {
+		const visit = this.current;
+		if (!visit || visit.isCounted || visit.activeMs < visit.needMs || !this.mayCount()) return;
+		visit.isCounted = true;
+		sendOnce(this.deps, "view:" + visit.path, true, umamiBody(this.deps, visit.path));
+		this.deps.onCounted?.(visit.path);
+	}
+	pageShown(path, words) {
+		if (this.current) this.sendTime(this.current);
+		this.startVisit(path, words === void 0 ? MAX_READ_MS : readingNeedMs(words));
+	}
+	setWords(words) {
+		if (this.current) this.current.needMs = readingNeedMs(words);
+	}
+	input() {
+		if (this.current) this.current.lastInput = this.deps.now();
+	}
+	tick(isVisible) {
+		const visit = this.current;
+		if (!visit) return;
+		const now = this.deps.now();
+		const gap = Math.max(0, now - visit.lastTick);
+		visit.lastTick = now;
+		if (isVisible && now - visit.lastInput <= 3e4) visit.activeMs += Math.min(gap, MAX_TICK_MS);
+		this.countWhenRead();
+	}
+	leave() {
+		const visit = this.current;
+		if (visit) {
+			this.sendTime(visit);
+			this.startVisit(visit.path, visit.needMs);
+		}
+	}
+	stepStart() {
+		if (this.current) this.current.starts++;
+	}
+	island(kind, action) {
+		const clean = cleanKind(kind);
+		if (this.current && clean) this.current.islands.add(clean + ":" + action);
+	}
+	async done(name, id) {
+		if (!this.mayCount() || !id) return false;
+		const path = this.current ? this.current.path : "/";
+		return sendOnce(this.deps, name + ":" + id, false, umamiBody(this.deps, path, name, { id }));
+	}
+	async adminOn(course) {
+		if (!mayEverSend(this.deps) || !course) return false;
+		const body = umamiBody(this.deps, "/" + course, "admin-on", { id: course });
+		return sendOnce(this.deps, "admin:" + course, true, body);
+	}
+	visit() {
+		return this.current;
+	}
+};
+function createTracker(deps) {
+	return new Tracker(deps);
+}
+// src/core/page/analytics.ts
+var SWITCH_ID = "analytics-on";
+var TICK_MS = 1e3;
+function readMark(key) {
+	return Boolean(codeBox.store.get(key, false));
+}
+function isTeacherPass(page) {
+	return Boolean(page.box) && codeBox.store.get("passkind:" + page.box.id, "") === "teacher";
+}
+function pathOfPage(course, page) {
+	const parts = [course.id || "course"];
+	if (page && page.u) {
+		if (page.u.subject) parts.push(page.u.subject);
+		parts.push(page.u.id, String(page.si + 1));
+	}
+	return "/" + parts.map((part) => encodeURIComponent(part)).join("/");
+}
+function marksOf(page) {
+	if (!page || !page.u) return null;
+	const pages = page.u.pages || [];
+	const doneKeys = new Set(pages.filter((each) => isStepDone(each, readMark)).map(stepMarkKey));
+	return {
+		unitId: page.u.id,
+		doneKeys,
+		isDone: isUnitDone(pages, readMark)
+	};
+}
+function pageMayCount() {
+	if (document.body.classList.contains("admin") || /[?&]selftest/.test(location.search)) return false;
+	if (courseLayer.local) return false;
+	const page = currentPage();
+	return !(page && page.u && courseLayer.isNew(page.u.id));
+}
+function sendNewDone(tracker, course, before) {
+	const page = currentPage();
+	const now = marksOf(page);
+	if (!page || !page.u || !now || !before || before.unitId !== now.unitId) return now;
+	const pages = page.u.pages || [];
+	const lessonId = pathOfPage(course, page).slice(1).split("/").slice(0, -1).join("/");
+	const fresh = pages.filter((each) => isStepDone(each, readMark) && !before.doneKeys.has(stepMarkKey(each)));
+	const isAnyTeacher = pages.some(isTeacherPass);
+	(async () => {
+		if (fresh.length || now.isDone && !before.isDone) await tracker.done("course-start", course.id || "");
+		for (const each of fresh) if (!isTeacherPass(each)) await tracker.done("sub-done", pathOfPage(course, each).slice(1));
+		if (now.isDone && !before.isDone && !isAnyTeacher) await tracker.done("lesson-done", lessonId);
+	})();
+	return now;
+}
+function setUpSwitch(deps) {
+	const input = document.getElementById(SWITCH_ID);
+	if (!input) return;
+	input.checked = isSwitchOn(deps);
+	input.setAttribute("aria-checked", String(input.checked));
+	input.addEventListener("change", () => {
+		input.setAttribute("aria-checked", String(input.checked));
+		setSwitch(deps, input.checked);
+	});
+}
+function followIslands(tracker) {
+	document.addEventListener("ptr-island", (event) => {
+		const detail = event.detail;
+		if (detail) tracker.island(detail.island, detail.action);
+	});
+	const onUse = (event) => {
+		const target = event.target;
+		const island = target && target.closest ? target.closest("[data-island]") : null;
+		if (island && !target.closest(".isl-head") && island.dataset.island) tracker.island(island.dataset.island, "used");
+	};
+	document.addEventListener("pointerdown", onUse, {
+		capture: true,
+		passive: true
+	});
+	document.addEventListener("wheel", onUse, {
+		capture: true,
+		passive: true
+	});
+}
+function followTime(tracker) {
+	const onInput = () => {
+		tracker.input();
+	};
+	for (const name of [
+		"pointermove",
+		"pointerdown",
+		"keydown",
+		"wheel",
+		"scroll",
+		"touchstart"
+	]) document.addEventListener(name, onInput, {
+		capture: true,
+		passive: true
+	});
+	window.setInterval(() => tracker.tick(document.visibilityState === "visible"), TICK_MS);
+	document.addEventListener("visibilitychange", () => {
+		if (document.visibilityState === "hidden") {
+			tracker.tick(true);
+			tracker.leave();
+		} else tracker.input();
+	});
+	window.addEventListener("pagehide", () => tracker.leave());
+}
+function measureWordsSoon(tracker) {
+	window.setTimeout(() => {
+		const shown = document.querySelector("#lesson-in > .page:not([hidden])");
+		tracker.setWords(wordCount(shown ? shown.textContent || "" : ""));
+	}, 0);
+}
+function followPages(tracker, course) {
+	let shownId = "";
+	let marks = null;
+	const onView = () => {
+		const id = getView().currentPageId;
+		if (id === shownId) return;
+		shownId = id;
+		const page = currentPage();
+		tracker.pageShown(pathOfPage(course, page));
+		marks = marksOf(page);
+		measureWordsSoon(tracker);
+	};
+	subscribeView(onView);
+	onView();
+	document.addEventListener("ptr-progress", () => {
+		marks = sendNewDone(tracker, course, marks);
+	});
+}
+function followAdminAndStepping(tracker, course) {
+	document.addEventListener("ptr-admin", () => {
+		if (document.body.classList.contains("admin")) tracker.adminOn(course.id || "");
+	});
+	let wasStepping = document.body.classList.contains("debugging");
+	new MutationObserver(() => {
+		const isStepping = document.body.classList.contains("debugging");
+		if (isStepping && !wasStepping) tracker.stepStart();
+		wasStepping = isStepping;
+	}).observe(document.body, {
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+}
+function setUpAnalytics(course) {
+	const config = readAnalyticsConfig(document);
+	if (!config) return;
+	const deps = browserAnalyticsDeps(config);
+	setUpSwitch(deps);
+	const tracker = createTracker({
+		...deps,
+		mayCount: pageMayCount,
+		onCounted: () => {
+			tracker.done("course-start", course.id || "");
+		}
+	});
+	followPages(tracker, course);
+	followAdminAndStepping(tracker, course);
+	followIslands(tracker);
+	followTime(tracker);
+}
 // src/core/page/feedback-link.ts
 function openPanelOnScreen(link) {
 	const widget = widgetOf(document.querySelector("#lesson-in > .page:not([hidden]) .fb-end"));
@@ -31287,7 +32021,8 @@ function mountReact(course) {
 	const targets = {
 		nav: document.getElementById("nav"),
 		lessonColumn: document.getElementById("lesson-in"),
-		codePane: document.getElementById("code-pane")
+		codePane: document.getElementById("code-pane"),
+		quizAside: document.getElementById("quiz-aside")
 	};
 	const root = (0, import_client.createRoot)(document.createElement("div"));
 	(0, import_react_dom.flushSync)(() => {
@@ -31332,6 +32067,7 @@ function startLabPage() {
 	setUpRouting(course);
 	mountReact(course);
 	setUpShell();
+	setUpAnalytics(course);
 	showPage(pageIdFromAddress() || String(codeBox.store.get("page", "home")));
 	recordCourseVisit(course.id || "");
 	paintNavFade();
@@ -31755,7 +32491,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 1defab17 מ-2026-11-22 13:39"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 1defab17</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 32d74001 מ-2026-11-23 01:57"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 32d74001</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
@@ -31807,6 +32543,8 @@ window.__lab = {
         </details>
         <!-- long lines of the lesson wrap (src/core/lesson/wrap-long.ts; off by default) -->
         <div class="side-row wrap-row"><span id="wrap-lbl">שבירת שורות ארוכות<small class="set-sub" id="wrap-desc">קוד בטבלאות ופלט לדוגמה בהסבר</small></span><label class="admin-sw"><input type="checkbox" id="wrap-long" role="switch" aria-checked="false" aria-labelledby="wrap-lbl" aria-describedby="wrap-desc"><span class="knob"></span></label></div>
+        <!-- the analytics switch of a public site's page (src/vite/analytics-build.ts; none elsewhere) -->
+        <div class="side-row analytics-row"><span id="analytics-lbl">שליחת סטטיסטיקה אנונימית<small class="set-sub" id="analytics-desc">האתר סופר פתיחות וסיומי שיעורים, בלי שם ובלי חשבון, דרך Umami. מזהה אקראי לכל דפדפן, בלי שם.</small></span><label class="admin-sw"><input type="checkbox" id="analytics-on" role="switch" aria-checked="true" aria-labelledby="analytics-lbl" aria-describedby="analytics-desc" checked><span class="knob"></span></label></div>
         <div class="side-row"><span>סיור מודרך</span><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button></div>
         <section class="set-group" aria-labelledby="set-teacher-h">
           <h3 class="side-h" id="set-teacher-h">למורה</h3>
@@ -31824,6 +32562,7 @@ window.__lab = {
     </div></main>
     <div class="split" id="split" title="גררו כדי לשנות רוחב"></div>
     <section class="code-pane" id="code-pane"></section>
+    <section class="quiz-aside" id="quiz-aside" aria-label="התמונה של השאלות"></section>
   </div>
 </div>
 <div class="boot" id="boot" lang="he"></div>
@@ -31831,6 +32570,7 @@ window.__lab = {
 <!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then one ES module, lab-entry.js (made by src/vite/lab-page-plugins.ts; it runs after the page is parsed), which imports in this order: the engine (window.LabEngine), the course (window.LabCourse), the local layer (layer.js), the code box (app.js), the page (lab.ts), the authoring UI (author.ts) -->
 <script></script>
 <!--lab-package-here-->
+<script type="application/json" id="lab-analytics">{"website":"64c1ce3d-2042-441f-895e-7cd6bf8f0012","host":"https://gateway.umami.is","domain":"nadavm-eng.github.io"}</script>
 <script type="application/json" id="lab-feedback">{"form":"https://docs.google.com/forms/d/e/1FAIpQLSfjQKsL-jnAaQtBcXgb4J3yp7m5Q2Mf26nPvp82FDu_sjClNA/formResponse","entries":{"kind":"entry.553178060","course":"entry.804347730","section":"entry.934529071","lesson":"entry.194724274","subLesson":"entry.1630899329","text":"entry.324750931"}}</script>
 </body>
 </html>
