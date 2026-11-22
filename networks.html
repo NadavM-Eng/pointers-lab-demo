@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-FP/HXh7AeUp0Lwpov1itl5uf7YXN7rXUJpw+spb+ttk=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-B1oMFoUeN6tXfLiz9Mi1CSpO3nTLV6kO5JxQpfSzWjE=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -18440,10 +18440,10 @@ answer = rate * t`,
 		id: "a-http-basics",
 		title: "HTTP מעל TCP",
 		quizLast: true,
-		body: body([R`<p><bdi dir="ltr">HTTP</bdi> הוא פרוטוקול היישום של ה-Web: הדפדפן שולח <b>בקשה</b>, והשרת מחזיר <b>תשובה</b>. הוא רץ מעל TCP, לפורט 80 של השרת. הוא <b>חסר מצב</b> (<bdi dir="ltr">stateless</bdi>): השרת לא זוכר בקשות קודמות. לחצו צעד הבא:</p>` + stepDiagram({
+		body: body([R`<p><bdi dir="ltr">HTTP</bdi> הוא פרוטוקול היישום של ה-Web: הדפדפן שולח <b>בקשה</b>, והשרת מחזיר <b>תשובה</b>. הוא רץ מעל TCP, לפורט 80 של השרת. הוא <b>חסר מצב</b> (<bdi dir="ltr">stateless</bdi>): השרת לא זוכר בקשות קודמות. כאן כל הדף עובר בחיבור TCP אחד (HTTP <b>מתמיד</b>); חיבור חדש לכל אובייקט יבוא בשיעור "דף בחיבורים לא מתמידים". לחצו צעד הבא:</p>` + stepDiagram({
 			format: "step-diagram/1",
 			style: "sequence",
-			title: "דף עם שתי תמונות",
+			title: "דף עם שתי תמונות, בחיבור אחד",
 			actors: [{
 				id: "browser",
 				label: "דפדפן",
@@ -18507,7 +18507,7 @@ answer = rate * t`,
 					}]
 				},
 				{
-					caption: "בקשה ותשובה לתמונה הראשונה.",
+					caption: "החיבור עדיין פתוח, ולכן הבקשה לתמונה הראשונה יוצאת מיד, בלי לפתוח חיבור חדש.",
 					add: [{
 						type: "message",
 						id: "get-img1",
@@ -18547,6 +18547,17 @@ answer = rate * t`,
 						"get-img1",
 						"get-img2"
 					]
+				},
+				{
+					caption: "רק עכשיו נסגר החיבור: כל הדף עבר בחיבור TCP אחד. זה HTTP מתמיד; ב-HTTP לא מתמיד החיבור נסגר אחרי כל תשובה.",
+					add: [{
+						type: "message",
+						id: "close",
+						from: "browser",
+						to: "server",
+						label: "סגירת חיבור TCP",
+						color: "orange"
+					}]
 				}
 			]
 		})]),
@@ -18898,13 +18909,108 @@ answer = 2 * RTT + d_trans`,
 			}
 		])
 	});
+	const NON_PERSISTENT_OBJECT = (n, file, first) => [
+		{
+			caption: (first ? "אובייקט ראשון, " : "אובייקט חדש, ") + file + ": קודם פותחים לו חיבור TCP משלו.",
+			add: [{
+				type: "message",
+				id: "open" + n,
+				from: "browser",
+				to: "server",
+				label: "פתיחת חיבור TCP",
+				color: "orange"
+			}]
+		},
+		{
+			caption: "החיבור מוכן. עבר RTT.",
+			add: [{
+				type: "message",
+				id: "ready" + n,
+				from: "server",
+				to: "browser",
+				label: "החיבור מוכן",
+				color: "orange"
+			}, {
+				type: "span",
+				id: "rtt-open" + n,
+				from: "open" + n,
+				to: "ready" + n,
+				label: "RTT " + (2 * n - 1),
+				color: "orange",
+				band: true
+			}]
+		},
+		{
+			caption: "הבקשה ל-" + file + " יוצאת.",
+			add: [{
+				type: "message",
+				id: "get" + n,
+				from: "browser",
+				to: "server",
+				label: "GET /" + file
+			}]
+		},
+		{
+			caption: "התשובה חוזרת: עוד RTT.",
+			add: [{
+				type: "message",
+				id: "resp" + n,
+				from: "server",
+				to: "browser",
+				label: "200 OK + " + file,
+				color: "green"
+			}, {
+				type: "span",
+				id: "rtt-get" + n,
+				from: "get" + n,
+				to: "resp" + n,
+				label: "RTT " + 2 * n,
+				band: true
+			}]
+		},
+		{
+			caption: "החיבור נסגר מיד אחרי התשובה. האובייקט הבא יצטרך חיבור חדש.",
+			add: [{
+				type: "message",
+				id: "close" + n,
+				from: "server",
+				to: "browser",
+				label: "סגירת החיבור",
+				color: "orange"
+			}]
+		}
+	];
+	const NON_PERSISTENT_PAGE = {
+		format: "step-diagram/1",
+		style: "sequence",
+		title: "HTML ושתי תמונות, חיבור לכל אובייקט",
+		actors: [{
+			id: "browser",
+			label: "דפדפן"
+		}, {
+			id: "server",
+			label: "שרת Web"
+		}],
+		steps: [
+			...NON_PERSISTENT_OBJECT(1, "menu.html", true),
+			...NON_PERSISTENT_OBJECT(2, "tea.png", false),
+			...NON_PERSISTENT_OBJECT(3, "cake.png", false),
+			{
+				caption: "שלושה אובייקטים, שלושה חיבורים, שישה RTT: $2\\cdot\\text{RTT}\\cdot 3$.",
+				highlight: [
+					"open1",
+					"open2",
+					"open3"
+				]
+			}
+		]
+	};
 	U.push({
 		id: "a-non-persistent",
 		title: "דף בחיבורים לא מתמידים",
 		quizLast: true,
 		body: body([
-			R`<p>דף של קובץ HTML ועוד $n$ תמונות, ב-HTTP לא מתמיד: חיבור חדש לכל אובייקט, אחד אחרי השני. כשהאובייקטים קטנים (השידור זניח), כל אחד מ-$1+n$ האובייקטים עולה $2\cdot\text{RTT}$:</p>
-$$T = 2\cdot\text{RTT}\cdot(1+n)$$`,
+			R`<p>ב-HTTP <b>לא מתמיד</b> (<bdi dir="ltr">non-persistent</bdi>) כל אובייקט מקבל חיבור TCP משלו: פותחים, מבקשים, מקבלים וסוגרים, ורק אז עוברים לאובייקט הבא. כשהשידור זניח, כל אחד מ-$1+n$ האובייקטים עולה $2\cdot\text{RTT}$, ולכן $T = 2\cdot\text{RTT}\cdot(1+n)$. לחצו צעד הבא:</p>` + stepDiagram(NON_PERSISTENT_PAGE),
 			{
 				id: "a-non-persistent-page",
 				title: "HTML ועוד 4 תמונות",
@@ -19030,18 +19136,18 @@ answer = objects * (2 * RTT + d_trans)`,
 				w: R`5 אובייקטים, $40\,\text{ms}$ לכל אחד: $200\,\text{ms}$; מי ששכח את ה-HTML קיבל $160$.`
 			},
 			{
-				s: R`דף של HTML ועוד 9 תמונות קטנות, $\text{RTT} = 10\,\text{ms}$. כמה חיבורי TCP נפתחים, וכמה זמן?`,
+				s: R`דף של HTML ועוד 9 תמונות קטנות, $\text{RTT} = 10\,\text{ms}$, HTTP לא מתמיד. כמה חיבורי TCP נפתחים, וכמה זמן?`,
 				o: [
 					R`9 חיבורים, $180\,\text{ms}$`,
 					R`10 חיבורים, $100\,\text{ms}$`,
-					R`1 חיבור, $20\,\text{ms}$`,
+					R`חיבור אחד, $110\,\text{ms}$`,
 					R`10 חיבורים, $200\,\text{ms}$`
 				],
 				a: 3,
-				w: R`חיבור לכל אחד מ-10 האובייקטים, $2 \cdot 10 = 20\,\text{ms}$ לכל אחד: $200\,\text{ms}$.`
+				w: R`חיבור לכל אחד מ-10 האובייקטים, $2 \cdot 10 = 20\,\text{ms}$ לכל אחד: $200\,\text{ms}$; חיבור אחד ו-$110\,\text{ms}$ הם HTTP מתמיד.`
 			},
 			{
-				s: R`דף של HTML ועוד תמונה אחת, כל אחד $100\,\text{KB}$, קו של $8\,\text{Mbps}$, $\text{RTT} = 50\,\text{ms}$. כמה זמן?`,
+				s: R`דף של HTML ועוד תמונה אחת, כל אחד $100\,\text{KB}$, קו של $8\,\text{Mbps}$, $\text{RTT} = 50\,\text{ms}$, HTTP לא מתמיד. כמה זמן?`,
 				o: [
 					R`$400\,\text{ms}$`,
 					R`$200\,\text{ms}$`,
@@ -19050,6 +19156,17 @@ answer = objects * (2 * RTT + d_trans)`,
 				],
 				a: 0,
 				w: R`כל אובייקט $100 + 100 = 200\,\text{ms}$ (השידור $\frac{0.8\,\text{Mbit}}{8\,\text{Mbps}}$), ושניים: $400\,\text{ms}$.`
+			},
+			{
+				s: "מה <b>לא</b> קורה ב-HTTP לא מתמיד?",
+				o: [
+					"החיבור נסגר אחרי כל תשובה",
+					"כל אובייקט מחכה לפתיחת חיבור משלו",
+					"כל אובייקט עולה לפחות שני RTT",
+					"כל התמונות עוברות באותו חיבור TCP"
+				],
+				a: 3,
+				w: "חיבור אחד לכל הדף הוא HTTP מתמיד; בלא מתמיד לכל אובייקט חיבור משלו, שנסגר אחרי התשובה."
 			},
 			{
 				s: R`דף של HTML ועוד 5 תמונות לקח $240\,\text{ms}$ ב-HTTP לא מתמיד, עם אובייקטים זעירים. מה ה-RTT?`,
@@ -19256,8 +19373,145 @@ answer = 2 * RTT + rounds * 2 * RTT`,
 		title: "חיבור מתמיד",
 		quizLast: true,
 		body: body([
-			R`<p>ב-HTTP <b>מתמיד</b> (<bdi dir="ltr">persistent</bdi>) השרת משאיר את החיבור פתוח אחרי התשובה. ה-HTML עולה $2\cdot\text{RTT}$, וכל תמונה אחריו רק RTT אחד, כי אין חיבור חדש לפתוח. בלי צינור, בקשה יוצאת רק אחרי שהתשובה הקודמת הגיעה:</p>
-$$T = 2\cdot\text{RTT} + n\cdot\text{RTT}$$`,
+			R`<p>ב-HTTP <b>מתמיד</b> (<bdi dir="ltr">persistent</bdi>) השרת משאיר את החיבור פתוח אחרי התשובה. ה-HTML עולה $2\cdot\text{RTT}$, וכל תמונה אחריו רק RTT אחד, כי אין חיבור חדש לפתוח: בלי צינור, $T = 2\cdot\text{RTT} + n\cdot\text{RTT}$. לחצו צעד הבא:</p>` + stepDiagram({
+				format: "step-diagram/1",
+				style: "sequence",
+				title: "HTML ושתי תמונות, חיבור אחד",
+				actors: [{
+					id: "browser",
+					label: "דפדפן"
+				}, {
+					id: "server",
+					label: "שרת Web"
+				}],
+				steps: [
+					{
+						caption: "פותחים חיבור TCP פעם אחת, לכל הדף.",
+						add: [{
+							type: "message",
+							id: "open",
+							from: "browser",
+							to: "server",
+							label: "פתיחת חיבור TCP",
+							color: "orange"
+						}]
+					},
+					{
+						caption: "החיבור מוכן. עבר RTT.",
+						add: [{
+							type: "message",
+							id: "ready",
+							from: "server",
+							to: "browser",
+							label: "החיבור מוכן",
+							color: "orange"
+						}, {
+							type: "span",
+							id: "rtt1",
+							from: "open",
+							to: "ready",
+							label: "RTT 1",
+							color: "orange",
+							band: true
+						}]
+					},
+					{
+						caption: "הבקשה ל-menu.html יוצאת.",
+						add: [{
+							type: "message",
+							id: "get1",
+							from: "browser",
+							to: "server",
+							label: "GET /menu.html"
+						}]
+					},
+					{
+						caption: "התשובה חוזרת: עוד RTT. החיבור נשאר פתוח.",
+						add: [{
+							type: "message",
+							id: "resp1",
+							from: "server",
+							to: "browser",
+							label: "200 OK + menu.html",
+							color: "green"
+						}, {
+							type: "span",
+							id: "rtt2",
+							from: "get1",
+							to: "resp1",
+							label: "RTT 2",
+							band: true
+						}]
+					},
+					{
+						caption: "הבקשה לתמונה הראשונה יוצאת באותו חיבור, בלי פתיחה.",
+						add: [{
+							type: "message",
+							id: "get2",
+							from: "browser",
+							to: "server",
+							label: "GET /tea.png"
+						}]
+					},
+					{
+						caption: "התשובה חוזרת: רק RTT אחד לתמונה.",
+						add: [{
+							type: "message",
+							id: "resp2",
+							from: "server",
+							to: "browser",
+							label: "200 OK + tea.png",
+							color: "green"
+						}, {
+							type: "span",
+							id: "rtt3",
+							from: "get2",
+							to: "resp2",
+							label: "RTT 3",
+							band: true
+						}]
+					},
+					{
+						caption: "בלי צינור, הבקשה לתמונה השנייה יוצאת רק אחרי התשובה הקודמת.",
+						add: [{
+							type: "message",
+							id: "get3",
+							from: "browser",
+							to: "server",
+							label: "GET /cake.png"
+						}]
+					},
+					{
+						caption: "עוד RTT אחד.",
+						add: [{
+							type: "message",
+							id: "resp3",
+							from: "server",
+							to: "browser",
+							label: "200 OK + cake.png",
+							color: "green"
+						}, {
+							type: "span",
+							id: "rtt4",
+							from: "get3",
+							to: "resp3",
+							label: "RTT 4",
+							band: true
+						}]
+					},
+					{
+						caption: "רק בסוף נסגר החיבור. ארבעה RTT במקום שישה: $2\\cdot\\text{RTT} + 2\\cdot\\text{RTT}$.",
+						add: [{
+							type: "message",
+							id: "close",
+							from: "server",
+							to: "browser",
+							label: "סגירת החיבור",
+							color: "orange"
+						}]
+					}
+				]
+			}),
 			{
 				id: "a-persistent-page",
 				title: "6 תמונות בחיבור אחד",
@@ -57678,7 +57932,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#networks">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0621c2d2 מ-2026-11-18 12:19"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0621c2d2</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#networks">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0168bd22 מ-2026-11-22 09:38"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0168bd22</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
