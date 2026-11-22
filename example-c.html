@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-fsarS19SrnUHEnbf9aV4QIkl+oNvtX3b5P/HQymYzoE=' 'sha256-OQy1MpTFMzQkJygsVjfhte0EHzNwgWXmdodp7/Ietro=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-paMbZy46zwZOztMT/t/m42rlcLYuO5KAetcr0TDhvv0=' 'sha256-OQy1MpTFMzQkJygsVjfhte0EHzNwgWXmdodp7/Ietro=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -17449,6 +17449,76 @@ function completeDirective(text, cursor, line, files) {
 	if (path) return headerList(path[1], path[2], after, cursor, files);
 	return NAME_LINE.test(line) || DEFINE_BODY.test(line) ? "code" : null;
 }
+// src/engines/c/view/complete-files.ts
+var C_FILE = /\.[ch]$/;
+var HEADER_FILE = /\.h$/;
+var COMMENT_OR_STRING = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\n]*|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?/g;
+var PREPROCESSOR = /^[ \t]*#(?:\\\n|[^\n])*/gm;
+var FUNCTION_HEAD = /([\w*][\w\s*]*?)\b([A-Za-z_]\w*)\s*\(((?:[^()]|\([^()]*\))*)\)\s*$/;
+var NOT_A_CALL = /\b(?:typedef|return|if|while|for|switch|sizeof)\b/;
+var STATIC = /\bstatic\b/;
+var PARAM_NAME = /([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)*$/;
+var ROW_ROOM = 349;
+var LABEL_CHAR = 8.1;
+var NOTE_CHAR = 7.2;
+function blank(match) {
+	return match.replace(/[^\n]/g, " ");
+}
+function topLevelPieces(code) {
+	const pieces = [];
+	let depth = 0;
+	let start = 0;
+	for (let index = 0; index < code.length; index++) {
+		const character = code[index];
+		if (character === "{") {
+			if (depth === 0) pieces.push(code.slice(start, index));
+			depth++;
+		} else if (character === "}") {
+			depth = Math.max(0, depth - 1);
+			start = depth === 0 ? index + 1 : start;
+		} else if (character === ";" && depth === 0) {
+			pieces.push(code.slice(start, index));
+			start = index + 1;
+		}
+	}
+	return pieces;
+}
+function fileFunctions(text) {
+	const code = text.replace(COMMENT_OR_STRING, blank).replace(PREPROCESSOR, blank);
+	const found = [];
+	for (const piece of topLevelPieces(code)) {
+		const head = FUNCTION_HEAD.exec(piece);
+		const before = head ? piece.slice(0, head.index + head[1].length) : "";
+		if (head && !NOT_A_CALL.test(before) && !before.includes("=") && head[2] !== "main") {
+			const params = head[3].replace(/\s+/g, " ").trim();
+			found.push({
+				name: head[2],
+				params: params === "void" ? "" : params,
+				isStatic: STATIC.test(before)
+			});
+		}
+	}
+	return found;
+}
+function shownParams(name, params) {
+	const room = Math.floor((ROW_ROOM - LABEL_CHAR * name.length) / NOTE_CHAR) - name.length - 2;
+	if (params.length <= room) return params;
+	const names = params.split(",").map((param) => param.trim()).map((param) => param === "..." ? param : (PARAM_NAME.exec(param) || ["", "…"])[1]);
+	if (names.join(", ").length <= room) return names.join(", ");
+	let kept = names.length - 1;
+	while (kept > 0 && [...names.slice(0, kept), "…"].join(", ").length > room) kept--;
+	return [...names.slice(0, kept), "…"].join(", ");
+}
+function boxFunctionItems(files) {
+	const sources = files.filter((file) => C_FILE.test(file.name));
+	sources.sort((a, b) => Number(!HEADER_FILE.test(a.name)) - Number(!HEADER_FILE.test(b.name)));
+	const items = /* @__PURE__ */ new Map();
+	for (const file of sources) {
+		const isHeader = HEADER_FILE.test(file.name);
+		for (const fn of fileFunctions(file.text || "")) if ((isHeader || !fn.isStatic) && !items.has(fn.name)) items.set(fn.name, callItem(fn.name, shownParams(fn.name, fn.params)));
+	}
+	return [...items.values()];
+}
 // src/engines/c/view/complete.ts
 var KEYWORDS$1 = "int char float double void long short unsigned signed const static struct typedef enum union return if else for while do switch case default break continue goto extern volatile".split(" ");
 var CONSTANTS = "NULL EOF stdin stdout stderr RAND_MAX true false bool".split(" ");
@@ -17520,7 +17590,9 @@ function complete(text, cursor, files = []) {
 	}
 	const word = wordBefore(text, cursor);
 	if (word.length < 2 || isInStringOrComment(text, cursor)) return null;
-	return resultFor(word, cursor, LIBRARY_ITEMS, wordItems(declaredNames(text, cursor, KEYWORD_SET), "name", "in this file"));
+	const boxCalls = boxFunctionItems(files);
+	const callNames = new Set(boxCalls.map((item) => item.label));
+	return resultFor(word, cursor, LIBRARY_ITEMS, [...wordItems(declaredNames(text, cursor, KEYWORD_SET).filter((name) => !callNames.has(name)), "name", "in this file"), ...boxCalls]);
 }
 // src/engines/c/view/highlight.js
 var KEYWORDS = new Set("char int short long void while for if else return const unsigned signed float double break continue sizeof NULL switch case default do struct static".split(" "));
@@ -43140,7 +43212,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 0168bd22 מ-2026-11-22 09:38"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 0168bd22</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 1defab17 מ-2026-11-22 13:39"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 1defab17</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
