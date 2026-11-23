@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-T4C+2D08gnqvy4xiUA7nX3YP0V8/BJRpgkO6Ii1fsA0=' 'sha256-HP5xyVjn5Is5ZKhaFq+mus2YMwv6cUmNHgZsau7NbCo=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ZL5FZ6k/OSJBAzrdn6fC0X2D2mYPrivHSrw18htHa84=' 'sha256-HP5xyVjn5Is5ZKhaFq+mus2YMwv6cUmNHgZsau7NbCo=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -26839,7 +26839,7 @@ else
 						"<code>pass</code>"
 					],
 					a: 0,
-					w: "הסוגריים מחלקים קודם שני <code>int</code>: 9 / 2 הוא 4, וההמרה ל-<code>double</code> באה מאוחר מדי."
+					w: "הסוגריים מחלקים קודם שני <code>int</code>: <code>9 / 2</code> הוא 4, וההמרה ל-<code>double</code> באה מאוחר מדי."
 				},
 				{
 					s: "מה מודפס?" + codeBlock(R`int x = (3 < 5) + (5 < 3) * 10 + (2 == 2) * 100;
@@ -28719,7 +28719,7 @@ printf("%d\n", s);`),
 					"<code>12</code>"
 				],
 				a: 1,
-				w: "<code>continue</code> מדלג רק על <code>j</code> ששווה 2 ולא עוצר את הפנימית: 1, 1, 1 + 3, 1 + 3 + 4."
+				w: "<code>continue</code> מדלג רק על <code>j</code> ששווה 2 ולא עוצר את הפנימית: 1, 1, <bdi dir=\"ltr\">1 + 3</bdi>, <bdi dir=\"ltr\">1 + 3 + 4</bdi>."
 			},
 			{
 				s: "איזו מהלולאות הבאות <b>לא</b> מדפיסה <code>5 4 3 2 1</code>?",
@@ -29576,7 +29576,7 @@ int main(void)
 					"<code>y = square(5);</code>"
 				],
 				a: 2,
-				w: "ל-<code>printSquare</code> אין ערך מוחזר, ו-gcc עוצר (<code>invalid use of void expression</code>), ובשאר יוצא 9 + 16, 4 * 6 + 1 ו-25."
+				w: "ל-<code>printSquare</code> אין ערך מוחזר, ו-gcc עוצר (<code>invalid use of void expression</code>), ובשאר יוצא <bdi dir=\"ltr\">9 + 16</bdi>, <bdi dir=\"ltr\">4 * 6 + 1</bdi> ו-25."
 			},
 			{
 				s: "מה מודפס?" + codeBlock(R`int check(int n)
@@ -30930,7 +30930,7 @@ int main(void)
 					"<code>4.0</code>"
 				],
 				a: 1,
-				w: "<code>(a + b) / 2</code> הוא חילוק של שני <code>int</code>: 7 / 2 הוא 3, ורק אחר כך הוא הופך ל-<code>double</code>."
+				w: "<code>(a + b) / 2</code> הוא חילוק של שני <code>int</code>: <code>7 / 2</code> הוא 3, ורק אחר כך הוא הופך ל-<code>double</code>."
 			},
 			{
 				s: "<code>int sq(int x) { printf(\"%d\", x * x); }</code>. איזה מהמשפטים הבאים <b>אינו</b> נכון?",
@@ -31287,7 +31287,7 @@ int main(void)
 						"<code>36</code>"
 					],
 					a: 3,
-					w: "הלולאה מחברת <code>cube(1)</code> + <code>cube(2)</code> + <code>cube(3)</code>, כלומר 1 + 8 + 27: פונקציה במודול יכולה לקרוא לפונקציה אחרת שלו."
+					w: "הלולאה מחברת <code>cube(1)</code> + <code>cube(2)</code> + <code>cube(3)</code>, כלומר <bdi dir=\"ltr\">1 + 8 + 27</bdi>: פונקציה במודול יכולה לקרוא לפונקציה אחרת שלו."
 				},
 				{
 					s: "ב-<code>mathx.c</code> יש גם גוף של <code>double average(int a, int b)</code>, אבל ב-<code>mathx.h</code> אין לה אב טיפוס. איזו מהשורות הבאות ב-<code>main.c</code> <b>לא</b> עוברת הידור?",
@@ -32661,7 +32661,7 @@ int main(void)
 					"<code>37</code>"
 				],
 				a: 0,
-				w: "הכול <code>int</code>: 21 * 9 הוא 189, 189 / 5 הוא 37 בלי השארית, ועוד 32 זה 69, ולכן <code>toFahrenheit</code> של השיעור עובדת עם <code>double</code>."
+				w: "הכול <code>int</code>: <code>21 * 9</code> הוא 189, <code>189 / 5</code> הוא 37 בלי השארית, ועוד 32 זה 69, ולכן <code>toFahrenheit</code> של השיעור עובדת עם <code>double</code>."
 			},
 			{
 				s: "למודול <code>convert</code> נוספו <code>hoursOf</code> ו-<code>restOf</code>. מה מדפיסה התוכנית?" + codeBlock(R`int toMinutes(int hours, int minutes)
@@ -32692,7 +32692,7 @@ int main(void)
 					"<code>1:15</code>"
 				],
 				a: 1,
-				w: "<code>toMinutes(1, 75)</code> הוא 135 דקות, ו-135 / 60 הוא 2 עם שארית 15."
+				w: "<code>toMinutes(1, 75)</code> הוא 135 דקות, ו-<code>135 / 60</code> הוא 2 עם שארית 15."
 			}
 		]
 	}));
@@ -33015,7 +33015,7 @@ printf("%d %d\n", n[2], n[3]);`),
 						"<code>6 9</code>"
 					],
 					a: 0,
-					w: "<code>n[1]</code> הוא 6, <code>n[2]</code> הוא 6 - 3 = 3, ו-<code>n[3]</code> הוא 3 + 6 = 9."
+					w: "<code>n[1]</code> הוא 6, <code>n[2]</code> הוא <bdi dir=\"ltr\">6 - 3 = 3</bdi>, ו-<code>n[3]</code> הוא <bdi dir=\"ltr\">3 + 6 = 9</bdi>."
 				},
 				{
 					s: "מה מודפס?" + codeBlock(R`int t[3];
@@ -33056,7 +33056,7 @@ printf("%d %d\n", p[1], p[2]);`),
 						"<code>3 1</code>"
 					],
 					a: 1,
-					w: "7 / 2 בין שלמים הוא 3, ו-<code>7 % 2</code> הוא 1, ולכן <code>p[2]</code> הוא 1 + 3."
+					w: "<code>7 / 2</code> בין שלמים הוא 3, ו-<code>7 % 2</code> הוא 1, ולכן <code>p[2]</code> הוא <bdi dir=\"ltr\">1 + 3</bdi>."
 				},
 				{
 					s: "מה מודפס?" + codeBlock(R`double w[3];
@@ -33070,7 +33070,7 @@ printf("%.1f %.1f\n", w[1], w[2]);`),
 						"<code>6.0 4.5</code>"
 					],
 					a: 0,
-					w: "חילוק לפני חיסור: <code>w[1]</code> הוא 6.0 - 1.5."
+					w: "חילוק לפני חיסור: <code>w[1]</code> הוא <bdi dir=\"ltr\">6.0 - 1.5</bdi>."
 				}
 			]
 		}));
@@ -33219,7 +33219,7 @@ printf("%.1f %.1f\n", r[2], r[3]);`),
 						"זבל, ולכן גם <code>r[3]</code> לא ידוע"
 					],
 					a: 0,
-					w: "יש רשימה, ולכן <code>r[2]</code> הוא 0.0, ו-<code>r[3]</code> הוא 1.5 + 2.0 + 0.0."
+					w: "יש רשימה, ולכן <code>r[2]</code> הוא 0.0, ו-<code>r[3]</code> הוא <bdi dir=\"ltr\">1.5 + 2.0 + 0.0</bdi>."
 				}
 			]
 		}));
@@ -34014,7 +34014,7 @@ printf("%d\n", sumArray(marks, n - 2));`),
 						"<code>406</code>"
 					],
 					a: 0,
-					w: "<code>n</code> הוא 6, ולכן נסכמים ארבעת הראשונים: 55 + 90 + 72 + 40."
+					w: "<code>n</code> הוא 6, ולכן נסכמים ארבעת הראשונים: <bdi dir=\"ltr\">55 + 90 + 72 + 40</bdi>."
 				}
 			]
 		}));
@@ -34941,7 +34941,7 @@ printf("%d\n", matrixSum(p, 2));`),
 						"<code>8</code>"
 					],
 					a: 2,
-					w: "הפרמטר השני הוא מספר השורות: רק שתי הראשונות, 4 + 4."
+					w: "הפרמטר השני הוא מספר השורות: רק שתי הראשונות, <bdi dir=\"ltr\">4 + 4</bdi>."
 				},
 				{
 					s: "<code>#define ROWS 2</code>, <code>#define COLS 5</code>, ובגוף הלולאה הפנימית <code>m[i][j] = 0;</code>. איזה זוג, חיצונית ובתוכה פנימית, <b>לא</b> עובר על כל תא של <code>int m[ROWS][COLS]</code> פעם אחת בדיוק?",
@@ -34969,7 +34969,7 @@ for (int j = 0; j < 4; j += 2)
 						"<code>8 10</code>"
 					],
 					a: 1,
-					w: "<code>j</code> הוא 0 ואז 2, ובכל פעם מחברים את שני התאים של אותה עמודה: 3 + 5 ו-4 + 2."
+					w: "<code>j</code> הוא 0 ואז 2, ובכל פעם מחברים את שני התאים של אותה עמודה: <bdi dir=\"ltr\">3 + 5</bdi> ו-<bdi dir=\"ltr\">4 + 2</bdi>."
 				}
 			]
 		}));
@@ -35190,7 +35190,7 @@ printf("%d\n", matrixSum(z, 2));`),
 						"<code>10</code>"
 					],
 					a: 2,
-					w: "מטריצה, כמו מערך, לא מועתקת: שורה 1 של <code>z</code> התאפסה, ונשארו 1 + 2 + 3 + 4."
+					w: "מטריצה, כמו מערך, לא מועתקת: שורה 1 של <code>z</code> התאפסה, ונשארו <bdi dir=\"ltr\">1 + 2 + 3 + 4</bdi>."
 				}
 			]
 		}));
@@ -35855,7 +35855,7 @@ printf("%d\n", total);`),
 					"4"
 				],
 				a: 1,
-				w: "<code>*t</code> הוא <code>total</code> עצמו: 1 + 2 + 3 + 4."
+				w: "<code>*t</code> הוא <code>total</code> עצמו: <bdi dir=\"ltr\">1 + 2 + 3 + 4</bdi>."
 			},
 			{
 				s: "מה מודפס?" + codeBlock(R`int a = 1;
@@ -36854,7 +36854,7 @@ printf("%d %d\n", h, k);`),
 					"<code>4 2</code>"
 				],
 				a: 2,
-				w: "קודם <code>h</code> מקבל 9 / 2, שהוא 4, ואז <code>k</code> מקבל 4 / 2."
+				w: "קודם <code>h</code> מקבל <code>9 / 2</code>, שהוא 4, ואז <code>k</code> מקבל <code>4 / 2</code>."
 			}
 		]
 	}));
@@ -37492,7 +37492,7 @@ printf("%d %d\n", n, r);`),
 						"<code>1 2</code>"
 					],
 					a: 3,
-					w: "20 / 3 נותן 6 ושארית 2, החלוקה ב-0 לא כותבת כלום, ו-6 / 4 נותן 1 ושארית 2."
+					w: "<code>20 / 3</code> נותן 6 ושארית 2, החלוקה ב-0 לא כותבת כלום, ו-<code>6 / 4</code> נותן 1 ושארית 2."
 				},
 				{
 					s: "<code>int x = 5; int *p = &amp;x;</code>. מה <b>לא</b> נכון?",
@@ -37518,7 +37518,7 @@ printf("%d %d\n", q, r);`),
 						"<code>0 0</code>"
 					],
 					a: 1,
-					w: "קודם 4 ו-5; בקריאה השנייה המנה 4 / 5 נכתבת ל-<code>r</code>, והשארית 4 נכתבת ל-<code>q</code>."
+					w: "קודם 4 ו-5; בקריאה השנייה המנה <code>4 / 5</code> נכתבת ל-<code>r</code>, והשארית 4 נכתבת ל-<code>q</code>."
 				}
 			]
 		}));
@@ -38003,7 +38003,7 @@ printf("%d\n", sum);`),
 						"10"
 					],
 					a: 0,
-					w: "<code>p</code> עובר מ-<code>a[1]</code> עד <code>a[4]</code>, כלומר 2 + 3 + 4 + 5; <code>a + 5</code> עצמו לא נכלל."
+					w: "<code>p</code> עובר מ-<code>a[1]</code> עד <code>a[4]</code>, כלומר <bdi dir=\"ltr\">2 + 3 + 4 + 5</bdi>; <code>a + 5</code> עצמו לא נכלל."
 				},
 				{
 					s: "הפונקציה:" + codeBlock(R`void zeroFrom(int *p, int n)
@@ -38750,7 +38750,7 @@ printf("%d\n", sum);`),
 					"7"
 				],
 				a: 0,
-				w: "<code>i</code> הוא 0, 4 ו-8: האלכסון <code>m[0][0]</code>, <code>m[1][1]</code>, <code>m[2][2]</code>, כלומר 2 + 5 + 6."
+				w: "<code>i</code> הוא 0, 4 ו-8: האלכסון <code>m[0][0]</code>, <code>m[1][1]</code>, <code>m[2][2]</code>, כלומר <bdi dir=\"ltr\">2 + 5 + 6</bdi>."
 			},
 			{
 				s: "מה מודפס?" + codeBlock(R`int a[3] = {1, 2, 3};
@@ -39295,8 +39295,8 @@ int main(void)
 			R`<p>האותיות הקטנות באות ברצף, וגם הגדולות. לכן <code>c - 'a'</code> הוא המקום של האות באלף-בית (0 ל-a, 1 ל-b), והוספת <code>'A'</code> מביאה לאותו מקום בין הגדולות.</p>
 <table class="tbl"><tr><th>שלב</th><th>ביטוי</th><th>מספר</th></tr>
 <tr><td>האות</td><td class="mono">small</td><td>100 (<code>'d'</code>)</td></tr>
-<tr><td>המקום שלה</td><td class="mono">small - 'a'</td><td>100 - 97 = 3</td></tr>
-<tr><td>הגדולה</td><td class="mono">place + 'A'</td><td>3 + 65 = 68 (<code>'D'</code>)</td></tr></table>`,
+<tr><td>המקום שלה</td><td class="mono">small - 'a'</td><td><bdi dir="ltr">100 - 97 = 3</bdi></td></tr>
+<tr><td>הגדולה</td><td class="mono">place + 'A'</td><td><bdi dir="ltr">3 + 65 = 68</bdi> (<code>'D'</code>)</td></tr></table>`,
 			{
 				id: "str-char-math-upper",
 				title: "מקטנה לגדולה",
@@ -44526,7 +44526,7 @@ int main(void)
 				},
 				R`<p>תורכם: <code>manhattan</code> סופרת כמה צעדים יש בין שתי נקודות, כשהולכים רק לאורך השורות והעמודות. זה ההפרש ב-<code>x</code> ועוד ההפרש ב-<code>y</code>, כל אחד בלי סימן.</p>
 <table class="tbl"><tr><th><code>a</code></th><th><code>b</code></th><th>צעדים</th></tr>
-<tr><td class="mono">(1, 1)</td><td class="mono">(4, 5)</td><td>3 + 4 = 7</td></tr>
+<tr><td class="mono">(1, 1)</td><td class="mono">(4, 5)</td><td><bdi dir="ltr">3 + 4 = 7</bdi></td></tr>
 <tr><td class="mono">(4, 5)</td><td class="mono">(1, 1)</td><td>7</td></tr></table>`,
 				{
 					id: "struct-init-manhattan",
@@ -74427,7 +74427,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 32d74001 מ-2026-11-23 01:57"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 32d74001</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 709cbf9e מ-2026-11-23 12:31"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 709cbf9e</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
