@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-Rsc/g9Hw6t9eoe+w6pTjm4DMWNVGt6r7eKGzwomdR48=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ph1PXfcXsPGPhE0wKe7FMkl4B08JLp+hfrqqlp2J2NE=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -22476,7 +22476,7 @@ answer = lookups * (rtt_a - rtt_b)`,
 		title: "יורדים בעץ",
 		quizLast: true,
 		quizAside: "auto",
-		body: body([R`<p>כך נראות שלוש הרמות כעץ. כדי למצוא שם יורדים מהשורש, דרך הסיומת, עד השרת המורשה. לחצו צעד הבא:</p>` + stepDiagram({
+		body: body([R`<p>כך נראות שלוש הרמות כעץ, הפוך כמו עץ אמיתי: השורש למטה. כדי למצוא שם עולים מהשורש, דרך הסיומת, עד השרת המורשה. בספרים מציירים את אותו עץ עם השורש למעלה. לחצו צעד הבא:</p>` + stepDiagram({
 			format: "step-diagram/1",
 			style: "map",
 			title: "העץ של שרתי השמות",
@@ -22485,68 +22485,61 @@ answer = lookups * (rtt_a - rtt_b)`,
 					id: "root",
 					label: "שרת שורש",
 					sub: "root",
-					icon: "server",
 					x: 50,
-					y: 12
+					y: 74
 				},
 				{
 					id: "com",
 					label: "שרת com",
 					sub: "TLD",
-					icon: "server",
 					x: 18,
-					y: 48,
+					y: 43,
 					hidden: true
 				},
 				{
 					id: "org",
 					label: "שרת org",
 					sub: "TLD",
-					icon: "server",
 					x: 50,
-					y: 48,
+					y: 43,
 					hidden: true
 				},
 				{
 					id: "il",
 					label: "שרת il",
 					sub: "TLD",
-					icon: "server",
 					x: 82,
-					y: 48,
+					y: 43,
 					hidden: true
 				},
 				{
 					id: "dino",
 					label: "dino.com",
 					sub: "מורשה",
-					icon: "server",
 					x: 18,
-					y: 86,
+					y: 12,
 					hidden: true
 				},
 				{
 					id: "chess",
 					label: "chess-club.org",
 					sub: "מורשה",
-					icon: "server",
 					x: 50,
-					y: 86,
+					y: 12,
 					hidden: true
 				},
 				{
 					id: "dana",
 					label: "dana.co.il",
 					sub: "מורשה",
-					icon: "server",
 					x: 82,
-					y: 86,
+					y: 12,
 					hidden: true
 				}
 			],
 			steps: [
 				{
-					caption: "בראש העץ: שרתי השורש. יש 13 שמות של שרתי שורש, ולכל שם עותקים רבים בעולם.",
+					caption: "בתחתית העץ, כמו שורשים אמיתיים: שרתי השורש. יש 13 שמות של שרתי שורש, ולכל שם עותקים רבים בעולם.",
 					add: [{
 						type: "note",
 						id: "root-note",
@@ -22555,7 +22548,7 @@ answer = lookups * (rtt_a - rtt_b)`,
 					}]
 				},
 				{
-					caption: "מתחתיו שרתי TLD, לכל סיומת עליונה: com, org, il. השורש יודע איפה כל אחד מהם.",
+					caption: "מעליו שרתי TLD, לכל סיומת עליונה: com, org, il. השורש יודע איפה כל אחד מהם.",
 					show: [
 						"com",
 						"org",
@@ -22580,7 +22573,7 @@ answer = lookups * (rtt_a - rtt_b)`,
 					]
 				},
 				{
-					caption: "בתחתית השרתים המורשים: של כל ארגון, עם הכתובות של המחשבים שלו.",
+					caption: "בראש העץ השרתים המורשים: של כל ארגון, עם הכתובות של המחשבים שלו.",
 					show: [
 						"dino",
 						"chess",
@@ -22605,7 +22598,7 @@ answer = lookups * (rtt_a - rtt_b)`,
 					]
 				},
 				{
-					caption: "כדי למצוא מחשב ב-chess-club.org יורדים בעץ: שורש, אחר כך org, ובסוף השרת המורשה.",
+					caption: "כדי למצוא מחשב ב-chess-club.org עולים בעץ: שורש, אחר כך org, ובסוף השרת המורשה.",
 					highlight: [
 						"root",
 						"org",
@@ -22627,7 +22620,7 @@ answer = lookups * (rtt_a - rtt_b)`,
 				w: R`שורש, אחר כך <code>com</code>, ובסוף השרת המורשה של <code>dino.com</code>: 3.`
 			},
 			{
-				s: R`באיזו דרך יורדים בעץ כדי למצוא את <code>mail.dana.co.il</code>?`,
+				s: R`באיזו דרך עולים בעץ כדי למצוא את <code>mail.dana.co.il</code>?`,
 				o: [
 					R`שורש, <code>com</code>, <code>dana.co.il</code>`,
 					R`שורש, <code>il</code>, <code>dana.co.il</code>`,
@@ -22662,9 +22655,9 @@ answer = lookups * (rtt_a - rtt_b)`,
 			{
 				s: R`מה <b>לא</b> נכון על העץ?`,
 				o: [
-					"השורש בראש",
-					"כל שרת יודע איפה הרמה שמתחתיו",
-					"השרתים המורשים בתחתית",
+					"השורש בתחתית העץ",
+					"כל שרת יודע איפה הרמה שמעליו",
+					"השרתים המורשים בראש העץ",
 					"שרת TLD יודע את כל הכתובות בסיומת שלו"
 				],
 				a: 3,
@@ -58693,7 +58686,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#networks">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 974787ca מ-2026-11-23 14:01"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 974787ca</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#networks">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 1cac8831 מ-2026-11-23 19:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 1cac8831</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
