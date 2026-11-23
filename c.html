@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ZL5FZ6k/OSJBAzrdn6fC0X2D2mYPrivHSrw18htHa84=' 'sha256-HP5xyVjn5Is5ZKhaFq+mus2YMwv6cUmNHgZsau7NbCo=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-LbudMh/dntUfNbhRO+BDnRowri5TxsAgPDR7Xw2Srzk=' 'sha256-HP5xyVjn5Is5ZKhaFq+mus2YMwv6cUmNHgZsau7NbCo=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -7169,6 +7169,59 @@ function friendlyErrors(errors) {
 	if (/Assertion/.test(text)) text = text.replace(/src\/wcc[^\n]*Assertion[^\n]*\n?/, "error: the compiler stopped. This usually happens when you try to modify an array name (for example arr++)\n");
 	return unmaskNames(text);
 }
+// src/engines/c/stepping/pointer-writes.js
+var BEFORE = "(?:^|[^\\w.>])";
+var throughPatterns = /* @__PURE__ */ new Map();
+var intoPatterns = /* @__PURE__ */ new Map();
+function writerCall(start) {
+	const first = "\\b(?:memset|memcpy|memmove|strcpy|strncpy|strcat|strncat|sprintf|snprintf|fgets|fread|gets)\\s*\\(\\s*" + start;
+	const later = "\\b(?:scanf|sscanf|fscanf)\\s*\\([^;]*,\\s*" + start;
+	return first + "|" + later;
+}
+function throughPattern(name) {
+	if (!throughPatterns.has(name)) {
+		const arrow = BEFORE + name + "\\s*->\\s*\\w+(?:\\s*(?:\\.|->)\\s*\\w+|\\s*\\[[^\\]]*\\])*\\s*(?:(?:<<|>>|[-+*/%&|^])=|(?<![<>!=])=(?!=)|\\+\\+|--)";
+		const index = BEFORE + name + "(?:\\s*\\[[^\\]]*\\])+(?:\\s*(?:\\.|->)\\s*\\w+|\\s*\\[[^\\]]*\\])*\\s*(?:(?:<<|>>|[-+*/%&|^])=|(?<![<>!=])=(?!=)|\\+\\+|--)";
+		const star = "(?:^|[^\\w\\s]|\\b(?:else|do)\\s)\\s*\\*\\s*" + name + "\\b\\s*\\)?(?:\\s*(?:\\.|->)\\s*\\w+|\\s*\\[[^\\]]*\\])*\\s*(?:(?:<<|>>|[-+*/%&|^])=|(?<![<>!=])=(?!=)|\\+\\+|--)";
+		const prefix = "(?:\\+\\+|--)\\s*\\(?\\s*(?:\\*\\s*" + name + "\\b|" + name + "\\s*(?:->|\\[))";
+		const call = writerCall("&?\\s*\\(?\\s*\\*?\\s*" + name + "\\b");
+		throughPatterns.set(name, new RegExp([
+			arrow,
+			index,
+			star,
+			prefix,
+			call
+		].join("|")));
+	}
+	return throughPatterns.get(name);
+}
+function intoPattern(name) {
+	if (!intoPatterns.has(name)) intoPatterns.set(name, new RegExp(writerCall("&?\\s*" + name + "\\b(?!\\s*->)")));
+	return intoPatterns.get(name);
+}
+function addressOf$1(bytes, size) {
+	let address = 0;
+	for (let i = Math.min(size, bytes.length) - 1; i >= 0; i--) address = address * 256 + bytes[i];
+	return address;
+}
+function writtenTargets(meta, scopes, lineTexts, bytesOf) {
+	const targets = [];
+	for (const addrs of scopes) addrs.forEach((address, id) => {
+		const variable = meta.vars[id];
+		if (variable && variable.ptr > 0 && !variable.arr && lineTexts.some((text) => throughPattern(variable.name).test(text))) targets.push(addressOf$1(bytesOf(id, address), address.size));
+	});
+	return targets;
+}
+function markPointerWrites(meta, frames, globals, lineTexts, bytesOf) {
+	const targets = writtenTargets(meta, [...frames.map((frame) => frame.addrs), globals], lineTexts, bytesOf);
+	for (const frame of frames) frame.addrs.forEach((address, id) => {
+		if (frame.init.get(id) || !meta.vars[id]) return;
+		const end = address.addr + address.size;
+		const isTarget = targets.some((at) => at >= address.addr && at < end);
+		const name = meta.vars[id].name;
+		if (isTarget || lineTexts.some((text) => intoPattern(name).test(text))) frame.init.set(id, true);
+	});
+}
 // src/engines/c/stepping/returned-rows.js
 function returnedRows(returned, shapes) {
 	return returned.filter((call) => call.b).map((call, index) => {
@@ -7442,6 +7495,7 @@ var StepTracker = class {
 		if (this.isRecording) {
 			const lineTexts = this.ranLines(pointIndex, point);
 			this.markAssignedVariables(lineTexts);
+			markPointerWrites(this.meta, this.stack, this.globals, lineTexts, bytesOf);
 			this.unions.findWrites([...this.stack.map((frame) => [frame, frame.addrs]), [null, this.globals]], lineTexts);
 		}
 		top.point = pointIndex;
@@ -74427,7 +74481,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 4e87fe7e מ-2026-11-23 13:36"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 4e87fe7e</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html#c">⌂ נושאי הקורס</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 974787ca מ-2026-11-23 14:01"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 974787ca</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
