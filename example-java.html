@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-IB8p+n0XIl6CoJgJdK51fosK/iitR2g4Qy//yTNRdGo=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-ku2Sy1uBfGIKBrRAxFd5CBzv2T6Y0GXuDnrj0iZ/Bpk=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://relay.step-by-step-lab.workers.dev data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -41989,17 +41989,26 @@ function setUpMotionSwitch() {
 var ANALYTICS_ELEMENT_ID = "lab-analytics";
 var WEBSITE_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 var HOST_PATTERN = /^https:\/\/[a-z0-9.-]+$/;
+var DEFAULT_PATH = "/api/send";
+var PATH_PATTERN = /^(\/[A-Za-z0-9_-]+)+$/;
 var DOMAIN_PATTERN = /^[a-z0-9.-]+\.[a-z]{2,}$/;
 function checkAnalyticsConfig(value) {
-	const { website, host, domain } = value || {};
+	const given = value || {};
+	const { website, host, domain } = given;
+	const path = given.path === void 0 ? DEFAULT_PATH : given.path;
 	if (typeof website !== "string" || !WEBSITE_PATTERN.test(website)) throw new Error("analytics.website must be an Umami website id (a UUID)");
 	if (typeof host !== "string" || !HOST_PATTERN.test(host)) throw new Error("analytics.host must be an https origin such as https://gateway.umami.is");
+	if (typeof path !== "string" || !PATH_PATTERN.test(path)) throw new Error("analytics.path must be a path such as /api/send or /e");
 	if (typeof domain !== "string" || !DOMAIN_PATTERN.test(domain)) throw new Error("analytics.domain must be a hostname such as nadavm-eng.github.io");
 	return {
 		website,
 		host,
+		path,
 		domain
 	};
+}
+function sendAddress(config) {
+	return config.host + config.path;
 }
 function readAnalyticsConfig(doc) {
 	const element = doc.getElementById(ANALYTICS_ELEMENT_ID);
@@ -42029,11 +42038,6 @@ function browserAnalyticsDeps(config) {
 		storage,
 		now: () => Date.now(),
 		hostname: () => location.hostname,
-		asksNotToTrack: () => {
-			const nav = navigator;
-			const win = window;
-			return nav.globalPrivacyControl === true || nav.doNotTrack === "1" || win.doNotTrack === "1";
-		},
 		randomHex: () => {
 			const bytes = crypto.getRandomValues(/* @__PURE__ */ new Uint8Array(6));
 			return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -42063,7 +42067,7 @@ function setSwitch(deps, isOn) {
 	writeText(deps, SWITCH_KEY, isOn ? "1" : "0");
 }
 function mayEverSend(deps) {
-	return deps.hostname() === deps.config.domain && isSwitchOn(deps) && !deps.asksNotToTrack();
+	return deps.hostname() === deps.config.domain && isSwitchOn(deps);
 }
 function anonymousId(deps) {
 	const saved = readText(deps, ANON_ID_KEY);
@@ -42117,7 +42121,7 @@ function umamiBody(deps, path, name = "", data) {
 }
 async function postToUmami(deps, body) {
 	try {
-		const answer = await deps.fetch(deps.config.host + "/api/send", {
+		const answer = await deps.fetch(sendAddress(deps.config), {
 			method: "POST",
 			keepalive: true,
 			credentials: "omit",
@@ -42989,7 +42993,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 1cac8831 מ-2026-11-23 19:14"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 1cac8831</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit d09f3eef מ-2026-11-23 20:45"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · d09f3eef</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
@@ -43042,7 +43046,7 @@ window.__lab = {
         <!-- long lines of the lesson wrap (src/core/lesson/wrap-long.ts; off by default) -->
         <div class="side-row wrap-row"><span id="wrap-lbl">שבירת שורות ארוכות<small class="set-sub" id="wrap-desc">קוד בטבלאות ופלט לדוגמה בהסבר</small></span><label class="admin-sw"><input type="checkbox" id="wrap-long" role="switch" aria-checked="false" aria-labelledby="wrap-lbl" aria-describedby="wrap-desc"><span class="knob"></span></label></div>
         <!-- the analytics switch of a public site's page (src/vite/analytics-build.ts; none elsewhere) -->
-        <div class="side-row analytics-row"><span id="analytics-lbl">שליחת סטטיסטיקה אנונימית<small class="set-sub" id="analytics-desc">האתר סופר פתיחות וסיומי שיעורים, בלי שם ובלי חשבון, דרך Umami. מזהה אקראי לכל דפדפן, בלי שם.</small></span><label class="admin-sw"><input type="checkbox" id="analytics-on" role="switch" aria-checked="true" aria-labelledby="analytics-lbl" aria-describedby="analytics-desc" checked><span class="knob"></span></label></div>
+        <div class="side-row analytics-row"><span id="analytics-lbl">שליחת סטטיסטיקה אנונימית<small class="set-sub" id="analytics-desc">האתר סופר שימוש אנונימי דרך Umami: פתיחות וסיומי שיעורים, עם מזהה אקראי לכל דפדפן, בלי שם ובלי חשבון. המתג הזה מכבה את הספירה.</small></span><label class="admin-sw"><input type="checkbox" id="analytics-on" role="switch" aria-checked="true" aria-labelledby="analytics-lbl" aria-describedby="analytics-desc" checked><span class="knob"></span></label></div>
         <div class="side-row"><span>סיור מודרך</span><button class="b ghost au-sm" id="tour-student" type="button">▶ סיור</button></div>
         <section class="set-group" aria-labelledby="set-teacher-h">
           <h3 class="side-h" id="set-teacher-h">למורה</h3>
@@ -43068,7 +43072,7 @@ window.__lab = {
 <!-- order matters: vendored classic scripts first (xcc, tree-sitter), the course package slot, then one ES module, lab-entry.js (made by src/vite/lab-page-plugins.ts; it runs after the page is parsed), which imports in this order: the engine (window.LabEngine), the course (window.LabCourse), the local layer (layer.js), the code box (app.js), the page (lab.ts), the authoring UI (author.ts) -->
 <script></script>
 <!--lab-package-here-->
-<script type="application/json" id="lab-analytics">{"website":"64c1ce3d-2042-441f-895e-7cd6bf8f0012","host":"https://gateway.umami.is","domain":"nadavm-eng.github.io"}</script>
+<script type="application/json" id="lab-analytics">{"website":"64c1ce3d-2042-441f-895e-7cd6bf8f0012","host":"https://relay.step-by-step-lab.workers.dev","path":"/e","domain":"nadavm-eng.github.io"}</script>
 <script type="application/json" id="lab-feedback">{"form":"https://docs.google.com/forms/d/e/1FAIpQLSfjQKsL-jnAaQtBcXgb4J3yp7m5Q2Mf26nPvp82FDu_sjClNA/formResponse","entries":{"kind":"entry.553178060","course":"entry.804347730","section":"entry.934529071","lesson":"entry.194724274","subLesson":"entry.1630899329","text":"entry.324750931"}}</script>
 </body>
 </html>
