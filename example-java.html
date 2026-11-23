@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the content policy (src/vite/content-policy.ts) goes here, before every script of the page;
      the runner's script, put first in the head, runs before it -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-8FtOhU8+GdE5bZbbecS7nOlZk46TdwUEp0dA/U8oO0g=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-dBzhZhWI8kAAv2++Ar4sLKK0XXzSnNZZZKV713oOP+g=' 'sha256-IB8p+n0XIl6CoJgJdK51fosK/iitR2g4Qy//yTNRdGo=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://godbolt.org https://docs.google.com https://gateway.umami.is data: blob:; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232E6FEF%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27monospace%27 font-size=%2716%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3E%7B %7D%3C/text%3E%3C/svg%3E">
 <script>var t; try { var q = /[?&]theme=(light|dark)/.exec(location.search); t = q ? q[1] : JSON.parse(localStorage.getItem('lab:theme') || localStorage.getItem('ptrlab:theme') || 'null'); } catch(e){} if(t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; document.documentElement.dataset.theme = t;</script>
@@ -13417,9 +13417,36 @@ function SpokenUnwind(props) {
 		parent: view.node.index
 	})] }, view.node.index)) });
 }
+function focusNodes(plan, views) {
+	const leaving = views.filter((view) => view.state === "leaving").map((view) => view.node);
+	const working = views.find((view) => [
+		"running",
+		"busy",
+		"inside"
+	].includes(view.state)) ?? views.find((view) => view.node.parent < 0);
+	const followed = leaving.length ? leaving : working ? [working.node] : [];
+	const parents = followed.filter((node) => node.parent >= 0).map((node) => plan.nodes[node.parent]);
+	return [...followed, ...parents];
+}
+function followScroll(plan, views, box) {
+	const nodes = focusNodes(plan, views);
+	if (!nodes.length) return null;
+	const { scale } = box;
+	const left = Math.min(...nodes.map((node) => node.x)) + 8;
+	const right = Math.max(...nodes.map((node) => node.x + node.box.width)) + 8;
+	const top = Math.min(...nodes.map((node) => node.y)) + 18;
+	const bottom = Math.max(...nodes.map((node) => node.y + node.box.height)) + 18;
+	const fitsHeight = (bottom - top) * scale <= box.height;
+	const hasRoot = nodes.some((node) => node.parent < 0);
+	let scrollTop = Math.max(0, bottom * scale - box.height + 8);
+	if (fitsHeight) scrollTop = Math.max(0, (top + bottom) / 2 * scale - box.height / 2);
+	else if (hasRoot) scrollTop = Math.max(0, (top - 18) * scale);
+	return {
+		left: Math.max(0, (left + right) / 2 * scale - box.width / 2),
+		top: scrollTop
+	};
+}
 // src/engines/java/view/UnwindTree.tsx
-var MARGIN$1 = 8;
-var TOP_MARGIN = 18;
 var CELL_BASELINE = 13;
 function Cell$2(props) {
 	const isEmpty = props.text === null;
@@ -13629,28 +13656,17 @@ function Edge(props) {
 		...anchor(edgeAnchor(node.index))
 	});
 }
-function focusNodes(plan, views) {
-	const leaving = views.filter((view) => view.state === "leaving").map((view) => view.node);
-	const working = views.find((view) => [
-		"running",
-		"busy",
-		"inside"
-	].includes(view.state)) ?? views.find((view) => view.node.parent < 0);
-	const followed = leaving.length ? leaving : working ? [working.node] : [];
-	const parents = followed.filter((node) => node.parent >= 0).map((node) => plan.nodes[node.parent]);
-	return [...followed, ...parents];
-}
 function followWork(box, plan, views, zoom) {
-	const nodes = focusNodes(plan, views);
-	if (!nodes.length) return;
 	const scale = zoom === "fit" ? box.clientWidth / (plan.width + 16) : ZOOM_LEVELS[zoom];
-	const left = Math.min(...nodes.map((node) => node.x)) + MARGIN$1;
-	const right = Math.max(...nodes.map((node) => node.x + node.box.width)) + MARGIN$1;
-	const top = Math.min(...nodes.map((node) => node.y)) + TOP_MARGIN;
-	const bottom = Math.max(...nodes.map((node) => node.y + node.box.height)) + TOP_MARGIN;
-	const fitsHeight = (bottom - top) * scale <= box.clientHeight;
-	box.scrollLeft = Math.max(0, (left + right) / 2 * scale - box.clientWidth / 2);
-	box.scrollTop = fitsHeight ? Math.max(0, (top + bottom) / 2 * scale - box.clientHeight / 2) : Math.max(0, bottom * scale - box.clientHeight + MARGIN$1);
+	const scroll = followScroll(plan, views, {
+		width: box.clientWidth,
+		height: box.clientHeight,
+		scale
+	});
+	if (scroll) {
+		box.scrollLeft = scroll.left;
+		box.scrollTop = scroll.top;
+	}
 }
 function UnwindTree(props) {
 	const { plan, trace, index, from, zoom } = props;
@@ -13684,7 +13700,7 @@ function UnwindTree(props) {
 function TreeDrawing(props) {
 	const { plan, views, zoom } = props;
 	const width = plan.width + 16;
-	const height = plan.height + MARGIN$1 + TOP_MARGIN;
+	const height = plan.height + 8 + 18;
 	const scale = zoom === "fit" ? null : ZOOM_LEVELS[zoom];
 	const size = scale ? {
 		width: width * scale,
@@ -42973,7 +42989,7 @@ window.__lab = {
     <div class="side-foot">
       <!-- the settings: one button, a floating panel (src/core/page/settings-panel.js) -->
       <div class="side-row side-set"><button class="b ghost set-b" id="settings-b" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings">⚙ הגדרות</button><span class="theme-sw" id="theme-sw" role="group" aria-label="ערכת צבעים"><button data-theme-set="light" aria-pressed="false">☀ בהיר</button><button data-theme-set="dark" aria-pressed="false">☾ כהה</button></span></div>
-      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 73a13b0d מ-2026-11-23 13:15"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 73a13b0d</bdi></span></div>
+      <div class="side-repo-row"><a class="side-repo side-hub" href="index.html">⌂ כל הקורסים</a><a class="side-repo side-lic" href="licenses.html">רישיונות</a><button class="side-repo side-fb" id="feedback-link" type="button">✎ משוב</button><a class="side-repo" id="repo-link" target="_blank" rel="noopener" hidden>הפרויקט ב-GitHub <span aria-hidden="true">↗</span><span class="sr">(נפתח בלשונית חדשה)</span></a><span class="side-build" id="build-stamp" title="הגרסה של הדף: ענף main, commit 4e87fe7e מ-2026-11-23 13:36"><span class="sr">גרסה: </span><bdi dir="ltr"><span class="sb-br">main</span> · 4e87fe7e</bdi></span></div>
       <div class="store-warn" id="store-warn" role="alert" hidden>השמירה בדפדפן נכשלה — הקוד לא יישמר כאן</div>
     </div>
     <div class="set-pop" id="settings" role="dialog" aria-labelledby="settings-h" data-float hidden>
